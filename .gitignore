@@ -1,0 +1,14 @@
+# .gitignore
+
+# Compiled python modules
+*.pyc
+
+# Setuptools distribution folder
+/dist/
+
+# Python egg metadata, regenrated from source files by setuptools.
+/*.egg-info
+
+# Sublime text files
+*.sublime-project
+*.sublime-workspace
