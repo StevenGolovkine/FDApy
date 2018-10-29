@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"setup",
+				"setuptools\tmodule"
+			],
+			[
 				"lin",
 				"linspace"
 			],
@@ -251,6 +255,15 @@
 	},
 	"buffers":
 	[
+		{
+			"file": "FDApy/univariate_functional.py",
+			"settings":
+			{
+				"buffer_size": 1081,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		}
 	],
 	"build_system": "",
 	"build_system_choices":
@@ -321,10 +334,19 @@
 	},
 	"expanded_folders":
 	[
-		"/home/steven/Documents/workspace/FDApy"
+		"/home/steven/Documents/workspace/FDApy",
+		"/home/steven/Documents/workspace/FDApy/FDApy"
 	],
 	"file_history":
 	[
+		"/home/steven/Documents/workspace/ClusteringTrajectoires/Analysis/scene.py",
+		"/home/steven/Documents/workspace/ClusteringTrajectoires/Analysis/vehicle.py",
+		"/home/steven/Documents/workspace/FDApy/setup.py",
+		"/home/steven/Documents/workspace/FDApy/FDApy/tests/__init__.py",
+		"/home/steven/Documents/workspace/FDApy/README.rst",
+		"/home/steven/Documents/workspace/FDApy/README.md",
+		"/home/steven/Documents/workspace/FDApy/MANIFEST.in",
+		"/home/steven/Documents/workspace/FDApy/.gitignore",
 		"/home/steven/Documents/OneDrive_-_RENAULT/Papers/biblio.bib",
 		"/home/steven/Documents/OneDrive_-_RENAULT/Papers/style.sty",
 		"/home/steven/Documents/OneDrive_-_RENAULT/Papers/Article/model.tex",
@@ -334,8 +356,6 @@
 		"/home/steven/Documents/OneDrive_-_RENAULT/Papers/Article/main.log",
 		"/home/steven/Documents/workspace/ClusteringTrajectoires/Analysis/clustering.py",
 		"/home/steven/Documents/workspace/ClusteringTrajectoires/Analysis/fda.py",
-		"/home/steven/Documents/workspace/ClusteringTrajectoires/Analysis/scene.py",
-		"/home/steven/Documents/workspace/ClusteringTrajectoires/Analysis/vehicle.py",
 		"/home/steven/Documents/OneDrive_-_RENAULT/Papers/Divers/ProposalTopicEnsai/proposal.md",
 		"/home/steven/Documents/OneDrive_-_RENAULT/ClusteringTrajectoires/Data/incomplete_traj/scene_262_3.json",
 		"/home/steven/Bureau/fda.py",
@@ -391,6 +411,52 @@
 	"groups":
 	[
 		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "FDApy/univariate_functional.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1081,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1081,
+								1081
+							]
+						],
+						"settings":
+						{
+							"auto_complete_triggers":
+							[
+								{
+									"characters": ".",
+									"selector": "source.python - string - comment - constant.numeric"
+								},
+								{
+									"characters": ".",
+									"selector": "source.python - string - constant.numeric"
+								}
+							],
+							"open_with_edit": true,
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 51.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		},
+		{
 			"sheets":
 			[
 			]
@@ -413,11 +479,18 @@
 				0,
 				1,
 				1
+			],
+			[
+				1,
+				0,
+				2,
+				1
 			]
 		],
 		"cols":
 		[
 			0.0,
+			0.5,
 			1.0
 		],
 		"rows":
