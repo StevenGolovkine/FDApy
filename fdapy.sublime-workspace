@@ -1,0 +1,489 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"lin",
+				"linspace"
+			],
+			[
+				"cov",
+				"covariance\tfunction"
+			],
+			[
+				"Ob",
+				"ObjectPosY_cmoplete"
+			],
+			[
+				"Objec",
+				"ObjectPosX_complete"
+			],
+			[
+				"epo",
+				"epoch_s_complete"
+			],
+			[
+				"COl",
+				"ColumnDataSource"
+			],
+			[
+				"Data",
+				"DataFrame"
+			],
+			[
+				"column",
+				"column_scaler"
+			],
+			[
+				"with_",
+				"with_mean"
+			],
+			[
+				"colum",
+				"column\tstatement"
+			],
+			[
+				"True",
+				"True"
+			],
+			[
+				"q",
+				"q\tstatement"
+			],
+			[
+				"layou",
+				"layout"
+			],
+			[
+				"layout",
+				"layouts"
+			],
+			[
+				"line",
+				"line_width"
+			],
+			[
+				"ObjectP",
+				"ObjectPosX"
+			],
+			[
+				"class",
+				"classes_Y\tstatement"
+			],
+			[
+				"cla",
+				"classes_Y\tstatement"
+			],
+			[
+				"confusion",
+				"confusion_matrix"
+			],
+			[
+				"y_pre",
+				"y_prediction"
+			],
+			[
+				"erro",
+				"error_Y\tstatement"
+			],
+			[
+				"Object",
+				"ObjectPosY_smooth"
+			],
+			[
+				"ep",
+				"epoch_s"
+			],
+			[
+				"Obje",
+				"ObjectPosX_smooth\tstatement"
+			],
+			[
+				"Obj",
+				"ObjectPosX_smooth\tstatement"
+			],
+			[
+				"Obe",
+				"ObjectPosX_smooth\tstatement"
+			],
+			[
+				"ObjectPosY",
+				"objectPosY_smooth"
+			],
+			[
+				"ObjectPo",
+				"ObjectPosY_smooth\tstatement"
+			],
+			[
+				"ObjectPos",
+				"ObjectPosY_smooth"
+			],
+			[
+				"O",
+				"ObjectPosX_complete"
+			],
+			[
+				"data",
+				"data\tparam"
+			],
+			[
+				"clus",
+				"clustering_algorithms\tstatement"
+			],
+			[
+				"ave",
+				"average_linkage\tstatement"
+			],
+			[
+				"c",
+				"characteristics"
+			],
+			[
+				"a",
+				"append\tfunction"
+			],
+			[
+				"results",
+				"results\tstatement"
+			],
+			[
+				"basis",
+				"basis_multi\tstatement"
+			],
+			[
+				"score",
+				"scores_multi\tstatement"
+			],
+			[
+				"univa",
+				"univariate_fpca\tfunction"
+			],
+			[
+				"colu",
+				"column\tstatement"
+			],
+			[
+				"col",
+				"column\tstatement"
+			],
+			[
+				"B",
+				"BOKEH_TOOLS\tstatement"
+			],
+			[
+				"eige",
+				"eigenfunctions_df\tstatement"
+			],
+			[
+				"eigen",
+				"eigenfunctions"
+			],
+			[
+				"eigne",
+				"eigenfunctions_df\tstatement"
+			],
+			[
+				"process",
+				"processSample\tstatement"
+			],
+			[
+				"with",
+				"with_std"
+			],
+			[
+				"wth",
+				"with_mean"
+			],
+			[
+				"Standa",
+				"StandardScaler"
+			],
+			[
+				"smo",
+				"smooth_caracteristics\tfunction"
+			],
+			[
+				"obje",
+				"objects\tstatement"
+			],
+			[
+				"kern",
+				"kernel_ridge"
+			],
+			[
+				"modle",
+				"model_selection"
+			],
+			[
+				"y",
+				"y\tstatement"
+			],
+			[
+				"e",
+				"epoch_s"
+			],
+			[
+				"objec",
+				"objectPosY_smooth\tstatement"
+			],
+			[
+				"complete",
+				"complete_values"
+			],
+			[
+				"att",
+				"attr_value\tstatement"
+			],
+			[
+				"vehic",
+				"vehicles\tstatement"
+			],
+			[
+				"ob",
+				"objects"
+			],
+			[
+				"attr",
+				"attr_name"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"latex",
+				"Build With: LaTeX"
+			],
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"mark",
+				"Markdown Preview: Save to HTML"
+			],
+			[
+				"inst",
+				"Package Control: Install Package"
+			],
+			[
+				"markdownpre",
+				"Markdown Preview: Preview in Browser"
+			],
+			[
+				"",
+				"About"
+			],
+			[
+				"packa",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 150.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = '6f4c264a24d933ce70df5dedcf1dcaee' + 'ebe013ee18cced0ef93d5f746d80ef60'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by) "
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/home/steven/Documents/workspace/FDApy"
+	],
+	"file_history":
+	[
+		"/home/steven/Documents/OneDrive_-_RENAULT/Papers/biblio.bib",
+		"/home/steven/Documents/OneDrive_-_RENAULT/Papers/style.sty",
+		"/home/steven/Documents/OneDrive_-_RENAULT/Papers/Article/model.tex",
+		"/home/steven/Documents/OneDrive_-_RENAULT/Papers/Article/main.tex",
+		"/home/steven/Documents/OneDrive_-_RENAULT/Papers/Article/main.pdf",
+		"/home/steven/Documents/OneDrive_-_RENAULT/Papers/Article/pdflatex5975.fls",
+		"/home/steven/Documents/OneDrive_-_RENAULT/Papers/Article/main.log",
+		"/home/steven/Documents/workspace/ClusteringTrajectoires/Analysis/clustering.py",
+		"/home/steven/Documents/workspace/ClusteringTrajectoires/Analysis/fda.py",
+		"/home/steven/Documents/workspace/ClusteringTrajectoires/Analysis/scene.py",
+		"/home/steven/Documents/workspace/ClusteringTrajectoires/Analysis/vehicle.py",
+		"/home/steven/Documents/OneDrive_-_RENAULT/Papers/Divers/ProposalTopicEnsai/proposal.md",
+		"/home/steven/Documents/OneDrive_-_RENAULT/ClusteringTrajectoires/Data/incomplete_traj/scene_262_3.json",
+		"/home/steven/Bureau/fda.py",
+		"/home/steven/Documents/workspace/ClusteringTrajectoires/Old/Clustering/OpenTurns.py",
+		"/home/steven/Documents/workspace/ClusteringTrajectoires/Old/Clustering/Clustering.py",
+		"/home/steven/.config/sublime-text-3/Packages/User/Anaconda.sublime-settings",
+		"/home/steven/Documents/workspace/ClusteringTrajectoires/.gitignore",
+		"/home/steven/Documents/workspace/presentation/aout2018.html",
+		"/home/steven/Documents/workspace/presentation/fda.md",
+		"/home/steven/Documents/workspace/ClusteringTrajectoires/Data/test.json",
+		"/home/steven/Documents/workspace/ClusteringTrajectoires/Analysis/vehicles.py",
+		"/home/steven/.config/sublime-text-3/Packages/Anaconda/README.md",
+		"/home/steven/Documents/OneDrive_-_RENAULT/ClusteringTrajectoires/README.md",
+		"/home/steven/Documents/OneDrive_-_RENAULT/ClusteringTrajectoires/Clustering/Clustering.py",
+		"/home/steven/Documents/OneDrive_-_RENAULT/ClusteringTrajectoires/Clustering/OpenTurns.py",
+		"/home/steven/Documents/OneDrive_-_RENAULT/Papers/Divers/cadrage_these.md",
+		"/home/steven/Documents/OneDrive_-_RENAULT/ClusteringTrajectoires/Data/test.json",
+		"/home/steven/Documents/ProxyMan-2.5/README.md"
+	],
+	"find":
+	{
+		"height": 39.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"happ",
+			"prediction",
+			"object"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": false
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 38.0
+	},
+	"input":
+	{
+		"height": 38.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.anaconda_documentation":
+	{
+		"height": 120.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.latextools":
+	{
+		"height": 158.0
+	},
+	"pinned_build_system": "",
+	"project": "fdapy.sublime-project",
+	"replace":
+	{
+		"height": 48.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 240.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
