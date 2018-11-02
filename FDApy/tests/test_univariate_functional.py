@@ -5,12 +5,15 @@ import numpy as np
 import unittest
 
 from FDApy.univariate_functional import _check_argvals
+from FDApy.univariate_functional import _check_values
 
 
 class TestUnivariateFunctionalData(unittest.TestCase):
 	"""Test class for the class UnivariateFunctionalData.
 
 	"""
+
+	# Tests _check_argvals function
 	def test_check_argvals_type(self):
 		argvals = np.array([1, 2, 3])
 		self.assertRaises(ValueError, _check_argvals, argvals)
@@ -32,6 +35,11 @@ class TestUnivariateFunctionalData(unittest.TestCase):
 		argvals = (1, 2, 3)
 		test = _check_argvals(argvals)
 		self.assertEquals(len(test), 1)
+
+	# Tests _check_values function
+	def test_check_values(self):
+		X = [1, 2, 3]
+		self.assertRaises(ValueError, _check_values, X)
 
 	"""
 	def test_init_instance(self):
