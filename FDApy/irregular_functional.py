@@ -4,17 +4,16 @@
 import itertools
 import numpy as np 
 
-
-#############################################################################
-# Checkers used by the UnivariateFunctionalData class.
+############################################################################
+# Checkers used by the IrregularFunctionalData class
 
 def _check_argvals(argvals):
-    """Check the user provided `argvals`.
-    
+    """ Check the user provided `argvals`. 
+
     Parameters
-    ---------
+    ----------
     argvals : list of tuples
-        A list of numeric vectors (tuples) or a single numeric vector (tuple) giving the sampling points in the domains. 
+        A list of numeric vectors (tuples) giving the sampling points for each realization of the process. 
 
     Return
     ------
@@ -22,7 +21,7 @@ def _check_argvals(argvals):
     """
     if type(argvals) not in (tuple, list):
         raise ValueError('argvals has to be a list of tuples or a tuple.')
-
+        
     if isinstance(argvals, list) and \
             not all([isinstance(i, tuple) for i in argvals]):
         raise ValueError('argvals has to be a list of tuples or a tuple.')
@@ -35,7 +34,7 @@ def _check_argvals(argvals):
     argvals_ = list(itertools.chain.from_iterable(argvals))
     if not all([type(i) in (int, float) for i in argvals_]):
         raise ValueError('All argvals elements must be numeric!')
-
+        
     return argvals
 
 def _check_values(X):
@@ -43,35 +42,34 @@ def _check_values(X):
     
     Parameters
     ----------
-    X : numpy.array
-        A numpy array containing values.
+    X : list of numpy.array
+        A list of numpy array containing values.
 
     Return
     ------
-    X : numpy array
+    X : list of numpy array
     """
 
     # TODO: Modify the function to deal with other types of data.
-    if not isinstance(X, np.ndarray):
-        raise ValueError('X has to be a numpy array.')
+    if isinstance(X, np.ndarray):
+        print('X is convert into one dimensional list.')
+        X = [X]
+    if not all([isinstance(i, np.ndarray) for i in X]):
+        raise ValueError('X has to be a list of numpy array.')
 
-    return X
+    return X 
 
-#############################################################################
-# Class Univariate FunctionalData 
-class UnivariateFunctionalData(object):
-    """An object for defining Univariate Functional Data.
+############################################################################
+# Class IrregularFunctionalData
+class IrregularFunctionalData(object):
+    """An object for defining Irregular Functional Data.Functional
 
     Parameters
     ----------
     argvals : list of tuples
-        A list of numeric vectors (tuples) or a single numeric vector (tuple) giving the sampling points in the domains.
-
-    X : array-like
-        An array, giving the observed values for N observations. Missing values should be included via `None` (or `np.nan`). The shape depends on `argvals`::
-
-            (N, M) if `argvals` is a single numeric vector,
-            (N, M_1, ..., M_d) if `argvals` is a list of numeric vectors.
+        A list of numeric vectors (tuples) giving the sampling points for each realization of the process. 
+    X : list of numpy.array
+        A list of numeric arrays, representing the values of each realization of the process on the corresponding observation points. 
 
     Attributes
     ----------
@@ -88,10 +86,10 @@ class UnivariateFunctionalData(object):
         argvals = _check_argvals(argvals)
         X = _check_values(X)
 
-        if len(argvals) != len(X.shape[1:]):
+        if len(argvals) != len(X):
             raise ValueError('argvals and X elements have different support dimensions!')
-        if tuple(len(i) for i in argvals) != X.shape[1:]:
-            raise ValueError('argvals and X have different number of sampling points!')
+        if [len(i) for i in argvals] != [len(i) for i in X]:
+            raise ValueError('argvals and X have different number of sampling points')
 
         self.argvals = argvals
         self.X = X

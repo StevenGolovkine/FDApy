@@ -6,6 +6,7 @@ import unittest
 
 from FDApy.univariate_functional import _check_argvals
 from FDApy.univariate_functional import _check_values
+from FDApy.univariate_functional import UnivariateFunctionalData
 
 
 class TestUnivariateFunctionalData(unittest.TestCase):
@@ -41,27 +42,16 @@ class TestUnivariateFunctionalData(unittest.TestCase):
 		X = [1, 2, 3]
 		self.assertRaises(ValueError, _check_values, X)
 
-	"""
-	def test_init_instance(self):
-		X = [ [1,2,3] ]
-		argvals = [1,2,3]
-		self.assertRaises(ValueError, UnivariateFunctionalData, argvals, X)
-
-	def test_init_numeric(self):
-		X = np.array([[1, 2, 3], [4, 5, 6]])
-		argvals = np.array([[1, None, 3]])
-		self.assertRaises(ValueError, UnivariateFunctionalData, argvals, X)
-
+	# Tests __init__ function
 	def test_init_dimensions(self):
 		X = np.array([[1, 2, 3], [4, 5, 6]])
-		argvals = np.array([[1, 2, 3], [4, 5, 6]])
+		argvals = [(1, 2, 3), (4, 5, 6)]
 		self.assertRaises(ValueError, UnivariateFunctionalData, argvals, X)
 
 	def test_init_sampling(self):
 		X = np.array([[1, 2, 3], [4, 5, 6]])
 		argvals = np.array([[1, 3]])
 		self.assertRaises(ValueError, UnivariateFunctionalData, argvals, X)
-	"""
 
 
 if __name__ == '__main__':
