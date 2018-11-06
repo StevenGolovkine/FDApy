@@ -39,19 +39,21 @@ class TestUnivariateFunctionalData(unittest.TestCase):
 
 	# Tests _check_values function
 	def test_check_values(self):
-		X = [1, 2, 3]
-		self.assertRaises(ValueError, _check_values, X)
+		values = [1, 2, 3]
+		self.assertRaises(ValueError, _check_values, values)
 
 	# Tests __init__ function
 	def test_init_dimensions(self):
-		X = np.array([[1, 2, 3], [4, 5, 6]])
+		values = np.array([[1, 2, 3], [4, 5, 6]])
 		argvals = [(1, 2, 3), (4, 5, 6)]
-		self.assertRaises(ValueError, UnivariateFunctionalData, argvals, X)
+		self.assertRaises(ValueError, UnivariateFunctionalData, 
+			argvals, values)
 
 	def test_init_sampling(self):
-		X = np.array([[1, 2, 3], [4, 5, 6]])
+		values = np.array([[1, 2, 3], [4, 5, 6]])
 		argvals = np.array([[1, 3]])
-		self.assertRaises(ValueError, UnivariateFunctionalData, argvals, X)
+		self.assertRaises(ValueError, UnivariateFunctionalData, 
+			argvals, values)
 
 
 if __name__ == '__main__':

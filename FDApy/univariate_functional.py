@@ -21,14 +21,12 @@ def _check_argvals(argvals):
     argvals : list of tuples
     """
     if type(argvals) not in (tuple, list):
-        raise ValueError('argvals has to be a list of tuples or a tuple.')
-
+        raise ValueError('argvals has to be a list of tuples or a tuple!')
     if isinstance(argvals, list) and \
             not all([isinstance(i, tuple) for i in argvals]):
-        raise ValueError('argvals has to be a list of tuples or a tuple.')
-
+        raise ValueError('argvals has to be a list of tuples or a tuple!')
     if isinstance(argvals, tuple):
-        print('argvals is convert into one dimensional list.')
+        print('argvals is converted into one dimensional list!')
         argvals = [argvals]
 
     # Check if all entries of `argvals` are numeric. 
@@ -38,27 +36,27 @@ def _check_argvals(argvals):
 
     return argvals
 
-def _check_values(X):
-    """Check the user provided `values` (`X`).
+def _check_values(values):
+    """Check the user provided `values`.
     
     Parameters
     ----------
-    X : numpy.array
+    values : numpy.array
         A numpy array containing values.
 
     Return
     ------
-    X : numpy array
+    values : numpy array
     """
 
     # TODO: Modify the function to deal with other types of data.
-    if not isinstance(X, np.ndarray):
-        raise ValueError('X has to be a numpy array.')
+    if not isinstance(values, np.ndarray):
+        raise ValueError('values has to be a numpy array!')
 
-    return X
+    return values
 
 #############################################################################
-# Class Univariate FunctionalData 
+# Class UnivariateFunctionalData 
 class UnivariateFunctionalData(object):
     """An object for defining Univariate Functional Data.
 
@@ -67,7 +65,7 @@ class UnivariateFunctionalData(object):
     argvals : list of tuples
         A list of numeric vectors (tuples) or a single numeric vector (tuple) giving the sampling points in the domains.
 
-    X : array-like
+    values : array-like
         An array, giving the observed values for N observations. Missing values should be included via `None` (or `np.nan`). The shape depends on `argvals`::
 
             (N, M) if `argvals` is a single numeric vector,
@@ -83,18 +81,18 @@ class UnivariateFunctionalData(object):
     ----------
 
     """
-    def __init__(self, argvals, X):
+    def __init__(self, argvals, values):
 
         argvals = _check_argvals(argvals)
-        X = _check_values(X)
+        values = _check_values(values)
 
-        if len(argvals) != len(X.shape[1:]):
-            raise ValueError('argvals and X elements have different support dimensions!')
-        if tuple(len(i) for i in argvals) != X.shape[1:]:
-            raise ValueError('argvals and X have different number of sampling points!')
+        if len(argvals) != len(values.shape[1:]):
+            raise ValueError('argvals and values elements have different support dimensions!')
+        if tuple(len(i) for i in argvals) != values.shape[1:]:
+            raise ValueError('argvals and values have different number of sampling points!')
 
         self.argvals = argvals
-        self.X = X
+        self.values = values
 
     @property
     def argvals(self):
@@ -106,10 +104,22 @@ class UnivariateFunctionalData(object):
         self._argvals = new_argvals
 
     @property
-    def X(self):
-        return self._X
+    def values(self):
+        return self._values
     
-    @X.setter
-    def X(self, new_X):
-        new_X = _check_values(new_X)
-        self._X = new_X
+    @values.setter
+    def values(self, new_values):
+        new_values = _check_values(new_values)
+        self._values = new_values
+
+    def nObs(self):
+        """Number of observations of the object.
+
+        Return
+        ------
+        n : int
+            Number of observations of the object. 
+
+        """
+        n = len(self.values)
+        return n
