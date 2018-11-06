@@ -74,7 +74,8 @@ class IrregularFunctionalData(object):
 
     Notes
     -----
-
+    Currently, only one dimensional irregular functional data have been implemented.
+    
     References
     ----------
 

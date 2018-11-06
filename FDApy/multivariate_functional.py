@@ -60,6 +60,39 @@ class MultivariateFunctionalData(object):
 
     """
     def __init__(self, data):
-        data = _check_data(data)
         
+        data = _check_data(data)
         self.data = data
+
+    @property
+    def data(self):
+        return self._data
+    
+    @data.setter
+    def data(self, new_data):
+        new_data = _check_data(new_data)
+        self._data = new_data
+
+    def nFunctions(self):
+        """Number of functions of the objects. 
+
+        Return
+        ------
+        n : int
+            Number of functions of the objects. 
+
+        """
+        n = len(self.data)
+        return n
+
+    def nObs(self):
+        """Number of observations of the object.
+
+        Return
+        ------
+        n : int
+            Number of observations of the object. 
+
+        """
+        n = self.data[0].nObs()
+        return n

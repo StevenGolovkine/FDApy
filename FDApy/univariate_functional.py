@@ -94,6 +94,27 @@ class UnivariateFunctionalData(object):
         self.argvals = argvals
         self.values = values
 
+    def __repr__(self):
+        res = "Univariate Functional data objects with " +\
+                str(self.nObs()) +\
+                " observations of " +\
+                str(self.dimension()) +\
+                "-dimensional support\n" +\
+                "argvals:\n"
+        for i in range(len(self.argvals)):
+            res += "\t" +\
+                    str(self.argvals[i][0]) +\
+                    ", " +\
+                    str(self.argvals[i][1]) +\
+                    ", ... ," +\
+                    str(self.argvals[i][-1]) +\
+                    "\t(" +\
+                    str(len(self.argvals[i])) +\
+                    " sampling points)\n"
+        res += "values:\n\tarray of size " +\
+                str(self.values.shape)
+        return res
+        
     @property
     def argvals(self):
         return self._argvals
@@ -123,3 +144,15 @@ class UnivariateFunctionalData(object):
         """
         n = len(self.values)
         return n
+
+    def dimension(self):
+        """Common dimension of the observations of the object.
+
+        Return
+        ------
+        dim : int
+            Number of dimension of the observations of the object. 
+
+        """
+        dim = len(self.argvals)
+        return dim

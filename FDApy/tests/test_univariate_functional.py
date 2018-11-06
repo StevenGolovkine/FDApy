@@ -55,6 +55,26 @@ class TestUnivariateFunctionalData(unittest.TestCase):
 		self.assertRaises(ValueError, UnivariateFunctionalData, 
 			argvals, values)
 
+	# Tests nObs function
+	def test_nObs(self):
+		argvals = (1, 2, 3)
+		values = np.array([ [1, 2, 3], [4, 5, 6] ])
+		uni = UnivariateFunctionalData(argvals, values)
+		self.assertEquals(uni.nObs(), 2)
+
+	# Tests dimension function
+	def test_dimension(self):
+		argvals = (1, 2, 3)
+		values = np.array([ [1, 2, 3], [4, 5, 6] ])
+		uni = UnivariateFunctionalData(argvals, values)
+		self.assertEquals(uni.dimension(), 1)
+
+	def test_dimension2(self):
+		argvals = [(1, 2, 3), (1, 2)]
+		values = np.array([ [[1, 2], [3, 4], [5, 6]], 
+							[[7, 8], [9, 10], [11, 12]] ])
+		uni = UnivariateFunctionalData(argvals, values)
+		self.assertEquals(uni.dimension(), 2)	
 
 if __name__ == '__main__':
 	unittest.main()

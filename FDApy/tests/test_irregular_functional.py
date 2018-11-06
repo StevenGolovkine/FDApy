@@ -39,29 +39,29 @@ class TestIrregularFunctionalData(unittest.TestCase):
 
     # Tests _check_values function
     def test_check_values(self):
-        X = [1, 2, 3]
-        self.assertRaises(ValueError, _check_values, X)
+        values = [1, 2, 3]
+        self.assertRaises(ValueError, _check_values, values)
 
     def test_check_values_work(self):
-        X = [np.array([1, 2, 3]), np.array([1, 2])]
-        X = _check_values(X)
-        self.assertEquals(len(X), 2)
+        values = [np.array([1, 2, 3]), np.array([1, 2])]
+        values = _check_values(values)
+        self.assertEquals(len(values), 2)
 
     def test_check_values_work2(self):
-        X = np.array([1, 2, 3])
-        X = _check_values(X)
-        self.assertEquals(len(X), 1)
+        values = np.array([1, 2, 3])
+        values = _check_values(values)
+        self.assertEquals(len(values), 1)
 
     # Tests __init__ function
     def test_init_dimensions(self):
-        X = np.array([1, 2, 3])
+        values = np.array([1, 2, 3])
         argvals = [(1, 2, 3), (4, 5, 6)]
-        self.assertRaises(ValueError, IrregularFunctionalData, argvals, X)
+        self.assertRaises(ValueError, IrregularFunctionalData, argvals, values)
 
     def test_init_sampling(self):
-        X = np.array([1, 2, 3])
+        values = np.array([1, 2, 3])
         argvals = (1, 3)
-        self.assertRaises(ValueError, IrregularFunctionalData, argvals, X)
+        self.assertRaises(ValueError, IrregularFunctionalData, argvals, values)
 
 
 if __name__ == '__main__':
