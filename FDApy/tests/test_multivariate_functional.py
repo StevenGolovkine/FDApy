@@ -46,5 +46,78 @@ class TestMultivariateFunctionalData(unittest.TestCase):
 		multi = MultivariateFunctionalData([uni, uni])
 		self.assertEquals(multi.nFunctions(), 2)
 
+	# Tests nFunction function
+	def test_nFunction(self):
+		argvals = (1, 2, 3)
+		argvals1 = [(1, 2, 3), (1, 2)]
+		X = np.array([ [1, 2, 3], [4, 5, 6] ])
+		X1 = np.array([ [[1, 2], [3, 4], [5, 6]],
+						[[7, 8], [9, 10], [11, 12]] ])
+		uni = UnivariateFunctionalData(argvals, X)
+		uni1 = UnivariateFunctionalData(argvals1, X1)
+		multi = MultivariateFunctionalData([uni, uni1])
+		self.assertEquals(multi.nFunctions(), 2)
+
+	# Tests nObs function
+	def test_nObs(self):
+		argvals = (1, 2, 3)
+		argvals1 = [(1, 2, 3), (1, 2)]
+		X = np.array([ [1, 2, 3], [4, 5, 6] ])
+		X1 = np.array([ [[1, 2], [3, 4], [5, 6]],
+						[[7, 8], [9, 10], [11, 12]] ])
+		uni = UnivariateFunctionalData(argvals, X)
+		uni1 = UnivariateFunctionalData(argvals1, X1)
+		multi = MultivariateFunctionalData([uni, uni1])
+		self.assertEquals(multi.nObs(), 2)
+
+	# Tests rangeObs function
+	def test_rangeObs(self):
+		argvals = (1, 2, 3)
+		argvals1 = [(1, 2, 3), (1, 2)]
+		X = np.array([ [1, 2, 3], [4, 5, 6] ])
+		X1 = np.array([ [[1, 2], [3, 4], [5, 6]],
+						[[7, 8], [9, 10], [11, 12]] ])
+		uni = UnivariateFunctionalData(argvals, X)
+		uni1 = UnivariateFunctionalData(argvals1, X1)
+		multi = MultivariateFunctionalData([uni, uni1])
+		self.assertEquals(multi.rangeObs(), [(1, 6), (1, 12)])
+
+	# Tests nObsPoint function
+	def test_nObsPoint(self):
+		argvals = (1, 2, 3)
+		argvals1 = [(1, 2, 3), (1, 2)]
+		X = np.array([ [1, 2, 3], [4, 5, 6] ])
+		X1 = np.array([ [[1, 2], [3, 4], [5, 6]],
+						[[7, 8], [9, 10], [11, 12]] ])
+		uni = UnivariateFunctionalData(argvals, X)
+		uni1 = UnivariateFunctionalData(argvals1, X1)
+		multi = MultivariateFunctionalData([uni, uni1])
+		self.assertEquals(multi.nObsPoint(), [[3], [3, 2]])
+
+	# Tests rangeObsPoint function
+	def test_rangeObsPoint(self):
+		argvals = (1, 2, 3)
+		argvals1 = [(1, 2, 3), (1, 2)]
+		X = np.array([ [1, 2, 3], [4, 5, 6] ])
+		X1 = np.array([ [[1, 2], [3, 4], [5, 6]],
+						[[7, 8], [9, 10], [11, 12]] ])
+		uni = UnivariateFunctionalData(argvals, X)
+		uni1 = UnivariateFunctionalData(argvals1, X1)
+		multi = MultivariateFunctionalData([uni, uni1])
+		self.assertEquals(multi.rangeObsPoint(), [[(1, 3)], [(1, 3), (1, 2)]])
+
+	# Tests dimension function
+	def test_dimension(self):
+		argvals = (1, 2, 3)
+		argvals1 = [(1, 2, 3), (1, 2)]
+		X = np.array([ [1, 2, 3], [4, 5, 6] ])
+		X1 = np.array([ [[1, 2], [3, 4], [5, 6]],
+						[[7, 8], [9, 10], [11, 12]] ])
+		uni = UnivariateFunctionalData(argvals, X)
+		uni1 = UnivariateFunctionalData(argvals1, X1)
+		multi = MultivariateFunctionalData([uni, uni1])
+		self.assertEquals(multi.dimension(), [1, 2])
+
+
 if __name__ == '__main__':
 	unittest.main()

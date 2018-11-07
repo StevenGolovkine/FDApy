@@ -60,9 +60,16 @@ class MultivariateFunctionalData(object):
 
     """
     def __init__(self, data):
-        
         data = _check_data(data)
         self.data = data
+
+    def __repr__(self):
+        res = "Multivariate Functional data objects with " +\
+                str(self.nFunctions()) +\
+                " funtions:\n"
+        for i in self.data:
+            res += "- " + repr(i) + "\n"
+        return res
 
     @property
     def data(self):
@@ -96,3 +103,50 @@ class MultivariateFunctionalData(object):
         """
         n = self.data[0].nObs()
         return n
+
+    def rangeObs(self):
+        """Range of the observations of the objects. 
+
+        Return
+        ------
+        range_ : list of tuples
+            List of tuple containing the range of the observations for each individual functions. 
+
+        """
+        range_ = [i.rangeObs() for i in self.data]
+        return range_
+
+    def nObsPoint(self):
+        """Number of sampling points of the objects. 
+
+        Return
+        ------
+        n : list of list of int
+            List of the length of self.nFunctions() where the (i,j)-th entry correpond to the number of sampling points of the i-th functions of the j-th dimensions of the observations. 
+
+        """
+        n = [i.nObsPoint() for i in self.data]
+        return n
+
+    def rangeObsPoint(self):
+        """ Range of the observations of the objects. 
+
+        Return
+        ------
+        range_ : list of list of tuples of the length of self.nFunctions() containing the minimum and maximum number where the (i,j)-th entry contains the range of the i-th function of the j-th dimensions of the observations. 
+
+        """
+        range_ = [i.rangeObsPoint() for i in self.data]
+        return range_
+
+    def dimension(self):
+        """ Common dimension of the observation of the object. 
+
+        Return
+        ------
+        dim : list of int
+            List of length self.nFunctions() where the i-th entry contains the number of dimension of the observations for the i-th function of the object. 
+
+        """
+        dim = [i.dimension() for i in self.data]
+        return dim

@@ -115,6 +115,21 @@ class UnivariateFunctionalData(object):
                 str(self.values.shape)
         return res
         
+    def __getitem__(self, index):
+        """Function call when self[index]
+
+        Parameters
+        ----------
+        index : int
+            The observation of the object to retrieve.  
+
+        """
+        # TODO: Modify the function
+        argvals = self.argvals
+        values = self.values[index]
+        res = UnivariateFunctionalData(argvals, values)
+        return res
+
     @property
     def argvals(self):
         return self._argvals
@@ -145,6 +160,47 @@ class UnivariateFunctionalData(object):
         n = len(self.values)
         return n
 
+    def rangeObs(self):
+        """Range of the observations of the objects. 
+
+        Return
+        ------
+        min(values_), max(values_) : tuple
+            Tuple containing the minimum and maximum number of all the observations for an object.
+
+        """
+        if self.dimension() == 1:
+            min_ = min(list(itertools.chain.from_iterable(self.values)))
+            max_ = max(list(itertools.chain.from_iterable(self.values)))
+        else:
+            min_ = min([min(i) 
+                for i in itertools.chain.from_iterable(self.values)])
+            max_ = max([max(i) 
+                for i in itertools.chain.from_iterable(self.values)])
+        return min_, max_
+
+    def nObsPoint(self):
+        """Number of sampling points of the objects. 
+
+        Return
+        ------
+        n : list of int
+            List of the length self.dimension() where the i-th entry correspond to the number of sampling points of the i-th dimension of the observations.
+
+        """
+        n = [len(i) for i in self.argvals]
+        return n
+
+    def rangeObsPoint(self):
+        """Range of the observations of the objects.
+
+        Return
+        ------
+        range_ : list of tuples containing the minimum and maximum number where the i-th entry of the list contains the range of the i-th dimension of the object.
+        """
+        range_ = [(min(i), max(i)) for i in self.argvals]
+        return range_
+
     def dimension(self):
         """Common dimension of the observations of the object.
 
@@ -155,4 +211,4 @@ class UnivariateFunctionalData(object):
 
         """
         dim = len(self.argvals)
-        return dim
+        return dim 

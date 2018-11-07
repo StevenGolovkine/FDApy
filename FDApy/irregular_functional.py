@@ -21,6 +21,7 @@ def _check_argvals(argvals):
     """
     if type(argvals) not in (tuple, list):
         raise ValueError('argvals has to be a list of tuples or a tuple!')
+    # TODO: Modify the condition to accept multidimensional irregular functional data. 
     if isinstance(argvals, list) and \
             not all([isinstance(i, tuple) for i in argvals]):
         raise ValueError('argvals has to be a list of tuples or a tuple!')
@@ -81,7 +82,6 @@ class IrregularFunctionalData(object):
 
     """
     def __init__(self, argvals, values):
-
         argvals = _check_argvals(argvals)
         values = _check_values(values)
 
@@ -92,6 +92,29 @@ class IrregularFunctionalData(object):
 
         self.argvals = argvals
         self.values = values
+
+    def __repr__(self):
+        res = "Irregular Functional data objects with " +\
+                str(self.nObs()) +\
+                " observations of " +\
+                str(self.dimension()) +\
+                "-dimensional support\n" +\
+                "argvals:\n" +\
+                "\tValues in " +\
+                str(self.rangeObsPoint()[0]) +\
+                " ... " +\
+                str(self.rangeObsPoint()[1]) +\
+                ".\nvalues:\n" +\
+                "\tValues in " +\
+                str(self.rangeObs()[0]) +\
+                " ... " +\
+                str(self.rangeObs()[1]) +\
+                ".\nThere are " +\
+                str(min(self.nObsPoint())) +\
+                " - " +\
+                str(max(self.nObsPoint())) +\
+                " sampling points per observation."
+        return res
 
     @property
     def argvals(self):
@@ -122,3 +145,53 @@ class IrregularFunctionalData(object):
         """
         n = len(self.values)
         return n
+
+    def rangeObs(self):
+        """Range of the observations of the objects. 
+        
+        Return
+        ------
+        min(values_), max(values_) : tuple
+            Tuple containing the minimum and maximum number of all the observations for an object. 
+        """
+        values_ = list(itertools.chain.from_iterable(self.values))
+        return min(values_), max(values_)
+
+    def nObsPoint(self):
+        """Number of sampling points of the objects. 
+
+        Return
+        ------
+        n : list of int
+            List of the same length of self.nObs() where the i-th entry correspond to the number of sampling points of the i-th observed function. 
+
+        """
+        n = [len(i) for i in self.values]
+        return n
+
+    def rangeObsPoint(self):
+        """Range of sampling points of the objects. 
+
+        Return
+        ------
+        min(argvals_), max(argvals_) : tuple
+            Tuple containing the minimum and maximum number of all the sampling points for an object.
+
+        """
+        argvals_ = list(itertools.chain.from_iterable(self.argvals))
+        return min(argvals_), max(argvals_)
+
+    def dimension(self):
+        """Common dimension of the observations of the object.
+
+        Return
+        ------
+        dim : int
+            Number of dimension of the observations of the object. 
+        
+        Note
+        ----
+        Currently, this function must always return 1 as the multi-dimensional irregular functional data is not yet implemented.
+        """
+        dim = 1
+        return dim

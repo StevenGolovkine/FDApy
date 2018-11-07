@@ -63,6 +63,41 @@ class TestIrregularFunctionalData(unittest.TestCase):
         argvals = (1, 3)
         self.assertRaises(ValueError, IrregularFunctionalData, argvals, values)
 
+    # Tests nObs function
+    def test_nObs(self):
+        values = [np.array([1, 2, 3]), np.array([1, 2])]
+        argvals = [(1, 2, 3), (1, 2)]
+        irr = IrregularFunctionalData(argvals, values)
+        self.assertEqual(irr.nObs(), 2)
 
+    # Tests rangeObs function
+    def test_rangeObs(self):
+        values = [np.array([1, 2, 3]), np.array([1, 2])]
+        argvals = [(1, 2, 3), (1, 2)]
+        irr = IrregularFunctionalData(argvals, values)
+        self.assertEqual(irr.rangeObs(), (1, 3))
+
+    # Tests nObsPoint function
+    def test_nObsPoint(self):
+        values = [np.array([1, 2, 3]), np.array([1, 2])]
+        argvals = [(1, 2, 3), (1, 2)]
+        irr = IrregularFunctionalData(argvals, values)
+        self.assertEqual(irr.nObsPoint(), [3, 2])
+
+    # Tests rangeObsPoint function
+    def test_rangeObsPoint(self):
+        values = [np.array([1, 2, 3]), np.array([1, 2])]
+        argvals = [(1, 2, 3), (1, 2)]
+        irr = IrregularFunctionalData(argvals, values)
+        self.assertEqual(irr.rangeObsPoint(), (1, 3))
+
+    # Tests dimension function
+    def test_dimension(self):
+        values = [np.array([1, 2, 3]), np.array([1, 2])]
+        argvals = [(1, 2, 3), (1, 2)]
+        irr = IrregularFunctionalData(argvals, values)
+        self.assertEqual(irr.dimension(), 1)
+
+        
 if __name__ == '__main__':
     unittest.main()
