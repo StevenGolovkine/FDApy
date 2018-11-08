@@ -71,6 +71,24 @@ class MultivariateFunctionalData(object):
             res += "- " + repr(i) + "\n"
         return res
 
+    def __getitem__(self, index):
+        """Function called when self[index]
+
+        Parameters
+        ----------
+        index : int
+            The observation(s) of the object to retrieve. 
+
+        Return
+        ------
+        res : MultivariateFunctionalData object
+            The selected observation(s) as MultivariateFunctionalData object.
+
+        """
+        data = self.data[index]
+        res = MultivariateFunctionalData(data)
+        return res
+
     @property
     def data(self):
         return self._data

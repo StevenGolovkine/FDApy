@@ -121,12 +121,20 @@ class UnivariateFunctionalData(object):
         Parameters
         ----------
         index : int
-            The observation of the object to retrieve.  
+            The observation(s) of the object to retrieve.
+
+        Return
+        ------
+        res : UnivariateFunctionalData object
+            The selected observation(s) as UnivariateFunctionalData object.  
 
         """
-        # TODO: Modify the function
         argvals = self.argvals
         values = self.values[index]
+        
+        if len(values.shape) == 1:
+            values = np.array(values, ndmin=2)
+        
         res = UnivariateFunctionalData(argvals, values)
         return res
 

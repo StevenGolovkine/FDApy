@@ -116,6 +116,25 @@ class IrregularFunctionalData(object):
                 " sampling points per observation."
         return res
 
+    def __getitem__(self, index):
+        """Function called when self[index]
+
+        Parameters
+        ----------
+        index : int
+            The observation(s) of the object to retrieve. 
+
+        Return
+        ------
+        res : IrregularFunctionalData object
+            The selected obsevation(s) as IrregularFunctionalData object.
+
+        """
+        argvals = self.argvals[index]
+        values = self.values[index]
+        res = IrregularFunctionalData(argvals, values)
+        return res
+
     @property
     def argvals(self):
         return self._argvals
