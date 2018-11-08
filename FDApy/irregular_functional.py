@@ -2,10 +2,11 @@
 # -*-coding:utf8 -*
 
 import itertools
-import numpy as np 
+import numpy as np
 
 ############################################################################
 # Checkers used by the IrregularFunctionalData class
+
 
 def _check_argvals(argvals):
     """ Check the user provided `argvals`. 
@@ -21,7 +22,7 @@ def _check_argvals(argvals):
     """
     if type(argvals) not in (tuple, list):
         raise ValueError('argvals has to be a list of tuples or a tuple!')
-    # TODO: Modify the condition to accept multidimensional irregular functional data. 
+    # TODO: Modify the condition to accept multidimensional irregular functional data.
     if isinstance(argvals, list) and \
             not all([isinstance(i, tuple) for i in argvals]):
         raise ValueError('argvals has to be a list of tuples or a tuple!')
@@ -29,16 +30,17 @@ def _check_argvals(argvals):
         print('argvals is convert into one dimensional list.')
         argvals = [argvals]
 
-    # Check if all entries of `argvals` are numeric. 
+    # Check if all entries of `argvals` are numeric.
     argvals_ = list(itertools.chain.from_iterable(argvals))
     if not all([type(i) in (int, float) for i in argvals_]):
         raise ValueError('All argvals elements must be numeric!')
-        
+
     return argvals
+
 
 def _check_values(values):
     """Check the user provided `values`.
-    
+
     Parameters
     ----------
     values : list of numpy.array
@@ -56,10 +58,37 @@ def _check_values(values):
     if not all([isinstance(i, np.ndarray) for i in values]):
         raise ValueError('values has to be a list of numpy array!')
 
-    return values 
+    return values
+
+
+def _check_argvals_values(argvals, values):
+    """Check the compatibility of argvals and values. 
+
+    Parameters
+    ----------
+    argvals : list of tuples
+        List of tuples containing the sample points. 
+    values : list of numpy.ndarray
+        list of numpy array containing the values. 
+
+    Return
+    ------
+    True, if the argvals and the values are ok.
+    """
+
+    if len(argvals) != len(values):
+        raise ValueError(
+            'argvals and values elements have different support dimensions!')
+    if [len(i) for i in argvals] != [len(i) for i in values]:
+        raise ValueError(
+            'argvals and values have different numbers of sampling points!')
+
+    return True
 
 ############################################################################
 # Class IrregularFunctionalData
+
+
 class IrregularFunctionalData(object):
     """An object for defining Irregular Functional Data.Functional
 
@@ -76,44 +105,40 @@ class IrregularFunctionalData(object):
     Notes
     -----
     Currently, only one dimensional irregular functional data have been implemented.
-    
+
     References
     ----------
 
     """
+
     def __init__(self, argvals, values):
         argvals = _check_argvals(argvals)
         values = _check_values(values)
-
-        if len(argvals) != len(values):
-            raise ValueError('argvals and values elements have different support dimensions!')
-        if [len(i) for i in argvals] != [len(i) for i in values]:
-            raise ValueError('argvals and values have different number of sampling points!')
 
         self.argvals = argvals
         self.values = values
 
     def __repr__(self):
         res = "Irregular Functional data objects with " +\
-                str(self.nObs()) +\
-                " observations of " +\
-                str(self.dimension()) +\
-                "-dimensional support\n" +\
-                "argvals:\n" +\
-                "\tValues in " +\
-                str(self.rangeObsPoint()[0]) +\
-                " ... " +\
-                str(self.rangeObsPoint()[1]) +\
-                ".\nvalues:\n" +\
-                "\tValues in " +\
-                str(self.rangeObs()[0]) +\
-                " ... " +\
-                str(self.rangeObs()[1]) +\
-                ".\nThere are " +\
-                str(min(self.nObsPoint())) +\
-                " - " +\
-                str(max(self.nObsPoint())) +\
-                " sampling points per observation."
+            str(self.nObs()) +\
+            " observations of " +\
+            str(self.dimension()) +\
+            "-dimensional support\n" +\
+            "argvals:\n" +\
+            "\tValues in " +\
+            str(self.rangeObsPoint()[0]) +\
+            " ... " +\
+            str(self.rangeObsPoint()[1]) +\
+            ".\nvalues:\n" +\
+            "\tValues in " +\
+            str(self.rangeObs()[0]) +\
+            " ... " +\
+            str(self.rangeObs()[1]) +\
+            ".\nThere are " +\
+            str(min(self.nObsPoint())) +\
+            " - " +\
+            str(max(self.nObsPoint())) +\
+            " sampling points per observation."
         return res
 
     def __getitem__(self, index):
@@ -135,6 +160,28 @@ class IrregularFunctionalData(object):
         res = IrregularFunctionalData(argvals, values)
         return res
 
+    @property
+    def argvals(self):
+        return self._argvals
+
+    @argvals.setter
+    def argvals(self, new_argvals):
+        new_argvals = _check_argvals(new_argvals)
+        if hasattr(self, 'values'):
+            _check_argvals_values(new_argvals, self.values)
+        self._argvals = new_argvals
+
+    @property
+    def values(self):
+        return self._values
+
+    @values.setter
+    def values(self, new_values):
+        new_values = _check_values(new_values)
+        if hasattr(self, 'argvals'):
+            _check_argvals_values(self.argvals, new_values)
+        self._values = new_values
+        
     def nObs(self):
         """Number of observations of the object.
 
@@ -149,7 +196,7 @@ class IrregularFunctionalData(object):
 
     def rangeObs(self):
         """Range of the observations of the objects. 
-        
+
         Return
         ------
         min(values_), max(values_) : tuple
@@ -189,7 +236,7 @@ class IrregularFunctionalData(object):
         ------
         dim : int
             Number of dimension of the observations of the object. 
-        
+
         Note
         ----
         Currently, this function must always return 1 as the multi-dimensional irregular functional data is not yet implemented.

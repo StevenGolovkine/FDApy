@@ -2,15 +2,16 @@
 # -*-coding:utf8 -*
 
 import itertools
-import numpy as np 
+import numpy as np
 
+import FDApy
 
 #############################################################################
 # Checkers used by the UnivariateFunctionalData class.
 
 def _check_argvals(argvals):
     """Check the user provided `argvals`.
-    
+
     Parameters
     ---------
     argvals : list of tuples
@@ -29,16 +30,17 @@ def _check_argvals(argvals):
         print('argvals is converted into one dimensional list!')
         argvals = [argvals]
 
-    # Check if all entries of `argvals` are numeric. 
+    # Check if all entries of `argvals` are numeric.
     argvals_ = list(itertools.chain.from_iterable(argvals))
     if not all([type(i) in (int, float) for i in argvals_]):
         raise ValueError('All argvals elements must be numeric!')
 
     return argvals
 
+
 def _check_values(values):
     """Check the user provided `values`.
-    
+
     Parameters
     ----------
     values : numpy.array
@@ -55,32 +57,51 @@ def _check_values(values):
 
     return values
 
-def _check_argvals_compatibility(argvals, new_argvals):
-    """Check the compatibility of two provided argvals. 
+
+def _check_argvals_values(argvals, values):
+    """Check the compatibility of argvals and values. 
 
     Parameters
     ----------
     argvals : list of tuples
         List of tuples containing the sample points. 
-    new_argvals : list of tuples
-        List of tuples containing the new sample points. 
-    
+    values : numpy.ndarray
+        Numpy array containing the values. 
+
     Return
     ------
-    True, if the two argvals are compatible. 
+    True, if the argvals and the values are ok.
     """
-    argvals = _check_argvals(argvals)
-    new_argvals = _check_argvals(new_argvals)
 
-    if len(argvals) != len(new_argvals):
-        raise ValueError('argvals and new_argvals have different dimension!')
-    if [len(i) for i in argvals] != [len(i) for i in new_argvals]:
-        raise ValueError('argvals and new_argvals have different dimension!')
+    if len(argvals) != len(values.shape[1:]):
+        raise ValueError(
+            'argvals and values elements have different support dimensions!')
+    if tuple(len(i) for i in argvals) != values.shape[1:]:
+        raise ValueError(
+            'argvals and values have different numbers of sampling points!')
 
     return True
 
+def _check_argvals_equality(argvals1, argvals2):
+    """Check if two provided `argvals` are equals.
+
+    Parameters
+    ----------
+    argvals1 : list of tuples
+    argvals2 : list of tuples
+
+    Return
+    ------
+    True, if the two argvals are the same.
+    """
+    if argvals1 != argvals2:
+        raise ValueError('The two UnivariateFunctionalData objects are defined on different argvals.')
+    return True
+
 #############################################################################
-# Class UnivariateFunctionalData 
+# Class UnivariateFunctionalData
+
+
 class UnivariateFunctionalData(object):
     """An object for defining Univariate Functional Data.
 
@@ -105,40 +126,33 @@ class UnivariateFunctionalData(object):
     ----------
 
     """
+
     def __init__(self, argvals, values):
-
-        argvals = _check_argvals(argvals)
-        values = _check_values(values)
-
-        if len(argvals) != len(values.shape[1:]):
-            raise ValueError('argvals and values elements have different support dimensions!')
-        if tuple(len(i) for i in argvals) != values.shape[1:]:
-            raise ValueError('argvals and values have different number of sampling points!')
 
         self.argvals = argvals
         self.values = values
 
     def __repr__(self):
         res = "Univariate Functional data objects with " +\
-                str(self.nObs()) +\
-                " observations of " +\
-                str(self.dimension()) +\
-                "-dimensional support\n" +\
-                "argvals:\n"
+            str(self.nObs()) +\
+            " observations of " +\
+            str(self.dimension()) +\
+            "-dimensional support\n" +\
+            "argvals:\n"
         for i in range(len(self.argvals)):
             res += "\t" +\
-                    str(self.argvals[i][0]) +\
-                    ", " +\
-                    str(self.argvals[i][1]) +\
-                    ", ... ," +\
-                    str(self.argvals[i][-1]) +\
-                    "\t(" +\
-                    str(len(self.argvals[i])) +\
-                    " sampling points)\n"
+                str(self.argvals[i][0]) +\
+                ", " +\
+                str(self.argvals[i][1]) +\
+                ", ... ," +\
+                str(self.argvals[i][-1]) +\
+                "\t(" +\
+                str(len(self.argvals[i])) +\
+                " sampling points)\n"
         res += "values:\n\tarray of size " +\
-                str(self.values.shape)
+            str(self.values.shape)
         return res
-        
+
     def __getitem__(self, index):
         """Function call when self[index]
 
@@ -155,12 +169,52 @@ class UnivariateFunctionalData(object):
         """
         argvals = self.argvals
         values = self.values[index]
-        
+
         if len(values.shape) == 1:
             values = np.array(values, ndmin=2)
-        
+
         res = UnivariateFunctionalData(argvals, values)
         return res
+
+    def __add__(self, new):
+        if not isinstance(new, 
+            FDApy.univariate_functional.UnivariateFunctionalData):
+            raise ValueError('The object to add must be an object of the class UnivariateFunctionalData.')
+        _check_argvals_equality(self.argvals, new.argvals)
+        values = self.values + new.values
+        res = UnivariateFunctionalData(self.argvals, values)
+        return res
+
+    def __sub__(self, new):
+        if not isinstance(new,
+            FDApy.univariate_functional.UnivariateFunctionalData):
+            raise ValueError('The object to substract must be an object of the class UnivariateFunctionalData.')
+        _check_argvals_equality(self.argvals, new.argvals)
+        values = self.values - new.values
+        res = UnivariateFunctionalData(self.argvals, values)
+        return res
+
+    @property
+    def argvals(self):
+        return self._argvals
+
+    @argvals.setter
+    def argvals(self, new_argvals):
+        new_argvals = _check_argvals(new_argvals)
+        if hasattr(self, 'values'):
+            _check_argvals_values(new_argvals, self.values)
+        self._argvals = new_argvals
+
+    @property
+    def values(self):
+        return self._values
+
+    @values.setter
+    def values(self, new_values):
+        new_values = _check_values(new_values)
+        if hasattr(self, 'argvals'):
+            _check_argvals_values(self.argvals, new_values)
+        self._values = new_values
 
     def nObs(self):
         """Number of observations of the object.
@@ -187,10 +241,10 @@ class UnivariateFunctionalData(object):
             min_ = min(list(itertools.chain.from_iterable(self.values)))
             max_ = max(list(itertools.chain.from_iterable(self.values)))
         else:
-            min_ = min([min(i) 
-                for i in itertools.chain.from_iterable(self.values)])
-            max_ = max([max(i) 
-                for i in itertools.chain.from_iterable(self.values)])
+            min_ = min([min(i)
+                        for i in itertools.chain.from_iterable(self.values)])
+            max_ = max([max(i)
+                        for i in itertools.chain.from_iterable(self.values)])
         return min_, max_
 
     def nObsPoint(self):
@@ -221,8 +275,8 @@ class UnivariateFunctionalData(object):
         Return
         ------
         dim : int
-            Number of dimension of the observations of the object. 
+            Number of dimension of the observations of the object.
 
         """
         dim = len(self.argvals)
-        return dim 
+        return dim

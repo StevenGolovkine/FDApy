@@ -5,8 +5,8 @@ import numpy as np
 import unittest
 
 from FDApy.univariate_functional import _check_argvals
-from FDApy.univariate_functional import _check_argvals_compatibility
 from FDApy.univariate_functional import _check_values
+from FDApy.univariate_functional import _check_argvals_values
 from FDApy.univariate_functional import UnivariateFunctionalData
 
 
@@ -37,19 +37,6 @@ class TestUnivariateFunctionalData(unittest.TestCase):
 		argvals = (1, 2, 3)
 		test = _check_argvals(argvals)
 		self.assertEquals(len(test), 1)
-
-	# Tests _check_argvals_compatibility function
-	def test_check_argvals_compatibility(self):
-		argvals = [(1, 2, 3), (1, 2)]
-		new_argvals = [(1, 2), (1, 2, 3)]
-		self.assertRaises(ValueError, 
-			_check_argvals_compatibility, argvals, new_argvals)
-
-	def test_check_argvals_compatibility_work(self):
-		argvals = [(1, 2, 3), (1, 2)]
-		new_argvals = [(4, 5, 6), (7, 8)]
-		res = _check_argvals_compatibility(argvals, new_argvals)
-		self.assertTrue(res)
 
 	# Tests _check_values function
 	def test_check_values(self):
