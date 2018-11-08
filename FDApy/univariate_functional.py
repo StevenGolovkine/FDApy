@@ -55,6 +55,30 @@ def _check_values(values):
 
     return values
 
+def _check_argvals_compatibility(argvals, new_argvals):
+    """Check the compatibility of two provided argvals. 
+
+    Parameters
+    ----------
+    argvals : list of tuples
+        List of tuples containing the sample points. 
+    new_argvals : list of tuples
+        List of tuples containing the new sample points. 
+    
+    Return
+    ------
+    True, if the two argvals are compatible. 
+    """
+    argvals = _check_argvals(argvals)
+    new_argvals = _check_argvals(new_argvals)
+
+    if len(argvals) != len(new_argvals):
+        raise ValueError('argvals and new_argvals have different dimension!')
+    if [len(i) for i in argvals] != [len(i) for i in new_argvals]:
+        raise ValueError('argvals and new_argvals have different dimension!')
+
+    return True
+
 #############################################################################
 # Class UnivariateFunctionalData 
 class UnivariateFunctionalData(object):
@@ -137,24 +161,6 @@ class UnivariateFunctionalData(object):
         
         res = UnivariateFunctionalData(argvals, values)
         return res
-
-    @property
-    def argvals(self):
-        return self._argvals
-    
-    @argvals.setter
-    def argvals(self, new_argvals):
-        new_argvals = _check_argvals(new_argvals)
-        self._argvals = new_argvals
-
-    @property
-    def values(self):
-        return self._values
-    
-    @values.setter
-    def values(self, new_values):
-        new_values = _check_values(new_values)
-        self._values = new_values
 
     def nObs(self):
         """Number of observations of the object.

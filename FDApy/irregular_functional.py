@@ -135,24 +135,6 @@ class IrregularFunctionalData(object):
         res = IrregularFunctionalData(argvals, values)
         return res
 
-    @property
-    def argvals(self):
-        return self._argvals
-    
-    @argvals.setter
-    def argvals(self, new_argvals):
-        new_argvals = _check_argvals(new_argvals)
-        self._argvals = new_argvals
-
-    @property
-    def values(self):
-        return self._values
-    
-    @values.setter
-    def values(self, new_values):
-        new_values = _check_values(new_values)
-        self._values = new_values
-
     def nObs(self):
         """Number of observations of the object.
 

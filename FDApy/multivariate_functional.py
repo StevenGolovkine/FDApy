@@ -89,15 +89,6 @@ class MultivariateFunctionalData(object):
         res = MultivariateFunctionalData(data)
         return res
 
-    @property
-    def data(self):
-        return self._data
-    
-    @data.setter
-    def data(self, new_data):
-        new_data = _check_data(new_data)
-        self._data = new_data
-
     def nFunctions(self):
         """Number of functions of the objects. 
 
