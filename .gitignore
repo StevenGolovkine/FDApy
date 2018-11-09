@@ -14,4 +14,4 @@
 *.sublime-workspace
 
 # Jupyter files
-/.ipynb_checkpoints
+.ipynb_checkpoints/*
