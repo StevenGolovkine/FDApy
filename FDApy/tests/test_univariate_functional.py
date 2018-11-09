@@ -7,6 +7,7 @@ import unittest
 from FDApy.univariate_functional import _check_argvals
 from FDApy.univariate_functional import _check_values
 from FDApy.univariate_functional import _check_argvals_values
+from FDApy.univariate_functional import _check_argvals_equality
 from FDApy.univariate_functional import UnivariateFunctionalData
 
 
@@ -42,6 +43,30 @@ class TestUnivariateFunctionalData(unittest.TestCase):
 	def test_check_values(self):
 		values = [1, 2, 3]
 		self.assertRaises(ValueError, _check_values, values)
+
+	# Tests _check_argvals_values function
+	def test_check_argvals_values_len(self):
+		argvals = [(1, 2, 3), (1, 2)]
+		values = np.array([ [1, 2, 3], [1, 2, 3] ])
+		self.assertRaises(ValueError, _check_argvals_values, argvals, values)
+
+	def test_check_argvals_values_dim(self):
+		argvals = (1, 2, 3)
+		values = np.array([ [1, 2], [3, 4] ])
+		self.assertRaises(ValueError, _check_argvals_values, argvals, values)
+
+	def test_check_argvals_values_work(self):
+		argvals = [(1, 2, 3)]
+		values = np.array([ [1, 2, 3], [4, 5, 6] ])
+		res = _check_argvals_values(argvals, values)
+		self.assertTrue(res)
+
+	# Tests _check_argvals_equality function
+	def test_check_argvals_equality(self):
+		argvals1 = (1, 2, 3)
+		argvals2 = (4, 5, 6)
+		self.assertRaises(ValueError, 
+			_check_argvals_equality, argvals1, argvals2)
 
 	# Tests __init__ function
 	def test_init_dimensions(self):

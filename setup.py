@@ -21,6 +21,7 @@ setup(name='FDApy',
 	install_require=[
 		'itertools',
 		'numpy',
+		'pandas'
 	],
 	test_suite='nose.collector',
 	tests_require=['nose'],
