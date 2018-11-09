@@ -12,3 +12,6 @@
 # Sublime text files
 *.sublime-project
 *.sublime-workspace
+
+# Jupyter files
+/.ipynb_checkpoints
