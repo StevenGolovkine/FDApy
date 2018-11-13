@@ -19,6 +19,7 @@ setup(name='FDApy',
 	license='MIT',
 	packages=['FDApy'],
 	install_require=[
+		'ggplot',
 		'itertools',
 		'numpy',
 		'pandas'
