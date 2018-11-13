@@ -174,3 +174,20 @@ class MultivariateFunctionalData(object):
         """
         dim = [i.dimension() for i in self.data]
         return dim
+
+    def add(self, new_function):
+        """ Add a ne function to the MultivariateFunctionalData object.
+
+        Parameters
+        ----------
+        new_function : FDApy.univariate_functional.UnivariateFunctionalData or FDApy.irregular_functional.IrregularFunctionalData
+            an object of the class FDApy.univariate_functional.UnivariateFunctionalData or FDApy.irregular_functional.IrregularFunctionalData to add to the MultivariateFunctionalData object.
+
+        Return
+        ------
+        obj : an object of the class FDApy.multivariate_functional.MultivariateFunctionalData
+
+        """
+        data = self.data
+        data.append(new_function)
+        return FDApy.multivariate_functional.MultivariateFunctionalData(data)

@@ -278,3 +278,36 @@ class UnivariateFunctionalData(object):
         """
         dim = len(self.argvals)
         return dim
+
+
+    def asIrregularFunctionalData(self):
+        """Coerce univariate functional data of dimension 1 into irregular functional data.
+
+        Return
+        ------
+        obj : FDApy.irregular_functional.IrregularFunctionalData
+            An object of the class FDApy.irregular_functional.IrregularFunctionalData
+        """
+
+        if self.dimension() != 1:
+            raise ValueError('It is not possible to coerce a UnivariateFunctionalData as IrregularFunctionalData other than the ones with dimension 1!')
+
+        argvals = []
+        values = []
+        # TODO: Add the case of NA values in an observations
+        for row in self.values:
+            argvals.append(self.argvals[0])
+            values.append(np.array(row))
+        return FDApy.irregular_functional.IrregularFunctionalData(
+            argvals, values)
+
+    def asMultivariateFunctionalData(self):
+        """Coerce univariate functional data into mulivariate functional data with one function.
+
+        Return
+        ------
+        obj : FDApy.mulivariate_functional.MultivariateFunctionalData
+            An object of the class FDApy.mulivariate_functional.MultivariateFunctionalData
+        """
+        return FDApy.multivariate_functional.MultivariateFunctionalData(
+            [self])
