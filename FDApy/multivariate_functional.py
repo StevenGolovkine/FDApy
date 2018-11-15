@@ -23,8 +23,8 @@ def _check_data(data):
     data : list of UnivariateFunctionalData ot IrregularFunctionalData
     """
     if type(data) not in (list,
-                          FDApy.univariate_functional.UnivariateFunctionalData,
-                          FDApy.irregular_functional.IrregularFunctionalData):
+            FDApy.univariate_functional.UnivariateFunctionalData,
+            FDApy.irregular_functional.IrregularFunctionalData):
         raise ValueError(
             'data has to be a list or elements of FDApy.univariate_functional.UnivariateFunctionalData or FDApy.irregular_functional.IrregularFunctionalData!')
     if type(data) in (FDApy.univariate_functional.UnivariateFunctionalData,
@@ -153,7 +153,7 @@ class MultivariateFunctionalData(object):
         return n
 
     def rangeObsPoint(self):
-        """ Range of the observations of the objects. 
+        """Range of the observations of the objects. 
 
         Return
         ------
@@ -164,7 +164,7 @@ class MultivariateFunctionalData(object):
         return range_
 
     def dimension(self):
-        """ Common dimension of the observation of the object. 
+        """Common dimension of the observation of the object. 
 
         Return
         ------
@@ -176,7 +176,7 @@ class MultivariateFunctionalData(object):
         return dim
 
     def add(self, new_function):
-        """ Add a ne function to the MultivariateFunctionalData object.
+        """Add a one function to the MultivariateFunctionalData object.
 
         Parameters
         ----------

@@ -32,7 +32,8 @@ def _check_argvals(argvals):
 
     # Check if all entries of `argvals` are numeric.
     argvals_ = list(itertools.chain.from_iterable(argvals))
-    if not all([type(i) in (int, float, np.int64) for i in argvals_]):
+    if not all([type(i) in (int, float, np.int_, np.float_) 
+            for i in argvals_]):
         raise ValueError('All argvals elements must be numeric!')
 
     return argvals
@@ -278,7 +279,6 @@ class UnivariateFunctionalData(object):
         """
         dim = len(self.argvals)
         return dim
-
 
     def asIrregularFunctionalData(self):
         """Coerce univariate functional data of dimension 1 into irregular functional data.
