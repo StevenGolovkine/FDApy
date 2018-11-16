@@ -93,8 +93,10 @@ class LocalPolynomial():
 
 	Parameters
 	----------
-	kernel: string, default="gaussian"
+	kernel : string, default="gaussian"
 		Kernel name used as weight (default = 'gaussian').
+	bandwith : float, default=0.05
+		Strictly positive. Control the size of the associated neighborhood. 
 	degree: integer, default=2
 		Degree of the local polynomial to fit.
 

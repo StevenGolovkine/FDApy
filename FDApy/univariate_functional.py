@@ -311,3 +311,41 @@ class UnivariateFunctionalData(object):
         """
         return FDApy.multivariate_functional.MultivariateFunctionalData(
             [self])
+
+    def smooth(self, points, kernel="gaussian", bandwith=0.02, degree=2):
+        """Smooth the data.
+
+        Currently, it uses local polynomial regression.
+        Currently, only for one dimensional univariate functional data.
+        TODO: Add other smoothing methods.
+
+        Parameters
+        ----------
+        points : array-like, shape = [n_samples]
+            Points where evaluate the function.
+        kernel : string, default="gaussian"
+            Kernel name used as weight (default = 'gaussian').
+        bandwith : float, default=0.05
+            Strictly positive. Control the size of the associated neighborhood. 
+        degree: integer, default=2
+            Degree of the local polynomial to fit.
+
+        Return
+        ------
+        obj : FDApy.univariate_functional.UnivariateFunctionalData
+            An object of the class FDApy.univariate_functional.UnivariateFunctionalData which correpond to the data that have been smooth::
+                argvals = `points` given as input
+
+        """
+        if self.dimension() != 1:
+            raise ValueError('Only 1-dimensional univariate functional data can be smoothed!')
+
+        # Define the smoother
+        lp = FDApy.local_polynomial.LocalPolynomial(
+                kernel=kernel,
+                bandwith=bandwith,
+                degree=degree)
+
+        for row in self:
+            argvals = [i for i in itertools.chain.from_iterable(row.argvals)]
+            values = [i for i in itertools.chain.from_iterable(row.values)]
