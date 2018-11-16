@@ -52,7 +52,7 @@ def _plot_univariate(data, obs=None, main=""):
 	------
 	fig, ax : elements for ploting using ...
 	"""
-	raise NotImplemented('Not implemented')
+	raise NotImplementedError('Not implemented')
 
 def _plot_irregular(data, obs=None, main=""):
 	"""Plot irregular functional data.
@@ -70,7 +70,7 @@ def _plot_irregular(data, obs=None, main=""):
 	------
 	fig, ax : elements for ploting using ...
 	"""
-	raise NotImplemented('Not implemented')
+	raise NotImplementedError('Not implemented')
 
 def _plot_multivariate(data, obs=None, main=""):
 	"""Plot multivariate functional data.
@@ -88,5 +88,5 @@ def _plot_multivariate(data, obs=None, main=""):
 	------
 	fig, ax : elements for ploting using ...
 	"""
-	raise NotImplemented('Not implemented')
+	raise NotImplementedError('Not implemented')
 

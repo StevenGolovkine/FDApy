@@ -22,7 +22,8 @@ setup(name='FDApy',
 		'ggplot',
 		'itertools',
 		'numpy',
-		'pandas'
+		'pandas',
+		'sklearn'
 	],
 	test_suite='nose.collector',
 	tests_require=['nose'],

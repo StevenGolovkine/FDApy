@@ -3,6 +3,9 @@
 
 import numpy as np
 
+##############################################################################
+# Inter functions for the LocalPolynomial class.
+
 def _compute_kernel(x, x0, bandwith, kernel='gaussian'):
 	"""Compute kernel at point (x - x0) / h.
 
@@ -78,6 +81,10 @@ def _loc_poly(x, y, x0, kernel='gaussian', bandwith=0.05, degree=2):
 	)
 
 	return beta[0]
+
+#############################################################################
+# Class LocalPOlynomial
+
 
 class LocalPolynomial():
 	"""Local polynomial regression. 
