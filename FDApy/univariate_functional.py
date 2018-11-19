@@ -312,7 +312,7 @@ class UnivariateFunctionalData(object):
         return FDApy.multivariate_functional.MultivariateFunctionalData(
             [self])
 
-    def smooth(self, points, kernel="gaussian", bandwith=0.02, degree=2):
+    def smooth(self, points, kernel="gaussian", bandwith=0.05, degree=2):
         """Smooth the data.
 
         Currently, it uses local polynomial regression.
@@ -332,7 +332,7 @@ class UnivariateFunctionalData(object):
 
         Return
         ------
-        obj : FDApy.univariate_functional.UnivariateFunctionalData
+        res : FDApy.univariate_functional.UnivariateFunctionalData
             An object of the class FDApy.univariate_functional.UnivariateFunctionalData which correpond to the data that have been smooth::
                 argvals = `points` given as input
 
@@ -346,6 +346,16 @@ class UnivariateFunctionalData(object):
                 bandwith=bandwith,
                 degree=degree)
 
+        points_ = np.array(points)
+        pred = np.empty([self.nObs(), len(points_)])
+        count = 0
         for row in self:
             argvals = [i for i in itertools.chain.from_iterable(row.argvals)]
             values = [i for i in itertools.chain.from_iterable(row.values)]
+            lp.fit(argvals, values)
+            pred[count] = lp.predict(points_)
+            count += 1
+
+        res = UnivariateFunctionalData(points, pred)
+
+        return res

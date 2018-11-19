@@ -73,10 +73,28 @@ class UFPCA():
 		pca = sklearn.decomposition.PCA(
 				n_components=n_components, 
 				whiten=whiten)
-		pca.fit(X.values)
 
+		pca.fit(X.values)
 		self.eigenfunctions = pca.components_
-		self.eigenvalues = pca.singular_values_
+		self.eigenvalues = pca.singular_values_ 
+
+	def transform(self, X):
+		"""Apply dimensionality reduction to X.
+		
+		Parameters
+		----------
+		X : FDApy.univariate_functional.UnivariateFunctionalData object
+			Data
+
+		Return
+		------
+		X_proj : array-like, shape = (n_samples, n_components)
+
+		"""
+		# TODO: Add checkers
+		X_proj = np.dot(X.values, self.eigenfunctions.T)
+		return X_proj
+
 
 #############################################################################
 # Class MFPCA
@@ -137,6 +155,7 @@ class MFPCA():
 
 	def _fit(self, X):
 		"""Dispatch to the right submethod depending on the input."""
+		# TODO: Diffenrent possiblity for n_components
 		if type(X) is FDApy.multivariate_functional.MultivariateFunctionalData:
 			self._fit_multi(X, self.n_components, self.whiten)
 		else:
@@ -146,10 +165,67 @@ class MFPCA():
 		"""Multivariate Functional PCA."""
 
 		# Step 1: Perform univariate fPCA on each functions.
-		
+		ufpca = []
+		scores = []		
+		for function in X.data:
+			uni = UFPCA(n_components, whiten)
+			ufpca.append(uni.fit(function))
+			scores.append(uni.transform(function))
+
+		scores_ = np.concatenate(scores, axis=1)
+
 		# Step 2: Estimation of the covariance of the scores.
+		covariance = np.dot(scores_.T, scores_) / (len(scores_) - 1)
 
 		# Step 3: Eigenanalysis of the covariance of the scores.
+		eigenvalues, eigenvectors = np.linalg.eigh(covariance)
+		eigenvalues = eigenvalues[::-1]
+		eigenvectors = np.fliplr(eigenvectors)
 
-		# Step 4: Estimation of the multivariate eigenfucntions and scores.
-		raise NotImplementedError('Not implemented yet!')
+		# Step 4: Estimation of the multivariate eigenfunctions and scores.
+		nb_axis = sum(eigenvalues.cumsum() / eigenvalues.sum() < n_components)
+		eigenvectors = eigenvectors[:, :nb_axis]
+
+		# Retrieve the number of eigenfunctions for each univariate funtion.
+		nb_eigenfunction_uni = [0]
+		for uni in ufpca:
+			nb_eigenfunction_uni.append(len(uni.eigenvalues))
+		nb_eigenfunction_uni_cum = np.cumsum(nb_eigenfunction_uni)
+
+		# Compute the multivariate eigenbasis.
+		basis_multi = []
+		for idx, function in enumerate(ufpca):
+			start = nb_eigenfunction_uni_cum[idx]
+			end = nb_eigenfunction_uni_cum[idx+1]
+			basis_multi.append(
+				np.dot(function.eigenfunctions.T, eigenvectors[start:end, :]))
+
+		self.ufpca_ = ufpca
+		self.uniScores_ = scores_
+		self.covariance_ = covariance
+		self.eigenvaluesCovariance_ = eigenvalues
+		self.eigenvectors_ = eigenvectors
+		self.basis_ = basis_multi
+
+	def transform(self, X):
+		"""Apply dimensionality reduction to X.
+		
+		Parameters
+		----------
+		X : FDApy.univariate_functional.Multivariate object
+			Data
+
+		Return
+		------
+		X_proj : array-like
+
+		"""
+		# TODO: Add checkers
+		scores = []
+		for idx, function in enumerate(X.data):
+			scores.append(self.ufpca_[idx].transform(function))
+
+		scores_ = np.concatenate(scores, axis=1)
+		scores_multi = np.dot(scores_, self.eigenvectors_)
+
+		return scores_multi
