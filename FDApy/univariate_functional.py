@@ -27,7 +27,7 @@ def _check_argvals(argvals):
             not all([isinstance(i, tuple) for i in argvals]):
         raise ValueError('argvals has to be a list of tuples or a tuple!')
     if isinstance(argvals, tuple):
-        print('argvals is converted into one dimensional list!')
+        #print('argvals is converted into one dimensional list!')
         argvals = [argvals]
 
     # Check if all entries of `argvals` are numeric.
@@ -96,6 +96,7 @@ def _check_argvals_equality(argvals1, argvals2):
     if argvals1 != argvals2:
         raise ValueError('The two UnivariateFunctionalData objects are defined on different argvals.')
     return True
+
 
 #############################################################################
 # Class UnivariateFunctionalData
@@ -169,8 +170,8 @@ class UnivariateFunctionalData(object):
         argvals = self.argvals
         values = self.values[index]
 
-        if len(values.shape) == 1:
-            values = np.array(values, ndmin=2)
+        if len(values.shape) == len(argvals):
+            values = np.array(values, ndmin=(len(argvals)+1))
 
         res = UnivariateFunctionalData(argvals, values)
         return res
@@ -312,6 +313,79 @@ class UnivariateFunctionalData(object):
         return FDApy.multivariate_functional.MultivariateFunctionalData(
             [self])
 
+    def mean(self):
+        """Compute the pointwise mean function.
+
+        Return
+        ------
+        obj : FDApy.univariate_functional.UnivariateFunctionalData object
+            Object of the class FDApy.univariate_functional.UnivariateFunctionalData with the same argvals as self and one observation.
+
+        """
+        mean_ = FDApy.utils.rowMean_(self.values)
+        return FDApy.univariate_functional.UnivariateFunctionalData(
+            self.argvals, np.array(mean_, ndmin=2))
+
+    def covariance(self):
+        """Compute the pointwise covariance function.
+        
+        Return
+        ------
+        obj : FDApy.univariate_functional.UnivariateFunctionalData object
+            Object of the class FDApy.univariate_functional.UnivariateFunctionalData with dimension 2 and one observation.
+        """
+        if self.dimension() != 1:
+            raise ValueError(
+                'Only one dimensional functional data are supported!')
+
+        new_argvals = [self.argvals[0], self.argvals[0]]
+        X = self - self.mean()
+        cov = np.dot(X.values.T, X.values) / (self.nObs() - 1)
+        return UnivariateFunctionalData(new_argvals, np.array(cov, ndmin=3))
+
+    def integrate(self, method='simpson'):
+        """Integrate all the observations over the argvals.
+
+        Parameters
+        ----------
+        method : str, default = 'simpson'
+            The method used to integrated. Currently, only the Simpsons method is implemented.
+
+        Return
+        ------
+        obj : list of int
+            List where entry i is the integration of the observation i over the argvals.
+
+        Note
+        ----
+        Only work with 1-dimensional functional data.
+        """
+        if method is not 'simpson':
+            raise ValueError('Only the Simpsons method is implemented!')
+        return [FDApy.utils.integrate_(self.argvals[0], i) for i in self.values]
+
+    def tensorProduct(self, data):
+        """Compute the tensor product of two univariate functional data.
+
+        Parameter
+        ---------
+        data : FDApy.univariate_functional.UnivariateFunctionalData object
+            A one dimensional univariate functional data
+
+        Return
+        ------
+        obj : FDApy.univariate_functional.UnivariateFunctionalData
+            Object of the class FDApy.univariate_functional.UnivariateFunctionalData of dimension 2 (self.argvals x data.argvals)
+        """
+        if (self.dimension() != 1) or (data.dimension() != 1):
+            raise ValueError(
+                'Only one dimensional functional data are supported!')
+
+        new_argvals = [self.argvals[0], data.argvals[0]]
+        new_values = [FDApy.utils.tensorProduct_(i, j) 
+            for i in self.values for j in data.values]
+        return UnivariateFunctionalData(new_argvals, np.array(new_values))
+
     def smooth(self, points, kernel="gaussian", bandwith=0.05, degree=2):
         """Smooth the data.
 
@@ -359,3 +433,5 @@ class UnivariateFunctionalData(object):
         res = UnivariateFunctionalData(points, pred)
 
         return res
+
+    

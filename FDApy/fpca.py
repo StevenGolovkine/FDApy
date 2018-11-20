@@ -60,7 +60,6 @@ class UFPCA():
 		self._fit(X)
 		return self
 
-
 	def _fit(self, X):
 		"""Dispatch to the right submethod depending on the input."""
 		if type(X) is FDApy.univariate_functional.UnivariateFunctionalData:
@@ -122,10 +121,20 @@ class MFPCA():
 
 	Attributes
 	----------
-	eigenfunctions : array, shape = (n_components, n_features)
-		Principal axes in feature space, representing the directions of maximum variances in the data.
-	eigenvalues : array, shape = (n_components, )
-		The singular values corresponding to each of selected components.
+	ufpca_ : list of FDApy.UFPCA, shape = (X.nFunctions(),)
+		List of FDApy.UFPCA where entry i is an object of the class FDApy.UFPCA which the univariate functional PCA of the function i of the multivariate functional data.
+	uniScores_ : array-like, shape = (X.nObs(), X.nFunctions())
+		List of array containing the projection of the data onto the univariate functional principal components.
+	covariance_ : array_like, shape = (X.nFunctions(), X.nFunctions())
+		Estimation of the covariance of the array uniScores_.
+	eigenvaluesCovariance_ : array-like, shape = (X.nFunctions())
+		Eigenvalues of the matrix covariance_.
+	nbAxis_ : int
+		Number of axis kept after the PCA of covariance_.
+	eigenvectors_ : array-like, shape = (X.nFunctions(), nbAxis_)
+		The nbAxis_ first eigenvectors of the matrix covariance_.
+	basis_ : list, shape = (X.nFunctions())
+		Multivariate basis of eigenfunctions.
 
 	References
 	----------
@@ -151,7 +160,6 @@ class MFPCA():
 		"""
 		self._fit(X)
 		return self
-
 
 	def _fit(self, X):
 		"""Dispatch to the right submethod depending on the input."""
@@ -182,7 +190,7 @@ class MFPCA():
 		eigenvalues = eigenvalues[::-1]
 		eigenvectors = np.fliplr(eigenvectors)
 
-		# Step 4: Estimation of the multivariate eigenfunctions and scores.
+		# Step 4: Estimation of the multivariate eigenfunctions.
 		nb_axis = sum(eigenvalues.cumsum() / eigenvalues.sum() < n_components)
 		eigenvectors = eigenvectors[:, :nb_axis]
 
@@ -204,6 +212,7 @@ class MFPCA():
 		self.uniScores_ = scores_
 		self.covariance_ = covariance
 		self.eigenvaluesCovariance_ = eigenvalues
+		self.nbAxis_ = nb_axis
 		self.eigenvectors_ = eigenvectors
 		self.basis_ = basis_multi
 

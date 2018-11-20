@@ -175,6 +175,34 @@ class MultivariateFunctionalData(object):
         dim = [i.dimension() for i in self.data]
         return dim
 
+    def mean(self):
+        """Compute the pointwise mean functions of each element of the multivariate functional data.
+
+        Return
+        ------
+        obj : FDApy.multivariate_functional.MultivariateFunctionalData object
+            Object of the class FDApy.multivariate_functional.MultivariateFunctionalData with containing the different mean function.
+
+        """
+        mean_ = []
+        for function in self.data:
+            mean_.append(function.mean())
+        return MultivariateFunctionalData(mean_)
+
+    def covariance(self):
+        """Compute the pointwise covariance functions of each element of the multivariate functional data.
+
+        Return
+        ------
+        obj : FDApy.multivariate_functional.MultivariateFunctionalData object
+            Object of the class FDApy.multivariate_functional.MultivariateFunctionalData with containing the different covariance function.
+
+        """
+        cov_ = []
+        for function in self.data:
+            cov_.append(function.covariance())
+        return MultivariateFunctionalData(cov_)
+
     def add(self, new_function):
         """Add a one function to the MultivariateFunctionalData object.
 
@@ -191,3 +219,4 @@ class MultivariateFunctionalData(object):
         data = self.data
         data.append(new_function)
         return FDApy.multivariate_functional.MultivariateFunctionalData(data)
+
