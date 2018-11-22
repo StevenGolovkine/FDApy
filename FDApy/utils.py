@@ -57,7 +57,7 @@ def colVar_(X):
     ----------
     X : array-like, shape = (n_obs, n_features)
         Data
-
+        
     Return
     ------
     var_ : array-like, shape = (n_obs,)
