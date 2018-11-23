@@ -83,16 +83,27 @@ class MultivariateFunctionalData(object):
         Parameters
         ----------
         index : int
-            The observation(s) of the object to retrieve. 
+            The function(s) of the object to retrieve. 
 
         Return
         ------
-        res : MultivariateFunctionalData object
-            The selected observation(s) as MultivariateFunctionalData object.
+        res : UnivariateFunctionalData, IrregularFunctionalData or MultivariateFunctionalData object
+            The selected function(s) as UnivariateFunctionalData, IrregularFunctionalData or MultivariateFunctionalData object.
 
         """
         data = self.data[index]
-        res = MultivariateFunctionalData(data)
+
+        if isinstance(
+                data, FDApy.univariate_functional.UnivariateFunctionalData):
+            res = FDApy.univariate_functional.UnivariateFunctionalData(
+                data.argvals, data.values)
+        elif isinstance(
+                data, FDApy.irregular_functional.IrregularFunctionalData):
+            res = FDApy.irregular_functional.IrregularFunctionalData(
+                data.argvals, data.values)
+        else:
+            res = MultivariateFunctionalData(data)
+
         return res
 
     @property
