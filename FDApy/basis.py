@@ -6,14 +6,14 @@ import scipy
 
 import FDApy
 
-def basis_legendre(degrees=3, argvals=None):
+def basis_legendre(M=3, argvals=None):
 	"""Define Legendre basis of function.
 	
-	Build a basis of functions using Legendre polynomials with degree `degree` on the interval `argvals`.
+	Build a basis of `M` functions using Legendre polynomials on the interval `argvals`.
 
 	Parameters
 	----------
-	degree : int, default = 3
+	M : int, default = 3
 		Maximum degree of the Legendre polynomials. 
 	argvals : tuple or numpy.ndarray, default = None
 		The values on which evaluated the Legendre polynomials. If `None`, the polynomials are evaluated on the interval [-1, 1].
@@ -21,7 +21,7 @@ def basis_legendre(degrees=3, argvals=None):
 	Return
 	------
 	obj : FDApy.univariate_functional.UnivariateFunctionalData
-		A UnivariateFunctionalData object containing the Legendre polynomial up to `degree` degree evaluated on `argvals`.
+		A UnivariateFunctionalData object containing the Legendre polynomial up to `M` functions evaluated on `argvals`.
 	
 	Reference
 	---------
@@ -38,9 +38,9 @@ def basis_legendre(degrees=3, argvals=None):
 	if isinstance(argvals, tuple):
 		argvals = np.array(argvals)
 
-	values = np.empty((degrees, len(argvals)))
+	values = np.empty((M, len(argvals)))
 
-	for degree in range(degrees):
+	for degree in range(M):
 		legendre = scipy.special.eval_legendre(degree, argvals)
 		values[degree, :] = legendre
 
@@ -48,7 +48,7 @@ def basis_legendre(degrees=3, argvals=None):
 			tuple(argvals), values)
 	return obj
 
-def basis_wiener(degrees=3, argvals=None):
+def basis_wiener(M=3, argvals=None):
 	"""Define Wiener basis of function.
 
 	Build a basis of functions of the Wiener process.
@@ -63,7 +63,7 @@ def basis_wiener(degrees=3, argvals=None):
 	Return
 	------
 	obj : FDApy.univariate_functional.UnivariateFunctionalData
-		A UnivariateFunctionalData object containing `degrees` Wiener basis functions evaluated on `argvals`.
+		A UnivariateFunctionalData object containing `M` Wiener basis functions evaluated on `argvals`.
 
 	"""
 	if argvals is None:
@@ -75,12 +75,43 @@ def basis_wiener(degrees=3, argvals=None):
 	if isinstance(argvals, tuple):
 		argvals = np.array(argvals)
 
-	values = np.empty((degrees, len(argvals)))
+	values = np.empty((M, len(argvals)))
 
-	for degree in range(degrees):
+	for degree in range(M):
 		wiener = np.sqrt(2) * np.sin( (degree - 0.5) * np.pi * argvals)
 		values[degree, :] = wiener
 
 	obj = FDApy.univariate_functional.UnivariateFunctionalData(
 			tuple(argvals), values)
 	return obj 
+
+#############################################################################
+# Class Simulation
+
+class Simulation(object):
+	"""An object to simulate functional data.
+
+	The function are simulated using the Karhunen-Lo\`eve decomposition :
+		X_i(t) = \mu(t) + \sum_{j = 1}^M c_{i,j}\phi_{i,j}(t), i = 1, ..., N
+
+	Paramaters:
+	-----------
+	N : int
+		Number of functions to simulate
+	basis : str
+		String which denotes the basis of functions to use.
+	M : int
+		Number of basis functions to use to simulate the data.
+	noise : boolean, default = True
+		Do we add noise to the data?
+
+	Attributes
+	----------
+
+	Notes
+	-----
+
+	References
+	---------
+
+	"""
