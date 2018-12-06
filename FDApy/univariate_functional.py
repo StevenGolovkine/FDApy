@@ -194,6 +194,16 @@ class UnivariateFunctionalData(object):
         res = UnivariateFunctionalData(self.argvals, values)
         return res
 
+    def __mul__(self, nb):
+        if type(nb) not in (int, float, np.int_, np.float_):
+            raise ValueError('The object to multiply should be an int or a float.')
+        values = self.values * nb
+        res = UnivariateFunctionalData(self.argvals, values)
+        return res
+
+    def __rmul__(self, nb):
+        return self * nb
+
     @property
     def argvals(self):
         return self._argvals
