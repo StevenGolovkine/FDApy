@@ -116,6 +116,9 @@ class UnivariateFunctionalData(object):
             (N, M) if `argvals` is a single numeric vector,
             (N, M_1, ..., M_d) if `argvals` is a list of numeric vectors.
 
+    standardize : boolean, default = True
+        Do we standardize the argvals to be in [0, 1].
+
     Attributes
     ----------
 
@@ -127,10 +130,17 @@ class UnivariateFunctionalData(object):
 
     """
 
-    def __init__(self, argvals, values):
+    def __init__(self, argvals, values, standardize=True):
 
         self.argvals = argvals
         self.values = values
+
+        if standardize:
+            argvals_stand = []
+            for argval in self.argvals:
+                argvals_stand.append(tuple(
+                    FDApy.utils.rangeStandardization_(argval)))
+            self.argvals_stand = argvals_stand
 
     def __repr__(self):
         res = "Univariate Functional data objects with " +\
@@ -194,10 +204,16 @@ class UnivariateFunctionalData(object):
         res = UnivariateFunctionalData(self.argvals, values)
         return res
 
-    def __mul__(self, nb):
-        if type(nb) not in (int, float, np.int_, np.float_):
-            raise ValueError('The object to multiply should be an int or a float.')
-        values = self.values * nb
+    def __mul__(self, obj):
+        values = np.empty(shape=self.values.shape)
+        if type(obj) in (int, float, np.int_, np.float_):
+            values = self.values * obj
+        elif (isinstance(obj, list)) and (self.nObs() == len(obj)):
+            for i in np.arange(0, len(obj)):
+                values[i, :] = self.values[i] * obj[i]
+        else:
+            raise ValueError('The multiplcation can not be performed! Not the right type!')
+
         res = UnivariateFunctionalData(self.argvals, values)
         return res
 
@@ -216,6 +232,14 @@ class UnivariateFunctionalData(object):
         self._argvals = new_argvals
 
     @property
+    def argvals_stand(self):
+        return self._argvals_stand
+
+    @argvals_stand.setter
+    def argvals_stand(self, new_argvals_stand):
+        self._argvals_stand = new_argvals_stand
+
+    @property
     def values(self):
         return self._values
 
@@ -225,6 +249,7 @@ class UnivariateFunctionalData(object):
         if hasattr(self, 'argvals'):
             _check_argvals_values(self.argvals, new_values)
         self._values = new_values
+
 
     def nObs(self):
         """Number of observations of the object.

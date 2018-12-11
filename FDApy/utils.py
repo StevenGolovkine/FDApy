@@ -17,7 +17,7 @@ def rangeStandardization_(X):
     ------
     range_ : array_like, shape = (n_features)
     """
-    range_ = (X - min(X)) / (max(X) - min(X))
+    range_ = (X - np.min(X)) / (np.max(X) - np.min(X))
     return range_
 
 def rowMean_(X):

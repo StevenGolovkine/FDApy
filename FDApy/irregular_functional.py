@@ -4,6 +4,8 @@
 import itertools
 import numpy as np
 
+import FDApy
+
 ############################################################################
 # Checkers used by the IrregularFunctionalData class
 
@@ -100,6 +102,9 @@ class IrregularFunctionalData(object):
     values : list of numpy.array
         A list of numeric arrays, representing the values of each realization of the process on the corresponding observation points. 
 
+    standardize : boolean, default = True
+        Do we standardize the argvals to be in [0, 1].    
+
     Attributes
     ----------
 
@@ -107,17 +112,27 @@ class IrregularFunctionalData(object):
     -----
     Currently, only one dimensional irregular functional data have been implemented.
 
+    The standardization of the Irregular Functional Data is useful only if all are defined on different domains and we have the complete trajectories. And it may not be useful if all the functional data are defined on the same domain and we do not record some the signal for some times. 
+
     References
     ----------
 
     """
 
-    def __init__(self, argvals, values):
-        argvals = _check_argvals(argvals)
-        values = _check_values(values)
+    def __init__(self, argvals, values, standardize=True):
 
         self.argvals = argvals
         self.values = values
+
+        if standardize:
+            argvals_stand = []
+            for argval in self.argvals:
+                if len(argval) > 1:
+                    argvals_stand.append(tuple(
+                        FDApy.utils.rangeStandardization_(argval)))
+                else:
+                    argvals_stand.append(tuple([0]))
+            self.argvals_stand = argvals_stand
 
     def __repr__(self):
         res = "Irregular Functional data objects with " +\
@@ -171,6 +186,14 @@ class IrregularFunctionalData(object):
         if hasattr(self, 'values'):
             _check_argvals_values(new_argvals, self.values)
         self._argvals = new_argvals
+
+    @property
+    def argvals_stand(self):
+        return self._argvals_stand
+    
+    @argvals_stand.setter
+    def argvals_stand(self, new_argvals_stand):
+        self._argvals_stand = new_argvals_stand
 
     @property
     def values(self):

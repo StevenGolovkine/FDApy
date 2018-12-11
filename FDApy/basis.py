@@ -155,12 +155,14 @@ class Simulation(object):
 	The function are simulated using the Karhunen-Loève decomposition :
 		X_i(t) = \mu(t) + \sum_{j = 1}^M c_{i,j}\phi_{i,j}(t), i = 1, ..., N
 
-	Paramaters:
+	Parameters:
 	-----------
 	basis : str
 		String which denotes the basis of functions to use.
 	M : int
 		Number of basis functions to use to simulate the data.
+	eigenvalues : str
+		Define the decreasing if the eigenvalues of the process.
 	noise : boolean, default = True
 		Do we add noise to the data?
 
@@ -174,13 +176,48 @@ class Simulation(object):
 	---------
 
 	"""
-	def __init__(self, basis, M, noise=True):
+	def __init__(self, basis, M, eigenvalues, noise=True):
 		self.basis = basis
 		self.M = M
+		self.eigenvalues = eigenvalues
 		self.noise = noise
 
 
-	def new(self, N):
+	def new(self, argvals, N):
 		"""Function that simulates `N` observations
-		TODO
+		
+		Parameters
+		----------
+		argvals : list of tuples
+			A list of numeric vectors (tuples) or a single numeric vector (tuple) giving the sampling points in the domains.
+		N : int
+			Number of observations to generate.
+
 		"""
+
+		# Simulate the basis
+		if self.basis == 'legendre':
+			basis_ = basis_legendre(self.M, argvals, norm=True)
+		elif self.basis == 'wiener':
+			basis_ = basis_wiener(self.M, argvals, norm=True)
+		else:
+			raise ValueError('Basis not implemented!')
+
+		# Define the decreasing of the eigenvalues
+		if self.eigenvalues == 'linear':
+			eigenvalues_ = eigenvalues_linear(self.M)
+		elif self.eigenvalues == 'exponential':
+			eigenvalues_ = eigenvalues_exponential(self.M)
+		elif self.eigenvalues == 'wiener':
+			eigenvalues_ = eigenvalues_wiener(self.M)
+		else:
+			raise ValueError('Eigenvalues not implemented!')
+
+		# Simulate the coefficients
+		coef_ = list(np.random.normal(0, eigenvalues_))
+
+		prod_ = coef_ * basis_
+
+		res = FDApy.univariate_functional.UnivariateFunctionalData(
+			prod_.argvals, np.array(prod_.values.sum(axis=0), ndmin=2))
+		return res
