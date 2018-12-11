@@ -5,6 +5,21 @@ import numpy as np
 import scipy
 import sklearn
 
+def rangeStandardization_(X):
+    """Transform a vector [a, b] into a vector [0, 1].
+
+    Parameters
+    ----------
+    X : array-like, shape = (n_features, )
+        Data
+
+    Return
+    ------
+    range_ : array_like, shape = (n_features)
+    """
+    range_ = (X - min(X)) / (max(X) - min(X))
+    return range_
+
 def rowMean_(X):
     """Compute the mean of an array with respect to the rows.
 
