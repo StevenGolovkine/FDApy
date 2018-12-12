@@ -468,5 +468,3 @@ class UnivariateFunctionalData(object):
         res = UnivariateFunctionalData(points, pred)
 
         return res
-
-    

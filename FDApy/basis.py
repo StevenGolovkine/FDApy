@@ -61,7 +61,7 @@ def basis_wiener(M=3, argvals=None, norm=True):
 
 	Parameters
 	----------
-	degree : int, default = 3
+	M : int, default = 3
 		Number of functions to compute.
 	argvals : tuple or numpy.ndarray, default = None
 		 The values on which evaluated the Wiener basis functions. If `None`, the functions are evaluated on the interval [0, 1].
@@ -97,6 +97,35 @@ def basis_wiener(M=3, argvals=None, norm=True):
 	obj = FDApy.univariate_functional.UnivariateFunctionalData(
 			tuple(argvals), values)
 	return obj 
+
+def simulate_basis_(basis_name, M, argvals, norm):
+	"""Function that redirects to the right simulation basis function.
+
+	Parameters
+	----------
+	basis_name : str
+		Name of the basis to use.
+	M : int
+		Number of functions to compute.
+	argvals : tuple or numpy.ndarray
+		 The values on which evaluated the Wiener basis functions. If `None`, the functions are evaluated on the interval [0, 1].
+	norm : boolean
+		Do we normalize the functions?
+
+	Return
+	------
+	basis_ : FDApy.univariate_functional.UnivariateFunctionalData
+		A UnivariateFunctionalData object containing `M` basis functions evaluated on `argvals`.
+
+	"""
+	if basis_name == 'legendre':
+		basis_ = basis_legendre(M, argvals, norm)
+	elif basis_name == 'wiener':
+		basis_ = basis_wiener(M, argvals, norm)
+	else:
+		raise ValueError('Basis not implemented!')
+	return basis_
+
 
 #############################################################################
 # Definition of the eigenvalues
@@ -146,6 +175,27 @@ def eigenvalues_wiener(M=3):
 	"""
 	return [np.exp(-(m+1)/2) for m in np.linspace(1, M, M)]
 
+def simulate_eigenvalues_(eigenvalues_name, M):
+	"""Function that redirects to the right simulation eigenvalues function.
+
+	Parameters
+	----------
+	eigenvalues_name : str
+		Name of the eigenvalues generation process to use.
+	M : int
+		Number of eigenvalues to generates
+
+	"""
+	if eigenvalues_name == 'linear':
+		eigenvalues_ = eigenvalues_linear(M)
+	elif eigenvalues_name == 'exponential':
+		eigenvalues_ = eigenvalues_exponential(M)
+	elif eigenvalues_name == 'wiener':
+		eigenvalues_ = eigenvalues_wiener(M)
+	else:
+		raise ValueError('Eigenvalues not implemented!')
+	return eigenvalues_
+
 #############################################################################
 # Class Simulation
 
@@ -163,8 +213,6 @@ class Simulation(object):
 		Number of basis functions to use to simulate the data.
 	eigenvalues : str
 		Define the decreasing if the eigenvalues of the process.
-	noise : boolean, default = True
-		Do we add noise to the data?
 
 	Attributes
 	----------
@@ -176,11 +224,10 @@ class Simulation(object):
 	---------
 
 	"""
-	def __init__(self, basis, M, eigenvalues, noise=True):
+	def __init__(self, basis, M, eigenvalues):
 		self.basis = basis
 		self.M = M
 		self.eigenvalues = eigenvalues
-		self.noise = noise
 
 
 	def new(self, argvals, N):
@@ -194,30 +241,52 @@ class Simulation(object):
 			Number of observations to generate.
 
 		"""
-
 		# Simulate the basis
-		if self.basis == 'legendre':
-			basis_ = basis_legendre(self.M, argvals, norm=True)
-		elif self.basis == 'wiener':
-			basis_ = basis_wiener(self.M, argvals, norm=True)
-		else:
-			raise ValueError('Basis not implemented!')
+		basis_ = simulate_basis_(self.basis, self.M, argvals, norm=True)
 
 		# Define the decreasing of the eigenvalues
-		if self.eigenvalues == 'linear':
-			eigenvalues_ = eigenvalues_linear(self.M)
-		elif self.eigenvalues == 'exponential':
-			eigenvalues_ = eigenvalues_exponential(self.M)
-		elif self.eigenvalues == 'wiener':
-			eigenvalues_ = eigenvalues_wiener(self.M)
-		else:
-			raise ValueError('Eigenvalues not implemented!')
+		eigenvalues_ = simulate_eigenvalues_(self.eigenvalues, self.M)
 
-		# Simulate the coefficients
-		coef_ = list(np.random.normal(0, eigenvalues_))
+		# Simulate the N observations
+		obs = np.empty(shape=(N, len(argvals)))
+		coef = np.empty(shape=(N, len(eigenvalues_)))
+		for i in range(N):
+			coef_ = list(np.random.normal(0, eigenvalues_))
+			prod_ = coef_ * basis_
+			
+			obs[i, :] = prod_.values.sum(axis=0)
+			coef[i, :] = coef_
 
-		prod_ = coef_ * basis_
+		# Simulate K clusters into the data.
+		#K = 8
+		#if K % 2 == 1:
+		#	mu = np.array([i/2 if i % 2 == 0 else -(i+1)/2 
+		#		for i in np.arange(0, K, step=1)])
+		#else:
+		#	mu = np.array([i/2 if i % 2 == 0 else -(i+1)/2 
+		#		for i in np.arange(1, K+1, step=1)])
 
-		res = FDApy.univariate_functional.UnivariateFunctionalData(
-			prod_.argvals, np.array(prod_.values.sum(axis=0), ndmin=2))
-		return res
+		self.coef_ = coef
+		self.obs = FDApy.univariate_functional.UnivariateFunctionalData(
+			argvals, obs)
+
+	def add_noise(self, noise_var):
+		"""Add noise to the data.
+
+		Parameters
+		----------
+		noise_var : float
+			Variance of the noise to add.
+
+		"""
+
+		noisy_data = []
+		for i in self.obs:
+			noise = np.random.normal(0, np.sqrt(noise_var), 
+				size=len(self.obs.argvals[0]))
+			noise_func = FDApy.univariate_functional.UnivariateFunctionalData(self.obs.argvals, np.array(noise, ndmin=2))
+			noisy_data.append(i + noise_func)
+
+		data = FDApy.multivariate_functional.MultivariateFunctionalData(noisy_data)
+
+		self.noisy_obs = data.asUnivariateFunctionalData()

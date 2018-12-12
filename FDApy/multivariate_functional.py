@@ -186,6 +186,29 @@ class MultivariateFunctionalData(object):
         dim = [i.dimension() for i in self.data]
         return dim
 
+    def asUnivariateFunctionalData(self):
+        """Convert a MultivariateFunctionalData object into a UnivariateFunctionalData object.
+
+        Notes
+        -----
+        Be sure that all elements of the list came from the same stochastic process generation.
+        Currently, only implemented for UnivariateFunctionalData in the list of the MultivariateFunctionaData. 
+        """
+        if not all([type(i) is
+                FDApy.univariate_functional.UnivariateFunctionalData 
+            for i in self.data]):
+            raise ValueError('The data must be a list of UnivariateFunctionalData!')
+        if not all([self.data[i-1].argvals == self.data[i].argvals 
+            for i in np.arange(1, self.nFunctions())]):
+            raise ValueError('All the argvals are not equals!')
+
+        data_ = []
+        for func in self.data:
+            data_.append(list(itertools.chain.from_iterable(func.values)))
+        return FDApy.univariate_functional.UnivariateFunctionalData(
+            self.data[0].argvals, np.array(data_))
+
+
     def mean(self):
         """Compute the pointwise mean functions of each element of the multivariate functional data.
 
