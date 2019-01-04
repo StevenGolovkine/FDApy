@@ -74,8 +74,11 @@ class UFPCA():
 				whiten=whiten)
 
 		pca.fit(X.values)
+		self.argvals = X.argvals
 		self.eigenfunctions = pca.components_
-		self.eigenvalues = pca.singular_values_ 
+		self.eigenvalues = pca.singular_values_
+		self.mean_ = pca.mean_ 
+		self.explained_variance_ = pca.explained_variance_
 
 	def transform(self, X):
 		"""Apply dimensionality reduction to X.
@@ -91,9 +94,36 @@ class UFPCA():
 
 		"""
 		# TODO: Add checkers
+		if self.mean_ is not None:
+			X = X - X.mean()
 		X_proj = np.dot(X.values, self.eigenfunctions.T)
+		if self.whiten:
+			X_proj /= np.sqrt(self.explained_variance_)
 		return X_proj
 
+	def inverse_transform(self, X):
+		"""Transform the data back to its original space.
+		
+		Return a Univariate Functional data X_original whose transform would be X.
+
+		Parameters
+		----------
+		X : array-like, shape = (n_samples, n_components)
+			New data, where n_samples is the number of samples and n_components is the number of components.
+
+		Return
+		------
+		X_original : FDApy.univariate_functional.UnivariateFunctionalData object
+
+		Notes
+		-----
+		If whitening is enabled, inverse_tranform will compute the exact inverse operation, which includes reversing whitening.
+		"""
+		if self.whiten:
+			values = np.dot(X, np.sqrt(self.explained_variance_[:, np.newaxis]) * self.eigenfunctions) + self.mean_
+		else:
+			values = np.dot(X, self.eigenfunctions) + self.mean_
+		return FDApy.univariate_functional.UnivariateFunctionalData(self.argvals, values)
 
 #############################################################################
 # Class MFPCA
@@ -191,8 +221,8 @@ class MFPCA():
 		eigenvectors = np.fliplr(eigenvectors)
 
 		# Step 4: Estimation of the multivariate eigenfunctions.
-		nb_axis = sum(eigenvalues.cumsum() / eigenvalues.sum() < n_components)
-		eigenvectors = eigenvectors[:, :nb_axis]
+		#nb_axis = sum(eigenvalues.cumsum() / eigenvalues.sum() < n_components)
+		#eigenvectors = eigenvectors[:, :nb_axis]
 
 		# Retrieve the number of eigenfunctions for each univariate funtion.
 		nb_eigenfunction_uni = [0]
@@ -212,7 +242,7 @@ class MFPCA():
 		self.uniScores_ = scores_
 		self.covariance_ = covariance
 		self.eigenvaluesCovariance_ = eigenvalues
-		self.nbAxis_ = nb_axis
+		#self.nbAxis_ = nb_axis
 		self.eigenvectors_ = eigenvectors
 		self.basis_ = basis_multi
 
@@ -230,11 +260,30 @@ class MFPCA():
 
 		"""
 		# TODO: Add checkers
-		scores = []
-		for idx, function in enumerate(X.data):
-			scores.append(self.ufpca_[idx].transform(function))
-
-		scores_ = np.concatenate(scores, axis=1)
-		scores_multi = np.dot(scores_, self.eigenvectors_)
+		scores_multi = np.dot(self.uniScores_, self.eigenvectors_)
 
 		return scores_multi
+
+	def inverse_transform(self, X):
+		"""Transform the data back to its original space.
+		
+		Return a Multivariate Functional data X_original whose transform would be X.
+
+		Parameters
+		----------
+		X : array-like, shape = (n_samples, n_components)
+			New data, where n_samples is the number of samples and n_components os the number of components.
+
+		Return
+		------
+		X_original : FDApy.univariate_functional.UnivariateFunctionalData object
+
+		Notes
+		-----
+		If whitening is enabled, inverse_tranform will compute the exact inverse operation, which includes reversing whitening.
+		"""
+		if self.whiten:
+			values = np.dot(X, np.sqrt(self.explained_variance_[:, np.newaxis]) * self.eigenfunctions) + self.mean_
+		else:
+			values = np.dot(X, self.eigenfunctions) + self.mean_
+		return FDApy.univariate_functional.UnivariateFunctionalData(self.argvals, values)

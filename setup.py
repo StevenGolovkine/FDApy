@@ -5,7 +5,7 @@ def readme():
 		return f.read()
 
 setup(name='FDApy',
-	version='0.1',
+	version='0.11',
 	description='Python package for Functional Data Analysis',
 	long_description='',
 	classifiers=[
