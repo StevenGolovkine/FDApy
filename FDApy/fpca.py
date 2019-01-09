@@ -282,8 +282,14 @@ class MFPCA():
 		-----
 		If whitening is enabled, inverse_tranform will compute the exact inverse operation, which includes reversing whitening.
 		"""
+		res = []
 		if self.whiten:
-			values = np.dot(X, np.sqrt(self.explained_variance_[:, np.newaxis]) * self.eigenfunctions) + self.mean_
+			raise ValueError('Reconstruction with whiten=True not implemented yet!')
 		else:
-			values = np.dot(X, self.eigenfunctions) + self.mean_
-		return FDApy.univariate_functional.UnivariateFunctionalData(self.argvals, values)
+			for idx, ufpca in enumerate(self.ufpca_):
+				reconst = np.dot(X, self.basis_[idx].T) + ufpca.mean_
+				res.append(
+					FDApy.univariate_functional.UnivariateFunctionalData(ufpca.argvals, reconst)
+					)
+
+		return FDApy.multivariate_functional.MultivariateFunctionalData(res)
