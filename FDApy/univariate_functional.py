@@ -250,6 +250,13 @@ class UnivariateFunctionalData(object):
             _check_argvals_values(self.argvals, new_values)
         self._values = new_values
 
+    @property
+    def mean_(self):
+        return self._mean_
+    
+    @mean_.setter
+    def mean_(self, new_mean):
+        self._mean_ = new_mean
 
     def nObs(self):
         """Number of observations of the object.
@@ -348,8 +355,17 @@ class UnivariateFunctionalData(object):
         return FDApy.multivariate_functional.MultivariateFunctionalData(
             [self])
 
-    def mean(self):
+    def mean(self, method="sample", bandwith=0.05):
         """Compute the pointwise mean function.
+
+        Parameters
+        ----------
+        method: string, default="sample"
+            Method used for the computation of the mean:
+                - sample: compute the mean sample
+                - smooth: compute a smooth estimate
+        bandwith: float, default=0.05
+            Bandwith used if method = "smooth"
 
         Return
         ------
@@ -357,8 +373,17 @@ class UnivariateFunctionalData(object):
             Object of the class FDApy.univariate_functional.UnivariateFunctionalData with the same argvals as self and one observation.
 
         """
-        mean_ = FDApy.utils.rowMean_(self.values)
-        return FDApy.univariate_functional.UnivariateFunctionalData(
+        if method == "sample":
+            mean_ = FDApy.utils.rowMean_(self.values)
+        elif method == "smooth":
+            lp = FDApy.local_polynomial.LocalPolynomial(bandwith=bandwith)
+            lp.fit(x=np.repeat(self.argvals, self.nObs(), axis=0).flatten(),
+                y=self.values.flatten())
+            mean_ = lp.X_fit_
+        else:
+            raise ValueError(' '.join(['Method', method, 'is not implemented! Please use sample or smooth.']))
+
+        self.mean_ = FDApy.univariate_functional.UnivariateFunctionalData(
             self.argvals, np.array(mean_, ndmin=2))
 
     def covariance(self):
@@ -374,7 +399,7 @@ class UnivariateFunctionalData(object):
                 'Only one dimensional functional data are supported!')
 
         new_argvals = [self.argvals[0], self.argvals[0]]
-        X = self - self.mean()
+        X = self - self.mean_
         cov = np.dot(X.values.T, X.values) / (self.nObs() - 1)
         return UnivariateFunctionalData(new_argvals, np.array(cov, ndmin=3))
 

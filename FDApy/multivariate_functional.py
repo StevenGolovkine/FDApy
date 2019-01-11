@@ -115,6 +115,14 @@ class MultivariateFunctionalData(object):
         new_data = _check_data(new_data)
         self._data = new_data
 
+    @property
+    def mean_(self):
+        return self._mean_
+    
+    @mean_.setter
+    def mean_(self, new_mean):
+        self._mean_ = new_mean
+        
     def nFunctions(self):
         """Number of functions of the objects. 
 
@@ -220,8 +228,10 @@ class MultivariateFunctionalData(object):
         """
         mean_ = []
         for function in self.data:
-            mean_.append(function.mean())
-        return MultivariateFunctionalData(mean_)
+            if getattr(function, 'mean_', None) is None:
+                function.mean()
+            mean_.append(function.mean_)
+        self.mean_ = MultivariateFunctionalData(mean_)
 
     def covariance(self):
         """Compute the pointwise covariance functions of each element of the multivariate functional data.

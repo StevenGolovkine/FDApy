@@ -79,11 +79,11 @@ def _loc_poly(x, y, x0, kernel='gaussian', bandwith=0.05, degree=2):
 		np.linalg.inv(np.dot(np.dot(np.transpose(X), kernelMat), X)), 
 		np.dot(np.dot(np.transpose(X), kernelMat), y)
 	)
-
+	
 	return beta[0]
 
 #############################################################################
-# Class LocalPOlynomial
+# Class LocalPolynomial
 
 
 class LocalPolynomial():
@@ -131,7 +131,7 @@ class LocalPolynomial():
 		# TODO: Add tests on the parameters.
 		self.X = x
 		self.Y = y
-		x0 = x
+		x0 = np.unique(x)
 		self.X_fit_ = [_loc_poly(x, y, i, 
 			self.kernel, self.bandwith, self.degree) for i in x0]
 

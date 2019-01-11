@@ -94,8 +94,8 @@ class UFPCA():
 
 		"""
 		# TODO: Add checkers
-		if self.mean_ is not None:
-			X = X - X.mean()
+		if (self.mean_ is None) and (X.mean_ is not None):
+			X = X - X.mean_
 		X_proj = np.dot(X.values, self.eigenfunctions.T)
 		if self.whiten:
 			X_proj /= np.sqrt(self.explained_variance_)
