@@ -35,7 +35,8 @@ def _compute_kernel(x, x0, bandwith, kernel='gaussian'):
 
 	return np.diag(kernelMat)
 
-def _loc_poly(x, y, x0, kernel='gaussian', bandwith=0.05, degree=2):
+def _loc_poly(x, y, x0, B, 
+				kernel='gaussian', bandwith=0.05, degree=2):
 	"""Local polynomial regression for one point.
 	
 	Let (x_1, Y_1), ...., (x_n, Y_n) be a random sample of bivariate data. Assume the following model: Y_i = f(x_i) + e_i. We would like to estimate the unknown regression function f(x) = E[Y | X = x]. We approximate f(x) using Taylor series.
@@ -48,6 +49,8 @@ def _loc_poly(x, y, x0, kernel='gaussian', bandwith=0.05, degree=2):
 		1-D input array such that y = f(x) + e.
 	x0 : float
 		1-D array on which estimate the function f(x). If None, the parameter x is used.
+	B : array-like, shape = [n_sample, degree+1]
+		Design matrix.
 	kernel : string, default='gaussian'
 		Kernel name used as weight.
 	bandwith : float, default=0.05
@@ -66,21 +69,15 @@ def _loc_poly(x, y, x0, kernel='gaussian', bandwith=0.05, degree=2):
 
 	"""
 	# Compute kernel.
-	kernelMat = _compute_kernel(x=x,
-								x0=x0,
-								bandwith=bandwith,
-								kernel=kernel)
-	# Compute the coefficients of the polynomials.
-	X = np.vander(x=x-x0,
-				  N=degree+1,
-				  increasing=True)
+	kernelMat = _compute_kernel(x=x, x0=x0, bandwith=bandwith, kernel=kernel)
+
 	# Compute the estimation of f (and derivatives) at x0.
-	beta = np.dot(
-		np.linalg.inv(np.dot(np.dot(np.transpose(X), kernelMat), X)), 
-		np.dot(np.dot(np.transpose(X), kernelMat), y)
-	)
+	BtW = np.dot(B.T, kernelMat)
+	beta = np.dot(np.linalg.pinv(np.dot(BtW, B)), np.dot(BtW, y))
 	
-	return beta[0]
+	B0 = np.vander(np.asarray([x0]), N=degree+1, increasing=True)
+
+	return np.dot(B0, beta)[0]
 
 #############################################################################
 # Class LocalPolynomial
@@ -89,7 +86,7 @@ def _loc_poly(x, y, x0, kernel='gaussian', bandwith=0.05, degree=2):
 class LocalPolynomial():
 	"""Local polynomial regression. 
 
-	Let (x_1, Y_1), ...., (x_n, Y_n) be a random sample of bivariate data. Assume the following model: Y_i = f(x_i) + e_i. We would like to estimate the unknown regression function f(x) = E[Y | X = x]. We approximate f(x) using Taylor series.
+	Let (x_1, Y_1), ...., (x_n, Y_n) be a random sample of bivariate data. For all i, x_i belongs to R^d and Y_i in R. Assume the following model: Y_i = f(x_i) + e_i. We would like to estimate the unknown regression function f(x) = E[Y | X = x]. We approximate f(x) using Taylor series.
 
 	Parameters
 	----------
@@ -105,7 +102,8 @@ class LocalPolynomial():
 
 	References
 	----------
-	Zhang and Chen, Statistical Inferences for functional data, The Annals of Statistics, 1052-1079, No. 3, Vol. 35, 2007.
+	* Zhang and Chen, Statistical Inferences for functional data, The Annals of Statistics, 1052-1079, No. 3, Vol. 35, 2007.
+	* https://github.com/arokem/lowess/blob/master/lowess/lowess.py
 
 	"""
 	def __init__(self, kernel="gaussian", bandwith=0.05, degree=2):
@@ -116,13 +114,13 @@ class LocalPolynomial():
 
 	def fit(self, x, y):
 		"""Fit local polynomial regression.
-		
+
 		Parameters:
 		-----------
-		x : array-like, shape = [n_samples]
-			Training data, 1-D input array.
-		y : array-like, shape = [n_samples]
-			Target velues, 1-D input array
+		x : array-like, shape = [n_dim, n_samples]
+			Training data, input array.
+		y : array-like, shape = [n_samples, ]
+			Target values, 1-D input array
 
 		Return
 		------
@@ -132,7 +130,10 @@ class LocalPolynomial():
 		self.X = x
 		self.Y = y
 		x0 = np.unique(x)
-		self.X_fit_ = [_loc_poly(x, y, i, 
+
+		design_matrix = np.vander(x=x, N=self.degree+1, increasing=True)
+
+		self.X_fit_ = [_loc_poly(x, y, i, design_matrix,
 			self.kernel, self.bandwith, self.degree) for i in x0]
 
 		return self
@@ -151,7 +152,11 @@ class LocalPolynomial():
 		"""
 		if type(X) in (int, float, np.int_, np.float_):
 			X = [X]
-		y_pred = [_loc_poly(self.X, self.Y, i, 
+
+		design_matrix = np.vander(x=self.X, N=self.degree+1, increasing=True)
+
+		y_pred = [_loc_poly(self.X, self.Y, i, design_matrix,
 			self.kernel, self.bandwith, self.degree) for i in X]
+
 		return y_pred
 
