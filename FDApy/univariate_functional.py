@@ -355,17 +355,21 @@ class UnivariateFunctionalData(object):
         return FDApy.multivariate_functional.MultivariateFunctionalData(
             [self])
 
-    def mean(self, method="sample", bandwith=0.05):
-        """Compute the pointwise mean function.
+    def mean(self, smooth=False, **kwargs):
+        """Compute the mean function.
 
         Parameters
         ----------
-        method: string, default="sample"
-            Method used for the computation of the mean:
-                - sample: compute the mean sample
-                - smooth: compute a smooth estimate
-        bandwith: float, default=0.05
-            Bandwith used if method = "smooth"
+        smooth: boolean, default=False
+            Should we smooth the mean?
+        **kwargs: dict
+            The following parameters are taken into account
+                - method: 'gaussian', 'epanechnikov', 'tricube', 'bisquare'
+                    default='gaussian'
+                - degree: int
+                    default: 2
+                - bandwith: float
+                    default=1
 
         Return
         ------
@@ -373,22 +377,38 @@ class UnivariateFunctionalData(object):
             Object of the class FDApy.univariate_functional.UnivariateFunctionalData with the same argvals as self and one observation.
 
         """
-        if method == "sample":
-            mean_ = FDApy.utils.rowMean_(self.values)
-        elif method == "smooth":
-            lp = FDApy.local_polynomial.LocalPolynomial(bandwith=bandwith)
-            lp.fit(x=np.repeat(self.argvals, self.nObs(), axis=0).flatten(),
-                y=self.values.flatten())
+        mean_ = FDApy.utils.rowMean_(self.values)
+        if smooth:
+            method = kwargs.get('method', 'gaussian')
+            degree = kwargs.get('degree', 2)
+            bandwith = kwargs.get('bandwith', 1)
+
+            lp = FDApy.local_polynomial.LocalPolynomial(
+                kernel=method,
+                bandwith=bandwith,
+                degree=degree)
+            lp.fit(x=self.argvals, y=mean_)
             mean_ = lp.X_fit_
-        else:
-            raise ValueError(' '.join(['Method', method, 'is not implemented! Please use sample or smooth.']))
 
         self.mean_ = FDApy.univariate_functional.UnivariateFunctionalData(
             self.argvals, np.array(mean_, ndmin=2))
 
-    def covariance(self):
-        """Compute the pointwise covariance function.
+    def covariance(self, smooth=False, **kwargs):
+        """Compute the covariance function.
         
+        Parameters
+        ----------
+        smooth: boolean, default=False
+            Should we smooth the covariance?
+        **kwargs: dict
+            The following parameters are taken into account
+                - method: 'gaussian', 'epanechnikov', 'tricube', 'bisquare'
+                    default='gaussian'
+                - degree: int
+                    default: 2
+                - bandwith: float
+                    default=1
+
         Return
         ------
         obj : FDApy.univariate_functional.UnivariateFunctionalData object
@@ -399,9 +419,23 @@ class UnivariateFunctionalData(object):
                 'Only one dimensional functional data are supported!')
 
         new_argvals = [self.argvals[0], self.argvals[0]]
+        if getattr(self, 'mean_', None) is None:
+            self.mean(smooth, **kwargs)
         X = self - self.mean_
         cov = np.dot(X.values.T, X.values) / (self.nObs() - 1)
-        return UnivariateFunctionalData(new_argvals, np.array(cov, ndmin=3))
+
+        if smooth:
+            method = kwargs.get('method', 'gaussian')
+            degree = kwargs.get('degree', 2)
+            bandwith = kwargs.get('bandwith', 1)
+
+            lp = FDApy.local_polynomial.LocalPolynomial(
+                kernel=method,
+                bandwith=bandwith,
+                degree=degree)
+            lp.fit(x=new_argvals, y=cov)
+            cov = lp.X_fit_
+        self.covariance_ = FDApy.univariate_functional.UnivariateFunctionalData(new_argvals, np.array(cov, ndmin=3))
 
     def integrate(self, method='simpson'):
         """Integrate all the observations over the argvals.

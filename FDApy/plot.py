@@ -65,7 +65,7 @@ def _plot_univariate(data, main="", xlab="", ylab=""):
 
 	if data.nObs() == 1 and data.dimension() == 2:
 		p = ax.contour(
-			data.argvals[0], data.argvals[1], np.squeeze(data.values))
+			data.argvals[0], data.argvals[1], np.squeeze(data.values).T)
 		plt.clabel(p, inline=1)
 	else:
 		for obs in data.values:

@@ -3,40 +3,131 @@
 
 import numpy as np
 
+from sklearn.preprocessing import PolynomialFeatures
+
 ##############################################################################
 # Inter functions for the LocalPolynomial class.
+def _gaussian(t):
+	"""Compute the gaussian density with mean 0 and stadard deviation 1.
 
-def _compute_kernel(x, x0, bandwith, kernel='gaussian'):
+	Parameters
+	----------
+	t : array-like, shape = [n_samples]
+		Array at which computes the gaussian density
+
+	Return
+	------
+	K : array-like, shape = [n_samples]
+	"""
+	return np.exp(-np.power(t, 2) / 2) / np.sqrt(2 * np.pi)
+
+def _epanechnikov(t):
+	"""Compute the Epanechnikov kernel.
+
+	Parameters
+	----------
+	t : array-like, shape = [n_samples]
+		Array on which computes the Epanechnikov kernel
+
+	Return
+	------
+	K : array-like, shape = [n_samples]
+
+	References
+	----------
+	Hastie, Tibshirani and Friedman, Elements of Statistical Learning, 2009, equation 6.4 
+	"""
+	K = np.zeros(t.shape)
+	idx = np.where(t < 1)
+	K[idx] = 0.75 * (1 - np.power(t[idx], 2))
+	return K
+
+def _tri_cube(t):
+	"""Compute the tri-cube kernel.
+
+	Parameters
+	----------
+	t : array-like, shape = [n_samples]
+		Array on which computes the tri-cube kernel
+
+	Return
+	------
+	K : array-like, shape = [n_samples]
+
+	References
+	----------
+	Hastie, Tibshirani and Friedman, Elements of Statistical Learning, 2009, equation 6.6 
+	"""
+	K = np.zeros(t.shape)
+	idx = np.where(t < 1)
+	K[idx] = np.power((1 - np.power(np.abs(t[idx]), 3)), 3)
+	return K
+
+def _bi_square(t):
+	"""Compute the bi-square kernel.
+
+	Parameters
+	----------
+	t : array-like, shape = [n_samples]
+		Array on which computes the bi-square kernel
+
+	Return
+	------
+	K : array-like, shape = [n_samples]
+
+	References
+	----------
+	Cleveland, Robust Locally Weighted Regression and Smoothing Scatterplots, 1979, p.831
+	"""
+	K = np.zeros(t.shape)
+	idx = np.where(t < 1)
+	K[idx] = np.power((1 - np.power(t[idx], 2)), 2)
+	return K
+
+def _compute_kernel(x, x0, h, kernel='gaussian'):
 	"""Compute kernel at point (x - x0) / h.
-
-	TODO: Add other kernels.
 	
 	Parameters
 	----------
 	kernel : string, default='gaussian'
 		Kernel name used.
-	x : array-like, shape = [n_samples]
-		Training data, 1-D array.
-	x0 : float
+	x : array-like, shape = [n_dim, n_samples]
+		Training data.
+	x0 : float-array, shape= [n_dim,]
 		Number around which compute the kernel.
-	bandwith : float
+	h : float
 		Bandwith to control the importance of points far from x0.
 	
 	Return
 	------
-	kernelMat : array-like , shape = [n_samples, n_samples]
+	K : array-like , shape = [n_samples, n_samples]
+
+	References
+	----------
+	Hastie, Tibshirani and Friedman, Elements of Statistical Learning, 2009, equation 6.13 
 	"""
+
+	if not np.iterable(x0):
+		x0 = np.asarray([x0])
+
+	t = np.sqrt(np.sum(np.power(x - x0.T, 2), axis = 0)) / h
+
 	if kernel is 'gaussian':
-		kernelMat = np.exp(-np.power(((x - x0) / bandwith),2) / 2) /\
-					np.sqrt(2 * np.pi)
+		K = _gaussian(t)
+	elif kernel is 'epanechnikov':
+		K = _epanechnikov(t)
+	elif kernel is 'tricube':
+		K = _tri_cube(t)
+	elif kernel is 'bisquare':
+		K = _bi_square(t)
 	else:
 		raise ValueError(''.join[
 			'The kernel `', kernel, '` is not implemented!'])
 
-	return np.diag(kernelMat)
+	return np.diag(K.flatten())
 
 def _loc_poly(x, y, x0, B, 
-				kernel='gaussian', bandwith=0.05, degree=2):
+				kernel='gaussian', h=0.05, degree=2):
 	"""Local polynomial regression for one point.
 	
 	Let (x_1, Y_1), ...., (x_n, Y_n) be a random sample of bivariate data. Assume the following model: Y_i = f(x_i) + e_i. We would like to estimate the unknown regression function f(x) = E[Y | X = x]. We approximate f(x) using Taylor series.
@@ -48,12 +139,12 @@ def _loc_poly(x, y, x0, B,
 	y : array-like, shape = [n_samples]
 		1-D input array such that y = f(x) + e.
 	x0 : float
-		1-D array on which estimate the function f(x). If None, the parameter x is used.
+		1-D array on which estimate the function f(x). 
 	B : array-like, shape = [n_sample, degree+1]
 		Design matrix.
 	kernel : string, default='gaussian'
 		Kernel name used as weight.
-	bandwith : float, default=0.05
+	h : float, default=0.05
 		Bandwith for the kernel trick.
 	degree : integer, default=2
 		Degree of the local polynomial to fit.
@@ -68,14 +159,17 @@ def _loc_poly(x, y, x0, B,
 	Zhang and Chen, Statistical Inferences for functional data, The Annals of Statistics, 1052-1079, No. 3, Vol. 35, 2007.
 
 	"""
+	x0 = np.array([x0], ndmin=2)
+
 	# Compute kernel.
-	kernelMat = _compute_kernel(x=x, x0=x0, bandwith=bandwith, kernel=kernel)
+	K = _compute_kernel(x=x, x0=x0, h=h, kernel=kernel)
 
 	# Compute the estimation of f (and derivatives) at x0.
-	BtW = np.dot(B.T, kernelMat)
+	BtW = np.dot(B.T, K)
 	beta = np.dot(np.linalg.pinv(np.dot(BtW, B)), np.dot(BtW, y))
 	
-	B0 = np.vander(np.asarray([x0]), N=degree+1, increasing=True)
+	poly_features = PolynomialFeatures(degree=degree)
+	B0 = poly_features.fit_transform(x0)
 
 	return np.dot(B0, beta)[0]
 
@@ -111,6 +205,7 @@ class LocalPolynomial():
 		self.kernel = kernel
 		self.bandwith = bandwith
 		self.degree = degree
+		self.poly_features = PolynomialFeatures(degree=degree)
 
 	def fit(self, x, y):
 		"""Fit local polynomial regression.
@@ -127,14 +222,15 @@ class LocalPolynomial():
 		self : returns an instance of self. 		
 		"""
 		# TODO: Add tests on the parameters.
-		self.X = x
+		self.X = np.array(x, ndmin=2)
 		self.Y = y
-		x0 = np.unique(x)
 
-		design_matrix = np.vander(x=x, N=self.degree+1, increasing=True)
+		x0 = np.unique(self.X, axis=1).squeeze()
 
-		self.X_fit_ = [_loc_poly(x, y, i, design_matrix,
-			self.kernel, self.bandwith, self.degree) for i in x0]
+		design_matrix = self.poly_features.fit_transform(self.X.T)
+
+		self.X_fit_ = np.array([_loc_poly(x, y, i, design_matrix,
+			self.kernel, self.bandwith, self.degree) for i in x0.T])
 
 		return self
 
@@ -153,10 +249,10 @@ class LocalPolynomial():
 		if type(X) in (int, float, np.int_, np.float_):
 			X = [X]
 
-		design_matrix = np.vander(x=self.X, N=self.degree+1, increasing=True)
+		design_matrix = self.poly_features.fit_transform(self.X.T)
 
-		y_pred = [_loc_poly(self.X, self.Y, i, design_matrix,
-			self.kernel, self.bandwith, self.degree) for i in X]
+		y_pred = np.array([_loc_poly(self.X, self.Y, i, design_matrix,
+			self.kernel, self.bandwith, self.degree) for i in X])
 
 		return y_pred
 

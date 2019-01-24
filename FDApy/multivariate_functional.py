@@ -217,9 +217,21 @@ class MultivariateFunctionalData(object):
             self.data[0].argvals, np.array(data_))
 
 
-    def mean(self):
+    def mean(self, smooth=False, **kwargs):
         """Compute the pointwise mean functions of each element of the multivariate functional data.
 
+        Parameters
+        ----------
+        smooth: boolean, default=False
+            Should we smooth the mean?
+        **kwargs: dict
+            The following parameters are taken into account
+                - method: 'gaussian', 'epanechnikov', 'tricube', 'bisquare'
+                    default='gaussian'
+                - degree: int
+                    default: 2
+                - bandwith: float
+                    default=1
         Return
         ------
         obj : FDApy.multivariate_functional.MultivariateFunctionalData object
@@ -229,13 +241,25 @@ class MultivariateFunctionalData(object):
         mean_ = []
         for function in self.data:
             if getattr(function, 'mean_', None) is None:
-                function.mean()
+                function.mean(smooth, **kwargs)
             mean_.append(function.mean_)
         self.mean_ = MultivariateFunctionalData(mean_)
 
-    def covariance(self):
+    def covariance(self, smooth=False, **kwargs):
         """Compute the pointwise covariance functions of each element of the multivariate functional data.
 
+        Parameters
+        ----------
+        smooth: boolean, default=False
+            Should we smooth the covariance?
+        **kwargs: dict
+            The following parameters are taken into account
+                - method: 'gaussian', 'epanechnikov', 'tricube', 'bisquare'
+                    default='gaussian'
+                - degree: int
+                    default: 2
+                - bandwith: float
+                    default=1
         Return
         ------
         obj : FDApy.multivariate_functional.MultivariateFunctionalData object
@@ -244,8 +268,10 @@ class MultivariateFunctionalData(object):
         """
         cov_ = []
         for function in self.data:
-            cov_.append(function.covariance())
-        return MultivariateFunctionalData(cov_)
+            if getattr(function, 'covariance_', None) is None:
+                function.covariance(smooth, **kwargs)
+            cov_.append(function.covariance_)
+        self.covariance_ = MultivariateFunctionalData(cov_)
 
     def add(self, new_function):
         """Add a one function to the MultivariateFunctionalData object.

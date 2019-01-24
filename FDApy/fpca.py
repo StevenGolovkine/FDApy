@@ -27,9 +27,6 @@ class UFPCA():
 		if n_components is int, n_components are kept.
 		if 0 < n_components < 1, select the number of components such that the amount of variance that needs to be explained is greater than the percentage specified by n_components.
 
-	whiten : bool, default=False
-		When True (False by default) the `components_` vectors are multiplied by the square root of n_samples and then divided by the singular values to ensure uncorrelated outputs with unit component-wise variances.
-
 	Attributes
 	----------
 	eigenfunctions : array, shape = (n_components, n_features)
@@ -40,9 +37,8 @@ class UFPCA():
 	References
 	----------
 	"""
-	def __init__(self, n_components=None, whiten=False):
+	def __init__(self, n_components=None):
 		self.n_components = n_components
-		self.whiten = whiten
 
 	def fit(self, X):
 		"""Fit the model with X.
@@ -63,22 +59,51 @@ class UFPCA():
 	def _fit(self, X):
 		"""Dispatch to the right submethod depending on the input."""
 		if type(X) is FDApy.univariate_functional.UnivariateFunctionalData:
-			self._fit_uni(X, self.n_components, self.whiten)
+			self._fit_uni(X, self.n_components)
 		else:
 			raise TypeError('UFPCA only support FDApy.univariate_fonctional.UnivariateFunctionalData object!')
 
-	def _fit_uni(self, X, n_components, whiten):
-		"""Univariate Functional PCA."""
-		pca = sklearn.decomposition.PCA(
-				n_components=n_components, 
-				whiten=whiten)
+	def _fit_uni(self, X, n_components):
+		"""Univariate Functional PCA.
+		
+		Parameters
+		----------
+		X: FDApy.univariate_fonctional.UnivariateFunctionalData
+			Training data
+		n_components : int, float, None, default=None
+			Number of components to keep.
+			if n_components if None, all components are kept::
 
-		pca.fit(X.values)
+			n_components == min(n_samples, n_features)
+
+			if n_components is int, n_components are kept.
+			if 0 < n_components < 1, select the number of components such that the amount of variance that needs to be explained is greater than the percentage specified by n_components.
+
+		References
+		----------
+		Ramsey and Silverman, Functional Data Analysis, 2005, chapter 8
+		"""
+
+		# Choose n, the wj's and the sj's.
+		n = X.nObsPoint()
+		S = np.asarray(X.argvals).squeeze()
+		W = 1/2 * np.array(list([S[1] - S[0]]) + list((S[2:] - S[:len(S)-2])) + list([S[len(S)-1] - S[len(S)-2]]))
+
+		# Compute the eigenvalues and eigenvectors of W^{1/2}VW^{1/2}
+		Wsqrt = np.diag(np.sqrt(W))
+		Winvsqrt = np.diag(1 / np.sqrt(W))
+		WVW = np.dot(np.dot(Wsqrt, X.covariance_.values.squeeze()), Wsqrt)
+		eigValues, eigVectors = np.linalg.eigh(WVW)
+
+		# Retrieve components based on n_components
+
+		# Compute eigenfunction = W^{-1/2}U
+
+		# Smooth the eigenfunction
+		
 		self.argvals = X.argvals
-		self.eigenfunctions = pca.components_
-		self.eigenvalues = pca.singular_values_
-		self.mean_ = pca.mean_ 
-		self.explained_variance_ = pca.explained_variance_
+		self.eigenfunctions = eigVectors
+		self.eigenvalues = eigValues
 
 	def transform(self, X):
 		"""Apply dimensionality reduction to X.
@@ -96,9 +121,9 @@ class UFPCA():
 		# TODO: Add checkers
 		if (self.mean_ is None) and (X.mean_ is not None):
 			X = X - X.mean_
-		X_proj = np.dot(X.values, self.eigenfunctions.T)
-		if self.whiten:
-			X_proj /= np.sqrt(self.explained_variance_)
+		X_proj = np.trapz(np.dot(X.values, self.eigenfunctions.T), X.argvals)
+		#if self.whiten:
+		#	X_proj /= np.sqrt(self.explained_variance_)
 		return X_proj
 
 	def inverse_transform(self, X):
@@ -146,9 +171,6 @@ class MFPCA():
 		if n_components is int, n_components are kept.
 		if 0 < n_components < 1, select the number of components such that the amount of variance that needs to be explained is greater than the percentage specified by n_components.
 
-	whiten : bool, default=False
-		When True (False by default) the `components_` vectors are multiplied by the square root of n_samples and then divided by the singular values to ensure uncorrelated outputs with unit component-wise variances.
-
 	Attributes
 	----------
 	ufpca_ : list of FDApy.UFPCA, shape = (X.nFunctions(),)
@@ -171,9 +193,8 @@ class MFPCA():
 	Happ and Greven, Multivariate Functional Principal Component Analysis for Data Observed on Different (Dimensional Domains), Journal of the American Statistical Association.
 
 	"""
-	def __init__(self, n_components=None, whiten=False):
+	def __init__(self, n_components=None):
 		self.n_components = n_components
-		self.whiten = whiten
 
 	def fit(self, X):
 		"""Fit the model with X.
@@ -195,18 +216,18 @@ class MFPCA():
 		"""Dispatch to the right submethod depending on the input."""
 		# TODO: Diffenrent possiblity for n_components
 		if type(X) is FDApy.multivariate_functional.MultivariateFunctionalData:
-			self._fit_multi(X, self.n_components, self.whiten)
+			self._fit_multi(X, self.n_components)
 		else:
 			raise TypeError('MFPCA only support FDApy.multivariate_functional.MultivariateFunctionalData object!')
 
-	def _fit_multi(self, X, n_components, whiten):
+	def _fit_multi(self, X, n_components):
 		"""Multivariate Functional PCA."""
 
 		# Step 1: Perform univariate fPCA on each functions.
 		ufpca = []
 		scores = []		
 		for function in X.data:
-			uni = UFPCA(n_components, whiten)
+			uni = UFPCA(n_components)
 			ufpca.append(uni.fit(function))
 			scores.append(uni.transform(function))
 
