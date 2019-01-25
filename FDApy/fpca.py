@@ -40,7 +40,7 @@ class UFPCA():
 	def __init__(self, n_components=None):
 		self.n_components = n_components
 
-	def fit(self, X):
+	def fit(self, X, kernel='gaussian', bandwith=1, degree=2):
 		"""Fit the model with X.
 
 		Parameters
@@ -53,17 +53,22 @@ class UFPCA():
 		self : object
 			Returns the instance itself.
 		"""
-		self._fit(X)
+		self.smoothing_parameters = {
+			'kernel': kernel,
+			'bandwith': bandwith,
+			'degree': degree
+		}
+		self._fit(X, kernel, bandwith, degree)
 		return self
 
-	def _fit(self, X):
+	def _fit(self, X, kernel, bandwith, degree):
 		"""Dispatch to the right submethod depending on the input."""
 		if type(X) is FDApy.univariate_functional.UnivariateFunctionalData:
-			self._fit_uni(X, self.n_components)
+			self._fit_uni(X, self.n_components, kernel, bandwith, degree)
 		else:
 			raise TypeError('UFPCA only support FDApy.univariate_fonctional.UnivariateFunctionalData object!')
 
-	def _fit_uni(self, X, n_components):
+	def _fit_uni(self, X, n_components, kernel, bandwith, degree):
 		"""Univariate Functional PCA.
 		
 		Parameters
@@ -92,18 +97,32 @@ class UFPCA():
 		# Compute the eigenvalues and eigenvectors of W^{1/2}VW^{1/2}
 		Wsqrt = np.diag(np.sqrt(W))
 		Winvsqrt = np.diag(1 / np.sqrt(W))
-		WVW = np.dot(np.dot(Wsqrt, X.covariance_.values.squeeze()), Wsqrt)
-		eigValues, eigVectors = np.linalg.eigh(WVW)
 
-		# Retrieve components based on n_components
+		pca = sklearn.decomposition.PCA(n_components=n_components)
+		pca.fit(np.dot(X.values, Wsqrt))
+		#WVW = np.dot(np.dot(Wsqrt, X.covariance_.values.squeeze()), Wsqrt)
+		#eigValues, eigVectors = np.linalg.eigh(WVW)
+		#eigValues = eigValues[::-1]
+		#eigVectors = eigVectors[::-1]
+
+		#explained_variance_ = np.cumsum(eigValues) / np.sum(eigValues)
+		#eigValues = eigValues[explained_variance_ < n_components]
+		#eigVectors = eigVectors[explained_variance_ < n_components]
 
 		# Compute eigenfunction = W^{-1/2}U
+		eigFuncs = np.dot(pca.components_, Winvsqrt)
 
 		# Smooth the eigenfunction
-		
+		eigFuncs_smooth = []
+		for eigenfunction in eigFuncs:
+			lp = FDApy.local_polynomial.LocalPolynomial(
+				kernel, bandwith, degree)
+			lp.fit(S, eigenfunction)
+			eigFuncs_smooth.append(lp.X_fit_)
+
 		self.argvals = X.argvals
-		self.eigenfunctions = eigVectors
-		self.eigenvalues = eigValues
+		self.eigenfunctions = np.asarray(eigFuncs_smooth)
+		self.eigenvalues = pca.singular_values_
 
 	def transform(self, X):
 		"""Apply dimensionality reduction to X.
@@ -119,11 +138,11 @@ class UFPCA():
 
 		"""
 		# TODO: Add checkers
-		if (self.mean_ is None) and (X.mean_ is not None):
-			X = X - X.mean_
-		X_proj = np.trapz(np.dot(X.values, self.eigenfunctions.T), X.argvals)
-		#if self.whiten:
-		#	X_proj /= np.sqrt(self.explained_variance_)
+		X.mean(smooth=True, kwargs=self.smoothing_parameters)
+		X_unmean = X - X.mean_
+		prod = [traj * self.eigenfunctions for traj in X_unmean.values]
+		X_proj = np.trapz(prod, X_unmean.argvals)
+
 		return X_proj
 
 	def inverse_transform(self, X):
