@@ -63,18 +63,18 @@ class UFPCA():
 			'bandwith': bandwith,
 			'degree': degree
 		}
-		self._fit(X, kernel, bandwith, degree)
+		self._fit(X)
 		return self
 
-	def _fit(self, X, kernel, bandwith, degree):
+	def _fit(self, X):
 		"""Dispatch to the right submethod depending on the input."""
 		if type(X) is FDApy.univariate_functional.UnivariateFunctionalData:
-			self._fit_uni(X, self.n_components, kernel, bandwith, degree)
+			self._fit_uni(X)
 		else:
 			raise TypeError(' '.join(['UFPCA only support',\
                     'FDApy.univariate_fonctional.UnivariateFunctionalData object!']))
 
-	def _fit_uni(self, X, n_components, kernel, bandwith, degree):
+	def _fit_uni(self, X):
 		"""Univariate Functional PCA.
 		
 		Parameters
@@ -96,21 +96,31 @@ class UFPCA():
 		----------
 		Ramsey and Silverman, Functional Data Analysis, 2005, chapter 8
 		"""
-
+		
+		# Get number of observations and sempling points
+		N = X.nObs()
+		M = X.nObsPoint()[0] # TODO: Case of irregular functional data
+		
+		# The fpca is done on the unmean X.
+		if getattr(X, 'mean_', None) is None:
+			X.mean(smooth=True, **self.smoothing_parameters)
+		X_tilde = X - X.mean_
+		
+		self.X_tilde = X_tilde
 		# Choose n, the wj's and the sj's.
-		n = X.nObsPoint()
-		S = np.asarray(X.argvals).squeeze()
-		W = 1/2 * np.array(list([S[1] - S[0]]) +\
-                           list((S[2:] - S[:len(S)-2])) +\
-                           list([S[len(S)-1] - S[len(S)-2]])
-                          )
+		#n = X.nObsPoint()
+		#S = np.asarray(X.argvals).squeeze()
+		#W = 1/2 * np.array(list([S[1] - S[0]]) +\
+        #                   list((S[2:] - S[:len(S)-2])) +\
+        #                   list([S[len(S)-1] - S[len(S)-2]])
+        #                  )
 
 		# Compute the eigenvalues and eigenvectors of W^{1/2}VW^{1/2}
-		Wsqrt = np.diag(np.sqrt(W))
-		Winvsqrt = np.diag(1 / np.sqrt(W))
+		#Wsqrt = np.diag(np.sqrt(W))
+		#Winvsqrt = np.diag(1 / np.sqrt(W))
 
-		pca = sklearn.decomposition.PCA(n_components=n_components)
-		pca.fit(np.dot(X.values, Wsqrt))
+		#pca = sklearn.decomposition.PCA(n_components=n_components)
+		#pca.fit(np.dot(X.values, Wsqrt))
 		#WVW = np.dot(np.dot(Wsqrt, X.covariance_.values.squeeze()), Wsqrt)
 		#eigValues, eigVectors = np.linalg.eigh(WVW)
 		#eigValues = eigValues[::-1]
@@ -121,19 +131,19 @@ class UFPCA():
 		#eigVectors = eigVectors[explained_variance_ < n_components]
 
 		# Compute eigenfunction = W^{-1/2}U
-		eigFuncs = np.dot(pca.components_, Winvsqrt)
+		#eigFuncs = np.dot(pca.components_, Winvsqrt)
 
 		# Smooth the eigenfunction
-		eigFuncs_smooth = []
-		for eigenfunction in eigFuncs:
-			lp = FDApy.local_polynomial.LocalPolynomial(
-				kernel, bandwith, degree)
-			lp.fit(S, eigenfunction)
-			eigFuncs_smooth.append(lp.X_fit_)
+		#eigFuncs_smooth = []
+		#for eigenfunction in eigFuncs:
+		#	lp = FDApy.local_polynomial.LocalPolynomial(
+		#		kernel, bandwith, degree)
+		#	lp.fit(S, eigenfunction)
+		#	eigFuncs_smooth.append(lp.X_fit_)
 
-		self.argvals = X.argvals
-		self.eigenfunctions = np.asarray(eigFuncs_smooth)
-		self.eigenvalues = pca.singular_values_
+		#self.argvals = X.argvals
+		#self.eigenfunctions = np.asarray(eigFuncs_smooth)
+		#self.eigenvalues = pca.singular_values_
 
 	def transform(self, X):
 		"""Apply dimensionality reduction to X.

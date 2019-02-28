@@ -237,7 +237,7 @@ class LocalPolynomial():
 		self.Y = y
 
 		x0 = np.unique(self.X, axis=1).squeeze()
-
+		
 		design_matrix = self.poly_features.fit_transform(self.X.T)
 
 		self.X_fit_ = np.array([_loc_poly(x, y, i, design_matrix,

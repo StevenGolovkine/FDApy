@@ -382,7 +382,7 @@ class UnivariateFunctionalData(object):
             Should we smooth the mean?
         **kwargs: dict
             The following parameters are taken into account
-                - method: 'gaussian', 'epanechnikov', 'tricube', 'bisquare'
+                - kernel: 'gaussian', 'epanechnikov', 'tricube', 'bisquare'
                     default='gaussian'
                 - degree: int
                     default: 2
@@ -398,12 +398,12 @@ class UnivariateFunctionalData(object):
         """
         mean_ = FDApy.utils.rowMean_(self.values)
         if smooth:
-            method = kwargs.get('method', 'gaussian')
+            kernel = kwargs.get('kernel', 'gaussian')
             degree = kwargs.get('degree', 2)
             bandwith = kwargs.get('bandwith', 1)
 
             lp = FDApy.local_polynomial.LocalPolynomial(
-                kernel=method,
+                kernel=kernel,
                 bandwith=bandwith,
                 degree=degree)
             lp.fit(x=self.argvals, y=mean_)
@@ -421,7 +421,7 @@ class UnivariateFunctionalData(object):
             Should we smooth the covariance?
         **kwargs: dict
             The following parameters are taken into account
-                - method: 'gaussian', 'epanechnikov', 'tricube', 'bisquare'
+                - kernel: 'gaussian', 'epanechnikov', 'tricube', 'bisquare'
                     default='gaussian'
                 - degree: int
                     default: 2
@@ -445,12 +445,12 @@ class UnivariateFunctionalData(object):
         cov = np.dot(X.values.T, X.values) / (self.nObs() - 1)
 
         if smooth:
-            method = kwargs.get('method', 'gaussian')
+            kernel = kwargs.get('kernel', 'gaussian')
             degree = kwargs.get('degree', 2)
             bandwith = kwargs.get('bandwith', 1)
 
             lp = FDApy.local_polynomial.LocalPolynomial(
-                kernel=method,
+                kernel=kernel,
                 bandwith=bandwith,
                 degree=degree)
             lp.fit(x=new_argvals, y=cov)
