@@ -5,6 +5,7 @@
 
 # Setuptools distribution folder
 /dist/
+/build/
 
 # Python egg metadata, regenerated from source files by setuptools.
 /*.egg-info
@@ -15,3 +16,5 @@
 
 # Jupyter files
 .ipynb_checkpoints/*
+examples/.ipynb_checkpoints/*
+FDApy/.ipynb_checkpoints/*
