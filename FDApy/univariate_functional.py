@@ -458,6 +458,20 @@ class UnivariateFunctionalData(object):
         self.covariance_ = FDApy.univariate_functional.UnivariateFunctionalData(
 			new_argvals, np.array(cov, ndmin=3))
 
+    def estimate_noise(self):
+        """Estimation of the noise.
+        
+        This method estimates the (heteroscedastic) noise for a univariate
+        functional data object.
+        Model: Z_i(t_k) = f_i(t_k) + \sigma(f_i(t_k))\epsilon_i
+        It is assume that all the curves have been sampled on the same design points.
+        Let's t_1, ..., t_k be that points, the estimation of the noise at t_k is:: 
+        sigma^2(t_k) = 1/2n \sum_{i} [Z_i(t_{k+1}) - Z_i(t_{k})]^2
+        """
+        if self.dimension() != 1:
+            raise ValueError(
+                'Only one dimensional functional data are supported!')
+		
     def integrate(self, method='simpson'):
         """Integrate all the observations over the argvals.
 

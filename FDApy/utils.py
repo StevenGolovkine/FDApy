@@ -80,8 +80,54 @@ def colVar_(X):
     scaler = sklearn.preprocessing.StandardScaler()
     return scaler.fit(X.T).var_
 
+def shift_(X, num, fill_value=np.nan):
+	"""Shift an array `X` by a number `num`.
+	
+	Parameters
+	----------
+	X : array-like ,shape = (n_obs, n_features)
+		Input array
+	num : int
+		The number of columns to shift.
+	fill_value : float or np.nan
+		The value with one fill the array.
+		
+	Return
+	------
+	res : array-like, shape = (n_obs, n_features)
+		The shift array.
+		
+	References
+	----------
+	* https://stackoverflow.com/questions/30399534/shift-elements-in-a-numpy-array/42642326
+    
+    TODO: PA LE BON SENS!
+	"""
+	res = np.empty_like(X)
+	if num > 0:
+		res[:num] = fill_value
+		res[num:] = X[:-num]
+	elif num < 0:
+		res[num:] = fill_value
+		res[:num] = X[-num:]
+	else:
+		res = X
+	return res
+
 def tensorProduct_(X, Y):
-    """Compute the tensor product of two vectors."""
+    """Compute the tensor product of two vectors.
+	
+	Parameters
+	----------
+	X : array-like, shape = (n_obs1,)
+		First input vector
+	Y : array-like, shape = (n_obs2,)
+		Second input vector
+		
+	Return
+	------
+	res : ndarray, shape = (n_obs1, n_obs2)
+	"""
     return np.outer(X, Y)
 
 def integrate_(X, Y, method='simpson'):

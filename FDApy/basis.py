@@ -150,7 +150,7 @@ def eigenvalues_linear(M=3):
 	val : list
 		The generated eigenvalues 
 	"""
-	return [(M - m + 1) / M for m in range(M)]
+	return [(M - m + 1) / M for m in np.linspace(1, M, M)]
 
 def eigenvalues_exponential(M=3):
 	"""Function that generate exponential decreasing eigenvalues.
@@ -165,10 +165,10 @@ def eigenvalues_exponential(M=3):
 	val : list
 		The generated eigenvalues 
 	"""
-	return [np.exp(-(m+1)/2) for m in range(M)]
+	return [np.exp(-(m+1)/2) for m in np.linspace(1, M, M)]
 
 def eigenvalues_wiener(M=3):
-	"""Function that generate exponential decreasing eigenvalues.
+	"""Function that generate eigenvalues from a Wiener process.
 
 	Parameters
 	----------
@@ -180,7 +180,7 @@ def eigenvalues_wiener(M=3):
 	val : list
 		The generated eigenvalues 
 	"""
-	return [np.exp(-(m+1)/2) for m in np.linspace(1, M, M)]
+	return [np.power((np.pi / 2) * (2 * m - 1), -2) for m in np.linspace(1, M, M)]
 
 def simulate_eigenvalues_(eigenvalues_name, M):
 	"""Function that redirects to the right simulation eigenvalues function.
@@ -253,8 +253,11 @@ class Simulation(object):
 		basis_ = simulate_basis_(self.basis, self.M, argvals, norm=True)
 
 		# Define the decreasing of the eigenvalues
-		eigenvalues_ = simulate_eigenvalues_(self.eigenvalues, self.M)
-
+		if type(self.eigenvalues) is str:
+			eigenvalues_ = simulate_eigenvalues_(self.eigenvalues, self.M)
+		else:
+			eigenvalues_ = self.eigenvalues
+		
 		# Simulate the N observations
 		obs = np.empty(shape=(N, len(argvals)))
 		coef = np.empty(shape=(N, len(eigenvalues_)))
@@ -265,33 +268,37 @@ class Simulation(object):
 			obs[i, :] = prod_.values.sum(axis=0)
 			coef[i, :] = coef_
 
-		# Simulate K clusters into the data.
-		#K = 8
-		#if K % 2 == 1:
-		#	mu = np.array([i/2 if i % 2 == 0 else -(i+1)/2 
-		#		for i in np.arange(0, K, step=1)])
-		#else:
-		#	mu = np.array([i/2 if i % 2 == 0 else -(i+1)/2 
-		#		for i in np.arange(1, K+1, step=1)])
-
 		self.coef_ = coef
 		self.obs = FDApy.univariate_functional.UnivariateFunctionalData(
 			argvals, obs)
 
-	def add_noise(self, noise_var):
+	def add_noise(self, noise_var=1, sd_function=None):
 		"""Add noise to the data.
-
+		
+		Model: Z(t) = f(t) + sigma(f(t))epsilon
+		
+		If sd_function is None, sigma(f(t)) = 1 and epsilon ~ N(0, noise_var)
+		Else, we consider heteroscedastic noise with:
+			- sigma(f(t)) = sd_function(self.obs.values)
+			- epsilon ~ N(0,1)
+			
 		Parameters
 		----------
 		noise_var : float
 			Variance of the noise to add.
+		sd_function : callable
+			Standard deviation function for heteroscedatic noise.
 
 		"""
 
 		noisy_data = []
 		for i in self.obs:
-			noise = np.random.normal(0, np.sqrt(noise_var), 
-				size=len(self.obs.argvals[0]))
+			if sd_function is None:
+				noise = np.random.normal(0, np.sqrt(noise_var),
+										 size=len(self.obs.argvals[0]))
+			else:
+				noise = sd_function(i.values) *\
+						np.random.normal(0, 1, size=len(self.obs.argvals[0]))
 			noise_func = FDApy.univariate_functional.UnivariateFunctionalData(
 				self.obs.argvals, np.array(noise, ndmin=2))
 			noisy_data.append(i + noise_func)

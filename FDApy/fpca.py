@@ -101,12 +101,14 @@ class UFPCA():
 		N = X.nObs()
 		M = X.nObsPoint()[0] # TODO: Case of irregular functional data
 		
-		# The fpca is done on the unmean X.
+		# Mean estimation 
 		if getattr(X, 'mean_', None) is None:
 			X.mean(smooth=True, **self.smoothing_parameters)
 		X_tilde = X - X.mean_
 		
-		self.X_tilde = X_tilde
+		# Covariance estimation
+		
+		
 		# Choose n, the wj's and the sj's.
 		#n = X.nObsPoint()
 		#S = np.asarray(X.argvals).squeeze()
