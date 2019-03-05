@@ -3,6 +3,7 @@
 
 import itertools
 import numpy as np
+import pygam
 
 import FDApy
 
@@ -373,21 +374,27 @@ class UnivariateFunctionalData(object):
         return FDApy.multivariate_functional.MultivariateFunctionalData(
             [self])
 
-    def mean(self, smooth=False, **kwargs):
+    def mean(self, smooth=False, method='LocalLinear', **kwargs):
         """Compute the mean function.
 
         Parameters
         ----------
         smooth: boolean, default=False
             Should we smooth the mean?
+        method: 'LocalLinear', 'GAM', default='LocalLinear'
+            Which smoothing method do we use?
         **kwargs: dict
-            The following parameters are taken into account
+            The following parameters are taken into account:
+            * For method='LocalLinear':
                 - kernel: 'gaussian', 'epanechnikov', 'tricube', 'bisquare'
                     default='gaussian'
                 - degree: int
                     default: 2
-                - bandwith: float
+                - bandwidth: float
                     default=1
+            * For method='GAM':
+                - n_basis: int
+                    default=10
 
         Return
         ------
@@ -398,41 +405,63 @@ class UnivariateFunctionalData(object):
         """
         mean_ = FDApy.utils.rowMean_(self.values)
         if smooth:
-            kernel = kwargs.get('kernel', 'gaussian')
-            degree = kwargs.get('degree', 2)
-            bandwith = kwargs.get('bandwith', 1)
-
-            lp = FDApy.local_polynomial.LocalPolynomial(
-                kernel=kernel,
-                bandwith=bandwith,
-                degree=degree)
-            lp.fit(x=self.argvals, y=mean_)
-            mean_ = lp.X_fit_
+            if method is 'LocalLinear':
+                kernel = kwargs.get('kernel', 'gaussian')
+                degree = kwargs.get('degree', 2)
+                bandwidth = kwargs.get('bandwidth', 1)
+                
+                lp = FDApy.local_polynomial.LocalPolynomial(
+                    kernel=kernel,
+                    bandwidth=bandwidth,
+                    degree=degree)
+                lp.fit(x=self.argvals, y=mean_)
+                mean_ = lp.X_fit_
+            elif method is 'GAM':
+                n_basis = kwargs.get('n_basis', 10)
+                
+                X = np.array(self.argvals[0])
+                
+                mean_ = pygam.LinearGAM(pygam.s(0, n_splines=n_basis)).\
+                        fit(X, mean_).\
+                        predict(X)
+            else:
+                raise ValueError('Method not implemented!')
 
         self.mean_ = FDApy.univariate_functional.UnivariateFunctionalData(
             self.argvals, np.array(mean_, ndmin=2))
 
-    def covariance(self, smooth=False, **kwargs):
+    def covariance(self, smooth=False, method='LocalLinear', **kwargs):
         """Compute the covariance function.
         
         Parameters
         ----------
         smooth: boolean, default=False
             Should we smooth the covariance?
+        method: 'LocalLinear', 'GAM', default: 'LocalLinear'
+            Which smoothing method do we use?
         **kwargs: dict
-            The following parameters are taken into account
+            The following parameters are taken into account:
+            * For method='LocalLinear'
                 - kernel: 'gaussian', 'epanechnikov', 'tricube', 'bisquare'
                     default='gaussian'
                 - degree: int
                     default: 2
-                - bandwith: float
+                - bandwidth: float
                     default=1
+            * For method='GAM'
+                - n_basis: int
+                    default=10
 
         Return
         ------
         obj : FDApy.univariate_functional.UnivariateFunctionalData object
             Object of the class FDApy.univariate_functional.UnivariateFunctionalData 
 			with dimension 2 and one observation.
+        
+        Notes
+        -----
+        Currently, for smoothing, please consider to use the 'GAM' method as the
+        'LocalLinear' is not working.
         """
         if self.dimension() != 1:
             raise ValueError(
@@ -440,23 +469,48 @@ class UnivariateFunctionalData(object):
 
         new_argvals = [self.argvals[0], self.argvals[0]]
         if getattr(self, 'mean_', None) is None:
-            self.mean(smooth, **kwargs)
+            self.mean(smooth, method, **kwargs)
         X = self - self.mean_
         cov = np.dot(X.values.T, X.values) / (self.nObs() - 1)
 
         if smooth:
-            kernel = kwargs.get('kernel', 'gaussian')
-            degree = kwargs.get('degree', 2)
-            bandwith = kwargs.get('bandwith', 1)
-
-            lp = FDApy.local_polynomial.LocalPolynomial(
-                kernel=kernel,
-                bandwith=bandwith,
-                degree=degree)
-            lp.fit(x=new_argvals, y=cov)
-            cov = lp.X_fit_
+            if method is 'LocalLinear':
+                kernel = kwargs.get('kernel', 'gaussian')
+                degree = kwargs.get('degree', 2)
+                bandwidth = kwargs.get('bandwidth', 1)
+                
+                lp = FDApy.local_polynomial.LocalPolynomial(
+                    kernel=kernel,
+                    bandwidth=bandwidth,
+                    degree=degree)
+                lp.fit(x=new_argvals, y=cov)
+                cov = lp.X_fit_
+            elif method is 'GAM':
+                n_basis = kwargs.get('n_basis', 10)
+                
+                # Remove covariance diagonale because of measurement errors.
+                np.fill_diagonal(cov, None)
+                cov = cov[~np.isnan(cov)]
+                
+                # Define train and predict vector
+                X = np.transpose(
+                        np.vstack(
+                            (np.repeat(new_argvals[0], repeats=len(new_argvals[0])), 
+                             np.tile(new_argvals[0], reps=len(new_argvals[0])))
+                        )
+                    )
+                X_train = X[X[:,0] != X[:,1], :]
+                
+                cov = pygam.LinearGAM(pygam.te(0, 1, n_splines=n_basis)).\
+                        fit(X_train, cov).\
+                        predict(X).\
+                        reshape((len(new_argvals[0]), len(new_argvals[0])))
+            else:
+                raise ValueError('Method not implemented!')
+        
+        cov = (cov + cov.T) / 2
         self.covariance_ = FDApy.univariate_functional.UnivariateFunctionalData(
-			new_argvals, np.array(cov, ndmin=3))
+            new_argvals, np.array(cov, ndmin=3))
 
     def estimate_noise(self):
         """Estimation of the noise.
@@ -518,7 +572,7 @@ class UnivariateFunctionalData(object):
             for i in self.values for j in data.values]
         return UnivariateFunctionalData(new_argvals, np.array(new_values))
 
-    def smooth(self, points, kernel="gaussian", bandwith=0.05, degree=2):
+    def smooth(self, points, kernel="gaussian", bandwidth=0.05, degree=2):
         """Smooth the data.
 
         Currently, it uses local polynomial regression.
@@ -531,7 +585,7 @@ class UnivariateFunctionalData(object):
             Points where evaluate the function.
         kernel : string, default="gaussian"
             Kernel name used as weight (default = 'gaussian').
-        bandwith : float, default=0.05
+        bandwidth : float, default=0.05
             Strictly positive. Control the size of the associated neighborhood. 
         degree: integer, default=2
             Degree of the local polynomial to fit.
@@ -551,7 +605,7 @@ class UnivariateFunctionalData(object):
         # Define the smoother
         lp = FDApy.local_polynomial.LocalPolynomial(
                 kernel=kernel,
-                bandwith=bandwith,
+                bandwidth=bandwidth,
                 degree=degree)
 
         points_ = np.array(points)

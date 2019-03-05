@@ -99,7 +99,7 @@ def _compute_kernel(x, x0, h, kernel='gaussian'):
 	x0 : float-array, shape= [n_dim,]
 		Number around which compute the kernel.
 	h : float
-		Bandwith to control the importance of points far from x0.
+		Bandwidth to control the importance of points far from x0.
 	
 	Return
 	------
@@ -151,7 +151,7 @@ def _loc_poly(x, y, x0, B,
 	kernel : string, default='gaussian'
 		Kernel name used as weight.
 	h : float, default=0.05
-		Bandwith for the kernel trick.
+		Bandwidth for the kernel trick.
 	degree : integer, default=2
 		Degree of the local polynomial to fit.
 
@@ -196,7 +196,7 @@ class LocalPolynomial():
 	----------
 	kernel : string, default="gaussian"
 		Kernel name used as weight (default = 'gaussian').
-	bandwith : float, default=0.05
+	bandwidth : float, default=0.05
 		Strictly positive. Control the size of the associated neighborhood. 
 	degree: integer, default=2
 		Degree of the local polynomial to fit.
@@ -211,10 +211,10 @@ class LocalPolynomial():
 	* https://github.com/arokem/lowess/blob/master/lowess/lowess.py
 
 	"""
-	def __init__(self, kernel="gaussian", bandwith=0.05, degree=2):
+	def __init__(self, kernel="gaussian", bandwidth=0.05, degree=2):
 		# TODO: Add test on parameters.
 		self.kernel = kernel
-		self.bandwith = bandwith
+		self.bandwidth = bandwidth
 		self.degree = degree
 		self.poly_features = PolynomialFeatures(degree=degree)
 
@@ -241,7 +241,7 @@ class LocalPolynomial():
 		design_matrix = self.poly_features.fit_transform(self.X.T)
 
 		self.X_fit_ = np.array([_loc_poly(x, y, i, design_matrix,
-			self.kernel, self.bandwith, self.degree) for i in x0.T])
+			self.kernel, self.bandwidth, self.degree) for i in x0.T])
 
 		return self
 
@@ -263,7 +263,7 @@ class LocalPolynomial():
 		design_matrix = self.poly_features.fit_transform(self.X.T)
 
 		y_pred = np.array([_loc_poly(self.X, self.Y, i, design_matrix,
-			self.kernel, self.bandwith, self.degree) for i in X])
+			self.kernel, self.bandwidth, self.degree) for i in X])
 
 		return y_pred
 

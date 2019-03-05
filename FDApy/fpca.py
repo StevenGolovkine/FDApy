@@ -45,7 +45,7 @@ class UFPCA():
 	def __init__(self, n_components=None):
 		self.n_components = n_components
 
-	def fit(self, X, kernel='gaussian', bandwith=1, degree=2):
+	def fit(self, X, **kwargs):
 		"""Fit the model with X.
 
 		Parameters
@@ -59,9 +59,11 @@ class UFPCA():
 			Returns the instance itself.
 		"""
 		self.smoothing_parameters = {
-			'kernel': kernel,
-			'bandwith': bandwith,
-			'degree': degree
+            'method': kwargs.get('method', 'LocalLinear'),
+			'kernel': kwargs.get('kernel', 'gaussian'),
+			'bandwidth': kwargs.get('bandwidth', 1),
+			'degree': kwargs.get('degree', 2),
+            'n_basis': kwargs.get('n_basis', 10)
 		}
 		self._fit(X)
 		return self
@@ -99,16 +101,21 @@ class UFPCA():
 		
 		# Get number of observations and sempling points
 		N = X.nObs()
-		M = X.nObsPoint()[0] # TODO: Case of irregular functional data
+		M = X.nObsPoint()[0]
 		
 		# Mean estimation 
 		if getattr(X, 'mean_', None) is None:
-			X.mean(smooth=True, **self.smoothing_parameters)
+			X.mean(smooth=True, 
+                   method=self.smoothing_parameters.get('method'),
+                   **self.smoothing_parameters)
 		X_tilde = X - X.mean_
 		
 		# Covariance estimation
-		
-		
+		if getattr(X, 'covariance_', None) is None:
+			X.covariance(smooth=True,
+						method=self.smoothing_parameters.get('method'),
+						**self.smoothing_parameters)
+
 		# Choose n, the wj's and the sj's.
 		#n = X.nObsPoint()
 		#S = np.asarray(X.argvals).squeeze()
