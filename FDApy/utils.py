@@ -5,6 +5,10 @@ import numpy as np
 import scipy
 import sklearn
 
+
+#############################################################################
+# Standardization functions
+#############################################################################
 def rangeStandardization_(X):
     """Transform a vector [a, b] into a vector [0, 1].
 
@@ -80,6 +84,9 @@ def colVar_(X):
     scaler = sklearn.preprocessing.StandardScaler()
     return scaler.fit(X.T).var_
 
+############################################################################
+# Array manipulation functions.
+############################################################################
 def shift_(X, num, fill_value=np.nan):
 	"""Shift an array `X` by a number `num`.
 	
@@ -114,6 +121,9 @@ def shift_(X, num, fill_value=np.nan):
 		res = X
 	return res
 
+##############################################################################
+# Array computation
+##############################################################################
 def tensorProduct_(X, Y):
     """Compute the tensor product of two vectors.
 	
@@ -151,3 +161,42 @@ def integrate_(X, Y, method='simpson'):
     if method is not 'simpson':
         raise ValueError('Only the Simpsons method is implemented!')
     return scipy.integrate.simps(Y, X)
+
+def integrationWeights_(X, method='trapz'):
+	"""Compute weights for numerical integration over the domain `X` given 
+	the method `method`.
+	
+	Parameters
+	----------
+	X : array-like, shape = (n_points,)
+		Domain on which compute the weights.
+	method : str or callable, default = 'trapz'
+		The method to compute the weights.
+		
+	Return
+	------
+	W : array-like, shape = (n_points,)
+		The weights
+		
+	Notes
+	-----
+	TODO :
+	* Add other methods: Simpson, midpoints, ...
+	* Add tests
+	
+	References
+	----------
+	* https://en.wikipedia.org/wiki/Trapezoidal_rule
+	"""
+	L = len(X)
+	if method is 'trapz':
+		W = 1/2 * np.concatenate([[X[1] - X[0]], 
+							  X[2:] - X[:(L-2)], 
+							  [X[L-1] - X[L-2]]])
+	elif callable(method):
+		W = method(X)
+	else:
+		raise ValueError('Method {} not implemented!'.format(method))
+	
+	return W
+	
