@@ -48,23 +48,28 @@
 <span id="univariate-functional-data"></span><h1>Univariate Functional Data<a class="headerlink" href="#module-FDApy.univariate_functional" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="FDApy.univariate_functional.UnivariateFunctionalData">
-<em class="property">class </em><code class="descclassname">FDApy.univariate_functional.</code><code class="descname">UnivariateFunctionalData</code><span class="sig-paren">(</span><em>argvals</em>, <em>values</em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">FDApy.univariate_functional.</code><code class="descname">UnivariateFunctionalData</code><span class="sig-paren">(</span><em>argvals</em>, <em>values</em>, <em>standardize=True</em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData" title="Permalink to this definition">¶</a></dt>
 <dd><p>An object for defining Univariate Functional Data.</p>
 <dl class="docutils">
 <dt>argvals <span class="classifier-delimiter">:</span> <span class="classifier">list of tuples</span></dt>
-<dd>A list of numeric vectors (tuples) or a single numeric vector (tuple) giving the sampling points in the domains.</dd>
+<dd>A list of numeric vectors (tuples) or a single numeric vector (tuple)
+giving the sampling points in the domains.</dd>
 <dt>values <span class="classifier-delimiter">:</span> <span class="classifier">array-like</span></dt>
-<dd><p class="first">An array, giving the observed values for N observations. Missing values should be included via <cite>None</cite> (or <cite>np.nan</cite>). The shape depends on <cite>argvals</cite>:</p>
+<dd><p class="first">An array, giving the observed values for N observations. Missing values
+should be included via <cite>None</cite> (or <cite>np.nan</cite>). The shape depends on <cite>argvals</cite>:</p>
 <div class="last highlight-default notranslate"><div class="highlight"><pre><span></span>(N, M) if `argvals` is a single numeric vector,
 (N, M_1, ..., M_d) if `argvals` is a list of numeric vectors.
 </pre></div>
 </div>
 </dd>
+<dt>standardize <span class="classifier-delimiter">:</span> <span class="classifier">boolean, default = True</span></dt>
+<dd>Do we standardize the argvals to be in [0, 1].</dd>
 </dl>
 <dl class="method">
 <dt id="FDApy.univariate_functional.UnivariateFunctionalData.asIrregularFunctionalData">
 <code class="descname">asIrregularFunctionalData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.asIrregularFunctionalData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Coerce univariate functional data of dimension 1 into irregular functional data.</p>
+<dd><p>Coerce univariate functional data of dimension 1 into irregular 
+functional data.</p>
 <dl class="docutils">
 <dt>obj <span class="classifier-delimiter">:</span> <span class="classifier">FDApy.irregular_functional.IrregularFunctionalData</span></dt>
 <dd>An object of the class FDApy.irregular_functional.IrregularFunctionalData</dd>
@@ -74,21 +79,70 @@
 <dl class="method">
 <dt id="FDApy.univariate_functional.UnivariateFunctionalData.asMultivariateFunctionalData">
 <code class="descname">asMultivariateFunctionalData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.asMultivariateFunctionalData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Coerce univariate functional data into mulivariate functional data with one function.</p>
+<dd><p>Coerce univariate functional data into mulivariate functional data 
+with one function.</p>
 <dl class="docutils">
 <dt>obj <span class="classifier-delimiter">:</span> <span class="classifier">FDApy.mulivariate_functional.MultivariateFunctionalData</span></dt>
-<dd>An object of the class FDApy.mulivariate_functional.MultivariateFunctionalData</dd>
+<dd>object of the class FDApy.mulivariate_functional.MultivariateFunctionalData</dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="FDApy.univariate_functional.UnivariateFunctionalData.covariance">
-<code class="descname">covariance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.covariance" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the pointwise covariance function.</p>
+<code class="descname">covariance</code><span class="sig-paren">(</span><em>smooth=False</em>, <em>method='LocalLinear'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.covariance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the covariance function.</p>
+<dl class="docutils">
+<dt>smooth: boolean, default=False</dt>
+<dd>Should we smooth the covariance?</dd>
+<dt>method: ‘LocalLinear’, ‘GAM’, default: ‘LocalLinear’</dt>
+<dd>Which smoothing method do we use?</dd>
+<dt><a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs: dict</dt>
+<dd><p class="first">The following parameters are taken into account:
+* For method=’LocalLinear’</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="first docutils">
+<dt>kernel: ‘gaussian’, ‘epanechnikov’, ‘tricube’, ‘bisquare’</dt>
+<dd>default=’gaussian’</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>degree: int</dt>
+<dd>default: 2</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>bandwidth: float</dt>
+<dd>default=1</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<ul class="last simple">
+<li><dl class="first docutils">
+<dt>For method=’GAM’</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>n_basis: int</dt>
+<dd>default=10</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
 <dl class="docutils">
 <dt>obj <span class="classifier-delimiter">:</span> <span class="classifier">FDApy.univariate_functional.UnivariateFunctionalData object</span></dt>
-<dd>Object of the class FDApy.univariate_functional.UnivariateFunctionalData with dimension 2 and one observation.</dd>
+<dd>Object of the class FDApy.univariate_functional.UnivariateFunctionalData 
+with dimension 2 and one observation.</dd>
 </dl>
+<p>Yao, Müller and Wang (2005), Functional Data Analysis for Sparse Longitudinal Data, 
+Journal of the American Statistical Association, Vol. 100, No. 470</p>
+<p>Currently, for smoothing, please consider to use the ‘GAM’ method as the
+‘LocalLinear’ is not working.</p>
 </dd></dl>
 
 <dl class="method">
@@ -102,27 +156,85 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="FDApy.univariate_functional.UnivariateFunctionalData.estimate_noise">
+<code class="descname">estimate_noise</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.estimate_noise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimation of the noise.</p>
+<p>This method estimates the (heteroscedastic) noise for a univariate
+functional data object.
+Model: Z_i(t_k) = f_i(t_k) + sigma(f_i(t_k))epsilon_i
+It is assume that all the curves have been sampled on the same design points.
+Let’s t_1, …, t_k be that points, the estimation of the noise at t_k is:: 
+sigma^2(t_k) = 1/2n sum_{i} [Z_i(t_{k+1}) - Z_i(t_{k})]^2</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="FDApy.univariate_functional.UnivariateFunctionalData.integrate">
 <code class="descname">integrate</code><span class="sig-paren">(</span><em>method='simpson'</em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.integrate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Integrate all the observations over the argvals.</p>
 <dl class="docutils">
 <dt>method <span class="classifier-delimiter">:</span> <span class="classifier">str, default = ‘simpson’</span></dt>
-<dd>The method used to integrated. Currently, only the Simpsons method is implemented.</dd>
+<dd>The method used to integrated. Currently, only the Simpsons method 
+is implemented.</dd>
 </dl>
 <dl class="docutils">
 <dt>obj <span class="classifier-delimiter">:</span> <span class="classifier">list of int</span></dt>
-<dd>List where entry i is the integration of the observation i over the argvals.</dd>
+<dd>List where entry i is the integration of the observation i over 
+the argvals.</dd>
 </dl>
 <p>Only work with 1-dimensional functional data.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="FDApy.univariate_functional.UnivariateFunctionalData.mean">
-<code class="descname">mean</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.mean" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the pointwise mean function.</p>
+<code class="descname">mean</code><span class="sig-paren">(</span><em>smooth=False</em>, <em>method='LocalLinear'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the mean function.</p>
+<dl class="docutils">
+<dt>smooth: boolean, default=False</dt>
+<dd>Should we smooth the mean?</dd>
+<dt>method: ‘LocalLinear’, ‘GAM’, default=’LocalLinear’</dt>
+<dd>Which smoothing method do we use?</dd>
+<dt><a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs: dict</dt>
+<dd><p class="first">The following parameters are taken into account:
+* For method=’LocalLinear’:</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="first docutils">
+<dt>kernel: ‘gaussian’, ‘epanechnikov’, ‘tricube’, ‘bisquare’</dt>
+<dd>default=’gaussian’</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>degree: int</dt>
+<dd>default: 2</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>bandwidth: float</dt>
+<dd>default=1</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<ul class="last simple">
+<li><dl class="first docutils">
+<dt>For method=’GAM’:</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>n_basis: int</dt>
+<dd>default=10</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
 <dl class="docutils">
 <dt>obj <span class="classifier-delimiter">:</span> <span class="classifier">FDApy.univariate_functional.UnivariateFunctionalData object</span></dt>
-<dd>Object of the class FDApy.univariate_functional.UnivariateFunctionalData with the same argvals as self and one observation.</dd>
+<dd>Object of the class FDApy.univariate_functional.UnivariateFunctionalData
+with the same argvals as self and one observation.</dd>
 </dl>
 </dd></dl>
 
@@ -142,7 +254,9 @@
 <dd><p>Number of sampling points of the objects.</p>
 <dl class="docutils">
 <dt>n <span class="classifier-delimiter">:</span> <span class="classifier">list of int</span></dt>
-<dd>List of the length self.dimension() where the i-th entry correspond to the number of sampling points of the i-th dimension of the observations.</dd>
+<dd>List of the length self.dimension() where the i-th entry correspond 
+to the number of sampling points of the i-th dimension of the 
+observations.</dd>
 </dl>
 </dd></dl>
 
@@ -151,8 +265,9 @@
 <code class="descname">rangeObs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.rangeObs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Range of the observations of the objects.</p>
 <dl class="docutils">
-<dt>min(<a href="#id1"><span class="problematic" id="id2">values_</span></a>), max(<a href="#id3"><span class="problematic" id="id4">values_</span></a>) <span class="classifier-delimiter">:</span> <span class="classifier">tuple</span></dt>
-<dd>Tuple containing the minimum and maximum number of all the observations for an object.</dd>
+<dt>min(<a href="#id5"><span class="problematic" id="id6">values_</span></a>), max(<a href="#id7"><span class="problematic" id="id8">values_</span></a>) <span class="classifier-delimiter">:</span> <span class="classifier">tuple</span></dt>
+<dd>Tuple containing the minimum and maximum number of all the 
+observations for an object.</dd>
 </dl>
 </dd></dl>
 
@@ -160,12 +275,14 @@
 <dt id="FDApy.univariate_functional.UnivariateFunctionalData.rangeObsPoint">
 <code class="descname">rangeObsPoint</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.rangeObsPoint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Range of the observations of the objects.</p>
-<p><a href="#id5"><span class="problematic" id="id6">range_</span></a> : list of tuples containing the minimum and maximum number where the i-th entry of the list contains the range of the i-th dimension of the object.</p>
+<p><a href="#id9"><span class="problematic" id="id10">range_</span></a> : list of tuples containing the minimum and maximum number where 
+the i-th entry of the list contains the range of the i-th dimension 
+of the object.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="FDApy.univariate_functional.UnivariateFunctionalData.smooth">
-<code class="descname">smooth</code><span class="sig-paren">(</span><em>points</em>, <em>kernel='gaussian'</em>, <em>bandwith=0.05</em>, <em>degree=2</em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.smooth" title="Permalink to this definition">¶</a></dt>
+<code class="descname">smooth</code><span class="sig-paren">(</span><em>points</em>, <em>kernel='gaussian'</em>, <em>bandwidth=0.05</em>, <em>degree=2</em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.smooth" title="Permalink to this definition">¶</a></dt>
 <dd><p>Smooth the data.</p>
 <p>Currently, it uses local polynomial regression.
 Currently, only for one dimensional univariate functional data.
@@ -175,17 +292,18 @@ TODO: Add other smoothing methods.</p>
 <dd>Points where evaluate the function.</dd>
 <dt>kernel <span class="classifier-delimiter">:</span> <span class="classifier">string, default=”gaussian”</span></dt>
 <dd>Kernel name used as weight (default = ‘gaussian’).</dd>
-<dt>bandwith <span class="classifier-delimiter">:</span> <span class="classifier">float, default=0.05</span></dt>
+<dt>bandwidth <span class="classifier-delimiter">:</span> <span class="classifier">float, default=0.05</span></dt>
 <dd>Strictly positive. Control the size of the associated neighborhood.</dd>
 <dt>degree: integer, default=2</dt>
 <dd>Degree of the local polynomial to fit.</dd>
 </dl>
 <dl class="docutils">
 <dt>res <span class="classifier-delimiter">:</span> <span class="classifier">FDApy.univariate_functional.UnivariateFunctionalData</span></dt>
-<dd><dl class="first last docutils">
-<dt>An object of the class FDApy.univariate_functional.UnivariateFunctionalData which correpond to the data that have been smooth::</dt>
-<dd>argvals = <cite>points</cite> given as input</dd>
-</dl>
+<dd><p class="first">Object of the class FDApy.univariate_functional.UnivariateFunctionalData 
+which correpond to the data that have been smooth:</p>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span>argvals = `points` given as input
+</pre></div>
+</div>
 </dd>
 </dl>
 </dd></dl>
@@ -200,7 +318,8 @@ TODO: Add other smoothing methods.</p>
 </dl>
 <dl class="docutils">
 <dt>obj <span class="classifier-delimiter">:</span> <span class="classifier">FDApy.univariate_functional.UnivariateFunctionalData</span></dt>
-<dd>Object of the class FDApy.univariate_functional.UnivariateFunctionalData of dimension 2 (self.argvals x data.argvals)</dd>
+<dd>Object of the class FDApy.univariate_functional.UnivariateFunctionalData 
+of dimension 2 (self.argvals x data.argvals)</dd>
 </dl>
 </dd></dl>
 

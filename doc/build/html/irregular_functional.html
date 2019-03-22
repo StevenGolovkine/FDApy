@@ -48,15 +48,31 @@
 <span id="irregular-functional-data"></span><h1>Irregular Functional Data<a class="headerlink" href="#module-FDApy.irregular_functional" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="FDApy.irregular_functional.IrregularFunctionalData">
-<em class="property">class </em><code class="descclassname">FDApy.irregular_functional.</code><code class="descname">IrregularFunctionalData</code><span class="sig-paren">(</span><em>argvals</em>, <em>values</em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.irregular_functional.IrregularFunctionalData" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">FDApy.irregular_functional.</code><code class="descname">IrregularFunctionalData</code><span class="sig-paren">(</span><em>argvals</em>, <em>values</em>, <em>standardize=True</em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.irregular_functional.IrregularFunctionalData" title="Permalink to this definition">¶</a></dt>
 <dd><p>An object for defining Irregular Functional Data.Functional</p>
 <dl class="docutils">
 <dt>argvals <span class="classifier-delimiter">:</span> <span class="classifier">list of tuples</span></dt>
-<dd>A list of numeric vectors (tuples) giving the sampling points for each realization of the process.</dd>
+<dd><dl class="first last docutils">
+<dt>A list of numeric vectors (tuples) giving the sampling points for each</dt>
+<dd>realization of the process.</dd>
+</dl>
+</dd>
 <dt>values <span class="classifier-delimiter">:</span> <span class="classifier">list of numpy.array</span></dt>
-<dd>A list of numeric arrays, representing the values of each realization of the process on the corresponding observation points.</dd>
+<dd><dl class="first last docutils">
+<dt>A list of numeric arrays, representing the values of each realization of </dt>
+<dd>the process on the corresponding observation points.</dd>
+</dl>
+</dd>
+<dt>standardize <span class="classifier-delimiter">:</span> <span class="classifier">boolean, default = True</span></dt>
+<dd>Do we standardize the argvals to be in [0, 1].</dd>
 </dl>
 <p>Currently, only one dimensional irregular functional data have been implemented.</p>
+<dl class="docutils">
+<dt>The standardization of the Irregular Functional Data is useful only if all are</dt>
+<dd>defined on different domains and we have the complete trajectories. And it may 
+not be useful if all the functional data are defined on the same domain and we 
+do not record some the signal for some times.</dd>
+</dl>
 <dl class="method">
 <dt id="FDApy.irregular_functional.IrregularFunctionalData.dimension">
 <code class="descname">dimension</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.irregular_functional.IrregularFunctionalData.dimension" title="Permalink to this definition">¶</a></dt>
@@ -65,7 +81,10 @@
 <dt>dim <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd>Number of dimension of the observations of the object.</dd>
 </dl>
-<p>Currently, this function must always return 1 as the multi-dimensional irregular functional data is not yet implemented.</p>
+<dl class="docutils">
+<dt>Currently, this function must always return 1 as the multi-dimensional</dt>
+<dd>irregular functional data is not yet implemented.</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -84,7 +103,11 @@
 <dd><p>Number of sampling points of the objects.</p>
 <dl class="docutils">
 <dt>n <span class="classifier-delimiter">:</span> <span class="classifier">list of int</span></dt>
-<dd>List of the same length of self.nObs() where the i-th entry correspond to the number of sampling points of the i-th observed function.</dd>
+<dd><dl class="first last docutils">
+<dt>List of the same length of self.nObs() where the i-th entry correspond </dt>
+<dd>to the number of sampling points of the i-th observed function.</dd>
+</dl>
+</dd>
 </dl>
 </dd></dl>
 
@@ -94,7 +117,11 @@
 <dd><p>Range of the observations of the objects.</p>
 <dl class="docutils">
 <dt>min(<a href="#id1"><span class="problematic" id="id2">values_</span></a>), max(<a href="#id3"><span class="problematic" id="id4">values_</span></a>) <span class="classifier-delimiter">:</span> <span class="classifier">tuple</span></dt>
-<dd>Tuple containing the minimum and maximum number of all the observations for an object.</dd>
+<dd><dl class="first last docutils">
+<dt>Tuple containing the minimum and maximum number of all the observations</dt>
+<dd>for an object.</dd>
+</dl>
+</dd>
 </dl>
 </dd></dl>
 
@@ -104,7 +131,11 @@
 <dd><p>Range of sampling points of the objects.</p>
 <dl class="docutils">
 <dt>min(<a href="#id5"><span class="problematic" id="id6">argvals_</span></a>), max(<a href="#id7"><span class="problematic" id="id8">argvals_</span></a>) <span class="classifier-delimiter">:</span> <span class="classifier">tuple</span></dt>
-<dd>Tuple containing the minimum and maximum number of all the sampling points for an object.</dd>
+<dd><dl class="first last docutils">
+<dt>Tuple containing the minimum and maximum number of all the sampling </dt>
+<dd>points for an object.</dd>
+</dl>
+</dd>
 </dl>
 </dd></dl>
 
