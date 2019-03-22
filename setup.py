@@ -23,7 +23,7 @@ setup(name='FDApy',
 		'itertools',
 		'numpy',
 		'pandas',
-        'pygam',
+                'pygam',
 		'sklearn'
 	],
 	test_suite='nose.collector',
