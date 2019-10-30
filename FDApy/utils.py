@@ -20,6 +20,11 @@ def rangeStandardization_(X):
     Return
     ------
     range_ : array_like, shape = (n_features)
+
+    Example
+    -------
+    >>>rangeStandardization_(np.array([0, 5, 10]))
+    array([0., 0.5, 1.])
     """
     range_ = (X - np.min(X)) / (np.max(X) - np.min(X))
     return range_
@@ -36,6 +41,12 @@ def rowMean_(X):
     Return
     ------
     mean_ : array-like, shape = (n_features,)
+
+    Example
+    -------
+    >>>rowMean_(
+        np.array([[1., 2., 3.], [1., 2., 3.], [1., 2., 3.], [1., 2., 3.]]))
+    array([1., 2., 3.])
     """
     scaler = sklearn.preprocessing.StandardScaler()
     return scaler.fit(X).mean_
@@ -52,6 +63,12 @@ def rowVar_(X):
     Return
     ------
     var_ : array-like, shape = (n_features,)
+
+    Example
+    -------
+    >>>rowVar_(
+        np.array([[1., 2., 3.], [1., 2., 3.], [1., 2., 3.], [1., 2., 3.]]))
+    array([0., 0., 0.])
     """
     scaler = sklearn.preprocessing.StandardScaler()
     return scaler.fit(X).var_
@@ -68,6 +85,12 @@ def colMean_(X):
     Return
     ------
     mean_ : array-like, shape = (n_obs,)
+
+    Example
+    -------
+    >>>colMean_(
+        np.array([[1., 2., 3.], [1., 2., 3.], [1., 2., 3.], [1., 2., 3.]]))
+    array([2., 2., 2., 2.])
     """
     scaler = sklearn.preprocessing.StandardScaler()
     return scaler.fit(X.T).mean_
@@ -84,9 +107,15 @@ def colVar_(X):
     Return
     ------
     var_ : array-like, shape = (n_obs,)
+
+    Example:
+    >>>colVar_(
+        np.array([[1., 2., 3.], [1., 2., 3.], [1., 2., 3.], [1., 2., 3.]]))
+    array([0.66666667, 0.66666667, 0.66666667, 0.66666667])
     """
     scaler = sklearn.preprocessing.StandardScaler()
     return scaler.fit(X.T).var_
+
 
 ############################################################################
 # Array manipulation functions.
@@ -110,11 +139,14 @@ def shift_(X, num, fill_value=np.nan):
     res : array-like, shape = (n_obs, n_features)
             The shift array.
 
+    Example
+    -------
+    >>>shift_(np.array([1, 2, 3, 4, 5]), num=2, fill_value=np.nan)
+    array([nan, nan, 1, 2, 3])
+
     References
     ----------
     * https://stackoverflow.com/questions/30399534/shift-elements-in-a-numpy-array/42642326
-
-TODO: PA LE BON SENS!
     """
     res = np.empty_like(X)
     if num > 0:
@@ -135,17 +167,24 @@ TODO: PA LE BON SENS!
 def tensorProduct_(X, Y):
     """Compute the tensor product of two vectors.
 
-        Parameters
-        ----------
-        X : array-like, shape = (n_obs1,)
-                First input vector
-        Y : array-like, shape = (n_obs2,)
-                Second input vector
+    Parameters
+    ----------
+    X : array-like, shape = (n_obs1,)
+        First input vector
+    Y : array-like, shape = (n_obs2,)
+        Second input vector
 
-        Return
-        ------
-        res : ndarray, shape = (n_obs1, n_obs2)
-        """
+    Return
+    ------
+    res : ndarray, shape = (n_obs1, n_obs2)
+
+    Example
+    -------
+    >>>X = np.array([1, 2, 3])
+    >>>Y = np.array([-1, 2])
+    >>>tensorProduct_(X, Y)
+    array([[-1, 2], [-2, 4], [-3, 6]])
+    """
     return np.outer(X, Y)
 
 
@@ -159,13 +198,20 @@ def integrate_(X, Y, method='simpson'):
     Y : array-like, shape = (n_features,)
         Observations
     method : str, default = 'simpson'
-        The method used to integrated. Currently, only the Simpsons method is
-                implemented.
+        The method used to integrated. 
+        Currently, only the Simpsons method is implemented.
 
     Return
     ------
     res : int
-        Estimation of the integration of Y over X. 
+        Estimation of the integration of Y over X.
+
+    Example
+    -------
+    >>>X = np.array([1, 2, 4])
+    >>>Y = np.array([1, 4, 16])
+    >>>integrate_(X, Y)
+    21.0
     """
     if method is not 'simpson':
         raise ValueError('Only the Simpsons method is implemented!')
@@ -188,6 +234,11 @@ def integrationWeights_(X, method='trapz'):
     W : array-like, shape = (n_points,)
             The weights
 
+    Example
+    -------
+    >>>integrationWeights_(np.array([1, 2, 3, 4, 5]), method='trapz')
+    array([0.5, 1., 1., 1., 0.5])
+
     Notes
     -----
     TODO :
@@ -201,11 +252,10 @@ def integrationWeights_(X, method='trapz'):
     L = len(X)
     if method is 'trapz':
         W = 1 / 2 * np.concatenate([[X[1] - X[0]],
-                                    X[2:] - X[:(L - 2)],
-                                    [X[L - 1] - X[L - 2]]])
+            X[2:] - X[:(L - 2)], [X[L - 1] - X[L - 2]]])
     elif callable(method):
         W = method(X)
     else:
-        raise ValueError('Method {} not implemented!'.format(method))
+        raise ValueError(f'Method {method} not implemented!')
 
     return W
