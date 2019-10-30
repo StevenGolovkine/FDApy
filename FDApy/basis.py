@@ -13,25 +13,28 @@ import FDApy
 def basis_legendre(M=3, argvals=None, norm=True):
 	"""Define Legendre basis of function.
 	
-	Build a basis of `M` functions using Legendre polynomials on the interval
-	`argvals`.
-
+	Build an orthogonal basis of `M` functions using Legendre polynomials 
+	on the interval `argvals`.
+	
 	Parameters
 	----------
 	M : int, default = 3
 		Maximum degree of the Legendre polynomials. 
 	argvals : tuple or numpy.ndarray, default = None
-		The values on which evaluated the Legendre polynomials. If `None`, the
-		polynomials are evaluated on the interval [-1, 1].
+		The values on which evaluated the Legendre polynomials. If `None`, 
+		the polynomials are evaluated on the interval [-1, 1].
 	norm : boolean, default = True
 		Do we normalize the functions?
 
 	Return
 	------
 	obj : FDApy.univariate_functional.UnivariateFunctionalData
-		A UnivariateFunctionalData object containing the Legendre polynomial up 
-		to `M` functions evaluated on `argvals`.
+		A UnivariateFunctionalData object containing the Legendre polynomial
+		up to `M` functions evaluated on `argvals`.
 	
+	Example
+	-------
+	>>>basis_legendre(M=3, argvals=np.arange(-1, 1, 0.1), norm=True)
 	"""
 
 	if argvals is None:
@@ -50,11 +53,11 @@ def basis_legendre(M=3, argvals=None, norm=True):
 
 		if norm:
 			legendre = legendre / np.sqrt(scipy.integrate.simps(
-						legendre * legendre, argvals))
+				legendre * legendre, argvals))
 		values[degree, :] = legendre
 
 	obj = FDApy.univariate_functional.UnivariateFunctionalData(
-			tuple(argvals), values)
+		tuple(argvals), values)
 	return obj
 
 def basis_wiener(M=3, argvals=None, norm=True):
@@ -67,8 +70,8 @@ def basis_wiener(M=3, argvals=None, norm=True):
 	M : int, default = 3
 		Number of functions to compute.
 	argvals : tuple or numpy.ndarray, default = None
-		 The values on which evaluated the Wiener basis functions. If `None`, 
-		 the functions are evaluated on the interval [0, 1].
+		The values on which evaluated the Wiener basis functions. If `None`, 
+		the functions are evaluated on the interval [0, 1].
 	norm : boolean, default = True
 		Do we normalize the functions?
 
@@ -78,6 +81,9 @@ def basis_wiener(M=3, argvals=None, norm=True):
 		A UnivariateFunctionalData object containing `M` Wiener basis functions
 		evaluated on `argvals`.
 
+	Example
+	-------
+	>>>basis_wiener(M=3, argvals=np.arange(0, 1, 0.05), norm=True)
 	"""
 	if argvals is None:
 		argvals = np.arange(0, 1, 0.05)
@@ -91,16 +97,16 @@ def basis_wiener(M=3, argvals=None, norm=True):
 	values = np.empty((M, len(argvals)))
 
 	for degree in np.linspace(1, M, M):
-		wiener = np.sqrt(2) * np.sin( (degree - 0.5) * np.pi * argvals)
+		wiener = np.sqrt(2) * np.sin((degree - 0.5) * np.pi * argvals)
 
 		if norm:
 			wiener = wiener / np.sqrt(scipy.integrate.simps(
-						wiener * wiener, argvals))
+				wiener * wiener, argvals))
 
 		values[int(degree-1), :] = wiener
 
 	obj = FDApy.univariate_functional.UnivariateFunctionalData(
-			tuple(argvals), values)
+		tuple(argvals), values)
 	return obj 
 
 def simulate_basis_(basis_name, M, argvals, norm):
@@ -113,17 +119,21 @@ def simulate_basis_(basis_name, M, argvals, norm):
 	M : int
 		Number of functions to compute.
 	argvals : tuple or numpy.ndarray
-		 The values on which evaluated the Wiener basis functions. If `None`, 
-		 the functions are evaluated on the interval [0, 1].
+		The values on which evaluated the Wiener basis functions. If `None`, 
+		the functions are evaluated on the interval [0, 1].
 	norm : boolean
 		Do we normalize the functions?
 
 	Return
 	------
 	basis_ : FDApy.univariate_functional.UnivariateFunctionalData
-		A UnivariateFunctionalData object containing `M` basis functions evaluated
-		on `argvals`.
+		A UnivariateFunctionalData object containing `M` basis functions 
+		evaluated on `argvals`.
 
+	Example
+	-------
+	>>>simulate_basis_('legendre', M=3, 
+		argvals=np.arange(-1, 1, 0.1), norm=True)
 	"""
 	if basis_name == 'legendre':
 		basis_ = basis_legendre(M, argvals, norm)
@@ -149,6 +159,11 @@ def eigenvalues_linear(M=3):
 	------
 	val : list
 		The generated eigenvalues 
+
+	Example
+	-------
+	>>>eigenvalues_linear(M=3)
+	[1.0, 0.6666666666666666, 0.3333333333333333]
 	"""
 	return [(M - m + 1) / M for m in np.linspace(1, M, M)]
 
@@ -164,6 +179,11 @@ def eigenvalues_exponential(M=3):
 	------
 	val : list
 		The generated eigenvalues 
+
+	Example
+	-------
+	>>>eigenvalues_exponential(M=3)
+	[0.36787944117144233, 0.22313016014842982, 0.1353352832366127]
 	"""
 	return [np.exp(-(m+1)/2) for m in np.linspace(1, M, M)]
 
@@ -179,8 +199,14 @@ def eigenvalues_wiener(M=3):
 	------
 	val : list
 		The generated eigenvalues 
+
+	Example
+	-------
+	>>>eigenvalues_wiener(M=3)
+	[0.4052847345693511, 0.04503163717437235, 0.016211389382774045]
 	"""
-	return [np.power((np.pi / 2) * (2 * m - 1), -2) for m in np.linspace(1, M, M)]
+	return [np.power((np.pi / 2) * (2 * m - 1), -2) 
+			for m in np.linspace(1, M, M)]
 
 def simulate_eigenvalues_(eigenvalues_name, M):
 	"""Function that redirects to the right simulation eigenvalues function.
@@ -192,6 +218,15 @@ def simulate_eigenvalues_(eigenvalues_name, M):
 	M : int
 		Number of eigenvalues to generates
 
+	Return
+	------
+	eigenvalues_: list
+		The generated eigenvalues
+
+	Example
+	-------
+	>>>simulate_eigenvalues_('linear', M=3)
+	[1.0, 0.6666666666666666, 0.3333333333333333]
 	"""
 	if eigenvalues_name == 'linear':
 		eigenvalues_ = eigenvalues_linear(M)
@@ -202,6 +237,7 @@ def simulate_eigenvalues_(eigenvalues_name, M):
 	else:
 		raise ValueError('Eigenvalues not implemented!')
 	return eigenvalues_
+
 
 #############################################################################
 # Class Simulation
@@ -219,10 +255,14 @@ class Simulation(object):
 	M : int
 		Number of basis functions to use to simulate the data.
 	eigenvalues : str
-		Define the decreasing if the eigenvalues of the process.
+		Define the decreasing of the eigenvalues of the process.
 
 	Attributes
 	----------
+	coef_: numpy.ndarray
+		Array of coefficients c_{i,j}
+	obs: FDApy.univariate_functional.UnivariateFunctionalData
+		Simulation of univariate functional data
 
 	Notes
 	-----
@@ -242,13 +282,17 @@ class Simulation(object):
 		
 		Parameters
 		----------
-		argvals : list of tuples
-			A list of numeric vectors (tuples) or a single numeric vector (tuple)
-			giving the sampling points in the domains.
+		argvals : tuple or numpy.ndarray
+			A single numeric vector giving the sampling points 
+			in the domain.
 		N : int
 			Number of observations to generate.
 
 		"""
+
+		if isinstance(argvals, np.ndarray):
+			argvals = tuple(argvals)
+
 		# Simulate the basis
 		basis_ = simulate_basis_(self.basis, self.M, argvals, norm=True)
 
@@ -295,14 +339,15 @@ class Simulation(object):
 		for i in self.obs:
 			if sd_function is None:
 				noise = np.random.normal(0, np.sqrt(noise_var),
-										 size=len(self.obs.argvals[0]))
+					size=len(self.obs.argvals[0]))
 			else:
 				noise = sd_function(i.values) *\
-						np.random.normal(0, 1, size=len(self.obs.argvals[0]))
+					np.random.normal(0, 1, size=len(self.obs.argvals[0]))
 			noise_func = FDApy.univariate_functional.UnivariateFunctionalData(
 				self.obs.argvals, np.array(noise, ndmin=2))
 			noisy_data.append(i + noise_func)
 
-		data = FDApy.multivariate_functional.MultivariateFunctionalData(noisy_data)
+		data = FDApy.multivariate_functional.MultivariateFunctionalData(
+			noisy_data)
 
 		self.noisy_obs = data.asUnivariateFunctionalData()
