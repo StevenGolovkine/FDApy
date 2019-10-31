@@ -52,13 +52,6 @@ class TestBasis(unittest.TestCase):
 		X = simulate_eigenvalues_('linear', M=3)
 		self.assertTrue(np.allclose(X,
 			[1.0, 0.6666666666666666, 0.3333333333333333]))
-
-	# Test Simulation constructor
-	def test_Simulation(self):
-		X = Simulation('legendre', M=3, eigenvalues='linear')
-		self.assertEqual(X.basis, 'legendre')
-		self.assertEqual(X.M, 3)
-		self.assertEqual(X.eigenvalues, 'linear')
 		
 
 if __name__ == '__main__':

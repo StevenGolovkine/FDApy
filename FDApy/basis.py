@@ -10,15 +10,15 @@ import FDApy
 #############################################################################
 # Definition of the basis (eigenfunctions)
 
-def basis_legendre(M=3, argvals=None, norm=True):
+def basis_legendre(K=3, argvals=None, norm=True):
 	"""Define Legendre basis of function.
 	
-	Build an orthogonal basis of `M` functions using Legendre polynomials 
+	Build an orthogonal basis of `K` functions using Legendre polynomials 
 	on the interval `argvals`.
 	
 	Parameters
 	----------
-	M : int, default = 3
+	K : int, default = 3
 		Maximum degree of the Legendre polynomials. 
 	argvals : tuple or numpy.ndarray, default = None
 		The values on which evaluated the Legendre polynomials. If `None`, 
@@ -30,11 +30,11 @@ def basis_legendre(M=3, argvals=None, norm=True):
 	------
 	obj : FDApy.univariate_functional.UnivariateFunctionalData
 		A UnivariateFunctionalData object containing the Legendre polynomial
-		up to `M` functions evaluated on `argvals`.
+		up to `K` functions evaluated on `argvals`.
 	
 	Example
 	-------
-	>>>basis_legendre(M=3, argvals=np.arange(-1, 1, 0.1), norm=True)
+	>>>basis_legendre(K=3, argvals=np.arange(-1, 1, 0.1), norm=True)
 	"""
 
 	if argvals is None:
@@ -46,9 +46,9 @@ def basis_legendre(M=3, argvals=None, norm=True):
 	if isinstance(argvals, tuple):
 		argvals = np.array(argvals)
 
-	values = np.empty((M, len(argvals)))
+	values = np.empty((K, len(argvals)))
 
-	for degree in range(M):
+	for degree in range(K):
 		legendre = scipy.special.eval_legendre(degree, argvals)
 
 		if norm:
@@ -60,14 +60,14 @@ def basis_legendre(M=3, argvals=None, norm=True):
 		tuple(argvals), values)
 	return obj
 
-def basis_wiener(M=3, argvals=None, norm=True):
+def basis_wiener(K=3, argvals=None, norm=True):
 	"""Define Wiener basis of function.
 
 	Build a basis of functions of the Wiener process.
 
 	Parameters
 	----------
-	M : int, default = 3
+	K : int, default = 3
 		Number of functions to compute.
 	argvals : tuple or numpy.ndarray, default = None
 		The values on which evaluated the Wiener basis functions. If `None`, 
@@ -94,9 +94,9 @@ def basis_wiener(M=3, argvals=None, norm=True):
 	if isinstance(argvals, tuple):
 		argvals = np.array(argvals)
 
-	values = np.empty((M, len(argvals)))
+	values = np.empty((K, len(argvals)))
 
-	for degree in np.linspace(1, M, M):
+	for degree in np.linspace(1, K, K):
 		wiener = np.sqrt(2) * np.sin((degree - 0.5) * np.pi * argvals)
 
 		if norm:
@@ -109,14 +109,14 @@ def basis_wiener(M=3, argvals=None, norm=True):
 		tuple(argvals), values)
 	return obj 
 
-def simulate_basis_(basis_name, M, argvals, norm):
+def simulate_basis_(basis_name, K, argvals, norm):
 	"""Function that redirects to the right simulation basis function.
 
 	Parameters
 	----------
 	basis_name : str
 		Name of the basis to use.
-	M : int
+	K : int
 		Number of functions to compute.
 	argvals : tuple or numpy.ndarray
 		The values on which evaluated the Wiener basis functions. If `None`, 
@@ -136,9 +136,9 @@ def simulate_basis_(basis_name, M, argvals, norm):
 		argvals=np.arange(-1, 1, 0.1), norm=True)
 	"""
 	if basis_name == 'legendre':
-		basis_ = basis_legendre(M, argvals, norm)
+		basis_ = basis_legendre(K, argvals, norm)
 	elif basis_name == 'wiener':
-		basis_ = basis_wiener(M, argvals, norm)
+		basis_ = basis_wiener(K, argvals, norm)
 	else:
 		raise ValueError('Basis not implemented!')
 	return basis_
@@ -245,76 +245,27 @@ def simulate_eigenvalues_(eigenvalues_name, M):
 class Simulation(object):
 	"""An object to simulate functional data.
 
-	The function are simulated using the Karhunen-Loève decomposition :
-		X_i(t) = \mu(t) + \sum_{j = 1}^M c_{i,j}\phi_{i,j}(t), i = 1, ..., N
-
-	Parameters:
-	-----------
-	basis : str
-		String which denotes the basis of functions to use.
-	M : int
-		Number of basis functions to use to simulate the data.
-	eigenvalues : str
-		Define the decreasing of the eigenvalues of the process.
-
-	Attributes
+	Parameters
 	----------
-	coef_: numpy.ndarray
-		Array of coefficients c_{i,j}
-	obs: FDApy.univariate_functional.UnivariateFunctionalData
-		Simulation of univariate functional data
-
-	Notes
-	-----
-
-	References
-	---------
-
+	N: int
+		Number of curves to simulate.
+	M: int or numpy.ndarray
+		Sampling points.
+		If M is int, we use np.linspace(0, 1, M) as sampling points.
+		Otherwise, we use the numpy.ndarray.
 	"""
-	def __init__(self, basis, M, eigenvalues):
-		self.basis = basis
-		self.M = M
-		self.eigenvalues = eigenvalues
 
+	def __init__(self, N, M):
+		self.N_ = N
+		if isinstance(M, int):
+			M = np.linspace(0, 1, M)
+		self.M_ = M
 
-	def new(self, argvals, N):
-		"""Function that simulates `N` observations
-		
-		Parameters
-		----------
-		argvals : tuple or numpy.ndarray
-			A single numeric vector giving the sampling points 
-			in the domain.
-		N : int
-			Number of observations to generate.
-
+	def new():
+		"""Function to simulate observations.
+		To redefine.
 		"""
-
-		if isinstance(argvals, np.ndarray):
-			argvals = tuple(argvals)
-
-		# Simulate the basis
-		basis_ = simulate_basis_(self.basis, self.M, argvals, norm=True)
-
-		# Define the decreasing of the eigenvalues
-		if type(self.eigenvalues) is str:
-			eigenvalues_ = simulate_eigenvalues_(self.eigenvalues, self.M)
-		else:
-			eigenvalues_ = self.eigenvalues
-		
-		# Simulate the N observations
-		obs = np.empty(shape=(N, len(argvals)))
-		coef = np.empty(shape=(N, len(eigenvalues_)))
-		for i in range(N):
-			coef_ = list(np.random.normal(0, eigenvalues_))
-			prod_ = coef_ * basis_
-			
-			obs[i, :] = prod_.values.sum(axis=0)
-			coef[i, :] = coef_
-
-		self.coef_ = coef
-		self.obs = FDApy.univariate_functional.UnivariateFunctionalData(
-			argvals, obs)
+		pass
 
 	def add_noise(self, noise_var=1, sd_function=None):
 		"""Add noise to the data.
@@ -338,8 +289,8 @@ class Simulation(object):
 		noisy_data = []
 		for i in self.obs:
 			if sd_function is None:
-				noise = np.random.normal(0, np.sqrt(noise_var),
-					size=len(self.obs.argvals[0]))
+				noise = np.random.normal(0, np.sqrt(noise_var), 
+					size=len(self.M))
 			else:
 				noise = sd_function(i.values) *\
 					np.random.normal(0, 1, size=len(self.obs.argvals[0]))
@@ -351,3 +302,99 @@ class Simulation(object):
 			noisy_data)
 
 		self.noisy_obs = data.asUnivariateFunctionalData()
+
+
+class Basis(Simulation):
+	"""A functional data object representing an orthogonal (or orthonormal)
+	basis of functions.
+
+	The function are simulated using the Karhunen-Loève decomposition :
+		X_i(t) = mu(t) + sum_{j = 1}^M c_{i,j}phi_{i,j}(t), i = 1, ..., N
+
+	Parameters:
+	-----------
+	basis_name: str
+		String which denotes the basis of functions to use.
+	K: int
+		Number of basis functions to use to simulate the data.
+	eigenvalues: str or numpy.ndarray
+		Define the decreasing of the eigenvalues of the process.
+		If `eigenvalues` is str, we define the eigenvalues as using the
+		corresponding function. Otherwise, we keep it like that. 
+	norm: bool
+		Should we normalize the basis function?
+	Attributes
+	----------
+	coef_: numpy.ndarray
+		Array of coefficients c_{i,j}
+	obs: FDApy.univariate_functional.UnivariateFunctionalData
+		Simulation of univariate functional data
+
+	Notes
+	-----
+
+	References
+	---------
+
+	"""
+	def __init__(self, N, M, basis_name, K, eigenvalues, norm):
+		Simulation.__init__(self, N, M)
+		self.basis_name_ = basis_name
+		self.K_ = K
+		self.norm_ = norm_
+
+		# Define the basis
+		self.basis_ = simulate_basis_(self.basis_name_, 
+			self.K_, self.M_, self.norm_)
+
+		# Define the decreasing of the eigenvalues
+		if isinstance(eigenvalues) is str:
+			eigenvalues = simulate_eigenvalues_(eigenvalues, self.K_)
+		self.eigenvalues_ = eigenvalues
+
+	def new(self, argvals, N):
+		"""Function that simulates `N` observations
+		
+		Parameters
+		----------
+		argvals : tuple or numpy.ndarray
+			A single numeric vector giving the sampling points 
+			in the domain.
+		N : int
+			Number of observations to generate.
+
+		"""
+
+		#if isinstance(argvals, np.ndarray):
+		#	argvals = tuple(argvals)
+		
+		# Simulate the N observations
+		#obs = np.empty(shape=(N, len(argvals)))
+		#coef = np.empty(shape=(N, len(eigenvalues_)))
+		#for i in range(N):
+		#	coef_ = list(np.random.normal(0, eigenvalues_))
+		#	prod_ = coef_ * basis_
+			
+		#	obs[i, :] = prod_.values.sum(axis=0)
+		#	coef[i, :] = coef_
+
+		#self.coef_ = coef
+		#self.obs = FDApy.univariate_functional.UnivariateFunctionalData(
+		#	argvals, obs)
+
+
+class Brownian(Simulation):
+	"""A functional data object representing a brownian motion.
+	
+	Parameters
+	----------
+	N: int, default=100
+		Number of curves to simulate.
+	brownian_type: str, default='regular'
+		Type of brownian motion to simulate.
+		One of 'regular', 'geometric' or 'fractional'.
+	"""
+
+	def __init__(self, N, M, brownian_type='regular'):
+		Simulation.__init__(N)
+		self.brownian_type = brownian_type
