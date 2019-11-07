@@ -143,6 +143,80 @@ def simulate_basis_(basis_name, K, argvals, norm):
 		raise ValueError('Basis not implemented!')
 	return basis_
 
+#############################################################################
+# Definition of the different Browian motion
+
+def standard_brownian_(argvals=None, x0=0.0, norm=False):
+	"""Function that generate standard brownian motions.
+
+	Generate one dimensional standard brownian motion.
+
+	Parameters
+	----------
+	argvals: tuple or numpy.ndarray, default=None
+		The values on which evaluated the Wiener basis functions. If `None`, 
+		the functions are evaluated on the interval [0, 1].
+	x0: double, default=0.0
+		Start of the brownian motion.
+	norm: bool, default=False
+		Should the simulation be normed?
+
+	Return
+	------
+	A univariate or irregular functional data object.
+
+	References
+	----------
+	- https://github.com/cran/somebm/blob/master/R/bm.R
+	"""
+
+	if argvals is None:
+		argvals = np.arange(0, 1, 0.05)
+
+	t0 = np.min(argvals)
+	t1 = np.max(argvals)
+	M = np.size(argvals)
+	
+	# For one brownian motion
+	delta = (t1 - t0) / M
+	W = np.zeros(M)
+	W[0] = x0
+
+	for idx in range(1, M):
+		W[idx] = W[idx - 1] + np.random.normal() * np.sqrt(delta)
+
+	obj = FDApy.univariate_functional.UnivariateFunctionalData(
+		argvals=tuple(argvals), values=W[np.newaxis])
+	return obj
+
+def simulate_brownian_(brownian_type, argvals=None, norm=False, **kwargs):
+	"""Fonction that redirects to the right brownian motion function.
+
+	Parameters
+	----------
+	brownian_type: str
+		Name of the brownian motion to simulate.
+	argvals: tuple or numpy.ndarray
+		The sampling points for the brownian motion.
+	norm: boolean
+		Do we normalize the simulation?
+
+	Return
+	------
+	simu_: FDApy.univariate_functional.UnivariateFunctionalData
+		A UnivariateFunctionalData object containing the simulated brownian
+		motion evaluated on `argvals`.
+
+	Example
+	-------
+	>>>simulate_brownian_(brownian_type='standard', 
+		argvals=np.arange(0, 1, 0.05), norm=False)
+	"""
+	if brownian_type == 'standard':
+		simu_ = standard_brownian_(argvals, x0 = kwargs['x0'], norm = False)
+	else:
+		raise ValueError('Brownian type not implemented!')
+	return simu_
 
 #############################################################################
 # Definition of the eigenvalues
@@ -287,21 +361,21 @@ class Simulation(object):
 		"""
 
 		noisy_data = []
-		for i in self.obs:
+		for i in self.obs_:
 			if sd_function is None:
 				noise = np.random.normal(0, np.sqrt(noise_var), 
-					size=len(self.M))
+					size=len(self.M_))
 			else:
 				noise = sd_function(i.values) *\
-					np.random.normal(0, 1, size=len(self.obs.argvals[0]))
+					np.random.normal(0, 1, size=len(self.obs_.argvals[0]))
 			noise_func = FDApy.univariate_functional.UnivariateFunctionalData(
-				self.obs.argvals, np.array(noise, ndmin=2))
+				self.obs_.argvals, np.array(noise, ndmin=2))
 			noisy_data.append(i + noise_func)
 
 		data = FDApy.multivariate_functional.MultivariateFunctionalData(
 			noisy_data)
 
-		self.noisy_obs = data.asUnivariateFunctionalData()
+		self.noisy_obs_ = data.asUnivariateFunctionalData()
 
 
 class Basis(Simulation):
@@ -341,46 +415,38 @@ class Basis(Simulation):
 		Simulation.__init__(self, N, M)
 		self.basis_name_ = basis_name
 		self.K_ = K
-		self.norm_ = norm_
+		self.norm_ = norm
 
 		# Define the basis
 		self.basis_ = simulate_basis_(self.basis_name_, 
 			self.K_, self.M_, self.norm_)
 
 		# Define the decreasing of the eigenvalues
-		if isinstance(eigenvalues) is str:
+		if isinstance(eigenvalues, str):
 			eigenvalues = simulate_eigenvalues_(eigenvalues, self.K_)
 		self.eigenvalues_ = eigenvalues
 
-	def new(self, argvals, N):
+	def new(self):
 		"""Function that simulates `N` observations
 		
 		Parameters
 		----------
-		argvals : tuple or numpy.ndarray
-			A single numeric vector giving the sampling points 
-			in the domain.
-		N : int
-			Number of observations to generate.
 
 		"""
 
-		#if isinstance(argvals, np.ndarray):
-		#	argvals = tuple(argvals)
-		
 		# Simulate the N observations
-		#obs = np.empty(shape=(N, len(argvals)))
-		#coef = np.empty(shape=(N, len(eigenvalues_)))
-		#for i in range(N):
-		#	coef_ = list(np.random.normal(0, eigenvalues_))
-		#	prod_ = coef_ * basis_
+		obs = np.empty(shape=(self.N_, len(self.M_)))
+		coef = np.empty(shape=(self.N_, len(self.eigenvalues_)))
+		for i in range(self.N_):
+			coef_ = list(np.random.normal(0, self.eigenvalues_))
+			prod_ = coef_ * self.basis_
 			
-		#	obs[i, :] = prod_.values.sum(axis=0)
-		#	coef[i, :] = coef_
+			obs[i, :] = prod_.values.sum(axis=0)
+			coef[i, :] = coef_
 
-		#self.coef_ = coef
-		#self.obs = FDApy.univariate_functional.UnivariateFunctionalData(
-		#	argvals, obs)
+		self.coef_ = coef
+		self.obs_ = FDApy.univariate_functional.UnivariateFunctionalData(
+			tuple(self.M_), obs)
 
 
 class Brownian(Simulation):
@@ -398,3 +464,7 @@ class Brownian(Simulation):
 	def __init__(self, N, M, brownian_type='regular'):
 		Simulation.__init__(N)
 		self.brownian_type = brownian_type
+
+	def new(self):
+		pass
+		
