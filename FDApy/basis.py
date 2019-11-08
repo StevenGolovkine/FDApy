@@ -146,7 +146,7 @@ def simulate_basis_(basis_name, K, argvals, norm):
 #############################################################################
 # Definition of the different Browian motion
 
-def standard_brownian_(argvals=None, x0=0.0, norm=False):
+def standard_brownian_(argvals=None, x0=0.0):
 	"""Function that generate standard brownian motions.
 
 	Generate one dimensional standard brownian motion.
@@ -154,16 +154,14 @@ def standard_brownian_(argvals=None, x0=0.0, norm=False):
 	Parameters
 	----------
 	argvals: tuple or numpy.ndarray, default=None
-		The values on which evaluated the Wiener basis functions. If `None`, 
+		The values on which evaluated the brownian motion. If `None`, 
 		the functions are evaluated on the interval [0, 1].
 	x0: double, default=0.0
 		Start of the brownian motion.
-	norm: bool, default=False
-		Should the simulation be normed?
 
 	Return
 	------
-	A univariate or irregular functional data object.
+	A univariate functional data object.
 
 	References
 	----------
@@ -183,7 +181,101 @@ def standard_brownian_(argvals=None, x0=0.0, norm=False):
 	W[0] = x0
 
 	for idx in range(1, M):
-		W[idx] = W[idx - 1] + np.random.normal() * np.sqrt(delta)
+		W[idx] = W[idx - 1] + np.sqrt(delta) * np.random.normal()
+
+	obj = FDApy.univariate_functional.UnivariateFunctionalData(
+		argvals=tuple(argvals), values=W[np.newaxis])
+	return obj
+
+def geometric_brownian_(argvals=None, x0=1.0, mu=0, sigma=1):
+	"""Function that generate geometric brownian motions.
+
+	Generate one dimensional geometric brownian motion.
+
+	Parameters
+	----------
+	argvals: tuple or numpy.ndarray, default=None
+		The values on which evaluated the geometric brownian motion. If `None`,
+		the brownian is evaluated on the interval [0, 1].
+	x0: double, default=1.0
+		Start of the brownian motion.
+	mu: double, default=0
+		The interest rate
+	sigma: double, default=1
+		The diffusion coefficient
+
+	Return
+	------
+	A univariate functional data object.
+
+	References
+	----------
+	- https://github.com/cran/somebm/blob/master/R/bm.R
+	"""
+
+	if argvals is None:
+		argvals = np.arange(0, 1, 0.05)
+
+	t0 = np.min(argvals)
+	t1 = np.max(argvals)
+	M = np.size(argvals)
+
+	# For one geometric brownian motion.
+	delta = (t1 - t0) / M
+	W = np.zeros(M)
+	W[0] = 0
+
+	for idx in range(1, M):
+		W[idx] = W[idx - 1] + np.sqrt(delta) * np.random.normal()
+
+	S = x0 * np.exp((mu - np.power(sigma, 2) / 2) * (argvals - t0) + sigma * W)
+
+	obj = FDApy.univariate_functional.UnivariateFunctionalData(
+		argvals=tuple(argvals), values=S[np.newaxis])
+	return obj
+
+def fractional_brownian_(argvals=None, hurst=0.5):
+	"""Function that generate fractional brownian moitions.
+	
+	Generate one dimension fractional brownian motion with a given Hurst
+	parameter.
+
+	Parameters
+	----------
+	argvals: tuple or numpy.ndarray, default=None
+		The values on which evaluated the fractional brownian motion. 
+		If `None`, the brownian is evaluated on the interval [0, 1].
+	hurst: double, default=0.5
+		Hurst parameter
+
+	Return
+	------
+	A univariate functional data object.
+
+	References
+	----------
+	- https://github.com/cran/somebm/blob/master/R/bm.R
+	"""
+
+	if argvals is None:
+		argvals = np.arange(0, 1, 0.05)
+
+	M = np.size(argvals)
+
+	# For one fractional brownian motion.
+	R = np.zeros(M)
+	R[0] = 1
+	for idx in range(1, M - 1):
+		R[idx + 1] = 0.5 * (np.power(idx + 1, 2 * hurst) - 
+							2 * np.power(idx, 2 * hurst) + 
+							np.power(idx - 1, 2 * hurst))
+
+	R = np.append(R, R[(len(R)-2)::-1])
+	lamb = np.real(np.fft.fft(R) / (2 * M))
+	W = np.fft.fft(np.sqrt(lamb) * 
+			(np.random.normal(size = 2 * M - 1) + 
+				np.random.normal(size = 2 * M - 1) * 1j))
+	W = np.power(M, -hurst) * np.cumsum(np.real(W[1:(M + 1)]))
 
 	obj = FDApy.univariate_functional.UnivariateFunctionalData(
 		argvals=tuple(argvals), values=W[np.newaxis])
@@ -213,7 +305,12 @@ def simulate_brownian_(brownian_type, argvals=None, norm=False, **kwargs):
 		argvals=np.arange(0, 1, 0.05), norm=False)
 	"""
 	if brownian_type == 'standard':
-		simu_ = standard_brownian_(argvals, x0 = kwargs['x0'], norm = False)
+		simu_ = standard_brownian_(argvals, x0 = kwargs['x0'])
+	elif brownian_type == 'geometric':
+		simu_ = geometric_brownian_(argvals, 
+			x0 = kwargs['x0'], mu = kwargs['mu'], sigma = kwargs['sigma'])
+	elif brownian_type == 'fractional':
+		simu_ = fractional_brownian_(argvals, hurst = kwargs['hurst'])
 	else:
 		raise ValueError('Brownian type not implemented!')
 	return simu_
