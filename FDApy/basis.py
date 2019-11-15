@@ -198,7 +198,7 @@ def geometric_brownian_(argvals=None, x0=1.0, mu=0, sigma=1):
 		The values on which evaluated the geometric brownian motion. If `None`,
 		the brownian is evaluated on the interval [0, 1].
 	x0: double, default=1.0
-		Start of the brownian motion.
+		Start of the brownian motion. Careful, should be stricly greater than 0
 	mu: double, default=0
 		The interest rate
 	sigma: double, default=1

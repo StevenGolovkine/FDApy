@@ -30,7 +30,7 @@ def _check_argvals(argvals):
             not all([isinstance(i, tuple) for i in argvals]):
         raise ValueError('argvals has to be a list of tuples or a tuple!')
     if isinstance(argvals, tuple):
-        print('argvals is convert into one dimensional list.')
+        #print('argvals is convert into one dimensional list.')
         argvals = [argvals]
 
     # Check if all entries of `argvals` are numeric.
@@ -57,7 +57,7 @@ def _check_values(values):
 
     # TODO: Modify the function to deal with other types of data.
     if isinstance(values, np.ndarray):
-        print('values is convert into one dimensional list.')
+        #print('values is convert into one dimensional list.')
         values = [values]
     if not all([isinstance(i, np.ndarray) for i in values]):
         raise ValueError('values has to be a list of numpy array!')
