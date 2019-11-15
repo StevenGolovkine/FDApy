@@ -261,20 +261,19 @@ def fractional_brownian_(argvals=None, hurst=0.5):
 		argvals = np.arange(0, 1, 0.05)
 
 	M = np.size(argvals)
-
-	# For one fractional brownian motion.
-	R = np.zeros(M)
+	R = np.zeros(M + 1)
 	R[0] = 1
-	for idx in range(1, M - 1):
-		R[idx + 1] = 0.5 * (np.power(idx + 1, 2 * hurst) - 
-							2 * np.power(idx, 2 * hurst) + 
-							np.power(idx - 1, 2 * hurst))
+	for idx in range(1, M + 1):
+		R[idx] = 0.5 * (np.power(idx + 1, 2 * hurst) - 2 * 
+			np.power(idx, 2 * hurst) + 
+			np.power(idx - 1, 2 * hurst))
 
-	R = np.append(R, R[(len(R)-2)::-1])
+	invR = R[::-1]
+	R = np.append(R, invR[1:len(invR)-1])
 	lamb = np.real(np.fft.fft(R) / (2 * M))
-	W = np.fft.fft(np.sqrt(lamb) * 
-			(np.random.normal(size = 2 * M - 1) + 
-				np.random.normal(size = 2 * M - 1) * 1j))
+	
+	W = np.fft.fft(np.sqrt(lamb) * (np.random.normal(size = 2 * M) + 
+		np.random.normal(size = 2 * M) * (0 + 1j)))
 	W = np.power(M, -hurst) * np.cumsum(np.real(W[1:(M + 1)]))
 
 	obj = FDApy.univariate_functional.UnivariateFunctionalData(
@@ -524,7 +523,7 @@ class Basis(Simulation):
 		self.eigenvalues_ = eigenvalues
 
 	def new(self):
-		"""Function that simulates `N` observations
+		"""Function that simulates `N` observations.
 		
 		Parameters
 		----------
@@ -558,10 +557,26 @@ class Brownian(Simulation):
 		One of 'regular', 'geometric' or 'fractional'.
 	"""
 
-	def __init__(self, N, M, brownian_type='regular'):
-		Simulation.__init__(N)
-		self.brownian_type = brownian_type
+	def __init__(self, N, M, brownian_type='standard'):
+		Simulation.__init__(self, N, M)
+		self.brownian_type_ = brownian_type
 
-	def new(self):
-		pass
-		
+	def new(self, **kwargs):
+		"""Function that simulates `N` observations.
+
+		Parameters
+		----------
+
+		"""
+		param_dict = {k: kwargs.pop(k) for k in dict(kwargs)}
+
+		# Simulate the N observations
+		obs = []
+		for i in range(self.N_):
+			obs.append(simulate_brownian_(self.brownian_type_, 
+				self.M_, **param_dict))
+
+		data = FDApy.multivariate_functional.MultivariateFunctionalData(obs)
+
+		self.obs_ = data.asUnivariateFunctionalData()
+
