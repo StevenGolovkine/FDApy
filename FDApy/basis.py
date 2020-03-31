@@ -11,17 +11,17 @@ from .multivariate_functional import MultivariateFunctionalData
 #######################################################################
 # Definition of the basis (eigenfunctions)
 
-def basis_legendre(M=3, argvals=None, norm=True):
+def basis_legendre(K=3, argvals=None, norm=True):
     """Define Legendre basis of function.
 
-    Build a basis of `M` functions using Legendre polynomials on the interval
+    Build a basis of `K` functions using Legendre polynomials on the interval
     `argvals`.
 
     Parameters
     ----------
-    M : int, default = 3
+    K : int, default = 3
         Maximum degree of the Legendre polynomials.
-    argvals : tuple or numpy.ndarray, default = None
+    argvals : numpy.ndarray, default = None
         The values on which evaluated the Legendre polynomials. If `None`, the
         polynomials are evaluated on the interval [-1, 1].
     norm : boolean, default = True
@@ -31,8 +31,7 @@ def basis_legendre(M=3, argvals=None, norm=True):
     ------
     obj : UnivariateFunctionalData
         A UnivariateFunctionalData object containing the Legendre
-        polynomial up.
-        to `M` functions evaluated on `argvals`.
+        polynomial up to `K` functions evaluated on `argvals`.
     """
 
     if argvals is None:
@@ -41,12 +40,9 @@ def basis_legendre(M=3, argvals=None, norm=True):
     if isinstance(argvals, list):
         raise ValueError('argvals has to be a tuple or a numpy array!')
 
-    if isinstance(argvals, tuple):
-        argvals = np.array(argvals)
+    values = np.empty((K, len(argvals)))
 
-    values = np.empty((M, len(argvals)))
-
-    for degree in range(M):
+    for degree in np.arange(0, K):
         legendre = scipy.special.eval_legendre(degree, argvals)
 
         if norm:
@@ -68,7 +64,7 @@ def basis_wiener(K=3, argvals=None, norm=True):
     ----------
     K : int, default = 3
         Number of functions to compute.
-    argvals : tuple or numpy.ndarray, default = None
+    argvals : numpy.ndarray, default = None
          The values on which evaluated the Wiener basis functions.
          If `None`, the functions are evaluated on the interval [0, 1].
     norm : boolean, default = True
@@ -77,30 +73,28 @@ def basis_wiener(K=3, argvals=None, norm=True):
     Return
     ------
     obj : UnivariateFunctionalData
-        A UnivariateFunctionalData object containing `M` Wiener basis functions
+        A UnivariateFunctionalData object containing `K` Wiener basis functions
         evaluated on `argvals`.
 
     Example
     -------
-    >>>basis_wiener(M=3, argvals=np.arange(0, 1, 0.05), norm=True)
+    >>>basis_wiener(K=3, argvals=np.arange(0, 1, 0.05), norm=True)
     """
     if argvals is None:
         argvals = np.arange(0, 1, 0.05)
 
     if isinstance(argvals, list):
-        raise ValueError('argvals has to be a tuple or a numpy array!')
-
-    if isinstance(argvals, tuple):
-        argvals = np.array(argvals)
+        raise ValueError('argvals has to be a numpy array!')
 
     values = np.empty((K, len(argvals)))
 
-    for degree in np.linspace(1, K, K):
+    for degree in np.arange(1, K + 1):
         wiener = np.sqrt(2) * np.sin((degree - 0.5) * np.pi * argvals)
 
         if norm:
             wiener = wiener / np.sqrt(scipy.integrate.simps(
                 wiener * wiener, argvals))
+        values[(degree - 1), :] = wiener
 
     obj = UnivariateFunctionalData(argvals, values)
     return obj
