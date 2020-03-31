@@ -4,7 +4,6 @@
 import numpy as np
 import scipy
 
-import FDApy
 
 ##############################################################################
 # Class Bandwidth
@@ -29,7 +28,7 @@ class Bandwidth(object):
         Estimation of the bandwidth for each t0
     """
     def __init__(self):
-
+        pass
 
     def __repr__(self):
         res = "Bandwidth:\n" +\

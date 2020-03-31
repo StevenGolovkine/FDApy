@@ -10,7 +10,7 @@ from FDApy.irregular_functional import IrregularFunctionalData
 
 
 class TestIrregularFunctionalData(unittest.TestCase):
-    """Test class for the class IrregularFunctionalData. 
+    """Test class for the class IrregularFunctionalData.
 
     """
 
@@ -98,6 +98,6 @@ class TestIrregularFunctionalData(unittest.TestCase):
         irr = IrregularFunctionalData(argvals, values)
         self.assertEqual(irr.dimension(), 1)
 
-        
+
 if __name__ == '__main__':
     unittest.main()
