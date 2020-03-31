@@ -6,7 +6,6 @@ import numpy as np
 import pygam
 
 from .irregular_functional import IrregularFunctionalData
-from .multivariate_functional import MultivariateFunctionalData
 
 from .local_polynomial import LocalPolynomial
 from .utils import (integrate_, integrationWeights_,
@@ -374,17 +373,6 @@ class UnivariateFunctionalData(object):
             argvals.append(self.argvals[0])
             values.append(np.array(row))
         return IrregularFunctionalData(argvals, values)
-
-    def asMultivariateFunctionalData(self):
-        """Coerce univariate functional data into mulivariate functional data
-        with one function.
-
-        Return
-        ------
-        obj : MultivariateFunctionalData
-            object of the class MultivariateFunctionalData
-        """
-        return MultivariateFunctionalData([self])
 
     def mean(self, smooth=False, method='LocalLinear', **kwargs):
         """Compute the mean function.
