@@ -5,40 +5,51 @@ import itertools
 import numpy as np
 import pygam
 
-import FDApy
+from .irregular_functional import IrregularFunctionalData
+from .multivariate_functional import MultivariateFunctionalData
 
-#############################################################################
+from .local_polynomial import LocalPolynomial
+from .utils import (integrate_, integrationWeights_,
+                    rangeStandardization_, rowMean_,
+                    tensorProduct_)
+
+
+###############################################################################
 # Checkers used by the UnivariateFunctionalData class.
+
 
 def _check_argvals(argvals):
     """Check the user provided `argvals`.
 
     Parameters
     ---------
-    argvals : list of tuples
-        A list of numeric vectors (tuples) or a single numeric vector (tuple) 
-        giving the sampling points in the domains. 
+    argvals : list of numpy.ndarray
+        A list of numeric vectors (numpy.ndarray) or a single numeric vector
+        (numpy.ndarray) giving the sampling points in the domains.
 
     Return
     ------
-    argvals : list of tuples
+    argvals : list of numpy.ndarray
     """
-    if type(argvals) not in (tuple, list):
-        raise ValueError('argvals has to be a list of tuples or a tuple!')
+    if type(argvals) not in (np.ndarray, list):
+        raise ValueError(
+            'argvals has to be a list of numpy.ndarray or a numpy.ndarray!')
     if isinstance(argvals, list) and \
-            not all([isinstance(i, tuple) for i in argvals]):
-        raise ValueError('argvals has to be a list of tuples or a tuple!')
-    if isinstance(argvals, tuple):
-        #print('argvals is converted into one dimensional list!')
+            not all([isinstance(i, np.ndarray) for i in argvals]):
+        raise ValueError(
+            'argvals has to be a list of numpy.ndarray or a numpy.ndarray!')
+    if isinstance(argvals, np.ndarray):
         argvals = [argvals]
 
     # Check if all entries of `argvals` are numeric.
     argvals_ = list(itertools.chain.from_iterable(argvals))
-    if not all([type(i) in (int, float, np.int_, np.float_) 
-            for i in argvals_]):
-        raise ValueError('All argvals elements must be numeric!')
+    if not all([type(i) in (int, float, np.int_, np.float_)
+                for i in argvals_]):
+        raise ValueError(
+            'All argvals elements must be numeric!')
 
     return argvals
+
 
 def _check_values(values):
     """Check the user provided `values`.
@@ -55,19 +66,21 @@ def _check_values(values):
 
     # TODO: Modify the function to deal with other types of data.
     if not isinstance(values, np.ndarray):
-        raise ValueError('values has to be a numpy array!')
+        raise ValueError(
+            'values has to be a numpy.ndarray!')
 
     return values
 
+
 def _check_argvals_values(argvals, values):
-    """Check the compatibility of argvals and values. 
+    """Check the compatibility of argvals and values.
 
     Parameters
     ----------
     argvals : list of tuples
-        List of tuples containing the sample points. 
+        List of tuples containing the sample points.
     values : numpy.ndarray
-        Numpy array containing the values. 
+        Numpy array containing the values.
 
     Return
     ------
@@ -83,6 +96,7 @@ def _check_argvals_values(argvals, values):
 
     return True
 
+
 def _check_argvals_equality(argvals1, argvals2):
     """Check if two provided `argvals` are equals.
 
@@ -96,8 +110,9 @@ def _check_argvals_equality(argvals1, argvals2):
     True, if the two argvals are the same.
     """
     if argvals1 != argvals2:
-        raise ValueError(' '.join(['The two UnivariateFunctionalData', \
-                                   'objects are defined on different argvals.']))
+        raise ValueError(
+            """The two UnivariateFunctionalData objects are defined
+                on different argvals.""")
     return True
 
 
@@ -110,13 +125,14 @@ class UnivariateFunctionalData(object):
 
     Parameters
     ----------
-    argvals : list of tuples
-        A list of numeric vectors (tuples) or a single numeric vector (tuple)
-        giving the sampling points in the domains.
+    argvals : list of numpy.ndarray
+        A list of numeric vectors (numpy.ndarray) or a single numeric
+        vector (numpy.ndarray) giving the sampling points in the domains.
 
     values : array-like
         An array, giving the observed values for N observations. Missing values
-        should be included via `None` (or `np.nan`). The shape depends on `argvals`::
+        should be included via `None` (or `np.nan`). The shape depends
+        on `argvals`::
 
             (N, M) if `argvals` is a single numeric vector,
             (N, M_1, ..., M_d) if `argvals` is a list of numeric vectors.
@@ -134,7 +150,6 @@ class UnivariateFunctionalData(object):
     ----------
 
     """
-
     def __init__(self, argvals, values, standardize=True):
 
         self.argvals = argvals
@@ -143,8 +158,7 @@ class UnivariateFunctionalData(object):
         if standardize:
             argvals_stand = []
             for argval in self.argvals:
-                argvals_stand.append(tuple(
-                    FDApy.utils.rangeStandardization_(argval)))
+                argvals_stand.append(rangeStandardization_(argval))
             self.argvals_stand = argvals_stand
 
     def __repr__(self):
@@ -179,34 +193,33 @@ class UnivariateFunctionalData(object):
         Return
         ------
         res : UnivariateFunctionalData object
-            The selected observation(s) as UnivariateFunctionalData object.  
+            The selected observation(s) as UnivariateFunctionalData object.
 
         """
         argvals = self.argvals
         values = self.values[index]
 
         if len(values.shape) == len(argvals):
-            values = np.array(values, ndmin=(len(argvals)+1))
+            values = np.array(values, ndmin=(len(argvals) + 1))
 
         res = UnivariateFunctionalData(argvals, values)
         return res
 
     def __add__(self, new):
-        if not isinstance(new, 
-            FDApy.univariate_functional.UnivariateFunctionalData):
-            raise ValueError(' '.join(['The object to add must be an object', \
-                                       'of the class UnivariateFunctionalData.']))
+        if not isinstance(new, UnivariateFunctionalData):
+            raise ValueError(
+                """The object to add must be an object of the class
+                    UnivariateFunctionalData.""")
         _check_argvals_equality(self.argvals, new.argvals)
         values = self.values + new.values
         res = UnivariateFunctionalData(self.argvals, values)
         return res
 
     def __sub__(self, new):
-        if not isinstance(new,
-            FDApy.univariate_functional.UnivariateFunctionalData):
-            raise ValueError(' '.join(['The object to substract must be an', \
-                                       'object of the class', \
-                                       'UnivariateFunctionalData.']))
+        if not isinstance(new, UnivariateFunctionalData):
+            raise ValueError(
+                """The object to substract must be an object of the class
+                    UnivariateFunctionalData.""")
         _check_argvals_equality(self.argvals, new.argvals)
         values = self.values - new.values
         res = UnivariateFunctionalData(self.argvals, values)
@@ -220,8 +233,9 @@ class UnivariateFunctionalData(object):
             for i in np.arange(0, len(obj)):
                 values[i, :] = self.values[i] * obj[i]
         else:
-            raise ValueError(' '.join(['The multiplcation can not be performed!', \
-                                       ' Not the right type!']))
+            raise ValueError(
+                """The multiplcation can not be performed!
+                    Not the right type!""")
 
         res = UnivariateFunctionalData(self.argvals, values)
         return res
@@ -262,7 +276,7 @@ class UnivariateFunctionalData(object):
     @property
     def mean_(self):
         return self._mean_
-    
+
     @mean_.setter
     def mean_(self, new_mean):
         self._mean_ = new_mean
@@ -273,19 +287,19 @@ class UnivariateFunctionalData(object):
         Return
         ------
         n : int
-            Number of observations of the object. 
+            Number of observations of the object.
 
         """
         n = len(self.values)
         return n
 
     def rangeObs(self):
-        """Range of the observations of the objects. 
+        """Range of the observations of the objects.
 
         Return
         ------
         min(values_), max(values_) : tuple
-            Tuple containing the minimum and maximum number of all the 
+            Tuple containing the minimum and maximum number of all the
             observations for an object.
 
         """
@@ -300,14 +314,14 @@ class UnivariateFunctionalData(object):
         return min_, max_
 
     def nObsPoint(self):
-        """Number of sampling points of the objects. 
+        """Number of sampling points of the objects.
 
         Return
         ------
         n : list of int
-            List of the length self.dimension() where the i-th entry correspond 
-            to the number of sampling points of the i-th dimension of the 
-            observations.
+            List of the length self.dimension() where the i-th entry
+            correspond to the number of sampling points of the i-th dimension
+            of the observations.
 
         """
         n = [len(i) for i in self.argvals]
@@ -318,9 +332,9 @@ class UnivariateFunctionalData(object):
 
         Return
         ------
-        range_ : list of tuples containing the minimum and maximum number where 
-        the i-th entry of the list contains the range of the i-th dimension 
-        of the object.
+        range_ : list of tuples containing the minimum and maximum number
+        where the i-th entry of the list contains the range of the i-th
+        dimension of the object.
         """
         range_ = [(min(i), max(i)) for i in self.argvals]
         return range_
@@ -338,20 +352,20 @@ class UnivariateFunctionalData(object):
         return dim
 
     def asIrregularFunctionalData(self):
-        """Coerce univariate functional data of dimension 1 into irregular 
+        """Coerce univariate functional data of dimension 1 into irregular
         functional data.
 
         Return
         ------
-        obj : FDApy.irregular_functional.IrregularFunctionalData
-            An object of the class FDApy.irregular_functional.IrregularFunctionalData
+        obj : IrregularFunctionalData
+            An object of the class IrregularFunctionalData
         """
 
         if self.dimension() != 1:
-            raise ValueError(' '.join(['It is not possible to coerce', \
-                                       'a UnivariateFunctionalData as', \
-                                       'IrregularFunctionalData other', \
-                                       'than the ones with dimension 1!']))
+            raise ValueError(
+                """It is not possible to coerce a UnivariateFunctionalData as
+                IrregularFunctionalData other than the ones with
+                dimension 1!""")
 
         argvals = []
         values = []
@@ -359,20 +373,18 @@ class UnivariateFunctionalData(object):
         for row in self.values:
             argvals.append(self.argvals[0])
             values.append(np.array(row))
-        return FDApy.irregular_functional.IrregularFunctionalData(
-            argvals, values)
+        return IrregularFunctionalData(argvals, values)
 
     def asMultivariateFunctionalData(self):
-        """Coerce univariate functional data into mulivariate functional data 
+        """Coerce univariate functional data into mulivariate functional data
         with one function.
 
         Return
         ------
-        obj : FDApy.mulivariate_functional.MultivariateFunctionalData
-            object of the class FDApy.mulivariate_functional.MultivariateFunctionalData
+        obj : MultivariateFunctionalData
+            object of the class MultivariateFunctionalData
         """
-        return FDApy.multivariate_functional.MultivariateFunctionalData(
-            [self])
+        return MultivariateFunctionalData([self])
 
     def mean(self, smooth=False, method='LocalLinear', **kwargs):
         """Compute the mean function.
@@ -398,41 +410,40 @@ class UnivariateFunctionalData(object):
 
         Return
         ------
-        obj : FDApy.univariate_functional.UnivariateFunctionalData object
-            Object of the class FDApy.univariate_functional.UnivariateFunctionalData
-            with the same argvals as self and one observation.
+        obj : UnivariateFunctionalData object
+            Object of the class UnivariateFunctionalData with the same
+            argvals as self and one observation.
 
         """
-        mean_ = FDApy.utils.rowMean_(self.values)
+        mean_ = rowMean_(self.values)
         if smooth:
             if method is 'LocalLinear':
                 kernel = kwargs.get('kernel', 'gaussian')
                 degree = kwargs.get('degree', 2)
                 bandwidth = kwargs.get('bandwidth', 1)
-                
-                lp = FDApy.local_polynomial.LocalPolynomial(
-                    kernel=kernel,
-                    bandwidth=bandwidth,
-                    degree=degree)
+
+                lp = LocalPolynomial(kernel=kernel,
+                                     bandwidth=bandwidth,
+                                     degree=degree)
                 lp.fit(x=self.argvals, y=mean_)
                 mean_ = lp.X_fit_
             elif method is 'GAM':
                 n_basis = kwargs.get('n_basis', 10)
-                
+
                 X = np.array(self.argvals[0])
-                
+
                 mean_ = pygam.LinearGAM(pygam.s(0, n_splines=n_basis)).\
-                        fit(X, mean_).\
-                        predict(X)
+                    fit(X, mean_).\
+                    predict(X)
             else:
                 raise ValueError('Method not implemented!')
 
-        self.mean_ = FDApy.univariate_functional.UnivariateFunctionalData(
-            self.argvals, np.array(mean_, ndmin=2))
+        self.mean_ = UnivariateFunctionalData(self.argvals,
+                                              np.array(mean_, ndmin=2))
 
     def covariance(self, smooth=False, method='LocalLinear', **kwargs):
         """Compute the covariance function.
-        
+
         Parameters
         ----------
         smooth: boolean, default=False
@@ -454,19 +465,20 @@ class UnivariateFunctionalData(object):
 
         Return
         ------
-        obj : FDApy.univariate_functional.UnivariateFunctionalData object
-            Object of the class FDApy.univariate_functional.UnivariateFunctionalData 
-            with dimension 2 and one observation.
-        
+        obj : UnivariateFunctionalData object
+            Object of the class UnivariateFunctionalData with dimension 2
+            and one observation.
+
         References
         ----------
-        Yao, Müller and Wang (2005), Functional Data Analysis for Sparse Longitudinal Data, 
+        Yao, Müller and Wang (2005), Functional Data Analysis for Sparse
+        Longitudinal Data,
         Journal of the American Statistical Association, Vol. 100, No. 470
-        
+
         Notes
         -----
-        Currently, for smoothing, please consider to use the 'GAM' method as the
-        'LocalLinear' is not working.
+        Currently, for smoothing, please consider to use the 'GAM' method as
+        the 'LocalLinear' is not working.
         """
         if self.dimension() != 1:
             raise ValueError(
@@ -484,86 +496,90 @@ class UnivariateFunctionalData(object):
                 kernel = kwargs.get('kernel', 'gaussian')
                 degree = kwargs.get('degree', 2)
                 bandwidth = kwargs.get('bandwidth', 1)
-                
-                lp = FDApy.local_polynomial.LocalPolynomial(
-                    kernel=kernel,
-                    bandwidth=bandwidth,
-                    degree=degree)
+
+                lp = LocalPolynomial(kernel=kernel,
+                                     bandwidth=bandwidth,
+                                     degree=degree)
                 lp.fit(x=new_argvals, y=cov)
                 cov = lp.X_fit_
             elif method is 'GAM':
                 n_basis = kwargs.get('n_basis', 10)
-                
+
                 # Remove covariance diagonale because of measurement errors.
                 np.fill_diagonal(cov, None)
                 cov = cov[~np.isnan(cov)]
-                
+
                 # Define train and predict vector
                 X = np.transpose(
-                        np.vstack(
-                            (np.repeat(new_argvals[0], repeats=len(new_argvals[0])), 
-                             np.tile(new_argvals[0], reps=len(new_argvals[0])))
-                        )
+                    np.vstack(
+                        (np.repeat(new_argvals[0],
+                                   repeats=len(new_argvals[0])),
+                         np.tile(new_argvals[0],
+                                 reps=len(new_argvals[0]))
+                         )
                     )
-                X_train = X[X[:,0] != X[:,1], :]
-                
+                )
+                X_train = X[X[:, 0] != X[:, 1], :]
+
                 cov = pygam.LinearGAM(pygam.te(0, 1, n_splines=n_basis)).\
-                        fit(X_train, cov).\
-                        predict(X).\
-                        reshape((len(new_argvals[0]), len(new_argvals[0])))
+                    fit(X_train, cov).\
+                    predict(X).\
+                    reshape((len(new_argvals[0]), len(new_argvals[0])))
             else:
                 raise ValueError('Method not implemented!')
-        
+
         cov = (cov + cov.T) / 2
-        
+
         # Estimation of sigma2 (Yao, Müller and Wang, 2005)
         D = np.asarray(self.argvals[0])
         # Local linear smoother focusing on diagonal values.
-        lp = FDApy.local_polynomial.LocalPolynomial(
-            kernel='gaussian', degree=1, bandwidth=kwargs.get('bandwidth', 1))
+        lp = LocalPolynomial(kernel='gaussian',
+                             degree=1,
+                             bandwidth=kwargs.get('bandwidth', 1))
         lp.fit(x=D, y=diag)
         V_hat = lp.predict(D)
-        
+
         # Staniswalis and Lee (1998)
-        T_len = D[len(D)-1] - D[0]
-        T1_lower = np.sum(~(D >= (D[0] + 0.25*T_len)))
-        T1_upper = np.sum((D <= (D[len(D)-1] - 0.25*T_len)))
-        W = FDApy.utils.integrationWeights_(D[T1_lower:T1_upper], method='trapz')
+        T_len = D[len(D) - 1] - D[0]
+        T1_lower = np.sum(~(D >= (D[0] + 0.25 * T_len)))
+        T1_upper = np.sum((D <= (D[len(D) - 1] - 0.25 * T_len)))
+        W = integrationWeights_(D[T1_lower:T1_upper], method='trapz')
         sigma2 = np.maximum(
-            np.dot(W, (V_hat - np.diag(cov))[T1_lower:T1_upper]) / (D[T1_upper] - D[T1_lower]), 
-            0)
-        
-        self.covariance_ = FDApy.univariate_functional.UnivariateFunctionalData(
-            new_argvals, np.array(cov, ndmin=3))
+            np.dot(W, (V_hat - np.diag(cov))[T1_lower:T1_upper]) /
+            (D[T1_upper] - D[T1_lower]), 0)
+
+        self.covariance_ = UnivariateFunctionalData(new_argvals,
+                                                    np.array(cov, ndmin=3))
         self.sigma2 = sigma2
 
     def estimate_noise(self):
         """Estimation of the noise.
-        
+
         This method estimates the (heteroscedastic) noise for a univariate
         functional data object.
-        Model: Z_i(t_k) = f_i(t_k) + \sigma(f_i(t_k))\epsilon_i
-        It is assume that all the curves have been sampled on the same design points.
-        Let's t_1, ..., t_k be that points, the estimation of the noise at t_k is:: 
-        sigma^2(t_k) = 1/2n \sum_{i} [Z_i(t_{k+1}) - Z_i(t_{k})]^2
+        Model: :math:`Z_i(t_k) = f_i(t_k) + \sigma(f_i(t_k))\epsilon_i`
+        It is assume that all the curves have been sampled on the same design
+        points. Let's t_1, ..., t_k be that points, the estimation of the
+        noise at t_k is::
+        :math:`sigma^2(t_k) = 1/2n \sum_{i} [Z_i(t_{k+1}) - Z_i(t_{k})]^2`
         """
         if self.dimension() != 1:
             raise ValueError(
                 'Only one dimensional functional data are supported!')
-        
+
     def integrate(self, method='simpson'):
         """Integrate all the observations over the argvals.
 
         Parameters
         ----------
         method : str, default = 'simpson'
-            The method used to integrated. Currently, only the Simpsons method 
+            The method used to integrated. Currently, only the Simpsons method
             is implemented.
 
         Return
         ------
         obj : list of int
-            List where entry i is the integration of the observation i over 
+            List where entry i is the integration of the observation i over
             the argvals.
 
         Note
@@ -572,7 +588,7 @@ class UnivariateFunctionalData(object):
         """
         if method is not 'simpson':
             raise ValueError('Only the Simpsons method is implemented!')
-        return [FDApy.utils.integrate_(self.argvals[0], i) for i in self.values]
+        return [integrate_(self.argvals[0], i) for i in self.values]
 
     def tensorProduct(self, data):
         """Compute the tensor product of two univariate functional data.
@@ -585,16 +601,16 @@ class UnivariateFunctionalData(object):
         Return
         ------
         obj : FDApy.univariate_functional.UnivariateFunctionalData
-            Object of the class FDApy.univariate_functional.UnivariateFunctionalData 
-            of dimension 2 (self.argvals x data.argvals)
+            Object of the class UnivariateFunctionalData of dimension 2
+            (self.argvals x data.argvals)
         """
         if (self.dimension() != 1) or (data.dimension() != 1):
             raise ValueError(
                 'Only one dimensional functional data are supported!')
 
         new_argvals = [self.argvals[0], data.argvals[0]]
-        new_values = [FDApy.utils.tensorProduct_(i, j) 
-            for i in self.values for j in data.values]
+        new_values = [tensorProduct_(i, j) for i in self.values
+                      for j in data.values]
         return UnivariateFunctionalData(new_argvals, np.array(new_values))
 
     def smooth(self, points, kernel="gaussian", bandwidth=0.05, degree=2):
@@ -611,27 +627,25 @@ class UnivariateFunctionalData(object):
         kernel : string, default="gaussian"
             Kernel name used as weight (default = 'gaussian').
         bandwidth : float, default=0.05
-            Strictly positive. Control the size of the associated neighborhood. 
+            Strictly positive. Control the size of the associated neighborhood.
         degree: integer, default=2
             Degree of the local polynomial to fit.
 
         Return
         ------
         res : FDApy.univariate_functional.UnivariateFunctionalData
-            Object of the class FDApy.univariate_functional.UnivariateFunctionalData 
-            which correpond to the data that have been smooth::
-                argvals = `points` given as input
-
+            Object of the class UnivariateFunctionalData which correpond to
+            the data that have been smooth:: argvals = `points` given as input
         """
         if self.dimension() != 1:
-            raise ValueError(' '.join(['Only 1-dimensional univariate functional', \
-                                       'data can be smoothed!']))
+            raise ValueError(
+                """Only 1-dimensional univariate functional data can
+                be smoothed!""")
 
         # Define the smoother
-        lp = FDApy.local_polynomial.LocalPolynomial(
-                kernel=kernel,
-                bandwidth=bandwidth,
-                degree=degree)
+        lp = LocalPolynomial(kernel=kernel,
+                             bandwidth=bandwidth,
+                             degree=degree)
 
         points_ = np.array(points)
         pred = np.empty([self.nObs(), len(points_)])

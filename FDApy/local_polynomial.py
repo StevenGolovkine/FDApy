@@ -5,18 +5,28 @@ import numpy as np
 
 from sklearn.preprocessing import PolynomialFeatures
 
+
 ##############################################################################
 # Inter functions for the LocalPolynomial class.
 
 
 def _gaussian(t):
     """Compute the gaussian density with mean 0 and stadard deviation 1.
+<<<<<<< HEAD
+
+    Parameters
+    ----------
+    t : array-like, shape = [n_samples]
+        Array at which computes the gaussian density
+
+=======
 
     Parameters
     ----------
     t : array-like, shape = [n_samples]
             Array at which computes the gaussian density
 
+>>>>>>> d5b2a11a4f70a086a986d778e809552b55206e4a
     Return
     ------
     K : array-like, shape = [n_samples]
@@ -30,7 +40,7 @@ def _epanechnikov(t):
     Parameters
     ----------
     t : array-like, shape = [n_samples]
-            Array on which computes the Epanechnikov kernel
+        Array on which computes the Epanechnikov kernel
 
     Return
     ------
@@ -38,8 +48,8 @@ def _epanechnikov(t):
 
     References
     ----------
-    Hastie, Tibshirani and Friedman, Elements of Statistical Learning, 2009, 
-    equation 6.4 
+    Hastie, Tibshirani and Friedman, Elements of Statistical Learning, 2009,
+    equation 6.4
     """
     K = np.zeros(t.shape)
     idx = np.where(t < 1)
@@ -53,7 +63,7 @@ def _tri_cube(t):
     Parameters
     ----------
     t : array-like, shape = [n_samples]
-            Array on which computes the tri-cube kernel
+        Array on which computes the tri-cube kernel
 
     Return
     ------
@@ -61,8 +71,8 @@ def _tri_cube(t):
 
     References
     ----------
-    Hastie, Tibshirani and Friedman, Elements of Statistical Learning, 2009, 
-    equation 6.6 
+    Hastie, Tibshirani and Friedman, Elements of Statistical Learning, 2009,
+    equation 6.6
     """
     K = np.zeros(t.shape)
     idx = np.where(t < 1)
@@ -76,7 +86,7 @@ def _bi_square(t):
     Parameters
     ----------
     t : array-like, shape = [n_samples]
-            Array on which computes the bi-square kernel
+        Array on which computes the bi-square kernel
 
     Return
     ------
@@ -99,13 +109,13 @@ def _compute_kernel(x, x0, h, kernel='gaussian'):
     Parameters
     ----------
     kernel : string, default='gaussian'
-            Kernel name used.
+        Kernel name used.
     x : array-like, shape = [n_dim, n_samples]
-            Training data.
+        Training data.
     x0 : float-array, shape= [n_dim,]
-            Number around which compute the kernel.
+        Number around which compute the kernel.
     h : float
-            Bandwidth to control the importance of points far from x0.
+        Bandwidth to control the importance of points far from x0.
 
     Return
     ------
@@ -113,8 +123,8 @@ def _compute_kernel(x, x0, h, kernel='gaussian'):
 
     References
     ----------
-    Hastie, Tibshirani and Friedman, Elements of Statistical Learning, 2009, 
-    equation 6.13 
+    Hastie, Tibshirani and Friedman, Elements of Statistical Learning, 2009,
+    equation 6.13
     """
 
     if not np.iterable(x0):
@@ -141,31 +151,32 @@ def _loc_poly(x, y, x0, B,
               kernel='gaussian', h=0.05, degree=2):
     """Local polynomial regression for one point.
 
-    Let (x_1, Y_1), ...., (x_n, Y_n) be a random sample of bivariate data. Assume 
-    the following model: Y_i = f(x_i) + e_i. We would like to estimate the unknown
-    regression function f(x) = E[Y | X = x]. We approximate f(x) using Taylor series.
+    Let (x_1, Y_1), ...., (x_n, Y_n) be a random sample of bivariate data.
+    Assume the following model: Y_i = f(x_i) + e_i. We would like to estimate
+    the unknown regression function f(x) = E[Y | X = x]. We approximate f(x)
+    using Taylor series.
 
     Parameters
     ----------
     x : array-like, shape = [n_samples]
-            1-D input array.
+        1-D input array.
     y : array-like, shape = [n_samples]
-            1-D input array such that y = f(x) + e.
+        1-D input array such that y = f(x) + e.
     x0 : float
-            1-D array on which estimate the function f(x). 
+        1-D array on which estimate the function f(x).
     B : array-like, shape = [n_sample, degree+1]
-            Design matrix.
+        Design matrix.
     kernel : string, default='gaussian'
-            Kernel name used as weight.
+        Kernel name used as weight.
     h : float, default=0.05
-            Bandwidth for the kernel trick.
+        Bandwidth for the kernel trick.
     degree : integer, default=2
-            Degree of the local polynomial to fit.
+        Degree of the local polynomial to fit.
 
     Return
     ------
     y0_pred : float
-            Prediction of y0, which is f(x0).
+        Prediction of y0, which is f(x0).
 
     References
     ----------
@@ -192,21 +203,22 @@ def _loc_poly(x, y, x0, B,
 
 
 class LocalPolynomial():
-    """Local polynomial regression. 
+    """Local polynomial regression.
 
-    Let (x_1, Y_1), ...., (x_n, Y_n) be a random sample of bivariate data. 
-    For all i, x_i belongs to R^d and Y_i in R. Assume the following model: 
-    Y_i = f(x_i) + e_i. We would like to estimate the unknown regression 
+    Let (x_1, Y_1), ...., (x_n, Y_n) be a random sample of bivariate data.
+    For all i, x_i belongs to R^d and Y_i in R. Assume the following model:
+    Y_i = f(x_i) + e_i. We would like to estimate the unknown regression
+
     function f(x) = E[Y | X = x]. We approximate f(x) using Taylor series.
 
     Parameters
     ----------
     kernel : string, default="gaussian"
-            Kernel name used as weight (default = 'gaussian').
+        Kernel name used as weight (default = 'gaussian').
     bandwidth : float, default=0.05
-            Strictly positive. Control the size of the associated neighborhood. 
+        Strictly positive. Control the size of the associated neighborhood.
     degree: integer, default=2
-            Degree of the local polynomial to fit.
+        Degree of the local polynomial to fit.
 
     Return
     ------
@@ -218,7 +230,6 @@ class LocalPolynomial():
     * https://github.com/arokem/lowess/blob/master/lowess/lowess.py
 
     """
-
     def __init__(self, kernel="gaussian", bandwidth=0.05, degree=2):
         # TODO: Add test on parameters.
         self.kernel = kernel
@@ -232,13 +243,13 @@ class LocalPolynomial():
         Parameters:
         -----------
         x : array-like, shape = [n_dim, n_samples]
-                Training data, input array.
+            Training data, input array.
         y : array-like, shape = [n_samples, ]
-                Target values, 1-D input array
+            Target values, 1-D input array
 
         Return
         ------
-        self : returns an instance of self. 		
+        self : returns an instance of self.
         """
         # TODO: Add tests on the parameters.
         self.X = np.array(x, ndmin=2)
@@ -249,8 +260,8 @@ class LocalPolynomial():
         design_matrix = self.poly_features.fit_transform(self.X.T)
 
         self.X_fit_ = np.array([_loc_poly(x, y, i, design_matrix,
-                                          self.kernel, self.bandwidth, self.degree) for i in x0.T])
-
+                                self.kernel, self.bandwidth, self.degree)
+                                for i in x0.T])
         return self
 
     def predict(self, X):
@@ -263,7 +274,7 @@ class LocalPolynomial():
         Return
         ------
         y_pred : array-like, shape = [n_samples]
-                Return predicted values.
+            Return predicted values.
         """
         if type(X) in (int, float, np.int_, np.float_):
             X = [X]
@@ -271,6 +282,7 @@ class LocalPolynomial():
         design_matrix = self.poly_features.fit_transform(self.X.T)
 
         y_pred = np.array([_loc_poly(self.X, self.Y, i, design_matrix,
-                                     self.kernel, self.bandwidth, self.degree) for i in X])
+                           self.kernel, self.bandwidth, self.degree)
+                           for i in X])
 
         return y_pred

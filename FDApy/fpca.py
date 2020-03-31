@@ -2,9 +2,11 @@
 # -*-coding:utf8 -*
 
 import numpy as np
-import sklearn
 
-import FDApy
+from .univariate_functional import UnivariateFunctionalData
+from .multivariate_functional import MultivariateFunctionalData
+from .utils import integrationWeights_
+
 
 #############################################################################
 # Class UFPCA
@@ -12,8 +14,8 @@ import FDApy
 class UFPCA():
     """Univariate Functional Principal Components Analysis (UFPCA)
 
-    Linear dimensionality reduction of univariate functional data using 
-    Singular Value Decomposition of the data to project it to a lower 
+    Linear dimensionality reduction of univariate functional data using
+    Singular Value Decomposition of the data to project it to a lower
     dimension space.
 
     It uses the PCA implementation of sklearn.
@@ -27,14 +29,14 @@ class UFPCA():
             n_components == min(n_samples, n_features)
 
         if n_components is int, n_components are kept.
-        if 0 < n_components < 1, select the number of components such that 
-        the amount of variance that needs to be explained is greater than 
+        if 0 < n_components < 1, select the number of components such that
+        the amount of variance that needs to be explained is greater than
         the percentage specified by n_components.
 
     Attributes
     ----------
     eigenfunctions : array, shape = (n_components, n_features)
-        Principal axes in feature space, representing the directions of 
+        Principal axes in feature space, representing the directions of
         maximum variances in the data.
     eigenvalues : array, shape = (n_components, )
         The singular values corresponding to each of selected components.
@@ -50,7 +52,7 @@ class UFPCA():
 
         Parameters
         ----------
-        X : FDApy.univariate_fonctional.UnivariateFunctionalData
+        X : UnivariateFunctionalData
             Training data
 
         Return
@@ -70,18 +72,18 @@ class UFPCA():
 
     def _fit(self, X):
         """Dispatch to the right submethod depending on the input."""
-        if type(X) is FDApy.univariate_functional.UnivariateFunctionalData:
+        if type(X) is UnivariateFunctionalData:
             self._fit_uni(X)
         else:
-            raise TypeError(' '.join(['UFPCA only support',\
-                    'FDApy.univariate_fonctional.UnivariateFunctionalData object!']))
+            raise TypeError(
+                """UFPCA only support UnivariateFunctionalData object!""")
 
     def _fit_uni(self, X):
         """Univariate Functional PCA.
-        
+
         Parameters
         ----------
-        X: FDApy.univariate_fonctional.UnivariateFunctionalData
+        X: UnivariateFunctionalData
             Training data
         n_components : int, float, None, default=None
             Number of components to keep.
@@ -90,7 +92,7 @@ class UFPCA():
             n_components == min(n_samples, n_features)
 
             if n_components is int, n_components are kept.
-            if 0 < n_components < 1, select the number of components such that 
+            if 0 < n_components < 1, select the number of components such that
             the amount of variance that needs to be explained is greater than
             the percentage specified by n_components.
 
@@ -98,7 +100,7 @@ class UFPCA():
         ----------
         * Ramsey and Silverman, Functional Data Analysis, 2005, chapter 8
         * https://raw.githubusercontent.com/refunders/refund/master/R/fpca.sc.R
-        
+
         Notes
         -----
         TODO : Add possibility to smooth the eigenfunctions
@@ -108,48 +110,50 @@ class UFPCA():
             X.covariance(smooth=True, **self.smoothing_parameters)
 
         # Choose n, the wj's and the sj's (from Ramsey and Silverman, 2005)
-        N = X.nObsPoint()
+        # N = X.nObsPoint()
         S = np.asarray(X.argvals).squeeze()
-        W = FDApy.utils.integrationWeights_(S, method='trapz')
-        
+        W = integrationWeights_(S, method='trapz')
+
         # Compute the eigenvalues and eigenvectors of W^{1/2}VW^{1/2}
         Wsqrt = np.diag(np.sqrt(W))
         Winvsqrt = np.diag(1 / np.sqrt(W))
         V = np.dot(np.dot(Wsqrt, X.covariance_.values.squeeze()), Wsqrt)
-        
+
         Evalues, Evectors = np.linalg.eigh(V)
         Evalues[Evalues < 0] = 0
         Evalues = Evalues[::-1]
-        npc = np.sum(np.cumsum(Evalues) / np.sum(Evalues) < self.n_components) + 1
-        
+        npc = np.sum(np.cumsum(Evalues) /
+                     np.sum(Evalues) < self.n_components) + 1
+
         self.eigenvalues = Evalues[:npc]
         # Compute eigenfunction = W^{-1/2}U
         self.eigenfunctions = np.transpose(
-            np.dot(Winvsqrt, np.fliplr(Evectors)[:,:npc]))
-        
-        # Estimation of the covariance 
+            np.dot(Winvsqrt, np.fliplr(Evectors)[:, :npc]))
+
+        # Estimation of the covariance
         self.covariance_hat = np.dot(
-            np.dot(np.transpose(self.eigenfunctions), np.diag(self.eigenvalues)),
+            np.dot(np.transpose(self.eigenfunctions),
+                   np.diag(self.eigenvalues)),
             self.eigenfunctions)
-        
+
         self.argvals = X.argvals
         self.mean = X.mean_
 
     def transform(self, X, method='PACE'):
         """Apply dimensionality reduction to X.
-        
+
         The functional principal components scores are:
             c_ik = \int (X_i(t) - \mu(t))\phi_k(t)dt
-            
+
         Two methods are proposed to estimate these scores:
-            * Numerical integration, works well in case of large density of the grid of
-            measurements of each individuals.
-            * PACE: Principal Components through Conditional Expectation, particularly
-            suitable for sparse functional data.
-            
+            * Numerical integration, works well in case of large density of
+            the grid of measurements of each individuals.
+            * PACE: Principal Components through Conditional Expectation,
+            particularly suitable for sparse functional data.
+
         Parameters
         ----------
-        X : FDApy.univariate_functional.UnivariateFunctionalData object
+        X : UnivariateFunctionalData object
             Data
         method : 'PACE' or 'NumInt'
             Which method we should use for the estimation of the scores?
@@ -157,33 +161,36 @@ class UFPCA():
         Return
         ------
         X_proj : array-like, shape = (n_samples, n_components)
-        
+
         References
         ----------
-        Yao, Müller and Wang (2005), Functional Data Analysis for Sparse Longitudinal Data, 
-        Journal of the American Statistical Association, Vol. 100, No. 470
+        Yao, Müller and Wang (2005), Functional Data Analysis for Sparse
+        Longitudinal Data, Journal of the American Statistical Association,
+        Vol. 100, No. 470
 
         """
         # TODO: Add checkers
         X_unmean = X - self.mean
         if method is 'PACE':
             Sigma_inv = np.linalg.inv(
-                self.covariance_hat + X.sigma2 * np.diagflat(np.ones(shape=self.covariance_hat.shape[0]))
+                self.covariance_hat + X.sigma2 * np.diagflat(
+                    np.ones(shape=self.covariance_hat.shape[0]))
             )
-            X_proj = self.eigenvalues * np.dot(np.dot(X_unmean.values, Sigma_inv), self.eigenfunctions.T)
+            X_proj = self.eigenvalues * np.dot(
+                np.dot(X_unmean.values, Sigma_inv), self.eigenfunctions.T)
         elif method is 'NumInt':
             prod = [traj * self.eigenfunctions for traj in X_unmean.values]
             # TODO: Modify to add other numrical integration methods
             X_proj = np.trapz(prod, X_unmean.argvals)
         else:
             raise ValueError('Method not implemented!')
-        
+
         return X_proj
 
     def inverse_transform(self, X):
         """Transform the data back to its original space.
-        
-        Return a Univariate Functional data X_original whose transform would 
+
+        Return a Univariate Functional data X_original whose transform would
         be X.
 
         Parameters
@@ -194,12 +201,12 @@ class UFPCA():
 
         Return
         ------
-        X_original : FDApy.univariate_functional.UnivariateFunctionalData object
-        
+        X_original : UnivariateFunctionalData object
+
         """
         values = np.dot(X, self.eigenfunctions) + self.mean.values
-        return FDApy.univariate_functional.UnivariateFunctionalData(
-            self.argvals, values)
+        return UnivariateFunctionalData(self.argvals, values)
+
 
 #############################################################################
 # Class MFPCA
@@ -207,8 +214,8 @@ class UFPCA():
 class MFPCA():
     """Multivariate Functional Principal Components Analysis (MFPCA)
 
-    Linear dimensionality reduction of multivariate functional data using 
-    Singular Value Decomposition of the data to project it to a lower 
+    Linear dimensionality reduction of multivariate functional data using
+    Singular Value Decomposition of the data to project it to a lower
     dimension space.
 
     It uses the PCA implementation of sklearn.
@@ -222,16 +229,16 @@ class MFPCA():
             n_components == min(n_samples, n_features)
 
         if n_components is int, n_components are kept.
-        if 0 < n_components < 1, select the number of components such that 
-        the amount of variance that needs to be explained is greater than 
+        if 0 < n_components < 1, select the number of components such that
+        the amount of variance that needs to be explained is greater than
         the percentage specified by n_components.
 
     Attributes
     ----------
-    ufpca_ : list of FDApy.UFPCA, shape = (X.nFunctions(),)
-        List of FDApy.UFPCA where entry i is an object of the class FDApy.UFPCA
-        which the univariate functional PCA of the function i of the 
-        multivariate functional data.
+    ufpca_ : list of UFPCA, shape = (X.nFunctions(),)
+        List of UFPCA where entry i is an object of the class UFPCA which the
+        univariate functional PCA of the function i of the multivariate
+        functional data.
     uniScores_ : array-like, shape = (X.nObs(), X.nFunctions())
         List of array containing the projection of the data onto the univariate
         functional principal components.
@@ -248,7 +255,7 @@ class MFPCA():
 
     References
     ----------
-    Happ and Greven, Multivariate Functional Principal Component Analysis for 
+    Happ and Greven, Multivariate Functional Principal Component Analysis for
     Data Observed on Different (Dimensional Domains), Journal of the American
     Statistical Association.
 
@@ -261,7 +268,7 @@ class MFPCA():
 
         Parameters
         ----------
-        X : FDApy.multivariate_functional.MultivariateFunctionalData
+        X : MultivariateFunctionalData
             Training data
 
         Return
@@ -275,25 +282,25 @@ class MFPCA():
     def _fit(self, X):
         """Dispatch to the right submethod depending on the input."""
         # TODO: Diffenrent possiblity for n_components
-        if type(X) is FDApy.multivariate_functional.MultivariateFunctionalData:
+        if type(X) is MultivariateFunctionalData:
             self._fit_multi(X, self.n_components)
         else:
-            raise TypeError('MFPCA only support \
-            FDApy.multivariate_functional.MultivariateFunctionalData object!')
+            raise TypeError(
+                'MFPCA only support MultivariateFunctionalData object!')
 
     def _fit_multi(self, X, n_components):
         """Multivariate Functional PCA.
-        
+
         Notes
         -----
-        TODO: Add a selection of the number of PC in FD. Maybe, consider the paper of
-        Li, Wang and Carool (2013), Selecting the number of principal components in
-        functional data.
+        TODO: Add a selection of the number of PC in FD. Maybe, consider the
+        paper of Li, Wang and Carool (2013), Selecting the number of principal
+        components in functional data.
         """
 
         # Step 1: Perform univariate fPCA on each functions.
         ufpca = []
-        scores = []     
+        scores = []
         for function in X.data:
             uni = UFPCA(n_components)
             ufpca.append(uni.fit(function))
@@ -310,8 +317,8 @@ class MFPCA():
         eigenvectors = np.fliplr(eigenvectors)
 
         # Step 4: Estimation of the multivariate eigenfunctions.
-        #nb_axis = sum(eigenvalues.cumsum() / eigenvalues.sum() < n_components)
-        #eigenvectors = eigenvectors[:, :nb_axis]
+        # nb_axis = sum(eigenvalues.cumsum() / eigenvalues.sum() < n_components
+        # eigenvectors = eigenvectors[:, :nb_axis]
 
         # Retrieve the number of eigenfunctions for each univariate funtion.
         nb_eigenfunction_uni = [0]
@@ -323,7 +330,7 @@ class MFPCA():
         basis_multi = []
         for idx, function in enumerate(ufpca):
             start = nb_eigenfunction_uni_cum[idx]
-            end = nb_eigenfunction_uni_cum[idx+1]
+            end = nb_eigenfunction_uni_cum[idx + 1]
             basis_multi.append(
                 np.dot(function.eigenfunctions.T, eigenvectors[start:end, :]))
 
@@ -331,13 +338,13 @@ class MFPCA():
         self.uniScores_ = scores_
         self.covariance_ = covariance
         self.eigenvaluesCovariance_ = eigenvalues
-        #self.nbAxis_ = nb_axis
+        # self.nbAxis_ = nb_axis
         self.eigenvectors_ = eigenvectors
         self.basis_ = basis_multi
 
     def transform(self, X):
         """Apply dimensionality reduction to X.
-        
+
         Parameters
         ----------
         X : FDApy.univariate_functional.Multivariate object
@@ -355,28 +362,28 @@ class MFPCA():
 
     def inverse_transform(self, X):
         """Transform the data back to its original space.
-        
-        Return a Multivariate Functional data X_original whose transform would be X.
+
+        Return a Multivariate Functional data X_original whose transform would
+        be X.
 
         Parameters
         ----------
         X : array-like, shape = (n_samples, n_components)
-            New data, where n_samples is the number of samples and n_components 
+            New data, where n_samples is the number of samples and n_components
             is the number of components.
 
         Return
         ------
-        X_original : FDApy.univariate_functional.UnivariateFunctionalData object
+        X_original : UnivariateFunctionalData object
 
         Notes
         -----
-        If whitening is enabled, inverse_tranform will compute the exact inverse
-        operation, which includes reversing whitening.
+        If whitening is enabled, inverse_tranform will compute the exact
+        inverse operation, which includes reversing whitening.
         """
         res = []
         for idx, ufpca in enumerate(self.ufpca_):
             reconst = np.dot(X, self.basis_[idx].T) + ufpca.mean.values
-            res.append(FDApy.univariate_functional.\
-                      UnivariateFunctionalData(ufpca.argvals, reconst))
+            res.append(UnivariateFunctionalData(ufpca.argvals, reconst))
 
-        return FDApy.multivariate_functional.MultivariateFunctionalData(res)
+        return MultivariateFunctionalData(res)

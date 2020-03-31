@@ -128,16 +128,16 @@ def shift_(X, num, fill_value=np.nan):
     Parameters
     ----------
     X : array-like ,shape = (n_obs, n_features)
-            Input array
+        Input array
     num : int
-            The number of columns to shift.
+        The number of columns to shift.
     fill_value : float or np.nan
-            The value with one fill the array.
+        The value with one fill the array.
 
     Return
     ------
     res : array-like, shape = (n_obs, n_features)
-            The shift array.
+        The shift array.
 
     Example
     -------
@@ -146,7 +146,8 @@ def shift_(X, num, fill_value=np.nan):
 
     References
     ----------
-    * https://stackoverflow.com/questions/30399534/shift-elements-in-a-numpy-array/42642326
+    * https://stackoverflow.com/
+    questions/30399534/shift-elements-in-a-numpy-array/42642326
     """
     res = np.empty_like(X)
     if num > 0:
@@ -159,10 +160,10 @@ def shift_(X, num, fill_value=np.nan):
         res = X
     return res
 
+
 ##############################################################################
 # Array computation
 ##############################################################################
-
 
 def tensorProduct_(X, Y):
     """Compute the tensor product of two vectors.
@@ -198,8 +199,8 @@ def integrate_(X, Y, method='simpson'):
     Y : array-like, shape = (n_features,)
         Observations
     method : str, default = 'simpson'
-        The method used to integrated. 
-        Currently, only the Simpsons method is implemented.
+        The method used to integrated. Currently, only the Simpsons method
+        is implemented.
 
     Return
     ------
@@ -219,20 +220,20 @@ def integrate_(X, Y, method='simpson'):
 
 
 def integrationWeights_(X, method='trapz'):
-    """Compute weights for numerical integration over the domain `X` given 
+    """Compute weights for numerical integration over the domain `X` given
     the method `method`.
 
     Parameters
     ----------
     X : array-like, shape = (n_points,)
-            Domain on which compute the weights.
+        Domain on which compute the weights.
     method : str or callable, default = 'trapz'
             The method to compute the weights.
 
     Return
     ------
     W : array-like, shape = (n_points,)
-            The weights
+        The weights
 
     Example
     -------
@@ -251,11 +252,12 @@ def integrationWeights_(X, method='trapz'):
     """
     L = len(X)
     if method is 'trapz':
-        W = 1 / 2 * np.concatenate([[X[1] - X[0]],
-            X[2:] - X[:(L - 2)], [X[L - 1] - X[L - 2]]])
+        W = 0.5 * np.concatenate([[X[1] - X[0]],
+                                  X[2:] - X[:(L - 2)],
+                                  [X[L - 1] - X[L - 2]]])
     elif callable(method):
         W = method(X)
     else:
-        raise ValueError(f'Method {method} not implemented!')
+        raise ValueError("Method not implemented!")
 
     return W
