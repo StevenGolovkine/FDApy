@@ -4,45 +4,41 @@
 import itertools
 import numpy as np
 
-import FDApy
+from .irregular_functional import IrregularFunctionalData
+from .univariate_functional import UnivariateFunctionalData
 
 ############################################################################
 # Checkers used by the MultivariateFunctionalData class.
 
 
 def _check_data(data):
-    """Check the user provided `data`. 
+    """Check the user provided `data`.
 
     Parameters
     ----------
     data : list of UnivariateFunctionalData or IrregularFunctionalData
         A list of elements from the class UnivariateFunctionalData or
-		IrregularFunctionalData giving individuals. 
+        IrregularFunctionalData giving individuals.
 
     Return
     ------
     data : list of UnivariateFunctionalData ot IrregularFunctionalData
     """
     if type(data) not in (list,
-            FDApy.univariate_functional.UnivariateFunctionalData,
-            FDApy.irregular_functional.IrregularFunctionalData):
-        raise ValueError(' '.join([
-            'data has to be a list or elements of', \
-			'FDApy.univariate_functional.UnivariateFunctionalData or', \
-			'FDApy.irregular_functional.IrregularFunctionalData!']))
-    if type(data) in (FDApy.univariate_functional.UnivariateFunctionalData,
-                      FDApy.irregular_functional.IrregularFunctionalData):
-        print('Convert data into one dimensional list.')
+                          UnivariateFunctionalData,
+                          IrregularFunctionalData):
+        raise ValueError(
+            """Data has to be a list or elements of UnivariateFunctionalData
+            or IrregularFunctionalData!""")
+    if type(data) in (UnivariateFunctionalData,
+                      IrregularFunctionalData):
         data = [data]
     if not all(
-            [type(i) in (
-                FDApy.univariate_functional.UnivariateFunctionalData,
-                FDApy.irregular_functional.IrregularFunctionalData
-            ) for i in data]):
-        raise ValueError(' '.join([
-            'Elements of the list have to be objects from the class', \
-			'FDApy.univariate_functional.UnivariateFunctionalData or', \
-			'FDApy.irregular_functional.IrregularFunctionalData!']))
+            [type(i) in (UnivariateFunctionalData, IrregularFunctionalData)
+                for i in data]):
+        raise ValueError(
+            """Elements of the list have to be objects from the class
+            UnivariateFunctionalData or IrregularFunctionalData!""")
     if any(np.diff([i.nObs() for i in data])):
         raise ValueError(
             'Elements of the list must have the same number of observations!')
@@ -53,13 +49,13 @@ def _check_data(data):
 
 
 class MultivariateFunctionalData(object):
-    """An object for defining Multivariate Functional Data. 
+    """An object for defining Multivariate Functional Data.
 
     Parameters
     ----------
     data : list of UnivariateFunctionalData or IrregularFunctionalData
         A list of elements from the class UnivariateFunctionalData or
-		IrregularFunctionalData giving individuals. 
+        IrregularFunctionalData giving individuals.
 
     Attributes
     ----------
@@ -89,26 +85,21 @@ class MultivariateFunctionalData(object):
         Parameters
         ----------
         index : int
-            The function(s) of the object to retrieve. 
+            The function(s) of the object to retrieve.
 
         Return
         ------
         res : UnivariateFunctionalData, IrregularFunctionalData or
-		MultivariateFunctionalData object
-            The selected function(s) as UnivariateFunctionalData, 
-			IrregularFunctionalData or MultivariateFunctionalData object.
-
+        MultivariateFunctionalData object
+            The selected function(s) as UnivariateFunctionalData,
+            IrregularFunctionalData or MultivariateFunctionalData object.
         """
         data = self.data[index]
 
-        if isinstance(
-                data, FDApy.univariate_functional.UnivariateFunctionalData):
-            res = FDApy.univariate_functional.UnivariateFunctionalData(
-                data.argvals, data.values)
-        elif isinstance(
-                data, FDApy.irregular_functional.IrregularFunctionalData):
-            res = FDApy.irregular_functional.IrregularFunctionalData(
-                data.argvals, data.values)
+        if isinstance(data, UnivariateFunctionalData):
+            res = UnivariateFunctionalData(data.argvals, data.values)
+        elif isinstance(data, IrregularFunctionalData):
+            res = IrregularFunctionalData(data.argvals, data.values)
         else:
             res = MultivariateFunctionalData(data)
 
@@ -126,18 +117,18 @@ class MultivariateFunctionalData(object):
     @property
     def mean_(self):
         return self._mean_
-    
+
     @mean_.setter
     def mean_(self, new_mean):
         self._mean_ = new_mean
-        
+
     def nFunctions(self):
-        """Number of functions of the objects. 
+        """Number of functions of the objects.
 
         Return
         ------
         n : int
-            Number of functions of the objects. 
+            Number of functions of the objects.
 
         """
         n = len(self.data)
@@ -149,95 +140,92 @@ class MultivariateFunctionalData(object):
         Return
         ------
         n : int
-            Number of observations of the object. 
+            Number of observations of the object.
 
         """
         n = self.data[0].nObs()
         return n
 
     def rangeObs(self):
-        """Range of the observations of the objects. 
+        """Range of the observations of the objects.
 
         Return
         ------
         range_ : list of tuples
-            List of tuple containing the range of the observations for each 
-			individual functions. 
+            List of tuple containing the range of the observations for each
+            individual functions.
 
         """
         range_ = [i.rangeObs() for i in self.data]
         return range_
 
     def nObsPoint(self):
-        """Number of sampling points of the objects. 
+        """Number of sampling points of the objects.
 
         Return
         ------
         n : list of list of int
-            List of the length of self.nFunctions() where the (i,j)-th entry 
-			correpond to the number of sampling points of the i-th functions 
-			of the j-th dimensions of the observations. 
+            List of the length of self.nFunctions() where the (i,j)-th entry
+            correpond to the number of sampling points of the i-th functions
+            of the j-th dimensions of the observations.
 
         """
         n = [i.nObsPoint() for i in self.data]
         return n
 
     def rangeObsPoint(self):
-        """Range of the observations of the objects. 
+        """Range of the observations of the objects.
 
         Return
         ------
-        range_ : list of list of tuples of the length of self.nFunctions() containing
-		the minimum and maximum number where the (i,j)-th entry contains the range
-		of the i-th function of the j-th dimensions of the observations. 
-
+        range_ : list of list of tuples of the length of self.nFunctions()
+        containing the minimum and maximum number where the (i,j)-th entry
+        contains the range of the i-th function of the j-th dimensions of the
+        observations.
         """
         range_ = [i.rangeObsPoint() for i in self.data]
         return range_
 
     def dimension(self):
-        """Common dimension of the observation of the object. 
+        """Common dimension of the observation of the object.
 
         Return
         ------
         dim : list of int
-            List of length self.nFunctions() where the i-th entry contains the 
-			number of dimension of the observations for the i-th function of 
-			the object. 
+            List of length self.nFunctions() where the i-th entry contains the
+            number of dimension of the observations for the i-th function of
+            the object.
 
         """
         dim = [i.dimension() for i in self.data]
         return dim
 
     def asUnivariateFunctionalData(self):
-        """Convert a MultivariateFunctionalData object into a 
-		UnivariateFunctionalData object.
+        """Convert a MultivariateFunctionalData object into a
+        UnivariateFunctionalData object.
 
         Notes
         -----
         Be sure that all elements of the list came from the same stochastic
-		process generation.
+        process generation.
         Currently, only implemented for UnivariateFunctionalData in the list of
-		the MultivariateFunctionaData. 
+        the MultivariateFunctionaData.
         """
-        if not all([type(i) is
-                FDApy.univariate_functional.UnivariateFunctionalData 
-            for i in self.data]):
-            raise ValueError('The data must be a list of UnivariateFunctionalData!')
-        if not all([self.data[i-1].argvals == self.data[i].argvals 
-            for i in np.arange(1, self.nFunctions())]):
+        if not all([type(i) is UnivariateFunctionalData for i in self.data]):
+            raise ValueError(
+                'The data must be a list of UnivariateFunctionalData!')
+        if not all([self.data[i - 1].argvals == self.data[i].argvals
+                    for i in np.arange(1, self.nFunctions())]):
             raise ValueError('All the argvals are not equals!')
 
         data_ = []
         for func in self.data:
             data_.append(list(itertools.chain.from_iterable(func.values)))
-        return FDApy.univariate_functional.UnivariateFunctionalData(
-            self.data[0].argvals, np.array(data_))
-
+        return UnivariateFunctionalData(self.data[0].argvals, np.array(data_))
 
     def mean(self, smooth=False, **kwargs):
-        """Compute the pointwise mean functions of each element of the 
-		multivariate functional data.
+        """Compute the pointwise mean functions of each element of the
+        multivariate functional data.
 
         Parameters
         ----------
@@ -254,8 +242,8 @@ class MultivariateFunctionalData(object):
         Return
         ------
         obj : FDApy.multivariate_functional.MultivariateFunctionalData object
-            Object of class FDApy.multivariate_functional.MultivariateFunctionalData
-			with containing the different mean function.
+            Object of class MultivariateFunctionalData with containing the
+            different mean function.
 
         """
         mean_ = []
@@ -267,7 +255,7 @@ class MultivariateFunctionalData(object):
 
     def covariance(self, smooth=False, **kwargs):
         """Compute the pointwise covariance functions of each element of the
-		multivariate functional data.
+        multivariate functional data.
 
         Parameters
         ----------
@@ -284,9 +272,8 @@ class MultivariateFunctionalData(object):
         Return
         ------
         obj : FDApy.multivariate_functional.MultivariateFunctionalData object
-            Object of class FDApy.multivariate_functional.MultivariateFunctionalData
-			with containing the different covariance function.
-
+            Object of class MultivariateFunctionalData with containing the
+            different covariance function.
         """
         cov_ = []
         for function in self.data:
@@ -300,18 +287,15 @@ class MultivariateFunctionalData(object):
 
         Parameters
         ----------
-        new_function : FDApy.univariate_functional.UnivariateFunctionalData or
-		FDApy.irregular_functional.IrregularFunctionalData
-            an object of class FDApy.univariate_functional.UnivariateFunctionalData 
-			or FDApy.irregular_functional.IrregularFunctionalData to add to 
-			the MultivariateFunctionalData object.
+        new_function : UnivariateFunctionalData or IrregularFunctionalData an
+        object of class UnivariateFunctionalData or IrregularFunctionalData to
+        add to the MultivariateFunctionalData object.
 
         Return
         ------
-        obj : object of class FDApy.multivariate_functional.MultivariateFunctionalData
+        obj : object of class MultivariateFunctionalData
 
         """
         data = self.data
         data.append(new_function)
-        return FDApy.multivariate_functional.MultivariateFunctionalData(data)
-
+        return MultivariateFunctionalData(data)
