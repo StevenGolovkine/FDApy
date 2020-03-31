@@ -8,14 +8,25 @@ from sklearn.preprocessing import PolynomialFeatures
 
 ##############################################################################
 # Inter functions for the LocalPolynomial class.
+
+
 def _gaussian(t):
     """Compute the gaussian density with mean 0 and stadard deviation 1.
+<<<<<<< HEAD
 
     Parameters
     ----------
     t : array-like, shape = [n_samples]
         Array at which computes the gaussian density
 
+=======
+
+    Parameters
+    ----------
+    t : array-like, shape = [n_samples]
+            Array at which computes the gaussian density
+
+>>>>>>> d5b2a11a4f70a086a986d778e809552b55206e4a
     Return
     ------
     K : array-like, shape = [n_samples]
@@ -197,6 +208,7 @@ class LocalPolynomial():
     Let (x_1, Y_1), ...., (x_n, Y_n) be a random sample of bivariate data.
     For all i, x_i belongs to R^d and Y_i in R. Assume the following model:
     Y_i = f(x_i) + e_i. We would like to estimate the unknown regression
+
     function f(x) = E[Y | X = x]. We approximate f(x) using Taylor series.
 
     Parameters
@@ -250,7 +262,6 @@ class LocalPolynomial():
         self.X_fit_ = np.array([_loc_poly(x, y, i, design_matrix,
                                 self.kernel, self.bandwidth, self.degree)
                                 for i in x0.T])
-
         return self
 
     def predict(self, X):

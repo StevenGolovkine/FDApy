@@ -99,7 +99,20 @@ def _plot_irregular(data, main="", xlab="", ylab=""):
     ------
     fig, ax : elements for ploting using matplotlib
     """
-    raise NotImplementedError('Not implemented')
+    fig, ax = plt.subplots(1, 1)
+
+    ax.set_title(main)
+    ax.set_xlabel(xlab)
+    ax.set_ylabel(ylab)
+
+    if np.mean(data.nObsPoint()) > 20:
+        for fd in data:
+            ax.plot(np.array(fd.argvals[0]), fd.values[0])
+    else:
+        for fd in data:
+            ax.scatter(np.array(fd.argvals[0]), fd.values[0])
+
+    return fig, ax
 
 
 def _plot_multivariate(data, main="", xlab="", ylab=""):

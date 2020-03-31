@@ -60,7 +60,6 @@ def _check_values(values):
 
     # TODO: Modify the function to deal with other types of data.
     if isinstance(values, np.ndarray):
-        print('values is convert into one dimensional list.')
         values = [values]
     if not all([isinstance(i, np.ndarray) for i in values]):
         raise ValueError('values has to be a list of numpy array!')
