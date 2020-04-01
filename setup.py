@@ -1,4 +1,5 @@
 from setuptools import setup
+from Cython.Build import cythonize
 
 
 def readme():
@@ -28,4 +29,5 @@ setup(name='FDApy',
       test_suite='nose.collector',
       tests_require=['nose'],
       include_package_data=True,
+      ext_modules=cythonize("FDApy/src/sigma.pyx"),
       zip_safe=False)
