@@ -9,29 +9,19 @@ from sklearn.preprocessing import PolynomialFeatures
 ##############################################################################
 # Inter functions for the LocalPolynomial class.
 
-
 def _gaussian(t):
     """Compute the gaussian density with mean 0 and stadard deviation 1.
-<<<<<<< HEAD
 
     Parameters
     ----------
     t : array-like, shape = [n_samples]
         Array at which computes the gaussian density
 
-=======
-
-    Parameters
-    ----------
-    t : array-like, shape = [n_samples]
-            Array at which computes the gaussian density
-
->>>>>>> d5b2a11a4f70a086a986d778e809552b55206e4a
     Return
     ------
     K : array-like, shape = [n_samples]
     """
-    return np.exp(-np.power(t, 2) / 2) / np.sqrt(2 * np.pi)
+    return np.exp(- t**2 / 2) / np.sqrt(2 * np.pi)
 
 
 def _epanechnikov(t):
@@ -52,8 +42,8 @@ def _epanechnikov(t):
     equation 6.4
     """
     K = np.zeros(t.shape)
-    idx = np.where(t < 1)
-    K[idx] = 0.75 * (1 - np.power(t[idx], 2))
+    idx = np.where(np.abs(t) <= 1)
+    K[idx] = 0.75 * (1 - t[idx]**2)
     return K
 
 
@@ -75,8 +65,8 @@ def _tri_cube(t):
     equation 6.6
     """
     K = np.zeros(t.shape)
-    idx = np.where(t < 1)
-    K[idx] = np.power((1 - np.power(np.abs(t[idx]), 3)), 3)
+    idx = np.where(np.abs(t) < 1)
+    K[idx] = (1 - np.abs(t[idx])**3)**3
     return K
 
 
@@ -98,8 +88,8 @@ def _bi_square(t):
     1979, p.831
     """
     K = np.zeros(t.shape)
-    idx = np.where(t < 1)
-    K[idx] = np.power((1 - np.power(t[idx], 2)), 2)
+    idx = np.where(np.abs(t) < 1)
+    K[idx] = (1 - t[idx]**2)**2
     return K
 
 
@@ -208,7 +198,6 @@ class LocalPolynomial():
     Let (x_1, Y_1), ...., (x_n, Y_n) be a random sample of bivariate data.
     For all i, x_i belongs to R^d and Y_i in R. Assume the following model:
     Y_i = f(x_i) + e_i. We would like to estimate the unknown regression
-
     function f(x) = E[Y | X = x]. We approximate f(x) using Taylor series.
 
     Parameters
@@ -218,7 +207,9 @@ class LocalPolynomial():
     bandwidth : float, default=0.05
         Strictly positive. Control the size of the associated neighborhood.
     degree: integer, default=2
-        Degree of the local polynomial to fit.
+        Degree of the local polynomial to fit. If degree = 0, we fit the local
+        constant estimator (equivalent to the Nadaraya-Watson estimator). If
+        degree = 1, we fit the local linear estimator.
 
     Return
     ------
@@ -236,6 +227,31 @@ class LocalPolynomial():
         self.bandwidth = bandwidth
         self.degree = degree
         self.poly_features = PolynomialFeatures(degree=degree)
+
+    @property
+    def kernel(self):
+        return self._kernel
+
+    @kernel.setter
+    def kernel(self, new_kernel):
+        self._kernel = new_kernel
+
+    @property
+    def bandwidth(self):
+        return self._bandwidth
+
+    @bandwidth.setter
+    def bandwidth(self, new_bandwidth):
+        self._bandwidth = new_bandwidth
+
+    @property
+    def degree(self):
+        return self._degree
+
+    @degree.setter
+    def degree(self, new_degree):
+        self._degree = new_degree
+        self._poly_features = PolynomialFeatures(degree=new_degree)
 
     def fit(self, x, y):
         """Fit local polynomial regression.
