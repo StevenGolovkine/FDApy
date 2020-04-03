@@ -7,19 +7,19 @@ from sklearn.preprocessing import PolynomialFeatures
 
 
 ##############################################################################
-# Inter functions for the LocalPolynomial class.
+# Inner functions for the LocalPolynomial class.
 
 def _gaussian(t):
     """Compute the gaussian density with mean 0 and stadard deviation 1.
 
     Parameters
     ----------
-    t : array-like, shape = [n_samples]
+    t : array-like, shape = (n_samples,)
         Array at which computes the gaussian density
 
     Return
     ------
-    K : array-like, shape = [n_samples]
+    K : array-like, shape = (n_samples,)
     """
     return np.exp(- t**2 / 2) / np.sqrt(2 * np.pi)
 
@@ -29,12 +29,12 @@ def _epanechnikov(t):
 
     Parameters
     ----------
-    t : array-like, shape = [n_samples]
+    t : array-like, shape = (n_samples,)
         Array on which computes the Epanechnikov kernel
 
     Return
     ------
-    K : array-like, shape = [n_samples]
+    K : array-like, shape = (n_samples,)
 
     References
     ----------
@@ -52,12 +52,12 @@ def _tri_cube(t):
 
     Parameters
     ----------
-    t : array-like, shape = [n_samples]
+    t : array-like, shape = (n_samples,)
         Array on which computes the tri-cube kernel
 
     Return
     ------
-    K : array-like, shape = [n_samples]
+    K : array-like, shape = (n_samples,)
 
     References
     ----------
@@ -75,12 +75,12 @@ def _bi_square(t):
 
     Parameters
     ----------
-    t : array-like, shape = [n_samples]
+    t : array-like, shape = (n_samples,)
         Array on which computes the bi-square kernel
 
     Return
     ------
-    K : array-like, shape = [n_samples]
+    K : array-like, shape = (n_samples,)
 
     References
     ----------
@@ -100,16 +100,16 @@ def _compute_kernel(x, x0, h, kernel='gaussian'):
     ----------
     x : array-like, shape = (n_dim, n_samples)
         Training data.
-    x0 : float-array, shape= (n_dim, )
+    x0 : float-array, shape = (n_dim, )
         Number around which compute the kernel.
-    h : float
+    h : float or float-array, shape = (n_samples, )
         Bandwidth to control the importance of points far from x0.
     kernel : string, default='gaussian'
         Kernel name used.
 
     Return
     ------
-    K : array-like , shape = [n_samples, n_samples]
+    K : array-like , shape = (n_samples, )
 
     References
     ----------
@@ -144,7 +144,7 @@ def _loc_poly(x, y, x0, B, B0,
               kernel='epanechnikov', h=0.05):
     """Local polynomial regression for one point.
 
-    Let (x_1, Y_1), ...., (x_n, Y_n) be a random sample of bivariate data.
+    Let (x_1, Y_1), ..., (x_n, Y_n) be a random sample of bivariate data.
     Assume the following model: Y_i = f(x_i) + e_i. We would like to estimate
     the unknown regression function f(x) = E[Y | X = x]. We approximate f(x)
     using Taylor series.
@@ -152,7 +152,7 @@ def _loc_poly(x, y, x0, B, B0,
     Parameters
     ----------
     x : array-like, shape = (n_dim, n_samples)
-        1-D input array.
+        Input array.
     y : array-like, shape = (n_samples, )
         1-D input array such that y = f(x) + e.
     x0 : array-like, shape = (n_dim, )
@@ -160,9 +160,10 @@ def _loc_poly(x, y, x0, B, B0,
     B : array-like, shape = (n_sample, degree + 1)
         Design matrix of the matrix x.
     B0 : array-like, shape = (n_dim, degree + 1)
+        Design matrix of the observation point x0.
     kernel : string, default='epanechnikov'
         Kernel name used as weight.
-    h : float, default=0.05
+    h : float or float-array, default=0.05
         Bandwidth for the kernel trick.
 
     Return
@@ -192,7 +193,7 @@ def _loc_poly(x, y, x0, B, B0,
 class LocalPolynomial():
     """Local polynomial regression.
 
-    Let (x_1, Y_1), ...., (x_n, Y_n) be a random sample of bivariate data.
+    Let (x_1, Y_1), ..., (x_n, Y_n) be a random sample of bivariate data.
     For all i, x_i belongs to R^d and Y_i in R. Assume the following model:
     Y_i = f(x_i) + e_i. We would like to estimate the unknown regression
     function f(x) = E[Y | X = x]. We approximate f(x) using Taylor series.
@@ -255,9 +256,9 @@ class LocalPolynomial():
 
         Parameters:
         -----------
-        x : array-like, shape = [n_dim, n_samples]
+        x : array-like, shape = (n_dim, n_samples)
             Training data, input array.
-        y : array-like, shape = [n_samples, ]
+        y : array-like, shape = (n_samples, )
             Target values, 1-D input array
 
         Return
@@ -268,9 +269,9 @@ class LocalPolynomial():
         self.X = x
         self.Y = y
 
-        x0 = np.unique(self.X)
+        x0 = np.unique(self.X, axis=0)
         if not np.iterable(self.bandwidth):
-            bandwidth = np.repeat(self.bandwidth, len(x0))
+            bandwidth = np.repeat(self.bandwidth, np.size(x0) / np.ndim(x0))
 
         design_matrix = self.poly_features.\
             fit_transform(np.array(self.X, ndmin=2).T)
@@ -289,18 +290,18 @@ class LocalPolynomial():
 
         Parameters
         ----------
-        X : array-like, shape = [n_samples]
+        X : array-like, shape = (n_dim, n_samples)
 
         Return
         ------
-        y_pred : array-like, shape = [n_samples]
+        y_pred : array-like, shape = (n_samples,)
             Return predicted values.
         """
         if type(X) in (int, float, np.int_, np.float_):
             X = [X]
 
         if not np.iterable(self.bandwidth):
-            bandwidth = np.repeat(self.bandwidth, len(X))
+            bandwidth = np.repeat(self.bandwidth, np.size(X) / np.ndim(X))
 
         design_matrix = self.poly_features.\
             fit_transform(np.array(self.X, ndmin=2).T)
