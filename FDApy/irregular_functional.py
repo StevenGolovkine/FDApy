@@ -4,6 +4,8 @@
 import itertools
 import numpy as np
 
+from .bandwidth import Bandwidth
+from .local_polynomial import LocalPolynomial
 from .utils import rangeStandardization_
 
 ############################################################################
@@ -269,8 +271,7 @@ class IrregularFunctionalData(object):
 
         Return
         ------
-        dim : int
-            Number of dimension of the observations of the object.
+        Number of dimension of the observations of the object (int)
 
         Note
         ----
@@ -279,3 +280,51 @@ class IrregularFunctionalData(object):
         """
         dim = 1
         return dim
+
+    def concat(self, *args):
+        """Concatenate functional data.
+
+        Parameters
+        ----------
+        args  : list of IrregularFunctionalData
+
+        Return
+        ------
+        The concatenation of the IrregularFunctionalData as a unique
+        IrregularFunctionalData object.
+        """
+        argvals = self.argvals
+        values = self.values
+        for obs in args:
+            argvals = argvals + obs.argvals
+            values = values + obs.values
+
+        return IrregularFunctionalData(argvals, values)
+
+    def smooth(self, t0, k0,
+               points=None, degree=0, kernel='epanechnikov', bandwidth=None):
+        """Smooth the data
+
+        Parameters
+        ----------
+        degree : int, default=0
+        kernel : str, default='epanechnikov'
+        bandwidth : Bandwidth object, default=None
+        """
+        if bandwidth is None:
+            bandwidth = Bandwidth(t0=t0, k0=k0)
+            bandwidth.estimate_bandwidth(self)
+
+        smooth_values = list()
+        smooth_argvals = list()
+        for (i, obs) in enumerate(self):
+            if points is None:
+                points = obs.argvals[0]
+
+            lp = LocalPolynomial(kernel, bandwidth=bandwidth.b[i],
+                                 degree=degree)
+            pred = lp.fit_predict(obs.argvals[0], obs.values[0], points)
+            smooth_argvals.append(points)
+            smooth_values.append(pred)
+
+        return IrregularFunctionalData(smooth_argvals, smooth_values)

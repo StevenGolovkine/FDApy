@@ -4,8 +4,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .irregular_functional import IrregularFunctionalData
 from .univariate_functional import UnivariateFunctionalData
+from .irregular_functional import IrregularFunctionalData
 from .multivariate_functional import MultivariateFunctionalData
 
 

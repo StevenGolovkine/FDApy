@@ -524,7 +524,7 @@ class UnivariateFunctionalData(object):
         lp = LocalPolynomial(kernel='gaussian',
                              degree=1,
                              bandwidth=kwargs.get('bandwidth', 1))
-        lp.fit(x=D, y=diag)
+        lp.fit(X=D, y=diag)
         V_hat = lp.predict(D)
 
         # Staniswalis and Lee (1998)
@@ -601,7 +601,8 @@ class UnivariateFunctionalData(object):
                       for j in data.values]
         return UnivariateFunctionalData(new_argvals, np.array(new_values))
 
-    def smooth(self, points, kernel="gaussian", bandwidth=0.05, degree=2):
+    def smooth(self, t0, k0,
+               points=None, degree=0, kernel="epanechnikov", bandwidth=None):
         """Smooth the data.
 
         Currently, it uses local polynomial regression.
@@ -630,21 +631,9 @@ class UnivariateFunctionalData(object):
                 """Only 1-dimensional univariate functional data can
                 be smoothed!""")
 
-        # Define the smoother
-        lp = LocalPolynomial(kernel=kernel,
-                             bandwidth=bandwidth,
-                             degree=degree)
+        data = self.asIrregularFunctionalData()
+        data_smooth = data.smooth(t0, k0,
+                                  points=None, degree=0,
+                                  kernel='epanechnikov', bandwidth=None)
 
-        points_ = np.array(points)
-        pred = np.empty([self.nObs(), len(points_)])
-        count = 0
-        for row in self:
-            argvals = [i for i in itertools.chain.from_iterable(row.argvals)]
-            values = [i for i in itertools.chain.from_iterable(row.values)]
-            lp.fit(argvals, values)
-            pred[count] = lp.predict(points_)
-            count += 1
-
-        res = UnivariateFunctionalData(points, pred)
-
-        return res
+        return data_smooth

@@ -251,12 +251,12 @@ class LocalPolynomial():
         self._degree = new_degree
         self._poly_features = PolynomialFeatures(degree=new_degree)
 
-    def fit(self, x, y):
+    def fit(self, X, y):
         """Fit local polynomial regression.
 
-        Parameters:
-        -----------
-        x : array-like, shape = (n_dim, n_samples)
+        Parameters
+        ----------
+        X : array-like, shape = (n_dim, n_samples)
             Training data, input array.
         y : array-like, shape = (n_samples, )
             Target values, 1-D input array
@@ -266,7 +266,7 @@ class LocalPolynomial():
         self : returns an instance of self.
         """
         # TODO: Add tests on the parameters.
-        self.X = x
+        self.X = X
         self.Y = y
 
         x0 = np.unique(self.X, axis=0)
@@ -311,6 +311,45 @@ class LocalPolynomial():
         y_pred = np.array([_loc_poly(self.X, self.Y, i, design_matrix, j,
                                      self.kernel, h)
                            for (i, j, h) in zip(X.T,
+                                                design_matrix_x0,
+                                                bandwidth)])
+
+        return y_pred
+
+    def fit_predict(self, X, y, X_pred=None):
+        """Fit the model using X and predict on X_pred.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_dim, n_samples)
+            Training data, input array
+        y : array-like, shape = (n_sample, )
+            Target values, 1-D input array
+        X_pred : array-like, shape = (n_dim, n_samples2)
+
+        Return
+        ------
+        y_pred : array-like, shape = (n_samples2,)
+            Return predicted values
+        """
+        self.X = X
+        self.Y = y
+
+        if type(X_pred) in (int, float, np.int_, np.float_):
+            X_pred = [X_pred]
+
+        if not np.iterable(self.bandwidth):
+            bandwidth = np.repeat(self.bandwidth,
+                                  np.size(X_pred) / np.ndim(X_pred))
+
+        design_matrix = self.poly_features.\
+            fit_transform(np.array(self.X, ndmin=2).T)
+        design_matrix_x0 = self.poly_features.\
+            fit_transform(np.array(X_pred, ndmin=2).T)
+
+        y_pred = np.array([_loc_poly(self.X, self.Y, i, design_matrix, j,
+                                     self.kernel, h)
+                           for (i, j, h) in zip(X_pred.T,
                                                 design_matrix_x0,
                                                 bandwidth)])
 
