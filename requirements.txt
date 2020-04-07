@@ -1,6 +1,6 @@
 alabaster==0.7.12
 Babel==2.6.0
-bleach==3.0.2
+bleach==3.1.4
 brewer2mpl==1.4.1
 certifi==2018.11.29
 chardet==3.0.4
