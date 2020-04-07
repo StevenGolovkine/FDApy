@@ -413,7 +413,7 @@ class UnivariateFunctionalData(object):
                 lp = LocalPolynomial(kernel=kernel,
                                      bandwidth=bandwidth,
                                      degree=degree)
-                lp.fit(x=self.argvals, y=mean_)
+                lp.fit(self.argvals, mean_)
                 mean_ = lp.X_fit_
             elif method is 'GAM':
                 n_basis = kwargs.get('n_basis', 10)
@@ -488,7 +488,7 @@ class UnivariateFunctionalData(object):
                 lp = LocalPolynomial(kernel=kernel,
                                      bandwidth=bandwidth,
                                      degree=degree)
-                lp.fit(x=new_argvals, y=cov)
+                lp.fit(new_argvals, cov)
                 cov = lp.X_fit_
             elif method is 'GAM':
                 n_basis = kwargs.get('n_basis', 10)
@@ -524,7 +524,7 @@ class UnivariateFunctionalData(object):
         lp = LocalPolynomial(kernel='gaussian',
                              degree=1,
                              bandwidth=kwargs.get('bandwidth', 1))
-        lp.fit(X=D, y=diag)
+        lp.fit(D, diag)
         V_hat = lp.predict(D)
 
         # Staniswalis and Lee (1998)
