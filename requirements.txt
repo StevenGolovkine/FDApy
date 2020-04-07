@@ -10,7 +10,6 @@ cycler==0.10.0
 Cython==0.29.16
 docutils==0.16
 entrypoints==0.3
--e git+https://github.com/StevenGolovkine/FDApy.git@1c519d332ae4d9120d3e6e830949e6f28c3e91bf#egg=FDApy
 flake8==3.7.9
 future==0.18.2
 idna==2.9
