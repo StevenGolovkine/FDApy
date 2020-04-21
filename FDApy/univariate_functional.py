@@ -633,7 +633,7 @@ class UnivariateFunctionalData(object):
 
         data = self.asIrregularFunctionalData()
         data_smooth = data.smooth(t0, k0,
-                                  points=None, degree=0,
-                                  kernel='epanechnikov', bandwidth=None)
+                                  points=points, degree=degree,
+                                  kernel=kernel, bandwidth=bandwidth)
 
         return data_smooth

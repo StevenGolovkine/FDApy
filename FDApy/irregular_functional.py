@@ -319,14 +319,14 @@ class IrregularFunctionalData(object):
         smooth_argvals = list()
         for (i, obs) in enumerate(self):
             if points is None:
-                estim_points = obs.argvals[i]
+                estim_points = obs.argvals[0]
             else:
                 estim_points = points
 
             lp = LocalPolynomial(kernel, bandwidth=bandwidth.b[i],
                                  degree=degree)
             pred = lp.fit_predict(obs.argvals[0], obs.values[0], estim_points)
-            smooth_argvals.append(points)
+            smooth_argvals.append(estim_points)
             smooth_values.append(pred)
 
         return IrregularFunctionalData(smooth_argvals, smooth_values)
