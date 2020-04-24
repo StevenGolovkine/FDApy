@@ -233,6 +233,9 @@ class MFPCA():
         if 0 < n_components < 1, select the number of components such that
         the amount of variance that needs to be explained is greater than
         the percentage specified by n_components.
+    method: str, default='PACE'
+        Method for the estimation of the univariate scores.
+        Should be 'PACE' or 'NumInt'.
 
     Attributes
     ----------
@@ -261,8 +264,9 @@ class MFPCA():
     Statistical Association.
 
     """
-    def __init__(self, n_components=None):
+    def __init__(self, n_components=None, method='PACE'):
         self.n_components = n_components
+        self.method = method
 
     def fit(self, X):
         """Fit the model with X.
@@ -284,12 +288,12 @@ class MFPCA():
         """Dispatch to the right submethod depending on the input."""
         # TODO: Diffenrent possiblity for n_components
         if type(X) is MultivariateFunctionalData:
-            self._fit_multi(X, self.n_components)
+            self._fit_multi(X, self.n_components, self.method)
         else:
             raise TypeError(
                 'MFPCA only support MultivariateFunctionalData object!')
 
-    def _fit_multi(self, X, n_components):
+    def _fit_multi(self, X, n_components, method):
         """Multivariate Functional PCA.
 
         Notes
@@ -305,7 +309,7 @@ class MFPCA():
         for function, n in zip(X.data, n_components):
             uni = UFPCA(n)
             ufpca.append(uni.fit(function))
-            scores.append(uni.transform(function))
+            scores.append(uni.transform(function, method))
 
         scores_ = np.concatenate(scores, axis=1)
 
