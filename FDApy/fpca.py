@@ -222,7 +222,8 @@ class MFPCA():
 
     Parameters
     ----------
-    n_components : int, float, None, default=None
+    n_components : list of integers of size X.nFunctions()
+        int, float, None, default=None
         Number of components to keep.
         if n_components if None, all components are kept::
 
@@ -301,8 +302,8 @@ class MFPCA():
         # Step 1: Perform univariate fPCA on each functions.
         ufpca = []
         scores = []
-        for function in X.data:
-            uni = UFPCA(n_components)
+        for function, n in zip(X.data, n_components):
+            uni = UFPCA(n)
             ufpca.append(uni.fit(function))
             scores.append(uni.transform(function))
 
