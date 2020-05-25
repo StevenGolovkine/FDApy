@@ -1,8 +1,11 @@
-from setuptools import setup
-from Cython.Build import cythonize
+#!/usr/bin/env python
+
+import numpy as np
+
+from setuptools import setup, Extension
 
 
-def readme():
+def get_readme():
     with open('README.rst') as f:
         return f.read()
 
@@ -10,7 +13,7 @@ def readme():
 setup(name='FDApy',
       version='0.3.5',
       description='Python package for Functional Data Analysis',
-      long_description='',
+      long_description=get_readme(),
       classifiers=[
                   'Programming Language :: Python :: 3.7',
                   'Topic :: Scientific/Engineering :: Mathematics'],
@@ -22,6 +25,7 @@ setup(name='FDApy',
       packages=['FDApy'],
       install_require=['ggplot',
                        'itertools',
+                       'cython',
                        'numpy',
                        'pandas',
                        'pygam',
@@ -29,5 +33,8 @@ setup(name='FDApy',
       test_suite='nose.collector',
       tests_require=['nose'],
       include_package_data=True,
-      ext_modules=cythonize("FDApy/src/sigma.pyx"),
+      ext_modules=[Extension('FDApy.src.sigma',
+                             sources=['FDApy/src/sigma.pyx'],
+                             include_dirs=[np.get_include()])],
+      setup_requires=['numpy', 'cython'],
       zip_safe=False)
