@@ -22,3 +22,6 @@ FDApy/.ipynb_checkpoints/*
 # Some data files
 *.rda
 *.rds
+
+# Tox
+.tox/*
