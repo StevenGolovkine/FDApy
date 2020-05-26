@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import Cython.Build
+
 import numpy as np
 
 from setuptools import setup, Extension
@@ -22,14 +24,16 @@ setup(name='FDApy',
       author='Steven Golovkine',
       author_email='steven_golovkine@icloud.com',
       license='MIT',
+      cmdclass={'build_ext': Cython.Build.build_ext},
+      package_dir={'FDApy': 'FDApy'},
       packages=['FDApy'],
-      install_require=['ggplot',
-                       'itertools',
-                       'cython',
-                       'numpy',
-                       'pandas',
-                       'pygam',
-                       'sklearn'],
+      install_requires=['ggplot',
+                        'itertools',
+                        'cython',
+                        'numpy',
+                        'pandas',
+                        'pygam',
+                        'sklearn'],
       test_suite='nose.collector',
       tests_require=['nose'],
       include_package_data=True,
