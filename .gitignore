@@ -25,3 +25,6 @@ FDApy/.ipynb_checkpoints/*
 
 # Tox
 .tox/*
+
+# Egg files
+.egg/*
