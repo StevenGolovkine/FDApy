@@ -1,0 +1,23 @@
+Metadata-Version: 2.1
+Name: pygam
+Version: 0.8.0
+Summary: GAM toolkit
+Home-page: https://github.com/dswah/pyGAM
+License: UNKNOWN
+Keywords: machine-learning data-science scientific-computing
+Author: Daniel Serven
+Author-email: dswahpypi@gmail.com
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Topic :: Scientific/Engineering
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Classifier: Topic :: Scientific/Engineering :: Mathematics
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Requires-Dist: future
+Requires-Dist: numpy
+Requires-Dist: progressbar2
+Requires-Dist: scipy

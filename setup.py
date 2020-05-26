@@ -2,8 +2,6 @@
 
 import Cython.Build
 
-import numpy as np
-
 from setuptools import setup, Extension
 
 
@@ -38,6 +36,6 @@ setup(name='FDApy',
       include_package_data=True,
       ext_modules=[Extension('FDApy.src.sigma',
                              sources=['FDApy/src/sigma.pyx'],
-                             include_dirs=[np.get_include()])],
-      setup_requires=['numpy', 'cython'],
+                             language='c++')],
+      setup_requires=['cython'],
       zip_safe=False)
