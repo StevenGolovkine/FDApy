@@ -3,7 +3,7 @@
 
 import numpy as np
 
-from sigma import estimate_sigma
+from src.sigma import estimate_sigma
 
 
 ##############################################################################
