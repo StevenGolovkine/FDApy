@@ -24,9 +24,9 @@ def _check_data(data):
     ------
     data : list of UnivariateFunctionalData ot IrregularFunctionalData
     """
-    if isinstance(data, (list,
-                         UnivariateFunctionalData,
-                         IrregularFunctionalData)):
+    if not isinstance(data, (list,
+                             UnivariateFunctionalData,
+                             IrregularFunctionalData)):
         raise ValueError(
             """Data has to be a list or elements of UnivariateFunctionalData
             or IrregularFunctionalData!""")
