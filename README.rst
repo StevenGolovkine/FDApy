@@ -1,6 +1,6 @@
 
 ===================================================
-FDApy: a Python library to analyses functional data
+FDApy: a Python library to analyze functional data
 ===================================================
 
 .. image:: https://img.shields.io/pypi/pyversions/FDApy

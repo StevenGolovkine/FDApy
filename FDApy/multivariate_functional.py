@@ -24,17 +24,17 @@ def _check_data(data):
     ------
     data : list of UnivariateFunctionalData ot IrregularFunctionalData
     """
-    if type(data) not in (list,
-                          UnivariateFunctionalData,
-                          IrregularFunctionalData):
+    if isinstance(data, (list,
+                         UnivariateFunctionalData,
+                         IrregularFunctionalData)):
         raise ValueError(
             """Data has to be a list or elements of UnivariateFunctionalData
             or IrregularFunctionalData!""")
-    if type(data) in (UnivariateFunctionalData,
-                      IrregularFunctionalData):
+    if isinstance(data, (UnivariateFunctionalData,
+                         IrregularFunctionalData)):
         data = [data]
     if not all(
-            [type(i) in (UnivariateFunctionalData, IrregularFunctionalData)
+            [isinstance(i, (UnivariateFunctionalData, IrregularFunctionalData))
                 for i in data]):
         raise ValueError(
             """Elements of the list have to be objects from the class
@@ -211,7 +211,8 @@ class MultivariateFunctionalData(object):
         Currently, only implemented for UnivariateFunctionalData in the list of
         the MultivariateFunctionaData.
         """
-        if not all([type(i) is UnivariateFunctionalData for i in self.data]):
+        if not all([isinstance(i, UnivariateFunctionalData)
+                   for i in self.data]):
             raise ValueError(
                 'The data must be a list of UnivariateFunctionalData!')
         if not all([self.data[i - 1].argvals == self.data[i].argvals

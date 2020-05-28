@@ -25,7 +25,7 @@ def _check_argvals(argvals):
     ------
     argvals : list of numpy.ndarray
     """
-    if type(argvals) not in (np.ndarray, list):
+    if isinstance(argvals, (np.ndarray, list)):
         raise ValueError(
             'argvals has to be a list of numpy.ndarray or a numpy.ndarray!')
     # TODO: Modify the condition to accept multidimensional irregular
@@ -39,7 +39,7 @@ def _check_argvals(argvals):
 
     # Check if all entries of `argvals` are numeric.
     argvals_ = list(itertools.chain.from_iterable(argvals))
-    if not all([type(i) in (int, float, np.int_, np.float_)
+    if not all([isinstance(i, (int, float, np.int_, np.float_))
                 for i in argvals_]):
         raise ValueError(
             'All argvals elements must be numeric!')

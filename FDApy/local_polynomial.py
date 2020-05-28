@@ -297,7 +297,7 @@ class LocalPolynomial():
         y_pred : array-like, shape = (n_samples,)
             Return predicted values.
         """
-        if type(X) in (int, float, np.int_, np.float_):
+        if isinstance(X, (int, float, np.int_, np.float_)):
             X = [X]
 
         if not np.iterable(self.bandwidth):
@@ -335,7 +335,7 @@ class LocalPolynomial():
         self.X = X
         self.Y = y
 
-        if type(X_pred) in (int, float, np.int_, np.float_):
+        if isinstance(X_pred, (int, float, np.int_, np.float_)):
             X_pred = [X_pred]
 
         if not np.iterable(self.bandwidth):
