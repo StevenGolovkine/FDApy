@@ -4,7 +4,9 @@
 import numpy as np
 import unittest
 
-from FDApy.basis import *
+from FDApy.basis import (basis_legendre, basis_wiener, simulate_basis_,
+                         eigenvalues_linear, eigenvalues_exponential,
+                         eigenvalues_wiener, simulate_eigenvalues_)
 
 
 class TestBasis(unittest.TestCase):
@@ -13,21 +15,21 @@ class TestBasis(unittest.TestCase):
 
     # Test basis_legendre function
     def test_basis_legendre(self):
-        X = basis_legendre(M=2, argvals=np.array([0, 0.5, 1]), norm=True)
+        X = basis_legendre(K=2, argvals=np.array([0, 0.5, 1]), norm=True)
         self.assertTrue(np.allclose(X.values,
                         np.array([[1., 1., 1.],
                                   [0., 0.8660254, 1.73205081]])))
 
     # Test basis_wiener function
     def test_basis_wiener(self):
-        X = basis_wiener(M=2, argvals=np.array([0, 0.5, 1]), norm=True)
+        X = basis_wiener(K=2, argvals=np.array([0, 0.5, 1]), norm=True)
         self.assertTrue(np.allclose(X.values,
                         np.array([[0., 1., 1.41421356],
                                   [0., 1., -1.41421356]])))
 
     # Test simulate_basis_ function
     def test_simulate_basis_(self):
-        X = simulate_basis_('legendre', M=2,
+        X = simulate_basis_('legendre', K=2,
                             argvals=np.array([0, 0.5, 1]), norm=True)
         self.assertTrue(np.allclose(X.values,
                         np.array([[1., 1., 1.],

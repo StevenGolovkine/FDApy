@@ -24,14 +24,14 @@ class TestMultivariateFunctionalData(unittest.TestCase):
         self.assertRaises(ValueError, _check_data, data)
 
     def test_check_data_uni(self):
-        argvals = (1, 2, 3)
+        argvals = np.array([1, 2, 3])
         X = np.array([[1, 2, 3], [4, 5, 6]])
         uni = UnivariateFunctionalData(argvals, X)
         multi = MultivariateFunctionalData(uni)
         self.assertEquals(multi.nFunctions(), 1)
 
     def test_check_data_observations(self):
-        argvals = (1, 2, 3)
+        argvals = np.array([1, 2, 3])
         X = np.array([[1, 2, 3], [4, 5, 6]])
         X1 = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
         uni = UnivariateFunctionalData(argvals, X)
@@ -39,7 +39,7 @@ class TestMultivariateFunctionalData(unittest.TestCase):
         self.assertRaises(ValueError, MultivariateFunctionalData, [uni, uni1])
 
     def test_check_data_work(self):
-        argvals = (1, 2, 3)
+        argvals = np.array([1, 2, 3])
         X = np.array([[1, 2, 3], [4, 5, 6]])
         uni = UnivariateFunctionalData(argvals, X)
         multi = MultivariateFunctionalData([uni, uni])
@@ -47,8 +47,8 @@ class TestMultivariateFunctionalData(unittest.TestCase):
 
     # Tests nFunction function
     def test_nFunction(self):
-        argvals = (1, 2, 3)
-        argvals1 = [(1, 2, 3), (1, 2)]
+        argvals = np.array([1, 2, 3])
+        argvals1 = [np.array([1, 2, 3]), np.array([1, 2])]
         X = np.array([[1, 2, 3], [4, 5, 6]])
         X1 = np.array([[[1, 2], [3, 4], [5, 6]],
                        [[7, 8], [9, 10], [11, 12]]])
@@ -59,8 +59,8 @@ class TestMultivariateFunctionalData(unittest.TestCase):
 
     # Tests nObs function
     def test_nObs(self):
-        argvals = (1, 2, 3)
-        argvals1 = [(1, 2, 3), (1, 2)]
+        argvals = np.array([1, 2, 3])
+        argvals1 = [np.array([1, 2, 3]), np.array([1, 2])]
         X = np.array([[1, 2, 3], [4, 5, 6]])
         X1 = np.array([[[1, 2], [3, 4], [5, 6]],
                        [[7, 8], [9, 10], [11, 12]]])
@@ -71,8 +71,8 @@ class TestMultivariateFunctionalData(unittest.TestCase):
 
     # Tests rangeObs function
     def test_rangeObs(self):
-        argvals = (1, 2, 3)
-        argvals1 = [(1, 2, 3), (1, 2)]
+        argvals = np.array([1, 2, 3])
+        argvals1 = [np.array([1, 2, 3]), np.array([1, 2])]
         X = np.array([[1, 2, 3], [4, 5, 6]])
         X1 = np.array([[[1, 2], [3, 4], [5, 6]],
                        [[7, 8], [9, 10], [11, 12]]])
@@ -83,8 +83,8 @@ class TestMultivariateFunctionalData(unittest.TestCase):
 
     # Tests nObsPoint function
     def test_nObsPoint(self):
-        argvals = (1, 2, 3)
-        argvals1 = [(1, 2, 3), (1, 2)]
+        argvals = np.array([1, 2, 3])
+        argvals1 = [np.array([1, 2, 3]), np.array([1, 2])]
         X = np.array([[1, 2, 3], [4, 5, 6]])
         X1 = np.array([[[1, 2], [3, 4], [5, 6]],
                        [[7, 8], [9, 10], [11, 12]]])
@@ -95,8 +95,8 @@ class TestMultivariateFunctionalData(unittest.TestCase):
 
     # Tests rangeObsPoint function
     def test_rangeObsPoint(self):
-        argvals = (1, 2, 3)
-        argvals1 = [(1, 2, 3), (1, 2)]
+        argvals = np.array([1, 2, 3])
+        argvals1 = [np.array([1, 2, 3]), np.array([1, 2])]
         X = np.array([[1, 2, 3], [4, 5, 6]])
         X1 = np.array([[[1, 2], [3, 4], [5, 6]],
                        [[7, 8], [9, 10], [11, 12]]])
@@ -107,8 +107,8 @@ class TestMultivariateFunctionalData(unittest.TestCase):
 
     # Tests dimension function
     def test_dimension(self):
-        argvals = (1, 2, 3)
-        argvals1 = [(1, 2, 3), (1, 2)]
+        argvals = np.array([1, 2, 3])
+        argvals1 = [np.array([1, 2, 3]), np.array([1, 2])]
         X = np.array([[1, 2, 3], [4, 5, 6]])
         X1 = np.array([[[1, 2], [3, 4], [5, 6]],
                        [[7, 8], [9, 10], [11, 12]]])
