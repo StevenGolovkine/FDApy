@@ -25,7 +25,7 @@ def _check_argvals(argvals):
     ------
     argvals : list of numpy.ndarray
     """
-    if isinstance(argvals, (np.ndarray, list)):
+    if not isinstance(argvals, (np.ndarray, list)):
         raise ValueError(
             'argvals has to be a list of numpy.ndarray or a numpy.ndarray!')
     # TODO: Modify the condition to accept multidimensional irregular
