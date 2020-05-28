@@ -3,7 +3,8 @@
 
 import numpy as np
 import scipy
-import sklearn
+
+from sklearn.preprocessing import StandardScaler
 
 
 #############################################################################
@@ -48,7 +49,7 @@ def rowMean_(X):
         np.array([[1., 2., 3.], [1., 2., 3.], [1., 2., 3.], [1., 2., 3.]]))
     array([1., 2., 3.])
     """
-    scaler = sklearn.preprocessing.StandardScaler()
+    scaler = StandardScaler()
     return scaler.fit(X).mean_
 
 
@@ -70,7 +71,7 @@ def rowVar_(X):
         np.array([[1., 2., 3.], [1., 2., 3.], [1., 2., 3.], [1., 2., 3.]]))
     array([0., 0., 0.])
     """
-    scaler = sklearn.preprocessing.StandardScaler()
+    scaler = StandardScaler()
     return scaler.fit(X).var_
 
 
@@ -92,7 +93,7 @@ def colMean_(X):
         np.array([[1., 2., 3.], [1., 2., 3.], [1., 2., 3.], [1., 2., 3.]]))
     array([2., 2., 2., 2.])
     """
-    scaler = sklearn.preprocessing.StandardScaler()
+    scaler = StandardScaler()
     return scaler.fit(X.T).mean_
 
 
@@ -113,7 +114,7 @@ def colVar_(X):
         np.array([[1., 2., 3.], [1., 2., 3.], [1., 2., 3.], [1., 2., 3.]]))
     array([0.66666667, 0.66666667, 0.66666667, 0.66666667])
     """
-    scaler = sklearn.preprocessing.StandardScaler()
+    scaler = StandardScaler()
     return scaler.fit(X.T).var_
 
 
