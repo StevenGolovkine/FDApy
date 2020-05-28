@@ -278,8 +278,8 @@ class IrregularFunctionalData(object):
         Currently, this function must always return 1 as the multi-dimensional
         irregular functional data is not yet implemented.
         """
-        dim = 1
-        return dim
+        dim = self.argvals[0].shape
+        return len(dim)
 
     def concat(self, *args):
         """Concatenate functional data.
