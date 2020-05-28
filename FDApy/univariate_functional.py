@@ -480,7 +480,7 @@ class UnivariateFunctionalData(object):
         diag = np.copy(np.diag(cov))
 
         if smooth:
-            if method is 'LocalLinear':
+            if method == 'LocalLinear':
                 kernel = kwargs.get('kernel', 'gaussian')
                 degree = kwargs.get('degree', 2)
                 bandwidth = kwargs.get('bandwidth', 1)
@@ -490,7 +490,7 @@ class UnivariateFunctionalData(object):
                                      degree=degree)
                 lp.fit(new_argvals, cov)
                 cov = lp.X_fit_
-            elif method is 'GAM':
+            elif method == 'GAM':
                 n_basis = kwargs.get('n_basis', 10)
 
                 # Remove covariance diagonale because of measurement errors.
