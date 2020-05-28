@@ -35,16 +35,16 @@ cd4counts = IrregularFunctionalData(argvals, values)
 # Print out an Irregular Functional data object
 
 # Print irregular functional data
-cd4counts
+print(cd4counts)
 
 ###############################################################################
 # The attributs of the classes can easily be accessed.
 
 # Accessing the argvals of the object
-cd4counts.argvals[0:5]
+print(cd4counts.argvals[0:5])
 
 # Accessing the values of the object
-cd4counts.values[0:5]
+print(cd4counts.values[0:5])
 
 # Get the number of observations for the object
 cd4counts.nObs()
@@ -59,7 +59,7 @@ cd4counts.dimension()
 # The extraction of observations is also easily done.
 
 # Extract observations from the object
-cd4counts[5:8]
+print(cd4counts[5:8])
 
 ###############################################################################
 # Finally, we can plot the data.

@@ -427,7 +427,7 @@ class Simulation(object):
             M = np.linspace(0, 1, M)
         self.M_ = M
 
-    def new(self):
+    def new(self, **kwargs):
         """Function to simulate observations.
         To redefine.
         """
@@ -517,7 +517,7 @@ class Basis(Simulation):
             eigenvalues = simulate_eigenvalues_(eigenvalues, self.K_)
         self.eigenvalues_ = eigenvalues
 
-    def new(self):
+    def new(self, **kwargs):
         """Function that simulates `N` observations.
 
         Parameters

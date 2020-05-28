@@ -48,10 +48,10 @@ canadWeather = MultivariateFunctionalData([dailyTemp, monthlyPrec])
 # Print out an univariate functional and a multivariate functional data object.
 
 # Print univariate functional data
-dailyTemp
+print(dailyTemp)
 
 # Print multivariate functional data
-canadWeather
+print(canadWeather)
 
 ###############################################################################
 # We can plot the data.
@@ -68,7 +68,7 @@ plt.show()
 # accessed.
 
 # Accessing the argvals of the object
-monthlyPrec.argvals
+print(monthlyPrec.argvals)
 
 # Get the number of observations for the object
 monthlyPrec.nObs()
@@ -80,7 +80,7 @@ monthlyPrec.nObsPoint()
 monthlyPrec.dimension()
 
 # Extract observations from an univariate functional data object
-monthlyPrec[3:6]
+print(monthlyPrec[3:6])
 
 ###############################################################################
 # In a same way, the attributs of the multivariate functional data classes
@@ -90,7 +90,7 @@ monthlyPrec[3:6]
 canadWeather.nObsPoint()
 
 # Extract functions from MultivariateFunctionalData
-canadWeather[0]
+print(canadWeather[0])
 
 ###############################################################################
 # Compute the mean function for an univariate functional data object.
