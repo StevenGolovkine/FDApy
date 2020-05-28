@@ -72,7 +72,7 @@ class UFPCA():
 
     def _fit(self, X):
         """Dispatch to the right submethod depending on the input."""
-        if type(X) is UnivariateFunctionalData:
+        if isinstance(X, UnivariateFunctionalData):
             self._fit_uni(X)
         else:
             raise TypeError(
@@ -143,7 +143,7 @@ class UFPCA():
         """Apply dimensionality reduction to X.
 
         The functional principal components scores are:
-            c_ik = \int (X_i(t) - \mu(t))\phi_k(t)dt
+            c_ik = int (X_i(t) - mu(t))phi_k(t)dt
 
         Two methods are proposed to estimate these scores:
             * Numerical integration, works well in case of large density of
@@ -286,8 +286,8 @@ class MFPCA():
 
     def _fit(self, X):
         """Dispatch to the right submethod depending on the input."""
-        # TODO: Diffenrent possiblity for n_components
-        if type(X) is MultivariateFunctionalData:
+        # TODO: Different possiblity for n_components
+        if isinstance(X, MultivariateFunctionalData):
             self._fit_multi(X, self.n_components, self.method)
         else:
             raise TypeError(
