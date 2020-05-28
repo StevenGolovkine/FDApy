@@ -427,7 +427,7 @@ class Simulation(object):
             M = np.linspace(0, 1, M)
         self.M_ = M
 
-    def new():
+    def new(self):
         """Function to simulate observations.
         To redefine.
         """
@@ -566,7 +566,7 @@ class Brownian(Simulation):
 
         # Simulate the N observations
         obs = []
-        for i in range(self.N_):
+        for _ in range(self.N_):
             obs.append(simulate_brownian_(self.brownian_type_,
                                           self.M_, **param_dict))
 
