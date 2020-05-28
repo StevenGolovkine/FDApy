@@ -21,14 +21,15 @@ def _check_argvals(argvals):
     """Check the user provided `argvals`.
 
     Parameters
-    ---------
-    argvals : list of numpy.ndarray
+    ----------
+    argvals: list of numpy.ndarray
         A list of numeric vectors (numpy.ndarray) or a single numeric vector
         (numpy.ndarray) giving the sampling points in the domains.
 
     Return
     ------
-    argvals : list of numpy.ndarray
+    list of numpy.ndarray
+
     """
     if not isinstance(argvals, (np.ndarray, list)):
         raise ValueError(
