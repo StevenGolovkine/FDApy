@@ -171,14 +171,14 @@ class UFPCA():
         """
         # TODO: Add checkers
         X_unmean = X - self.mean
-        if method is 'PACE':
+        if method == 'PACE':
             Sigma_inv = np.linalg.inv(
                 self.covariance_hat + X.sigma2 * np.diagflat(
                     np.ones(shape=self.covariance_hat.shape[0]))
             )
             X_proj = self.eigenvalues * np.dot(
                 np.dot(X_unmean.values, Sigma_inv), self.eigenfunctions.T)
-        elif method is 'NumInt':
+        elif method == 'NumInt':
             prod = [traj * self.eigenfunctions for traj in X_unmean.values]
             # TODO: Modify to add other numrical integration methods
             X_proj = np.trapz(prod, X_unmean.argvals)

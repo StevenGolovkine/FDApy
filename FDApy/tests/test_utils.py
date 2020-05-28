@@ -4,7 +4,10 @@
 import numpy as np
 import unittest
 
-from FDApy.utils import *
+from FDApy.utils import (colMean_, colVar_,
+                         integrate_, integrationWeights_,
+                         rangeStandardization_, rowMean_, rowVar_,
+                         shift_, tensorProduct_)
 
 
 class TestUtils(unittest.TestCase):

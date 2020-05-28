@@ -405,7 +405,7 @@ class UnivariateFunctionalData(object):
         """
         mean_ = rowMean_(self.values)
         if smooth:
-            if method is 'LocalLinear':
+            if method == 'LocalLinear':
                 kernel = kwargs.get('kernel', 'gaussian')
                 degree = kwargs.get('degree', 2)
                 bandwidth = kwargs.get('bandwidth', 1)
@@ -415,7 +415,7 @@ class UnivariateFunctionalData(object):
                                      degree=degree)
                 lp.fit(self.argvals, mean_)
                 mean_ = lp.X_fit_
-            elif method is 'GAM':
+            elif method == 'GAM':
                 n_basis = kwargs.get('n_basis', 10)
 
                 X = np.array(self.argvals[0])
@@ -545,11 +545,11 @@ class UnivariateFunctionalData(object):
 
         This method estimates the (heteroscedastic) noise for a univariate
         functional data object.
-        Model: :math:`Z_i(t_k) = f_i(t_k) + \sigma(f_i(t_k))\epsilon_i`
+        Model: :math:`Z_i(t_k) = f_i(t_k) + sigma(f_i(t_k))epsilon_i`
         It is assume that all the curves have been sampled on the same design
         points. Let's t_1, ..., t_k be that points, the estimation of the
         noise at t_k is::
-        :math:`sigma^2(t_k) = 1/2n \sum_{i} [Z_i(t_{k+1}) - Z_i(t_{k})]^2`
+        :math:`sigma^2(t_k) = 1/2n sum_{i} [Z_i(t_{k+1}) - Z_i(t_{k})]^2`
         """
         if self.dimension() != 1:
             raise ValueError(
@@ -574,7 +574,7 @@ class UnivariateFunctionalData(object):
         ----
         Only work with 1-dimensional functional data.
         """
-        if method is not 'simpson':
+        if method != 'simpson':
             raise ValueError('Only the Simpsons method is implemented!')
         return [integrate_(self.argvals[0], i) for i in self.values]
 

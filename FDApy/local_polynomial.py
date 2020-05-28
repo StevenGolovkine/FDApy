@@ -125,13 +125,13 @@ def _compute_kernel(x, x0, h, kernel='gaussian'):
 
     t = np.sqrt(np.sum(np.power(x - x0[:, np.newaxis], 2), axis=0)) / h
 
-    if kernel is 'gaussian':
+    if kernel == 'gaussian':
         K = _gaussian(t)
-    elif kernel is 'epanechnikov':
+    elif kernel == 'epanechnikov':
         K = _epanechnikov(t)
-    elif kernel is 'tricube':
+    elif kernel == 'tricube':
         K = _tri_cube(t)
-    elif kernel is 'bisquare':
+    elif kernel == 'bisquare':
         K = _bi_square(t)
     else:
         raise ValueError(''.join[

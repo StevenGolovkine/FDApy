@@ -215,7 +215,7 @@ def integrate_(X, Y, method='simpson'):
     >>>integrate_(X, Y)
     21.0
     """
-    if method is not 'simpson':
+    if method != 'simpson':
         raise ValueError('Only the Simpsons method is implemented!')
     return scipy.integrate.simps(Y, X)
 
@@ -252,7 +252,7 @@ def integrationWeights_(X, method='trapz'):
     * https://en.wikipedia.org/wiki/Trapezoidal_rule
     """
     L = len(X)
-    if method is 'trapz':
+    if method == 'trapz':
         W = 0.5 * np.concatenate([[X[1] - X[0]],
                                   X[2:] - X[:(L - 2)],
                                   [X[L - 1] - X[L - 2]]])
