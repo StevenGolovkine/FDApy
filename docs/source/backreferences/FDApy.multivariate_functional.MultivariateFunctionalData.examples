@@ -1,0 +1,42 @@
+
+
+Examples using ``FDApy.multivariate_functional.MultivariateFunctionalData``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This notebook shows how to perform an multivariate functional principal components analysis on ...">
+
+.. only:: html
+
+ .. figure:: /auto_examples/images/thumb/sphx_glr_example_multivariate_fpca_thumb.png
+     :alt: Multivariate Functional Principal Components Analysis
+
+     :ref:`sphx_glr_auto_examples_example_multivariate_fpca.py`
+
+.. raw:: html
+
+    </div>
+
+.. only:: not html
+
+ * :ref:`sphx_glr_auto_examples_example_multivariate_fpca.py`
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This notebook shows how to deal with univariate and multivariate functional data by analyzing t...">
+
+.. only:: html
+
+ .. figure:: /auto_examples/images/thumb/sphx_glr_example_canadian_weather_thumb.png
+     :alt: Canadian weather analysis
+
+     :ref:`sphx_glr_auto_examples_example_canadian_weather.py`
+
+.. raw:: html
+
+    </div>
+
+.. only:: not html
+
+ * :ref:`sphx_glr_auto_examples_example_canadian_weather.py`

@@ -1,0 +1,271 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>CD4 cell count analysis &mdash; FDApy 0.3.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery-binder.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery-dataframe.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: slategray" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> FDApy
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">CD4 cell count analysis</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">FDApy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>CD4 cell count analysis</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/auto_examples/example_cd4.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-auto-examples-example-cd4-py"><span class="std std-ref">here</span></a>     to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="cd4-cell-count-analysis">
+<span id="sphx-glr-auto-examples-example-cd4-py"></span><h1>CD4 cell count analysis<a class="headerlink" href="#cd4-cell-count-analysis" title="Permalink to this headline">¶</a></h1>
+<p>This notebook shows how to deal with irregular functional data by analyzing the
+dataset CD4 cell count.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Author: Steven Golovkine &lt;steven_golovkine@icloud.com&gt;</span>
+<span class="c1"># License: MIT</span>
+
+<span class="c1"># shinx_gallery_thumbnail_number = 2</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">FDApy.irregular_functional</span> <span class="kn">import</span> <span class="n">IrregularFunctionalData</span>
+<span class="kn">from</span> <span class="nn">FDApy.plot</span> <span class="kn">import</span> <span class="n">plot</span>
+</pre></div>
+</div>
+<p>Load the data into Pandas dataframe</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd4</span> <span class="o">=</span> <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html#pandas.read_csv" title="pandas.read_csv" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-function"><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span></a><span class="p">(</span><span class="s1">&#39;./data/cd4.csv&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Create IrregularFunctionalData for cd4 data</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">all_argvals</span> <span class="o">=</span> <span class="n">cd4</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+<span class="n">argvals</span> <span class="o">=</span> <span class="p">[</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">all_argvals</span><span class="p">[</span><span class="o">~</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.isnan.html#numpy.isnan" title="numpy.isnan" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-data"><span class="n">np</span><span class="o">.</span><span class="n">isnan</span></a><span class="p">(</span><span class="n">row</span><span class="p">)])</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cd4</span><span class="o">.</span><span class="n">values</span><span class="p">]</span>
+<span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="o">~</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.isnan.html#numpy.isnan" title="numpy.isnan" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-data"><span class="n">np</span><span class="o">.</span><span class="n">isnan</span></a><span class="p">(</span><span class="n">row</span><span class="p">)]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cd4</span><span class="o">.</span><span class="n">values</span><span class="p">]</span>
+<span class="n">cd4counts</span> <span class="o">=</span> <span class="n">IrregularFunctionalData</span><span class="p">(</span><span class="n">argvals</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Print out an Irregular Functional data object</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Print irregular functional data</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">cd4counts</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The attributs of the classes can easily be accessed.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Accessing the argvals of the object</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">cd4counts</span><span class="o">.</span><span class="n">argvals</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">5</span><span class="p">])</span>
+
+<span class="c1"># Accessing the values of the object</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">cd4counts</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">5</span><span class="p">])</span>
+
+<span class="c1"># Get the number of observations for the object</span>
+<span class="n">cd4counts</span><span class="o">.</span><span class="n">nObs</span><span class="p">()</span>
+
+<span class="c1"># Retrieve the number of sampling points for the object</span>
+<span class="n">cd4counts</span><span class="o">.</span><span class="n">nObsPoint</span><span class="p">()[</span><span class="mi">0</span><span class="p">:</span><span class="mi">5</span><span class="p">]</span>
+
+<span class="c1"># Get the dimension of the domain of the observations</span>
+<span class="n">cd4counts</span><span class="o">.</span><span class="n">dimension</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The extraction of observations is also easily done.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Extract observations from the object</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">cd4counts</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">8</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Finally, we can plot the data.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plot</span><span class="p">(</span><span class="n">cd4counts</span><span class="p">,</span>
+               <span class="n">main</span><span class="o">=</span><span class="s1">&#39;CD4 cell counts&#39;</span><span class="p">,</span>
+               <span class="n">xlab</span><span class="o">=</span><span class="s1">&#39;Month since seroconversion&#39;</span><span class="p">,</span>
+               <span class="n">ylab</span><span class="o">=</span><span class="s1">&#39;CD4 cell count (log-scale)&#39;</span><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-example-cd4-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/66b5052a4285dc7dff3f6d90e4b6a8ca/example_cd4.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">example_cd4.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/c373f56330c3f201c352b2410588c0a1/example_cd4.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">example_cd4.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Steven Golovkine
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
