@@ -17,9 +17,10 @@ def _gaussian(t):
     t : array-like, shape = (n_samples,)
         Array at which computes the gaussian density
 
-    Return
-    ------
+    Returns
+    -------
     K : array-like, shape = (n_samples,)
+
     """
     return np.exp(- t**2 / 2) / np.sqrt(2 * np.pi)
 
@@ -32,14 +33,15 @@ def _epanechnikov(t):
     t : array-like, shape = (n_samples,)
         Array on which computes the Epanechnikov kernel
 
-    Return
-    ------
+    Returns
+    -------
     K : array-like, shape = (n_samples,)
 
     References
     ----------
     Hastie, Tibshirani and Friedman, Elements of Statistical Learning, 2009,
     equation 6.4
+
     """
     K = np.zeros(t.shape)
     idx = np.where(np.abs(t) <= 1)
@@ -55,14 +57,15 @@ def _tri_cube(t):
     t : array-like, shape = (n_samples,)
         Array on which computes the tri-cube kernel
 
-    Return
-    ------
+    Returns
+    -------
     K : array-like, shape = (n_samples,)
 
     References
     ----------
     Hastie, Tibshirani and Friedman, Elements of Statistical Learning, 2009,
     equation 6.6
+
     """
     K = np.zeros(t.shape)
     idx = np.where(np.abs(t) < 1)
@@ -78,14 +81,15 @@ def _bi_square(t):
     t : array-like, shape = (n_samples,)
         Array on which computes the bi-square kernel
 
-    Return
-    ------
+    Returns
+    -------
     K : array-like, shape = (n_samples,)
 
     References
     ----------
     Cleveland, Robust Locally Weighted Regression and Smoothing Scatterplots,
     1979, p.831
+
     """
     K = np.zeros(t.shape)
     idx = np.where(np.abs(t) < 1)
@@ -107,14 +111,15 @@ def _compute_kernel(x, x0, h, kernel='gaussian'):
     kernel : string, default='gaussian'
         Kernel name used.
 
-    Return
-    ------
+    Returns
+    -------
     K : array-like , shape = (n_samples, )
 
     References
     ----------
     Hastie, Tibshirani and Friedman, Elements of Statistical Learning, 2009,
     equation 6.13
+
     """
 
     if not np.iterable(x0):
@@ -166,8 +171,8 @@ def _loc_poly(x, y, x0, B, B0,
     h : float or float-array, default=0.05
         Bandwidth for the kernel trick.
 
-    Return
-    ------
+    Returns
+    -------
     y0_pred : float
         Prediction of y0, which is f(x0).
 
@@ -208,9 +213,6 @@ class LocalPolynomial():
         Degree of the local polynomial to fit. If degree = 0, we fit the local
         constant estimator (equivalent to the Nadaraya-Watson estimator). If
         degree = 1, we fit the local linear estimator.
-
-    Return
-    ------
 
     References
     ----------
@@ -261,9 +263,10 @@ class LocalPolynomial():
         y : array-like, shape = (n_samples, )
             Target values, 1-D input array
 
-        Return
-        ------
+        Returns
+        -------
         self : returns an instance of self.
+
         """
         # TODO: Add tests on the parameters.
         self.X = X
@@ -292,10 +295,11 @@ class LocalPolynomial():
         ----------
         X : array-like, shape = (n_dim, n_samples)
 
-        Return
-        ------
+        Returns
+        -------
         y_pred : array-like, shape = (n_samples,)
             Return predicted values.
+
         """
         if isinstance(X, (int, float, np.int_, np.float_)):
             X = [X]
@@ -327,10 +331,11 @@ class LocalPolynomial():
             Target values, 1-D input array
         X_pred : array-like, shape = (n_dim, n_samples2)
 
-        Return
-        ------
+        Returns
+        -------
         y_pred : array-like, shape = (n_samples2,)
             Return predicted values
+
         """
         self.X = X
         self.Y = y

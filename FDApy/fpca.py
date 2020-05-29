@@ -41,8 +41,6 @@ class UFPCA():
     eigenvalues : array, shape = (n_components, )
         The singular values corresponding to each of selected components.
 
-    References
-    ----------
     """
     def __init__(self, n_components=None):
         self.n_components = n_components
@@ -55,10 +53,11 @@ class UFPCA():
         X : UnivariateFunctionalData
             Training data
 
-        Return
-        ------
+        Returns
+        -------
         self : object
             Returns the instance itself.
+
         """
         self.smoothing_parameters = {
             'method': kwargs.get('method', 'LocalLinear'),
@@ -104,6 +103,7 @@ class UFPCA():
         Notes
         -----
         TODO : Add possibility to smooth the eigenfunctions
+
         """
         # Covariance estimation (also estimate the mean)
         if getattr(X, 'covariance_', None) is None:
@@ -158,8 +158,8 @@ class UFPCA():
         method : 'PACE' or 'NumInt'
             Which method we should use for the estimation of the scores?
 
-        Return
-        ------
+        Returns
+        -------
         X_proj : array-like, shape = (n_samples, n_components)
 
         References
@@ -199,8 +199,8 @@ class UFPCA():
             New data, where n_samples is the number of samples and n_components
             is the number of components.
 
-        Return
-        ------
+        Returns
+        -------
         X_original : UnivariateFunctionalData object
 
         """
@@ -219,23 +219,6 @@ class MFPCA():
     dimension space.
 
     It uses the PCA implementation of sklearn.
-
-    Parameters
-    ----------
-    n_components : list of integers of size X.nFunctions()
-        int, float, None, default=None
-        Number of components to keep.
-        if n_components if None, all components are kept::
-
-            n_components == min(n_samples, n_features)
-
-        if n_components is int, n_components are kept.
-        if 0 < n_components < 1, select the number of components such that
-        the amount of variance that needs to be explained is greater than
-        the percentage specified by n_components.
-    method: str, default='PACE'
-        Method for the estimation of the univariate scores.
-        Should be 'PACE' or 'NumInt'.
 
     Attributes
     ----------
@@ -265,6 +248,23 @@ class MFPCA():
 
     """
     def __init__(self, n_components=None, method='PACE'):
+        """
+        Parameters
+        ----------
+        n_components : list of integers of size X.nFunctions()
+            int, float, None, default=None
+            Number of components to keep.
+            if n_components if None, all components are kept::
+                n_components == min(n_samples, n_features)
+            if n_components is int, n_components are kept.
+            if 0 < n_components < 1, select the number of components such that
+            the amount of variance that needs to be explained is greater than
+            the percentage specified by n_components.
+        method: str, default='PACE'
+            Method for the estimation of the univariate scores.
+            Should be 'PACE' or 'NumInt'.
+
+        """
         self.n_components = n_components
         self.method = method
 
@@ -276,8 +276,8 @@ class MFPCA():
         X : MultivariateFunctionalData
             Training data
 
-        Return
-        ------
+        Returns
+        -------
         self : object
             Returns the instance itself.
         """
@@ -301,6 +301,7 @@ class MFPCA():
         TODO: Add a selection of the number of PC in FD. Maybe, consider the
         paper of Li, Wang and Carool (2013), Selecting the number of principal
         components in functional data.
+
         """
 
         # Step 1: Perform univariate fPCA on each functions.
@@ -355,8 +356,8 @@ class MFPCA():
         X : FDApy.univariate_functional.Multivariate object
             Data
 
-        Return
-        ------
+        Returns
+        -------
         X_proj : array-like
 
         """
@@ -377,14 +378,15 @@ class MFPCA():
             New data, where n_samples is the number of samples and n_components
             is the number of components.
 
-        Return
-        ------
+        Returns
+        -------
         X_original : UnivariateFunctionalData object
 
         Notes
         -----
         If whitening is enabled, inverse_tranform will compute the exact
         inverse operation, which includes reversing whitening.
+
         """
         res = []
         for idx, ufpca in enumerate(self.ufpca_):

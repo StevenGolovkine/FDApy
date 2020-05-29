@@ -27,8 +27,8 @@ def basis_legendre(K=3, argvals=None, norm=True):
     norm : boolean, default = True
         Do we normalize the functions?
 
-    Return
-    ------
+    Returns
+    -------
     obj : UnivariateFunctionalData
         A UnivariateFunctionalData object containing the Legendre
         polynomial up to `K` functions evaluated on `argvals`.
@@ -71,8 +71,8 @@ def basis_wiener(K=3, argvals=None, norm=True):
     norm : boolean, default = True
         Do we normalize the functions?
 
-    Return
-    ------
+    Returns
+    -------
     obj : UnivariateFunctionalData
         A UnivariateFunctionalData object containing `K` Wiener basis functions
         evaluated on `argvals`.
@@ -117,8 +117,8 @@ def simulate_basis_(basis_name, K, argvals, norm):
     norm : boolean
         Do we normalize the functions?
 
-    Return
-    ------
+    Returns
+    -------
     basis_ : UnivariateFunctionalData
         A UnivariateFunctionalData object containing `M` basis functions
         evaluated on `argvals`.
@@ -154,8 +154,8 @@ def standard_brownian_(argvals=None, x0=0.0):
     x0: double, default=0.0
         Start of the brownian motion.
 
-    Return
-    ------
+    Returns
+    -------
     A univariate functional data object.
 
     References
@@ -201,8 +201,8 @@ def geometric_brownian_(argvals=None, x0=1.0, mu=0, sigma=1):
     sigma: double, default=1
         The diffusion coefficient
 
-    Return
-    ------
+    Returns
+    -------
     A univariate functional data object.
 
     References
@@ -247,8 +247,8 @@ def fractional_brownian_(argvals=None, hurst=0.5):
     hurst: double, default=0.5
         Hurst parameter
 
-    Return
-    ------
+    Returns
+    -------
     A univariate functional data object.
 
     References
@@ -293,8 +293,8 @@ def simulate_brownian_(brownian_type, argvals=None, norm=False, **kwargs):
     norm: boolean
         Do we normalize the simulation?
 
-    Return
-    ------
+    Returns
+    -------
     simu_: FDApy.univariate_functional.UnivariateFunctionalData
         A UnivariateFunctionalData object containing the simulated brownian
         motion evaluated on `argvals`.
@@ -331,8 +331,8 @@ def eigenvalues_linear(M=3):
     M : int, default = 3
         Number of eigenvalues to generates
 
-    Return
-    ------
+    Returns
+    -------
     val : list
         The generated eigenvalues
 
@@ -353,8 +353,8 @@ def eigenvalues_exponential(M=3):
     M : int, default = 3
         Number of eigenvalues to generates
 
-    Return
-    ------
+    Returns
+    -------
     val : list
         The generated eigenvalues
 
@@ -375,8 +375,8 @@ def eigenvalues_wiener(M=3):
     M : int, default = 3
         Number of eigenvalues to generates
 
-    Return
-    ------
+    Returns
+    -------
     val : list
         The generated eigenvalues
 
@@ -395,8 +395,8 @@ def simulate_eigenvalues_(eigenvalues_name, M):
     M : int
         Number of eigenvalues to generates
 
-    Return
-    ------
+    Returns
+    -------
     eigenvalues_: list
         The generated eigenvalues
 
@@ -502,6 +502,7 @@ class Basis(Simulation):
         corresponding function. Otherwise, we keep it like that.
     norm: bool
         Should we normalize the basis function?
+
     Attributes
     ----------
     coef_: numpy.ndarray
@@ -532,12 +533,7 @@ class Basis(Simulation):
         self.eigenvalues_ = eigenvalues
 
     def new(self, **kwargs):
-        """Function that simulates `N` observations.
-
-        Parameters
-        ----------
-
-        """
+        """Function that simulates `N` observations."""
 
         # Simulate the N observations
         obs = np.empty(shape=(self.N_, len(self.M_)))
@@ -571,12 +567,7 @@ class Brownian(Simulation):
         self.brownian_type_ = brownian_type
 
     def new(self, **kwargs):
-        """Function that simulates `N` observations.
-
-        Parameters
-        ----------
-
-        """
+        """Function that simulates `N` observations."""
         param_dict = {k: kwargs.pop(k) for k in dict(kwargs)}
 
         # Simulate the N observations

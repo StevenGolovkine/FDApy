@@ -14,6 +14,7 @@ def estimate_mu(data):
     Parameters
     ----------
     data: FunctionalData
+
     """
     return np.mean([len(i) for i in data.argvals])
 
@@ -26,6 +27,7 @@ def estimate_H0(data, t0, k0, sigma=None):
     Parameters
     ----------
     data: FunctionalData
+
     """
     def theta(v, k, idx):
         return (v[idx + 2 * k - 1] - v[idx + k])**2
@@ -74,6 +76,7 @@ def estimate_H0_list(data, t0, k0, sigma=None):
         Neighborhood to consider
     sigma: float, default:None
         An estimation of the standard deviation of the noise
+
     """
     return [estimate_H0(data, i, k0, sigma) for i in t0]
 
@@ -86,6 +89,7 @@ def estimate_L0(data, t0, k0, H0, sigma=None, density=False):
     Parameters
     ----------
     data: FunctionalData
+
     """
     def theta(v, k, idx):
         return (v[idx + 2 * k - 1] - v[idx + k])**2
@@ -166,6 +170,7 @@ def estimate_L0_list(data, t0, k0, H0, sigma=None, density=False):
         An estimation of the standard deviation of the noise
     density: boolean, default=False
         Do the density of the sampling points follow a uniform distribution
+
     """
     return [estimate_L0(data, i, k0, j, sigma, density)
             for (i, j) in zip(t0, H0)]
@@ -174,12 +179,7 @@ def estimate_L0_list(data, t0, k0, H0, sigma=None, density=False):
 ##############################################################################
 # Estimation of the bandwidth
 def estimate_bandwidth(data, H0, L0, sigma, K="epanechnikov"):
-    """Perform an estimation of the bandwidth.
-
-    Parameters
-    ----------
-
-    """
+    """Perform an estimation of the bandwidth."""
     # Set kernel constants
     if K == "epanechnikov":
         K_norm2 = 0.6
@@ -199,9 +199,6 @@ def estimate_bandwidth(data, H0, L0, sigma, K="epanechnikov"):
 def estimate_bandwidth_list(data, H0, L0, sigma, K="epanechnikov"):
     """Perform an estimation of the bandwidth in case :math:`H_0` and
     :math:`L_0` are lists.
-
-    Parameters
-    ----------
     """
     return [estimate_bandwidth(data, i, j, sigma, K) for (i, j) in zip(H0, L0)]
 
@@ -227,6 +224,7 @@ class Bandwidth(object):
     ----------
     b : list of float
         Estimation of the bandwidth for each t0
+
     """
     def __init__(self, t0=0.5, k0=2):
         self.t0 = t0
@@ -241,24 +239,14 @@ class Bandwidth(object):
         return res
 
     def estimate_H(self, data, sigma=None):
-        """Perform an estimation of :math:`H_0`.
-
-        Parameters
-        ----------
-
-        """
+        """Perform an estimation of :math:`H_0`."""
         if isinstance(self.t0, list):
             self.H = estimate_H0_list(data, self.t0, self.k0, sigma)
         else:
             self.H = estimate_H0(data, self.t0, self.k0, sigma)
 
     def estimate_L(self, data, H0=None, sigma=None, density=False):
-        """Perform an estimation of :math:`L_0`.
-
-        Parameters
-        ----------
-
-        """
+        """Perform an estimation of :math:`L_0`."""
         # Estimate parameters
         if (not hasattr(self, 'H')) or (H0 is None):
             self.estimate_H(data, sigma)

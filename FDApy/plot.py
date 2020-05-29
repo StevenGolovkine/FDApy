@@ -25,8 +25,8 @@ def plot(data, main="", xlab="", ylab=""):
     ylab : str or list of str
         Label of the Y axis.
 
-    Return
-    ------
+    Returns
+    -------
     fig, ax : elements for plotting using matplotlib
 
     """
@@ -58,9 +58,10 @@ def _plot_univariate(data, main="", xlab="", ylab=""):
     ylab : str
         Label of the Y axis.
 
-    Return
-    ------
+    Returns
+    -------
     fig, ax : elements for ploting using matplotlib
+
     """
     fig, ax = plt.subplots(1, 1)
 
@@ -95,9 +96,10 @@ def _plot_irregular(data, main="", xlab="", ylab=""):
     ylab : str
         Label of the Y axis.
 
-    Return
-    ------
+    Returns
+    -------
     fig, ax : elements for ploting using matplotlib
+
     """
     fig, ax = plt.subplots(1, 1)
 
@@ -129,9 +131,10 @@ def _plot_multivariate(data, main="", xlab="", ylab=""):
     ylab : str or list of str
         Label of the Y axis.
 
-    Return
-    ------
+    Returns
+    -------
     figs, axes : elements for ploting using matplotlib
+
     """
     nFunc = data.nFunctions()
 

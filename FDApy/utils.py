@@ -18,14 +18,15 @@ def rangeStandardization_(X):
     X : array-like, shape = (n_features, )
         Data
 
-    Return
-    ------
+    Returns
+    -------
     range_ : array_like, shape = (n_features)
 
     Example
     -------
     >>>rangeStandardization_(np.array([0, 5, 10]))
     array([0., 0.5, 1.])
+
     """
     range_ = (X - np.min(X)) / (np.max(X) - np.min(X))
     return range_
@@ -39,8 +40,8 @@ def rowMean_(X):
     X : array-like, shape = (n_obs, n_features)
         Data
 
-    Return
-    ------
+    Returns
+    -------
     mean_ : array-like, shape = (n_features,)
 
     Example
@@ -48,6 +49,7 @@ def rowMean_(X):
     >>>rowMean_(
         np.array([[1., 2., 3.], [1., 2., 3.], [1., 2., 3.], [1., 2., 3.]]))
     array([1., 2., 3.])
+
     """
     scaler = StandardScaler()
     return scaler.fit(X).mean_
@@ -61,8 +63,8 @@ def rowVar_(X):
     X : array-like, shape = (n_obs, n_features)
         Data
 
-    Return
-    ------
+    Returns
+    -------
     var_ : array-like, shape = (n_features,)
 
     Example
@@ -70,6 +72,7 @@ def rowVar_(X):
     >>>rowVar_(
         np.array([[1., 2., 3.], [1., 2., 3.], [1., 2., 3.], [1., 2., 3.]]))
     array([0., 0., 0.])
+
     """
     scaler = StandardScaler()
     return scaler.fit(X).var_
@@ -83,8 +86,8 @@ def colMean_(X):
     X : array-like, shape = (n_obs, n_features)
         Data
 
-    Return
-    ------
+    Returns
+    -------
     mean_ : array-like, shape = (n_obs,)
 
     Example
@@ -92,6 +95,7 @@ def colMean_(X):
     >>>colMean_(
         np.array([[1., 2., 3.], [1., 2., 3.], [1., 2., 3.], [1., 2., 3.]]))
     array([2., 2., 2., 2.])
+
     """
     scaler = StandardScaler()
     return scaler.fit(X.T).mean_
@@ -105,14 +109,15 @@ def colVar_(X):
     X : array-like, shape = (n_obs, n_features)
         Data
 
-    Return
-    ------
+    Returns
+    -------
     var_ : array-like, shape = (n_obs,)
 
     Example:
     >>>colVar_(
         np.array([[1., 2., 3.], [1., 2., 3.], [1., 2., 3.], [1., 2., 3.]]))
     array([0.66666667, 0.66666667, 0.66666667, 0.66666667])
+
     """
     scaler = StandardScaler()
     return scaler.fit(X.T).var_
@@ -135,8 +140,8 @@ def shift_(X, num, fill_value=np.nan):
     fill_value : float or np.nan
         The value with one fill the array.
 
-    Return
-    ------
+    Returns
+    -------
     res : array-like, shape = (n_obs, n_features)
         The shift array.
 
@@ -149,6 +154,7 @@ def shift_(X, num, fill_value=np.nan):
     ----------
     * https://stackoverflow.com/
     questions/30399534/shift-elements-in-a-numpy-array/42642326
+
     """
     res = np.empty_like(X)
     if num > 0:
@@ -176,8 +182,8 @@ def tensorProduct_(X, Y):
     Y : array-like, shape = (n_obs2,)
         Second input vector
 
-    Return
-    ------
+    Returns
+    -------
     res : ndarray, shape = (n_obs1, n_obs2)
 
     Example
@@ -186,6 +192,7 @@ def tensorProduct_(X, Y):
     >>>Y = np.array([-1, 2])
     >>>tensorProduct_(X, Y)
     array([[-1, 2], [-2, 4], [-3, 6]])
+
     """
     return np.outer(X, Y)
 
@@ -203,8 +210,8 @@ def integrate_(X, Y, method='simpson'):
         The method used to integrated. Currently, only the Simpsons method
         is implemented.
 
-    Return
-    ------
+    Returns
+    -------
     res : int
         Estimation of the integration of Y over X.
 
@@ -214,6 +221,7 @@ def integrate_(X, Y, method='simpson'):
     >>>Y = np.array([1, 4, 16])
     >>>integrate_(X, Y)
     21.0
+
     """
     if method != 'simpson':
         raise ValueError('Only the Simpsons method is implemented!')
@@ -231,8 +239,8 @@ def integrationWeights_(X, method='trapz'):
     method : str or callable, default = 'trapz'
             The method to compute the weights.
 
-    Return
-    ------
+    Returns
+    -------
     W : array-like, shape = (n_points,)
         The weights
 
@@ -250,6 +258,7 @@ def integrationWeights_(X, method='trapz'):
     References
     ----------
     * https://en.wikipedia.org/wiki/Trapezoidal_rule
+
     """
     L = len(X)
     if method == 'trapz':

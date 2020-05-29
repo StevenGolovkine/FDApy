@@ -26,8 +26,8 @@ def _check_argvals(argvals):
         A list of numeric vectors (numpy.ndarray) or a single numeric vector
         (numpy.ndarray) giving the sampling points in the domains.
 
-    Return
-    ------
+    Returns
+    -------
     list of numpy.ndarray
 
     """
@@ -59,9 +59,10 @@ def _check_values(values):
     values : numpy.array
         A numpy array containing values.
 
-    Return
-    ------
+    Returns
+    -------
     values : numpy array
+
     """
 
     # TODO: Modify the function to deal with other types of data.
@@ -82,9 +83,10 @@ def _check_argvals_values(argvals, values):
     values : numpy.ndarray
         Numpy array containing the values.
 
-    Return
-    ------
+    Returns
+    -------
     True, if the argvals and the values are ok.
+
     """
 
     if len(argvals) != len(values.shape[1:]):
@@ -105,9 +107,10 @@ def _check_argvals_equality(argvals1, argvals2):
     argvals1 : list of tuples
     argvals2 : list of tuples
 
-    Return
-    ------
+    Returns
+    -------
     True, if the two argvals are the same.
+
     """
     if argvals1 != argvals2:
         raise ValueError(
@@ -121,37 +124,27 @@ def _check_argvals_equality(argvals1, argvals2):
 
 
 class UnivariateFunctionalData(object):
-    """An object for defining Univariate Functional Data.
-
-    Parameters
-    ----------
-    argvals : list of numpy.ndarray
-        A list of numeric vectors (numpy.ndarray) or a single numeric
-        vector (numpy.ndarray) giving the sampling points in the domains.
-
-    values : array-like
-        An array, giving the observed values for N observations. Missing values
-        should be included via `None` (or `np.nan`). The shape depends
-        on `argvals`::
-
-            (N, M) if `argvals` is a single numeric vector,
-            (N, M_1, ..., M_d) if `argvals` is a list of numeric vectors.
-
-    standardize : boolean, default = True
-        Do we standardize the argvals to be in [0, 1].
-
-    Attributes
-    ----------
-
-    Notes
-    -----
-
-    References
-    ----------
-
-    """
+    """An object for defining Univariate Functional Data."""
     def __init__(self, argvals, values, standardize=True):
+        """
+        Parameters
+        ----------
+        argvals : list of numpy.ndarray
+            A list of numeric vectors (numpy.ndarray) or a single numeric
+            vector (numpy.ndarray) giving the sampling points in the domains.
 
+        values : array-like
+            An array, giving the observed values for N observations.
+            Missing values should be included via `None` (or `np.nan`). The
+            shape depends on `argvals`::
+
+                (N, M) if `argvals` is a single numeric vector,
+                (N, M_1, ..., M_d) if `argvals` is a list of numeric vectors.
+
+        standardize : boolean, default = True
+            Do we standardize the argvals to be in [0, 1].
+
+        """
         self.argvals = argvals
         self.values = values
 
@@ -190,8 +183,8 @@ class UnivariateFunctionalData(object):
         index : int
             The observation(s) of the object to retrieve.
 
-        Return
-        ------
+        Returns
+        -------
         res : UnivariateFunctionalData object
             The selected observation(s) as UnivariateFunctionalData object.
 
@@ -284,8 +277,8 @@ class UnivariateFunctionalData(object):
     def nObs(self):
         """Number of observations of the object.
 
-        Return
-        ------
+        Returns
+        -------
         n : int
             Number of observations of the object.
 
@@ -296,8 +289,8 @@ class UnivariateFunctionalData(object):
     def rangeObs(self):
         """Range of the observations of the objects.
 
-        Return
-        ------
+        Returns
+        -------
         min(values_), max(values_) : tuple
             Tuple containing the minimum and maximum number of all the
             observations for an object.
@@ -316,8 +309,8 @@ class UnivariateFunctionalData(object):
     def nObsPoint(self):
         """Number of sampling points of the objects.
 
-        Return
-        ------
+        Returns
+        -------
         n : list of int
             List of the length self.dimension() where the i-th entry
             correspond to the number of sampling points of the i-th dimension
@@ -330,11 +323,12 @@ class UnivariateFunctionalData(object):
     def rangeObsPoint(self):
         """Range of the observations of the objects.
 
-        Return
-        ------
+        Returns
+        -------
         range_ : list of tuples containing the minimum and maximum number
         where the i-th entry of the list contains the range of the i-th
         dimension of the object.
+
         """
         range_ = [(min(i), max(i)) for i in self.argvals]
         return range_
@@ -342,8 +336,8 @@ class UnivariateFunctionalData(object):
     def dimension(self):
         """Common dimension of the observations of the object.
 
-        Return
-        ------
+        Returns
+        -------
         dim : int
             Number of dimension of the observations of the object.
 
@@ -355,10 +349,11 @@ class UnivariateFunctionalData(object):
         """Coerce univariate functional data of dimension 1 into irregular
         functional data.
 
-        Return
-        ------
+        Returns
+        -------
         obj : IrregularFunctionalData
             An object of the class IrregularFunctionalData
+
         """
 
         if self.dimension() != 1:
@@ -397,8 +392,8 @@ class UnivariateFunctionalData(object):
                 - n_basis: int
                     default=10
 
-        Return
-        ------
+        Returns
+        -------
         obj : UnivariateFunctionalData object
             Object of the class UnivariateFunctionalData with the same
             argvals as self and one observation.
@@ -452,8 +447,8 @@ class UnivariateFunctionalData(object):
                 - n_basis: int
                     default=10
 
-        Return
-        ------
+        Returns
+        -------
         obj : UnivariateFunctionalData object
             Object of the class UnivariateFunctionalData with dimension 2
             and one observation.
@@ -468,6 +463,7 @@ class UnivariateFunctionalData(object):
         -----
         Currently, for smoothing, please consider to use the 'GAM' method as
         the 'LocalLinear' is not working.
+
         """
         if self.dimension() != 1:
             raise ValueError(
@@ -551,6 +547,7 @@ class UnivariateFunctionalData(object):
         points. Let's t_1, ..., t_k be that points, the estimation of the
         noise at t_k is::
         :math:`sigma^2(t_k) = 1/2n sum_{i} [Z_i(t_{k+1}) - Z_i(t_{k})]^2`
+
         """
         if self.dimension() != 1:
             raise ValueError(
@@ -565,8 +562,8 @@ class UnivariateFunctionalData(object):
             The method used to integrated. Currently, only the Simpsons method
             is implemented.
 
-        Return
-        ------
+        Returns
+        -------
         obj : list of int
             List where entry i is the integration of the observation i over
             the argvals.
@@ -574,6 +571,7 @@ class UnivariateFunctionalData(object):
         Note
         ----
         Only work with 1-dimensional functional data.
+
         """
         if method != 'simpson':
             raise ValueError('Only the Simpsons method is implemented!')
@@ -587,11 +585,12 @@ class UnivariateFunctionalData(object):
         data : FDApy.univariate_functional.UnivariateFunctionalData object
             A one dimensional univariate functional data
 
-        Return
-        ------
+        Returns
+        -------
         obj : FDApy.univariate_functional.UnivariateFunctionalData
             Object of the class UnivariateFunctionalData of dimension 2
             (self.argvals x data.argvals)
+
         """
         if (self.dimension() != 1) or (data.dimension() != 1):
             raise ValueError(
@@ -621,11 +620,12 @@ class UnivariateFunctionalData(object):
         degree: integer, default=2
             Degree of the local polynomial to fit.
 
-        Return
-        ------
+        Returns
+        -------
         res : FDApy.univariate_functional.UnivariateFunctionalData
             Object of the class UnivariateFunctionalData which correpond to
             the data that have been smooth:: argvals = `points` given as input
+
         """
         if self.dimension() != 1:
             raise ValueError(

@@ -21,9 +21,10 @@ def _check_argvals(argvals):
         A list of numeric vectors (numpy.ndarray) giving the sampling points
         for each realization of the process.
 
-    Return
-    ------
+    Returns
+    -------
     argvals : list of numpy.ndarray
+
     """
     if not isinstance(argvals, (np.ndarray, list)):
         raise ValueError(
@@ -55,9 +56,10 @@ def _check_values(values):
     values : list of numpy.array
         A list of numpy array containing values.
 
-    Return
-    ------
+    Returns
+    -------
     values : list of numpy array
+
     """
 
     # TODO: Modify the function to deal with other types of data.
@@ -79,8 +81,8 @@ def _check_argvals_values(argvals, values):
     values : list of numpy.ndarray
         list of numpy array containing the values.
 
-    Return
-    ------
+    Returns
+    -------
     True, if the argvals and the values are ok.
     """
 
@@ -175,8 +177,8 @@ class IrregularFunctionalData(object):
         index : int
             The observation(s) of the object to retrieve.
 
-        Return
-        ------
+        Returns
+        -------
         res : IrregularFunctionalData object
             The selected obsevation(s) as IrregularFunctionalData object.
 
@@ -219,8 +221,8 @@ class IrregularFunctionalData(object):
     def nObs(self):
         """Number of observations of the object.
 
-        Return
-        ------
+        Returns
+        -------
         n : int
             Number of observations of the object.
 
@@ -231,11 +233,12 @@ class IrregularFunctionalData(object):
     def rangeObs(self):
         """Range of the observations of the objects.
 
-        Return
-        ------
+        Returns
+        -------
         min(values_), max(values_) : tuple
             Tuple containing the minimum and maximum number of all the
             observations for an object.
+
         """
         values_ = list(itertools.chain.from_iterable(self.values))
         return min(values_), max(values_)
@@ -243,12 +246,13 @@ class IrregularFunctionalData(object):
     def nObsPoint(self):
         """Number of sampling points of the objects.
 
-        Return
-        ------
+        Returns
+        -------
         n : list of int
             List of the same length of self.nObs() where the i-th entry
             correspond to the number of sampling points of the i-th observed
             function.
+
         """
         n = [len(i) for i in self.values]
         return n
@@ -256,8 +260,8 @@ class IrregularFunctionalData(object):
     def rangeObsPoint(self):
         """Range of sampling points of the objects.
 
-        Return
-        ------
+        Returns
+        -------
         min(argvals_), max(argvals_) : tuple
             Tuple containing the minimum and maximum number of all the sampling
             points for an object.
@@ -269,14 +273,15 @@ class IrregularFunctionalData(object):
     def dimension(self):
         """Common dimension of the observations of the object.
 
-        Return
-        ------
+        Returns
+        -------
         Number of dimension of the observations of the object (int)
 
         Note
         ----
         Currently, this function must always return 1 as the multi-dimensional
         irregular functional data is not yet implemented.
+
         """
         dim = self.argvals[0].shape
         return len(dim)
@@ -286,12 +291,13 @@ class IrregularFunctionalData(object):
 
         Parameters
         ----------
-        args  : list of IrregularFunctionalData
+        args: list of IrregularFunctionalData
 
-        Return
-        ------
+        Returns
+        -------
         The concatenation of the IrregularFunctionalData as a unique
         IrregularFunctionalData object.
+
         """
         argvals = self.argvals
         values = self.values
@@ -310,6 +316,7 @@ class IrregularFunctionalData(object):
         degree : int, default=0
         kernel : str, default='epanechnikov'
         bandwidth : Bandwidth object, default=None
+
         """
         if bandwidth is None:
             bandwidth = Bandwidth(t0=t0, k0=k0)

@@ -20,9 +20,10 @@ def _check_data(data):
         A list of elements from the class UnivariateFunctionalData or
         IrregularFunctionalData giving individuals.
 
-    Return
-    ------
+    Returns
+    -------
     data : list of UnivariateFunctionalData ot IrregularFunctionalData
+
     """
     if not isinstance(data, (list,
                              UnivariateFunctionalData,
@@ -49,26 +50,17 @@ def _check_data(data):
 
 
 class MultivariateFunctionalData(object):
-    """An object for defining Multivariate Functional Data.
-
-    Parameters
-    ----------
-    data : list of UnivariateFunctionalData or IrregularFunctionalData
-        A list of elements from the class UnivariateFunctionalData or
-        IrregularFunctionalData giving individuals.
-
-    Attributes
-    ----------
-
-    Notes
-    -----
-
-    References
-    ----------
-
-    """
+    """An object for defining Multivariate Functional Data."""
 
     def __init__(self, data):
+        """
+        Parameters
+        ----------
+        data : list of UnivariateFunctionalData or IrregularFunctionalData
+            A list of elements from the class UnivariateFunctionalData or
+            IrregularFunctionalData giving individuals.
+
+        """
         self.data = data
 
     def __repr__(self):
@@ -87,8 +79,8 @@ class MultivariateFunctionalData(object):
         index : int
             The function(s) of the object to retrieve.
 
-        Return
-        ------
+        Returns
+        -------
         res : UnivariateFunctionalData, IrregularFunctionalData or
         MultivariateFunctionalData object
             The selected function(s) as UnivariateFunctionalData,
@@ -125,8 +117,8 @@ class MultivariateFunctionalData(object):
     def nFunctions(self):
         """Number of functions of the objects.
 
-        Return
-        ------
+        Returns
+        -------
         n : int
             Number of functions of the objects.
 
@@ -137,8 +129,8 @@ class MultivariateFunctionalData(object):
     def nObs(self):
         """Number of observations of the object.
 
-        Return
-        ------
+        Returns
+        -------
         n : int
             Number of observations of the object.
 
@@ -149,8 +141,8 @@ class MultivariateFunctionalData(object):
     def rangeObs(self):
         """Range of the observations of the objects.
 
-        Return
-        ------
+        Returns
+        -------
         range_ : list of tuples
             List of tuple containing the range of the observations for each
             individual functions.
@@ -162,8 +154,8 @@ class MultivariateFunctionalData(object):
     def nObsPoint(self):
         """Number of sampling points of the objects.
 
-        Return
-        ------
+        Returns
+        -------
         n : list of list of int
             List of the length of self.nFunctions() where the (i,j)-th entry
             correpond to the number of sampling points of the i-th functions
@@ -176,12 +168,13 @@ class MultivariateFunctionalData(object):
     def rangeObsPoint(self):
         """Range of the observations of the objects.
 
-        Return
-        ------
+        Returns
+        -------
         range_ : list of list of tuples of the length of self.nFunctions()
         containing the minimum and maximum number where the (i,j)-th entry
         contains the range of the i-th function of the j-th dimensions of the
         observations.
+
         """
         range_ = [i.rangeObsPoint() for i in self.data]
         return range_
@@ -189,8 +182,8 @@ class MultivariateFunctionalData(object):
     def dimension(self):
         """Common dimension of the observation of the object.
 
-        Return
-        ------
+        Returns
+        -------
         dim : list of int
             List of length self.nFunctions() where the i-th entry contains the
             number of dimension of the observations for the i-th function of
@@ -210,6 +203,7 @@ class MultivariateFunctionalData(object):
         process generation.
         Currently, only implemented for UnivariateFunctionalData in the list of
         the MultivariateFunctionaData.
+
         """
         if not all([isinstance(i, UnivariateFunctionalData)
                    for i in self.data]):
@@ -240,8 +234,9 @@ class MultivariateFunctionalData(object):
                     default: 2
                 - bandwith: float
                     default=1
-        Return
-        ------
+
+        Returns
+        -------
         obj : FDApy.multivariate_functional.MultivariateFunctionalData object
             Object of class MultivariateFunctionalData with containing the
             different mean function.
@@ -270,11 +265,13 @@ class MultivariateFunctionalData(object):
                     default: 2
                 - bandwith: float
                     default=1
-        Return
-        ------
+
+        Returns
+        -------
         obj : FDApy.multivariate_functional.MultivariateFunctionalData object
             Object of class MultivariateFunctionalData with containing the
             different covariance function.
+
         """
         cov_ = []
         for function in self.data:
@@ -292,8 +289,8 @@ class MultivariateFunctionalData(object):
         object of class UnivariateFunctionalData or IrregularFunctionalData to
         add to the MultivariateFunctionalData object.
 
-        Return
-        ------
+        Returns
+        -------
         obj : object of class MultivariateFunctionalData
 
         """
