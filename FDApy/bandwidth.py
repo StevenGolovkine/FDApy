@@ -27,6 +27,17 @@ def estimate_H0(data, t0, k0, sigma=None):
     Parameters
     ----------
     data: FunctionalData
+        An element of the class IrregularFunctionalData
+    to: float
+        Time to estimate H0
+    k0: int
+        Considered neighborhood
+    sigma: float, default=None
+        Estimation of the standard deviation of the noise
+
+    Returns
+    -------
+    An estimation of H0
 
     """
     def theta(v, k, idx):
