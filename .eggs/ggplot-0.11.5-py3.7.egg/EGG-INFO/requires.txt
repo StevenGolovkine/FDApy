@@ -1,0 +1,9 @@
+brewer2mpl
+cycler
+matplotlib
+numpy
+pandas
+patsy>=0.4
+scipy
+six
+statsmodels
