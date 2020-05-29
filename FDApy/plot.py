@@ -10,7 +10,8 @@ from .multivariate_functional import MultivariateFunctionalData
 
 
 def plot(data, main="", xlab="", ylab=""):
-    """Generic plot function for univariate, irregular and multivariate
+    """
+    Generic plot function for univariate, irregular and multivariate
     functional data.
 
     Parameters

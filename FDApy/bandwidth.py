@@ -28,7 +28,7 @@ def estimate_H0(data, t0, k0, sigma=None):
     ----------
     data: FunctionalData
         An element of the class IrregularFunctionalData
-    to: float
+    t0: float
         Time to estimate H0
     k0: int
         Considered neighborhood
