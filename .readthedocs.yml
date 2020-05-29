@@ -9,11 +9,6 @@ version: 2
 sphinx:
   configuration: docs/conf.py
 
-# Before the installation
-before_install:
-  - sudo apt-get -q update
-  - sudo apt-get -y install python3-gdbm
-
 # Build documentation with MkDocs
 #mkdocs:
 #  configuration: mkdocs.yml
