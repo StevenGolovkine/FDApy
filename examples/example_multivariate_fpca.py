@@ -1,6 +1,6 @@
 """
 Multivariate Functional Principal Components Analysis
-==========================
+=====================================================
 
 This notebook shows how to perform an multivariate functional principal
 components analysis on an example dataset.

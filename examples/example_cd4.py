@@ -1,6 +1,6 @@
 """
 CD4 cell count analysis
-==========================
+=======================
 
 This notebook shows how to deal with irregular functional data by analyzing the
 dataset CD4 cell count.

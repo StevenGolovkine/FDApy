@@ -1,6 +1,6 @@
 """
 Univariate Functional Principal Components Analysis
-==========================
+===================================================
 
 This notebook shows how to perform an univariate functional principal
 components analysis on an example dataset.

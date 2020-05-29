@@ -1,6 +1,6 @@
 """
 Canadian weather analysis
-==========================
+=========================
 
 This notebook shows how to deal with univariate and multivariate functional
 data by analyzing the canadian weather dataset.

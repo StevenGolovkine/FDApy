@@ -1,6 +1,6 @@
 """
 Local Polynomial Regression
-==========================
+===========================
 
 This notebook shows how to perform a local polynomial regression on
 one and two-dimensional data.

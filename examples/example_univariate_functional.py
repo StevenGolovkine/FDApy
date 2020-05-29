@@ -1,6 +1,6 @@
 """
 Smooth Univariate Functional data
-==========================
+=================================
 
 This notebook shows how to smooth univariate functional data.
 """
