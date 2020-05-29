@@ -59,7 +59,7 @@ np.set_printoptions(legacy='1.13')
 '''
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ['source/_templates']
 
 # The suffix(es) of sources filenames.
 # You can specify multiple suffix as a list of string:
@@ -109,7 +109,7 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ['source/_static']
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -214,7 +214,7 @@ intersphinx_mapping = {
 
 sphinx_gallery_conf = {
     # path to your examples scripts
-    'examples_dirs': '../../examples',
+    'examples_dirs': '../examples',
     # path where to save gallery generated examples
     'gallery_dirs': 'auto_examples',
     'reference_url': {
