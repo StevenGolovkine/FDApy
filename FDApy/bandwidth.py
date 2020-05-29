@@ -14,7 +14,7 @@ def estimate_mu(data):
     Parameters
     ----------
     data: FunctionalData
-
+        An element of the class IrregularFunctionalData
     """
     return np.mean([len(i) for i in data.argvals])
 
