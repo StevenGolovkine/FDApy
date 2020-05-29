@@ -105,7 +105,9 @@ def _check_argvals_equality(argvals1, argvals2):
     Parameters
     ----------
     argvals1 : list of tuples
+        First argument
     argvals2 : list of tuples
+        Second argument
 
     Returns
     -------
