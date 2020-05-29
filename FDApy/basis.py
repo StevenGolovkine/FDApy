@@ -32,6 +32,7 @@ def basis_legendre(K=3, argvals=None, norm=True):
     obj : UnivariateFunctionalData
         A UnivariateFunctionalData object containing the Legendre
         polynomial up to `K` functions evaluated on `argvals`.
+
     """
 
     if argvals is None:
@@ -79,6 +80,7 @@ def basis_wiener(K=3, argvals=None, norm=True):
     Example
     -------
     >>>basis_wiener(K=3, argvals=np.arange(0, 1, 0.05), norm=True)
+
     """
     if argvals is None:
         argvals = np.arange(0, 1, 0.05)
@@ -124,7 +126,8 @@ def simulate_basis_(basis_name, K, argvals, norm):
     Example
     -------
     >>>simulate_basis_('legendre', M=3,
-        argvals=np.arange(-1, 1, 0.1), norm=True)
+                       argvals=np.arange(-1, 1, 0.1), norm=True)
+
     """
     if basis_name == 'legendre':
         basis_ = basis_legendre(K, argvals, norm)
@@ -158,6 +161,7 @@ def standard_brownian_(argvals=None, x0=0.0):
     References
     ----------
     - https://github.com/cran/somebm/blob/master/R/bm.R
+
     """
 
     if argvals is None:
@@ -204,6 +208,7 @@ def geometric_brownian_(argvals=None, x0=1.0, mu=0, sigma=1):
     References
     ----------
     - https://github.com/cran/somebm/blob/master/R/bm.R
+
     """
 
     if argvals is None:
@@ -249,6 +254,7 @@ def fractional_brownian_(argvals=None, hurst=0.5):
     References
     ----------
     - https://github.com/cran/somebm/blob/master/R/bm.R
+
     """
 
     if argvals is None:
@@ -296,7 +302,9 @@ def simulate_brownian_(brownian_type, argvals=None, norm=False, **kwargs):
     Example
     -------
     >>>simulate_brownian_(brownian_type='standard',
-        argvals=np.arange(0, 1, 0.05), norm=False)
+                          argvals=np.arange(0, 1, 0.05),
+                          norm=False)
+
     """
     if brownian_type == 'standard':
         simu_ = standard_brownian_(argvals, x0=kwargs['x0'])
@@ -332,6 +340,7 @@ def eigenvalues_linear(M=3):
     -------
     >>>eigenvalues_linear(M=3)
     [1.0, 0.6666666666666666, 0.3333333333333333]
+
     """
     return [(M - m + 1) / M for m in np.linspace(1, M, M)]
 
@@ -353,6 +362,7 @@ def eigenvalues_exponential(M=3):
     -------
     >>>eigenvalues_exponential(M=3)
     [0.36787944117144233, 0.22313016014842982, 0.1353352832366127]
+
     """
     return [np.exp(-(m + 1) / 2) for m in np.linspace(1, M, M)]
 
@@ -369,6 +379,7 @@ def eigenvalues_wiener(M=3):
     ------
     val : list
         The generated eigenvalues
+
     """
     return [np.power((np.pi / 2) * (2 * m - 1), -2)
             for m in np.linspace(1, M, M)]
@@ -393,6 +404,7 @@ def simulate_eigenvalues_(eigenvalues_name, M):
     -------
     >>>simulate_eigenvalues_('linear', M=3)
     [1.0, 0.6666666666666666, 0.3333333333333333]
+
     """
     if eigenvalues_name == 'linear':
         eigenvalues_ = eigenvalues_linear(M)
@@ -420,6 +432,7 @@ class Simulation(object):
         Sampling points.
         If M is int, we use np.linspace(0, 1, M) as sampling points.
         Otherwise, we use the numpy.ndarray.
+
     """
     def __init__(self, N, M):
         self.N_ = N
@@ -430,6 +443,7 @@ class Simulation(object):
     def new(self, **kwargs):
         """Function to simulate observations.
         To redefine.
+
         """
         pass
 
@@ -549,6 +563,7 @@ class Brownian(Simulation):
     brownian_type: str, default='regular'
         Type of brownian motion to simulate.
         One of 'regular', 'geometric' or 'fractional'.
+
     """
 
     def __init__(self, N, M, brownian_type='standard'):

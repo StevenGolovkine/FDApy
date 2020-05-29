@@ -68,6 +68,12 @@ def estimate_H0_list(data, t0, k0, sigma=None):
     Parameters
     ----------
     data: FunctionalData
+    t0: list of float
+        Times to estimate H0
+    k0: int
+        Neighborhood to consider
+    sigma: float, default:None
+        An estimation of the standard deviation of the noise
     """
     return [estimate_H0(data, i, k0, sigma) for i in t0]
 
@@ -150,6 +156,16 @@ def estimate_L0_list(data, t0, k0, H0, sigma=None, density=False):
     Parameters
     ----------
     data: FunctionalData
+    t0: list of float
+        Times to estimate H0
+    k0: int
+        Neighborhood to consider
+    H0: list of float
+        An estimation of H0 at t0
+    sigma: float, default:None
+        An estimation of the standard deviation of the noise
+    density: boolean, default=False
+        Do the density of the sampling points follow a uniform distribution
     """
     return [estimate_L0(data, i, k0, j, sigma, density)
             for (i, j) in zip(t0, H0)]
@@ -262,6 +278,14 @@ class Bandwidth(object):
 
         Parameters
         ----------
+        data: FunctionalData
+        H0: list of float, default=None
+            An estimation of H0
+        L0: list of float, default=None
+            An estimation of L0
+        sigma: float, default:None
+            An estimation of the standard deviation of the noise
+
         """
 
         # Estimate parameters
