@@ -13,16 +13,7 @@
 import os
 import sys
 
-import pkg_resources
-try:
-    release = pkg_resources.get_distribution('FDApy').version
-except pkg_resources.DistributionNotFound:
-    print('To build the documentation, The distribution information of\n'
-          'FDApy has to be available.  Either install the package\n'
-          'into your development environment or run "setup.py develop"\n'
-          'to setup the metadata. A virtualenv is recommended!\n')
-    sys.exit(1)
-del pkg_resources
+
 # sys.path.insert(0, os.path.abspath('.'))
 
 
