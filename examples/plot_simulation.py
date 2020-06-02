@@ -11,7 +11,6 @@ basis.
 
 # shinx_gallery_thumbnail_number = 2
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 from FDApy.basis import Basis, Brownian, basis_legendre, basis_wiener

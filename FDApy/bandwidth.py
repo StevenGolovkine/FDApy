@@ -171,6 +171,7 @@ def estimate_L0_list(data, t0, k0, H0, sigma=None, density=False):
     Parameters
     ----------
     data: FunctionalData
+        An object that represents functional data
     t0: list of float
         Times to estimate H0
     k0: int

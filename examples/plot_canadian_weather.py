@@ -11,7 +11,6 @@ data by analyzing the canadian weather dataset.
 
 # shinx_gallery_thumbnail_number = 2
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
