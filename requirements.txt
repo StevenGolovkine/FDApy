@@ -50,6 +50,9 @@ six==1.14.0
 sklearn==0.0
 snowballstemmer==2.0.0
 Sphinx==3.0.0
+sphinx-autopackagesummary==1.3
+sphinx-gallery==0.7.0
+sphinx-rtd-theme==0.4.3
 sphinxcontrib-applehelp==1.0.2
 sphinxcontrib-devhelp==1.0.2
 sphinxcontrib-htmlhelp==1.0.3
