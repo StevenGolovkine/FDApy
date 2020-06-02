@@ -35,6 +35,7 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.napoleon',
     'sphinx.ext.mathjax',
+    'sphinx_gallery.gen_gallery',
     'sphinx_rtd_theme'
 ]
 

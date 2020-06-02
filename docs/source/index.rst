@@ -11,8 +11,13 @@ Welcome to FDApy's documentation!
    :caption: Contents:
    :titlesonly:
 
-   FDApy
+   modules
 
+.. toctree::
+	:maxdepth: 1
+	:titlesonly:
+
+	auto_examples/index
 
 
 Indices and tables

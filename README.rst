@@ -21,6 +21,11 @@ FDApy: a Python library to analyze functional data
 
 .. image:: https://api.codacy.com/project/badge/Grade/4e0f847482dc40e6a3090ddc08edd350
 		:target: https://app.codacy.com/manual/StevenGolovkine/FDApy?utm_source=github.com&utm_medium=referral&utm_content=StevenGolovkine/FDApy&utm_campaign=Badge_Grade_Dashboard
+		:alt: Code Quality
+
+.. image:: https://readthedocs.org/projects/fdapy/badge/?version=latest
+		:target: https://fdapy.readthedocs.io/en/latest/?badge=latest
+		:alt: Documentation Status
 
 
 Installation
