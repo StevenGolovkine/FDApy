@@ -100,7 +100,7 @@ def _check_argvals_values(argvals, values):
 
 
 class IrregularFunctionalData(object):
-    """An object for defining Irregular Functional Data.Functional
+    """An object for defining Irregular Functional Data
 
     Parameters
     ----------
@@ -114,9 +114,6 @@ class IrregularFunctionalData(object):
     standardize : boolean, default = True
         Do we standardize the argvals to be in [0, 1].
 
-    Attributes
-    ----------
-
     Notes
     -----
     Currently, only one dimensional irregular functional data have been
@@ -126,9 +123,6 @@ class IrregularFunctionalData(object):
     are defined on different domains and we have the complete trajectories.
     And it may not be useful if all the functional data are defined on the same
     domain and we do not record some the signal for some times.
-
-    References
-    ----------
 
     """
 

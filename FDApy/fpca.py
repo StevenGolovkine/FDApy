@@ -20,19 +20,6 @@ class UFPCA():
 
     It uses the PCA implementation of sklearn.
 
-    Parameters
-    ----------
-    n_components : int, float, None, default=None
-        Number of components to keep.
-        if n_components if None, all components are kept::
-
-            n_components == min(n_samples, n_features)
-
-        if n_components is int, n_components are kept.
-        if 0 < n_components < 1, select the number of components such that
-        the amount of variance that needs to be explained is greater than
-        the percentage specified by n_components.
-
     Attributes
     ----------
     eigenfunctions : array, shape = (n_components, n_features)
@@ -43,10 +30,23 @@ class UFPCA():
 
     """
     def __init__(self, n_components=None):
+        """
+        Parameters
+        ----------
+        n_components : int, float, None, default=None
+            Number of components to keep.
+            if n_components if None, all components are kept::
+                n_components == min(n_samples, n_features)
+            if n_components is int, n_components are kept.
+            if 0 < n_components < 1, select the number of components such that
+            the amount of variance that needs to be explained is greater than
+            the percentage specified by n_components.
+
+        """
         self.n_components = n_components
 
     def fit(self, X, **kwargs):
-        """Fit the model with X.
+        """Fit the model with X
 
         Parameters
         ----------
@@ -78,7 +78,7 @@ class UFPCA():
                 """UFPCA only support UnivariateFunctionalData object!""")
 
     def _fit_uni(self, X):
-        """Univariate Functional PCA.
+        """Univariate Functional PCA
 
         Parameters
         ----------
@@ -188,7 +188,7 @@ class UFPCA():
         return X_proj
 
     def inverse_transform(self, X):
-        """Transform the data back to its original space.
+        """Transform the data back to its original space
 
         Return a Univariate Functional data X_original whose transform would
         be X.
@@ -294,7 +294,7 @@ class MFPCA():
                 'MFPCA only support MultivariateFunctionalData object!')
 
     def _fit_multi(self, X, n_components, method):
-        """Multivariate Functional PCA.
+        """Multivariate Functional PCA
 
         Notes
         -----
