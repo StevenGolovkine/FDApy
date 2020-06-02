@@ -29,3 +29,6 @@ FDApy/.ipynb_checkpoints/*
 # Egg files
 .egg/*
 .eggs/*
+
+# Build docs files
+docs/build/*
