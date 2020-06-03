@@ -1,6 +1,10 @@
 #!/usr/bin/python3.7
 # -*-coding:utf8 -*
 
+"""Module for IrregularFunctionalData classes.
+
+This module is used define irregular functional data.
+"""
 import itertools
 import numpy as np
 
@@ -13,7 +17,7 @@ from .utils import rangeStandardization_
 
 
 def _check_argvals(argvals):
-    """ Check the user provided `argvals`.
+    """Check the user provided `argvals`.
 
     Parameters
     ----------
@@ -61,7 +65,6 @@ def _check_values(values):
     values : list of numpy array
 
     """
-
     # TODO: Modify the function to deal with other types of data.
     if isinstance(values, np.ndarray):
         values = [values]
@@ -84,8 +87,8 @@ def _check_argvals_values(argvals, values):
     Returns
     -------
     True, if the argvals and the values are ok.
-    """
 
+    """
     if len(argvals) != len(values):
         raise ValueError(
             'argvals and values elements have different support dimensions!')
@@ -100,7 +103,7 @@ def _check_argvals_values(argvals, values):
 
 
 class IrregularFunctionalData(object):
-    """An object for defining Irregular Functional Data
+    """An object for defining Irregular Functional Data.
 
     Parameters
     ----------
@@ -127,7 +130,7 @@ class IrregularFunctionalData(object):
     """
 
     def __init__(self, argvals, values, standardize=True):
-
+        """Initialize IrregularFunctionalData object."""
         self.argvals = argvals
         self.values = values
 
@@ -141,6 +144,7 @@ class IrregularFunctionalData(object):
             self.argvals_stand = argvals_stand
 
     def __repr__(self):
+        """Override print function."""
         res = "Irregular Functional data objects with " +\
             str(self.nObs()) +\
             " observations of " +\
@@ -164,7 +168,7 @@ class IrregularFunctionalData(object):
         return res
 
     def __getitem__(self, index):
-        """Function called when self[index]
+        """Function called when self[index].
 
         Parameters
         ----------
@@ -184,6 +188,7 @@ class IrregularFunctionalData(object):
 
     @property
     def argvals(self):
+        """Getter `argvals`."""
         return self._argvals
 
     @argvals.setter
@@ -195,6 +200,7 @@ class IrregularFunctionalData(object):
 
     @property
     def argvals_stand(self):
+        """Getter `argvals_stand`."""
         return self._argvals_stand
 
     @argvals_stand.setter
@@ -203,6 +209,7 @@ class IrregularFunctionalData(object):
 
     @property
     def values(self):
+        """Getter `values`."""
         return self._values
 
     @values.setter
@@ -303,7 +310,7 @@ class IrregularFunctionalData(object):
 
     def smooth(self, t0, k0,
                points=None, degree=0, kernel='epanechnikov', bandwidth=None):
-        """Smooth the data
+        """Smooth the data.
 
         Parameters
         ----------

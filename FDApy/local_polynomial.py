@@ -1,6 +1,10 @@
 #!/usr/bin/python3.7
 # -*-coding:utf8 -*
 
+"""Module for LocalPolynomial classes.
+
+This module is used fit local polynomial regression.
+"""
 import numpy as np
 
 from sklearn.preprocessing import PolynomialFeatures
@@ -121,7 +125,6 @@ def _compute_kernel(x, x0, h, kernel='gaussian'):
     equation 6.13
 
     """
-
     if not np.iterable(x0):
         x0 = np.asarray([x0])
     if x.ndim != np.size(x0):
@@ -221,7 +224,9 @@ class LocalPolynomial():
     * https://github.com/arokem/lowess/blob/master/lowess/lowess.py
 
     """
+
     def __init__(self, kernel="gaussian", bandwidth=0.05, degree=2):
+        """Initialize LocalPolynomial object."""
         # TODO: Add test on parameters.
         self.kernel = kernel
         self.bandwidth = bandwidth
@@ -230,6 +235,7 @@ class LocalPolynomial():
 
     @property
     def kernel(self):
+        """Getter for `kernel`."""
         return self._kernel
 
     @kernel.setter
@@ -238,6 +244,7 @@ class LocalPolynomial():
 
     @property
     def bandwidth(self):
+        """Getter for `bandwidth`."""
         return self._bandwidth
 
     @bandwidth.setter
@@ -246,6 +253,7 @@ class LocalPolynomial():
 
     @property
     def degree(self):
+        """Getter for `degree`."""
         return self._degree
 
     @degree.setter
@@ -289,7 +297,7 @@ class LocalPolynomial():
         return self
 
     def predict(self, X):
-        """ Predict using local polynomial regression.
+        """Predict using local polynomial regression.
 
         Parameters
         ----------

@@ -1,6 +1,11 @@
 #!/usr/bin/python3.7
 # -*-coding:utf8 -*
 
+"""Module for Bandwidth class.
+
+This module is used to estimate the bandwidth parameter that is necessary in
+the case of kernel regression.
+"""
 import numpy as np
 
 from .src.sigma import estimate_sigma
@@ -37,7 +42,7 @@ def estimate_H0(data, t0, k0, sigma=None):
 
     Returns
     -------
-    An estimation of H0
+    An estimation of H0.
 
     """
     def theta(v, k, idx):
@@ -209,7 +214,9 @@ def estimate_bandwidth(data, H0, L0, sigma, K="epanechnikov"):
 
 
 def estimate_bandwidth_list(data, H0, L0, sigma, K="epanechnikov"):
-    """Perform an estimation of the bandwidth in case :math:`H_0` and
+    """Perform an estimation of the bandwidth.
+
+    Perform an estimation of the bandwidth in case :math:`H_0` and
     :math:`L_0` are lists.
     """
     return [estimate_bandwidth(data, i, j, sigma, K) for (i, j) in zip(H0, L0)]
@@ -238,11 +245,23 @@ class Bandwidth(object):
         Estimation of the bandwidth for each t0
 
     """
+
     def __init__(self, t0=0.5, k0=2):
+        """Initialize Bandwidth object.
+
+        Parameters
+        ----------
+        t0 : list of float
+            A list of sampling points
+        k0 : list of int
+            A list of neighborhood
+
+        """
         self.t0 = t0
         self.k0 = k0
 
     def __repr__(self):
+        """Override print function."""
         res = "Bandwidth:\n" +\
             "\tSampling points: " + str(self.t0) + "\n" +\
             "\tHurst estimates: " + str(self.H) + "\n" +\
@@ -287,7 +306,6 @@ class Bandwidth(object):
             An estimation of the standard deviation of the noise
 
         """
-
         # Estimate parameters
         if (not hasattr(self, 'H')) or (H0 is None):
             self.estimate_H(data, sigma)

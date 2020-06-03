@@ -1,6 +1,10 @@
 #!/usr/bin/python3.7
 # -*-coding:utf8 -*
 
+"""Module for MultivariateFunctionalData classes.
+
+This module is used define multivariate functional data.
+"""
 import itertools
 import numpy as np
 
@@ -53,17 +57,18 @@ class MultivariateFunctionalData(object):
     """An object for defining Multivariate Functional Data."""
 
     def __init__(self, data):
-        """
+        """Initialize MultivariateFunctionalData object.
+
         Parameters
         ----------
         data : list of UnivariateFunctionalData or IrregularFunctionalData
             A list of elements from the class UnivariateFunctionalData or
             IrregularFunctionalData giving individuals.
-
         """
         self.data = data
 
     def __repr__(self):
+        """Override print function."""
         res = "Multivariate Functional data objects with " +\
             str(self.nFunctions()) +\
             " funtions:\n"
@@ -72,7 +77,7 @@ class MultivariateFunctionalData(object):
         return res
 
     def __getitem__(self, index):
-        """Function called when self[index]
+        """Function called when self[index].
 
         Parameters
         ----------
@@ -99,6 +104,7 @@ class MultivariateFunctionalData(object):
 
     @property
     def data(self):
+        """Getter for `data`."""
         return self._data
 
     @data.setter
@@ -108,6 +114,7 @@ class MultivariateFunctionalData(object):
 
     @property
     def mean_(self):
+        """Getter for `mean_`."""
         return self._mean_
 
     @mean_.setter
@@ -194,7 +201,9 @@ class MultivariateFunctionalData(object):
         return dim
 
     def asUnivariateFunctionalData(self):
-        """Convert a MultivariateFunctionalData object into a
+        """Convert multivariate to univariate functional data.
+
+        Convert a MultivariateFunctionalData object into a
         UnivariateFunctionalData object.
 
         Notes
@@ -219,7 +228,9 @@ class MultivariateFunctionalData(object):
         return UnivariateFunctionalData(self.data[0].argvals, np.array(data_))
 
     def mean(self, smooth=False, **kwargs):
-        """Compute the pointwise mean functions of each element of the
+        """Compute the mean function.
+
+        Compute the pointwise mean functions of each element of the
         multivariate functional data.
 
         Parameters
@@ -250,7 +261,9 @@ class MultivariateFunctionalData(object):
         self.mean_ = MultivariateFunctionalData(mean_)
 
     def covariance(self, smooth=False, **kwargs):
-        """Compute the pointwise covariance functions of each element of the
+        """Compute the covariance surface.
+
+        Compute the pointwise covariance functions of each element of the
         multivariate functional data.
 
         Parameters

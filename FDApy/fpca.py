@@ -1,6 +1,12 @@
 #!/usr/bin/python3.7
 # -*-coding:utf8 -*
 
+"""Module for UFPCA and MFPCA classes.
+
+This module is used to compute UFPCA and MFPCA eigencomponents on the provided
+functional data. Univariate functional data and irregular functional data are
+concerned with UFPCA, whereas multivariate functional data with MFPCA.
+"""
 import numpy as np
 
 from .univariate_functional import UnivariateFunctionalData
@@ -12,7 +18,7 @@ from .utils import integrationWeights_
 # Class UFPCA
 
 class UFPCA():
-    """Univariate Functional Principal Components Analysis (UFPCA)
+    """Univariate Functional Principal Components Analysis (UFPCA).
 
     Linear dimensionality reduction of univariate functional data using
     Singular Value Decomposition of the data to project it to a lower
@@ -29,8 +35,10 @@ class UFPCA():
         The singular values corresponding to each of selected components.
 
     """
+
     def __init__(self, n_components=None):
-        """
+        """Initaliaze UFPCA object.
+
         Parameters
         ----------
         n_components : int, float, None, default=None
@@ -46,7 +54,7 @@ class UFPCA():
         self.n_components = n_components
 
     def fit(self, X, **kwargs):
-        """Fit the model with X
+        """Fit the model with X.
 
         Parameters
         ----------
@@ -78,7 +86,7 @@ class UFPCA():
                 """UFPCA only support UnivariateFunctionalData object!""")
 
     def _fit_uni(self, X):
-        """Univariate Functional PCA
+        """Univariate Functional PCA.
 
         Parameters
         ----------
@@ -188,7 +196,7 @@ class UFPCA():
         return X_proj
 
     def inverse_transform(self, X):
-        """Transform the data back to its original space
+        """Transform the data back to its original space.
 
         Return a Univariate Functional data X_original whose transform would
         be X.
@@ -212,7 +220,7 @@ class UFPCA():
 # Class MFPCA
 
 class MFPCA():
-    """Multivariate Functional Principal Components Analysis (MFPCA)
+    """Multivariate Functional Principal Components Analysis (MFPCA).
 
     Linear dimensionality reduction of multivariate functional data using
     Singular Value Decomposition of the data to project it to a lower
@@ -247,8 +255,10 @@ class MFPCA():
     Statistical Association.
 
     """
+
     def __init__(self, n_components=None, method='PACE'):
-        """
+        """Initialize MFPCA object.
+
         Parameters
         ----------
         n_components : list of integers of size X.nFunctions()
@@ -294,7 +304,7 @@ class MFPCA():
                 'MFPCA only support MultivariateFunctionalData object!')
 
     def _fit_multi(self, X, n_components, method):
-        """Multivariate Functional PCA
+        """Multivariate Functional PCA.
 
         Notes
         -----
@@ -303,7 +313,6 @@ class MFPCA():
         components in functional data.
 
         """
-
         # Step 1: Perform univariate fPCA on each functions.
         ufpca = []
         scores = []

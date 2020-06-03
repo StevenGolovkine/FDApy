@@ -1,6 +1,13 @@
 #!/usr/bin/python3.7
 # -*-coding:utf8 -*
 
+"""Module for Simulation classes.
+
+This module is used to define an abstract Simulation class and two classes
+derived from it, the Basis class and the Brownian class. Thus, we may simulate
+different data from a linear combination of basis functions or multiple
+realizations of diverse Brownian motion.
+"""
 import numpy as np
 import scipy
 
@@ -12,10 +19,10 @@ from .multivariate_functional import MultivariateFunctionalData
 # Definition of the basis (eigenfunctions)
 
 def basis_legendre(K=3, argvals=None, norm=True):
-    """Define Legendre basis of function
+    """Define Legendre basis of function.
 
-    Build a basis of `K` functions using Legendre polynomials on the interval
-    `argvals`.
+    Build a basis of :math:`K` functions using Legendre polynomials on the
+    interval `argvals`.
 
     Parameters
     ----------
@@ -34,7 +41,6 @@ def basis_legendre(K=3, argvals=None, norm=True):
         polynomial up to `K` functions evaluated on `argvals`.
 
     """
-
     if argvals is None:
         argvals = np.arange(-1, 1, 0.1)
 
@@ -57,7 +63,7 @@ def basis_legendre(K=3, argvals=None, norm=True):
 
 
 def basis_wiener(K=3, argvals=None, norm=True):
-    """Define Wiener basis of function
+    """Define Wiener basis of function.
 
     Build a basis of functions of the Wiener process.
 
@@ -103,7 +109,7 @@ def basis_wiener(K=3, argvals=None, norm=True):
 
 
 def simulate_basis_(basis_name, K, argvals, norm):
-    """Function that redirects to the right simulation basis function
+    """Function that redirects to the right simulation basis function.
 
     Parameters
     ----------
@@ -142,7 +148,7 @@ def simulate_basis_(basis_name, K, argvals, norm):
 # Definition of the different Browian motion
 
 def standard_brownian_(argvals=None, x0=0.0):
-    """Function that generate standard brownian motions
+    """Function that generate standard brownian motions.
 
     Generate one dimensional standard brownian motion.
 
@@ -163,7 +169,6 @@ def standard_brownian_(argvals=None, x0=0.0):
     - https://github.com/cran/somebm/blob/master/R/bm.R
 
     """
-
     if argvals is None:
         argvals = np.arange(0, 1, 0.05)
 
@@ -185,7 +190,7 @@ def standard_brownian_(argvals=None, x0=0.0):
 
 
 def geometric_brownian_(argvals=None, x0=1.0, mu=0, sigma=1):
-    """Function that generate geometric brownian motions
+    """Function that generate geometric brownian motions.
 
     Generate one dimensional geometric brownian motion.
 
@@ -210,7 +215,6 @@ def geometric_brownian_(argvals=None, x0=1.0, mu=0, sigma=1):
     - https://github.com/cran/somebm/blob/master/R/bm.R
 
     """
-
     if argvals is None:
         argvals = np.arange(0, 1, 0.05)
 
@@ -234,7 +238,7 @@ def geometric_brownian_(argvals=None, x0=1.0, mu=0, sigma=1):
 
 
 def fractional_brownian_(argvals=None, hurst=0.5):
-    """Function that generate fractional brownian moitions
+    """Function that generate fractional brownian motions.
 
     Generate one dimension fractional brownian motion with a given Hurst
     parameter.
@@ -256,7 +260,6 @@ def fractional_brownian_(argvals=None, hurst=0.5):
     - https://github.com/cran/somebm/blob/master/R/bm.R
 
     """
-
     if argvals is None:
         argvals = np.arange(0, 1, 0.05)
 
@@ -282,7 +285,7 @@ def fractional_brownian_(argvals=None, hurst=0.5):
 
 
 def simulate_brownian_(brownian_type, argvals=None, norm=False, **kwargs):
-    """Fonction that redirects to the right brownian motion function
+    """Fonction that redirects to the right brownian motion function.
 
     Parameters
     ----------
@@ -324,7 +327,7 @@ def simulate_brownian_(brownian_type, argvals=None, norm=False, **kwargs):
 # Definition of the eigenvalues
 
 def eigenvalues_linear(M=3):
-    """Function that generate linear decreasing eigenvalues
+    """Function that generate linear decreasing eigenvalues.
 
     Parameters
     ----------
@@ -346,7 +349,7 @@ def eigenvalues_linear(M=3):
 
 
 def eigenvalues_exponential(M=3):
-    """Function that generate exponential decreasing eigenvalues
+    """Function that generate exponential decreasing eigenvalues.
 
     Parameters
     ----------
@@ -368,7 +371,7 @@ def eigenvalues_exponential(M=3):
 
 
 def eigenvalues_wiener(M=3):
-    """Function that generate eigenvalues from a Wiener process
+    """Function that generate eigenvalues from a Wiener process.
 
     Parameters
     ----------
@@ -386,7 +389,7 @@ def eigenvalues_wiener(M=3):
 
 
 def simulate_eigenvalues_(eigenvalues_name, M):
-    """Function that redirects to the right simulation eigenvalues function
+    """Function that redirects to the right simulation eigenvalues function.
 
     Parameters
     ----------
@@ -422,11 +425,11 @@ def simulate_eigenvalues_(eigenvalues_name, M):
 
 
 class Simulation(object):
-    """An object to simulate functional data
+    """An object to simulate functional data."""
 
-    """
     def __init__(self, N, M):
-        """
+        """Initialize Simulation object.
+
         Parameters
         ----------
         N: int
@@ -443,7 +446,7 @@ class Simulation(object):
         self.M_ = M
 
     def new(self, **kwargs):
-        """Function to simulate observations
+        """Function to simulate observations.
 
         TODO: To redefine.
 
@@ -451,7 +454,7 @@ class Simulation(object):
         pass
 
     def add_noise(self, noise_var=1, sd_function=None):
-        """Add noise to the data
+        r"""Add noise to the data.
 
         Model:
         .. math:: Z(t) = f(t) + \sigma(f(t))\epsilon
@@ -469,7 +472,6 @@ class Simulation(object):
             Standard deviation function for heteroscedatic noise.
 
         """
-
         noisy_data = []
         for i in self.obs_:
             if sd_function is None:
@@ -488,11 +490,11 @@ class Simulation(object):
 
 
 class Basis(Simulation):
-    """A functional data object representing an orthogonal (or orthonormal)
-    basis of functions.
+    r"""A functional data object representing an orthogonal basis of functions.
 
     The function are simulated using the Karhunen-Loève decomposition :
-        X_i(t) = mu(t) + sum_{j = 1}^M c_{i,j}phi_{i,j}(t), i = 1, ..., N
+    .. math::
+        X_i(t) = \mu(t) + \sum_{j = 1}^M c_{i,j}\phi_{i,j}(t), i = 1, ..., N
 
     Parameters:
     -----------
@@ -515,7 +517,9 @@ class Basis(Simulation):
         Simulation of univariate functional data
 
     """
+
     def __init__(self, N, M, basis_name, K, eigenvalues, norm):
+        """Initialize Basis object."""
         Simulation.__init__(self, N, M)
         self.basis_name_ = basis_name
         self.K_ = K
@@ -531,8 +535,7 @@ class Basis(Simulation):
         self.eigenvalues_ = eigenvalues
 
     def new(self, **kwargs):
-        """Function that simulates `N` observations."""
-
+        """Function that simulates :math::`N` observations."""
         # Simulate the N observations
         obs = np.empty(shape=(self.N_, len(self.M_)))
         coef = np.empty(shape=(self.N_, len(self.eigenvalues_)))
@@ -548,7 +551,7 @@ class Basis(Simulation):
 
 
 class Brownian(Simulation):
-    """A functional data object representing a brownian motion
+    """A functional data object representing a brownian motion.
 
     Parameters
     ----------
@@ -561,6 +564,7 @@ class Brownian(Simulation):
     """
 
     def __init__(self, N, M, brownian_type='standard'):
+        """Initialize Brownian object."""
         Simulation.__init__(self, N, M)
         self.brownian_type_ = brownian_type
 

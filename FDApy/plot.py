@@ -1,6 +1,10 @@
 #!/usr/bin/python3.7
 # -*-coding:utf8 -*
 
+"""Module for the plotting of functional data.
+
+This module is used to create plot of diverse type of functional data.
+"""
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -10,7 +14,8 @@ from .multivariate_functional import MultivariateFunctionalData
 
 
 def plot(data, main="", xlab="", ylab=""):
-    """
+    """Plot function.
+
     Generic plot function for univariate, irregular and multivariate
     functional data.
 
