@@ -1,6 +1,10 @@
 #!/usr/bin/python3.7
 # -*-coding:utf8 -*
 
+"""Module for UnivariateFunctionalData classes.
+
+This module is used define univariate functional data.
+"""
 import itertools
 import numpy as np
 import pygam
@@ -64,7 +68,6 @@ def _check_values(values):
     values : numpy array
 
     """
-
     # TODO: Modify the function to deal with other types of data.
     if not isinstance(values, np.ndarray):
         raise ValueError(
@@ -88,7 +91,6 @@ def _check_argvals_values(argvals, values):
     True, if the argvals and the values are ok.
 
     """
-
     if len(argvals) != len(values.shape[1:]):
         raise ValueError(
             'argvals and values elements have different support dimensions!')
@@ -127,8 +129,10 @@ def _check_argvals_equality(argvals1, argvals2):
 
 class UnivariateFunctionalData(object):
     """An object for defining Univariate Functional Data."""
+
     def __init__(self, argvals, values, standardize=True):
-        """
+        """Initialize UnivariateFunctionalData object.
+
         Parameters
         ----------
         argvals : list of numpy.ndarray
@@ -157,6 +161,7 @@ class UnivariateFunctionalData(object):
             self.argvals_stand = argvals_stand
 
     def __repr__(self):
+        """Override print function."""
         res = "Univariate Functional data objects with " +\
             str(self.nObs()) +\
             " observations of " +\
@@ -178,7 +183,7 @@ class UnivariateFunctionalData(object):
         return res
 
     def __getitem__(self, index):
-        """Function call when self[index]
+        """Function call when self[index].
 
         Parameters
         ----------
@@ -201,6 +206,7 @@ class UnivariateFunctionalData(object):
         return res
 
     def __add__(self, new):
+        """Override add function."""
         if not isinstance(new, UnivariateFunctionalData):
             raise ValueError(
                 """The object to add must be an object of the class
@@ -211,6 +217,7 @@ class UnivariateFunctionalData(object):
         return res
 
     def __sub__(self, new):
+        """Override sub funcion."""
         if not isinstance(new, UnivariateFunctionalData):
             raise ValueError(
                 """The object to substract must be an object of the class
@@ -221,6 +228,7 @@ class UnivariateFunctionalData(object):
         return res
 
     def __mul__(self, obj):
+        """Overide mul function."""
         values = np.empty(shape=self.values.shape)
         if isinstance(obj, (int, float, np.int_, np.float_)):
             values = self.values * obj
@@ -236,10 +244,12 @@ class UnivariateFunctionalData(object):
         return res
 
     def __rmul__(self, nb):
+        """Override rmul function."""
         return self * nb
 
     @property
     def argvals(self):
+        """Getter for argvals."""
         return self._argvals
 
     @argvals.setter
@@ -251,6 +261,7 @@ class UnivariateFunctionalData(object):
 
     @property
     def argvals_stand(self):
+        """Getter for argvals_stand."""
         return self._argvals_stand
 
     @argvals_stand.setter
@@ -259,6 +270,7 @@ class UnivariateFunctionalData(object):
 
     @property
     def values(self):
+        """Getter for values."""
         return self._values
 
     @values.setter
@@ -270,6 +282,7 @@ class UnivariateFunctionalData(object):
 
     @property
     def mean_(self):
+        """Getter for mean_."""
         return self._mean_
 
     @mean_.setter
@@ -348,7 +361,9 @@ class UnivariateFunctionalData(object):
         return dim
 
     def asIrregularFunctionalData(self):
-        """Coerce univariate functional data of dimension 1 into irregular
+        """Convert to univariate to irregular functional data.
+
+        Coerce univariate functional data of dimension 1 into irregular
         functional data.
 
         Returns
@@ -357,7 +372,6 @@ class UnivariateFunctionalData(object):
             An object of the class IrregularFunctionalData
 
         """
-
         if self.dimension() != 1:
             raise ValueError(
                 """It is not possible to coerce a UnivariateFunctionalData as

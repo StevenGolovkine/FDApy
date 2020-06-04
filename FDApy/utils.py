@@ -1,6 +1,10 @@
 #!/usr/bin/python3.7
 # -*-coding:utf8 -*
 
+"""Module that contains utility functions.
+
+This module is used to define diverse helper functions.
+"""
 import numpy as np
 import scipy
 
@@ -229,7 +233,9 @@ def integrate_(X, Y, method='simpson'):
 
 
 def integrationWeights_(X, method='trapz'):
-    """Compute weights for numerical integration over the domain `X` given
+    """Computation integration weights.
+
+    Compute weights for numerical integration over the domain `X` given
     the method `method`.
 
     Parameters
