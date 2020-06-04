@@ -18,7 +18,6 @@ sys.path.insert(0, os.path.abspath('../..'))
 # -- Project information -----------------------------------------------------
 
 project = 'FDApy'
-copyright = '2020, Steven Golovkine'
 author = 'Steven Golovkine'
 
 # The full version, including alpha/beta/rc tags
