@@ -1,0 +1,7 @@
+# Python for Codacy
+
+---
+
+exclude_paths:
+    - 'examples/**'
+    - 'FDApy/tests/**'

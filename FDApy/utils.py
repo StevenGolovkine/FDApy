@@ -41,8 +41,7 @@ def rangeStandardization_(X):
 
 
 def rowMean_(X):
-    """
-    Compute the mean of an array with respect to the rows.
+    """Compute the mean of an array with respect to the rows.
 
     This function computes the mean of an array with respect to the rows.
 
@@ -67,8 +66,7 @@ def rowMean_(X):
 
 
 def rowVar_(X):
-    """
-    Compute the variance of an array with respect to the rows.
+    """Compute the variance of an array with respect to the rows.
 
     This function computes the variance of the row of an array.
 
@@ -93,8 +91,7 @@ def rowVar_(X):
 
 
 def colMean_(X):
-    """
-    Compute the mean of an array with respect to the columns.
+    """Compute the mean of an array with respect to the columns.
 
     This function computes the mean of an array with respect to the columns.
 
@@ -119,8 +116,7 @@ def colMean_(X):
 
 
 def colVar_(X):
-    """
-    Compute the variance of an array with respect to the columns.
+    """Compute the variance of an array with respect to the columns.
 
     This function computes the variance of the column of an array.
 
@@ -149,8 +145,7 @@ def colVar_(X):
 
 
 def shift_(X, num, fill_value=np.nan):
-    """
-    Shift an array.
+    """Shift an array.
 
     This function shifts an array :math:`X` by a number :math:`num`.
 
@@ -196,8 +191,7 @@ def shift_(X, num, fill_value=np.nan):
 ##############################################################################
 
 def tensorProduct_(X, Y):
-    """
-    Compute the tensor product of two vectors.
+    """Compute the tensor product of two vectors.
 
     This function computes the tensor product of two vectors.
 
@@ -224,8 +218,7 @@ def tensorProduct_(X, Y):
 
 
 def integrate_(X, Y, method='simpson'):
-    """
-    Compute an estimate of the integral.
+    """Compute an estimate of the integral.
 
     This function computes an esmitation of the integral of :math:`Y` over the
     domain :math:`X`.
@@ -259,8 +252,7 @@ def integrate_(X, Y, method='simpson'):
 
 
 def integrationWeights_(X, method='trapz'):
-    """
-    Computation integration weights.
+    """Computation integration weights.
 
     Compute weights for numerical integration over the domain `X` given
     the method `method`.
