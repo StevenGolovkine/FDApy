@@ -1,7 +1,6 @@
 #!/usr/bin/python3.7
 # -*-coding:utf8 -*
-"""
-Module that contains utility functions.
+"""Module that contains utility functions.
 
 This module is used to define diverse helper functions. These functions are
 designed to standardize, manipulate and do computation on array.
@@ -16,8 +15,7 @@ from sklearn.preprocessing import StandardScaler
 # Standardization functions
 #############################################################################
 def rangeStandardization_(X):
-    r"""
-    Transform a vector [a, b] into a vector [0, 1].
+    r"""Transform a vector [a, b] into a vector [0, 1].
 
     This function standardizes a vector by applying the following
     transformation to the vector :math:`X`:
