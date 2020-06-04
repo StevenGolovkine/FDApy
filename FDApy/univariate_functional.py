@@ -1,7 +1,8 @@
 #!/usr/bin/python3.7
 # -*-coding:utf8 -*
 
-"""Module for UnivariateFunctionalData classes.
+"""
+Module for UnivariateFunctionalData classes.
 
 This module is used define univariate functional data.
 """

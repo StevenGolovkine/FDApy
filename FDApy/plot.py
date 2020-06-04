@@ -1,7 +1,8 @@
 #!/usr/bin/python3.7
 # -*-coding:utf8 -*
 
-"""Module for the plotting of functional data.
+"""
+Module for the plotting of functional data.
 
 This module is used to create plot of diverse type of functional data.
 """
@@ -14,7 +15,8 @@ from .multivariate_functional import MultivariateFunctionalData
 
 
 def plot(data, main="", xlab="", ylab=""):
-    """Plot function.
+    """
+    Plot function.
 
     Generic plot function for univariate, irregular and multivariate
     functional data.
@@ -51,7 +53,10 @@ def plot(data, main="", xlab="", ylab=""):
 
 
 def _plot_univariate(data, main="", xlab="", ylab=""):
-    """Plot univariate functional data.
+    """
+    Plot univariate functional data.
+
+    This function is used to plot an instance of univariate functional data.
 
     Parameters
     ----------
@@ -89,7 +94,10 @@ def _plot_univariate(data, main="", xlab="", ylab=""):
 
 
 def _plot_irregular(data, main="", xlab="", ylab=""):
-    """Plot irregular functional data.
+    """
+    Plot irregular functional data.
+
+    This function is used to plot an instance of irregular functional data.
 
     Parameters
     ----------
@@ -124,7 +132,10 @@ def _plot_irregular(data, main="", xlab="", ylab=""):
 
 
 def _plot_multivariate(data, main="", xlab="", ylab=""):
-    """Plot multivariate functional data.
+    """
+    Plot multivariate functional data.
+
+    This function is used to plot an instance of multivariate functional data.
 
     Parameters
     ----------
