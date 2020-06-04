@@ -498,8 +498,9 @@ class Basis(Simulation):
 
     Parameters:
     -----------
-    basis_name: str
-        String which denotes the basis of functions to use.
+    basis: str or numpy.ndarray
+        If basis is str, denotes the basis of functions to use.
+        If basis is numpy.ndarray, provides the basis to use.
     K: int
         Number of basis functions to use to simulate the data.
     eigenvalues: str or numpy.ndarray
@@ -518,16 +519,22 @@ class Basis(Simulation):
 
     """
 
-    def __init__(self, N, M, basis_name, K, eigenvalues, norm):
+    def __init__(self, N, M, basis, K, eigenvalues, norm):
         """Initialize Basis object."""
         Simulation.__init__(self, N, M)
-        self.basis_name_ = basis_name
         self.K_ = K
         self.norm_ = norm
 
         # Define the basis
-        self.basis_ = simulate_basis_(self.basis_name_,
-                                      self.K_, self.M_, self.norm_)
+        if isinstance(basis, str):
+            self.basis_name = basis
+            self.basis_ = simulate_basis_(self.basis_name_, self.K_,
+                                          self.M_, self.norm_).values
+        elif isinstance(basis, np.ndarray):
+            self.basis_name = 'user_provided'
+            self.basis_ = basis
+        else:
+            raise ValueError('Error with the basis.')
 
         # Define the decreasing of the eigenvalues
         if isinstance(eigenvalues, str):
@@ -540,10 +547,10 @@ class Basis(Simulation):
         obs = np.empty(shape=(self.N_, len(self.M_)))
         coef = np.empty(shape=(self.N_, len(self.eigenvalues_)))
         for i in range(self.N_):
-            coef_ = list(np.random.normal(0, self.eigenvalues_))
-            prod_ = coef_ * self.basis_
+            coef_ = np.random.normal(0, self.eigenvalues_)
+            prod_ = np.matmul(coef_[np.newaxis], self.basis_)
 
-            obs[i, :] = prod_.values.sum(axis=0)
+            obs[i, :] = prod_
             coef[i, :] = coef_
 
         self.coef_ = coef
