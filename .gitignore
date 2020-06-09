@@ -31,4 +31,8 @@ FDApy/.ipynb_checkpoints/*
 .eggs/*
 
 # Build docs files
-docs/build/*
+docs/_build/*
+docs/_static/*
+docs/_templates/*
+docs/auto_examples/*
+docs/backreferences/*

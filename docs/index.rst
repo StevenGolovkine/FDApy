@@ -14,11 +14,6 @@ Welcome to FDApy's documentation!
 
    apilist
 
-.. toctree::
-   :maxdepth: 1
-   :titlesonly:
-
-   auto_examples/index
 
 An exhaustive list of all the contents of the package can be found in the
 :ref:`genindex`.
