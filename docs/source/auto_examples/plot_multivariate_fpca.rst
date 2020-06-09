@@ -85,23 +85,18 @@ dataset.
 
 
 
+Estimate the covariance for each of the components of the multivariate
+functional data.
+
 
 .. code-block:: default
 
-    print(monthlyPrec.argvals)
+    monthlyPrec.covariance()
+    dailyTemp.covariance()
 
 
 
 
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    [array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11])]
 
 
 
@@ -125,47 +120,14 @@ Perform a multivariate functional PCA and explore the results.
     plt.plot(mfpca.basis_[1])
     plt.title('Eigenfunctions for monthlyPrec')
     plt.tight_layout()
-    plt.show()
 
 
 
-.. rst-class:: sphx-glr-script-out
 
+.. image:: /auto_examples/images/sphx_glr_plot_multivariate_fpca_001.png
+    :alt: Eigenfunctions for dailyTemp, Eigenfunctions for monthlyPrec
+    :class: sphx-glr-single-img
 
-.. code-block:: pytb
-
-    Traceback (most recent call last):
-      File "/home/steven/.ve/FDApy/lib/python3.7/site-packages/sphinx_gallery/gen_gallery.py", line 159, in call_memory
-        return 0., func()
-      File "/home/steven/.ve/FDApy/lib/python3.7/site-packages/sphinx_gallery/gen_rst.py", line 466, in __call__
-        exec(self.code, self.fake_main.__dict__)
-      File "/home/steven/Documents/workspace/FDApy/examples/plot_multivariate_fpca.py", line 57, in <module>
-        mfpca.fit(canadWeather)
-      File "/home/steven/Documents/workspace/FDApy/FDApy/fpca.py", line 284, in fit
-        self._fit(X)
-      File "/home/steven/Documents/workspace/FDApy/FDApy/fpca.py", line 291, in _fit
-        self._fit_multi(X, self.n_components, self.method)
-      File "/home/steven/Documents/workspace/FDApy/FDApy/fpca.py", line 312, in _fit_multi
-        ufpca.append(uni.fit(function))
-      File "/home/steven/Documents/workspace/FDApy/FDApy/fpca.py", line 69, in fit
-        self._fit(X)
-      File "/home/steven/Documents/workspace/FDApy/FDApy/fpca.py", line 75, in _fit
-        self._fit_uni(X)
-      File "/home/steven/Documents/workspace/FDApy/FDApy/fpca.py", line 110, in _fit_uni
-        X.covariance(smooth=True, **self.smoothing_parameters)
-      File "/home/steven/Documents/workspace/FDApy/FDApy/univariate_functional.py", line 476, in covariance
-        self.mean(smooth, method, **kwargs)
-      File "/home/steven/Documents/workspace/FDApy/FDApy/univariate_functional.py", line 414, in mean
-        lp.fit(self.argvals, mean_)
-      File "/home/steven/Documents/workspace/FDApy/FDApy/local_polynomial.py", line 288, in fit
-        bandwidth)])
-      File "/home/steven/Documents/workspace/FDApy/FDApy/local_polynomial.py", line 286, in <listcomp>
-        for (i, j, h) in zip(x0.T,
-      File "/home/steven/Documents/workspace/FDApy/FDApy/local_polynomial.py", line 186, in _loc_poly
-        K = _compute_kernel(x=x, x0=x0, h=h, kernel=kernel)
-      File "/home/steven/Documents/workspace/FDApy/FDApy/local_polynomial.py", line 127, in _compute_kernel
-        if x.ndim != np.size(x0):
-    AttributeError: 'list' object has no attribute 'ndim'
 
 
 
@@ -182,7 +144,60 @@ numerical integration.
 
     # Plot the projection of the data onto the eigenfunctions
     pd.plotting.scatter_matrix(pd.DataFrame(canadWeather_proj), diagonal='kde')
-    plt.show()
+
+
+
+
+.. image:: /auto_examples/images/sphx_glr_plot_multivariate_fpca_002.png
+    :alt: plot multivariate fpca
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    array([[<matplotlib.axes._subplots.AxesSubplot object at 0x7f247920ab00>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f2476b9db70>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f2476b51dd8>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f2476b16080>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f2476ac82e8>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f2476afb550>],
+           [<matplotlib.axes._subplots.AxesSubplot object at 0x7f2476ab07b8>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f2476a639e8>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f2476a63a58>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f24769ccef0>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f247698e198>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f24769c0400>],
+           [<matplotlib.axes._subplots.AxesSubplot object at 0x7f2476975668>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f24769278d0>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f24768dbb38>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f2476892da0>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f2476848fd0>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f24768092b0>],
+           [<matplotlib.axes._subplots.AxesSubplot object at 0x7f247683a518>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f24767ef780>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f2476bf7978>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f2476a719b0>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f247693b278>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f2477187c50>],
+           [<matplotlib.axes._subplots.AxesSubplot object at 0x7f2477143780>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f2477127240>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f247712d748>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f247672f828>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f24766e4a90>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f2476697cf8>],
+           [<matplotlib.axes._subplots.AxesSubplot object at 0x7f247664ff60>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f247660e208>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f2476642470>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f24765f66d8>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f24765a9940>,
+            <matplotlib.axes._subplots.AxesSubplot object at 0x7f247655eba8>]],
+          dtype=object)
+
 
 
 Then, we can test if the reconstruction of the data is good.
@@ -199,12 +214,32 @@ Then, we can test if the reconstruction of the data is good.
                    main=['Daily temperature', 'Monthly precipitation'],
                    xlab=['Day', 'Month'],
                    ylab=['Temperature', 'Precipitation'])
-    plt.show()
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /auto_examples/images/sphx_glr_plot_multivariate_fpca_003.png
+          :alt: Daily temperature
+          :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /auto_examples/images/sphx_glr_plot_multivariate_fpca_004.png
+          :alt: Monthly precipitation
+          :class: sphx-glr-multi-img
+
+
+
+
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.483 seconds)
+   **Total running time of the script:** ( 0 minutes  2.435 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_multivariate_fpca.py:

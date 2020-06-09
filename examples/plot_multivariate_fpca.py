@@ -46,8 +46,10 @@ dailyTemp = UnivariateFunctionalData(argvals, values)
 canadWeather = MultivariateFunctionalData([dailyTemp, monthlyPrec])
 
 ###############################################################################
-print(monthlyPrec.argvals)
-
+# Estimate the covariance for each of the components of the multivariate
+# functional data.
+monthlyPrec.covariance()
+dailyTemp.covariance()
 
 ###############################################################################
 # Perform a multivariate functional PCA and explore the results.
@@ -65,7 +67,6 @@ plt.subplot(1, 2, 2)
 plt.plot(mfpca.basis_[1])
 plt.title('Eigenfunctions for monthlyPrec')
 plt.tight_layout()
-plt.show()
 
 ###############################################################################
 # Compute the scores of the dailyTemp data into the eigenfunctions basis using
@@ -76,7 +77,6 @@ canadWeather_proj = mfpca.transform(canadWeather)
 
 # Plot the projection of the data onto the eigenfunctions
 pd.plotting.scatter_matrix(pd.DataFrame(canadWeather_proj), diagonal='kde')
-plt.show()
 
 ###############################################################################
 # Then, we can test if the reconstruction of the data is good.
@@ -89,4 +89,3 @@ fig, ax = plot(canadWheather_reconst,
                main=['Daily temperature', 'Monthly precipitation'],
                xlab=['Day', 'Month'],
                ylab=['Temperature', 'Precipitation'])
-plt.show()

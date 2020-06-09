@@ -24,7 +24,6 @@ data by analyzing the canadian weather dataset.
 
     # shinx_gallery_thumbnail_number = 2
 
-    import matplotlib.pyplot as plt
     import numpy as np
     import pandas as pd
 
@@ -453,7 +452,7 @@ smoothing, we can smooth all the curve in an individual way.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  8.705 seconds)
+   **Total running time of the script:** ( 0 minutes  9.186 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_canadian_weather.py:

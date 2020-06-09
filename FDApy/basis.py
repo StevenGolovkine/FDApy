@@ -317,7 +317,7 @@ def simulate_brownian_(brownian_type, argvals=None, norm=False, **kwargs):
                                     mu=kwargs['mu'],
                                     sigma=kwargs['sigma'])
     elif brownian_type == 'fractional':
-        simu_ = fractional_brownian_(argvals, hurst=kwargs['hurst'])
+        simu_ = fractional_brownian_(argvals, H=kwargs['H'])
     else:
         raise ValueError('Brownian type not implemented!')
     return simu_
@@ -527,11 +527,11 @@ class Basis(Simulation):
 
         # Define the basis
         if isinstance(basis, str):
-            self.basis_name = basis
+            self.basis_name_ = basis
             self.basis_ = simulate_basis_(self.basis_name_, self.K_,
                                           self.M_, self.norm_).values
         elif isinstance(basis, np.ndarray):
-            self.basis_name = 'user_provided'
+            self.basis_name_ = 'user_provided'
             self.basis_ = basis
         else:
             raise ValueError('Error with the basis.')

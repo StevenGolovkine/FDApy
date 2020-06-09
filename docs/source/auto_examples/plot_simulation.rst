@@ -24,7 +24,6 @@ basis.
 
     # shinx_gallery_thumbnail_number = 2
 
-    import matplotlib.pyplot as plt
     import numpy as np
 
     from FDApy.basis import Basis, Brownian, basis_legendre, basis_wiener
@@ -96,7 +95,7 @@ Legendre basis and exponential eigenvalues decay
 
 .. code-block:: default
 
-    sim = Basis(N=100, M=50, basis_name='legendre', K=5,
+    sim = Basis(N=100, M=50, basis='legendre', K=5,
                 eigenvalues='exponential', norm=True)
     sim.new()
 
@@ -119,7 +118,7 @@ Legendre basis and linear eigenvalues decay
 
 .. code-block:: default
 
-    sim = Basis(N=100, M=50, basis_name='legendre', K=5,
+    sim = Basis(N=100, M=50, basis='legendre', K=5,
                 eigenvalues='linear', norm=True)
     sim.new()
 
@@ -142,7 +141,7 @@ Wiener basis and Wiener eigenvalues decay
 
 .. code-block:: default
 
-    sim = Basis(N=100, M=50, basis_name='wiener', K=5,
+    sim = Basis(N=100, M=50, basis='wiener', K=5,
                 eigenvalues='wiener', norm=True)
     sim.new()
 
@@ -165,7 +164,7 @@ Wiener basis and user-set eigenvalues
 
 .. code-block:: default
 
-    sim = Basis(N=100, M=50, basis_name='wiener', K=3,
+    sim = Basis(N=100, M=50, basis='wiener', K=3,
                 eigenvalues=[100, 25, 5], norm=True)
     sim.new()
 
@@ -299,7 +298,7 @@ Simulate some fractional brownian motions.
 .. code-block:: default
 
     sim = Brownian(N=100, M=50, brownian_type='fractional')
-    sim.new(hurst=0.7)
+    sim.new(H=0.7)
 
     # Plot some simulations
     fig, ax = plot(sim.obs_,
@@ -319,7 +318,7 @@ Simulate some fractional brownian motions.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  2.180 seconds)
+   **Total running time of the script:** ( 0 minutes  2.386 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_simulation.py:
