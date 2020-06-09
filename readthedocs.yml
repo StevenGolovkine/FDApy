@@ -5,3 +5,8 @@ python:
   version: 3.7
 
 requirements_file: requirements.txt
+
+sphinx:
+  builder: html
+  configuration: conf.py
+  fail_on_warning: true
