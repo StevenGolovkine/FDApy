@@ -1,0 +1,607 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Basis &mdash; FDApy 0.3.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery-binder.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery-dataframe.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Functional Principal Components Analysis" href="fpca.html" />
+    <link rel="prev" title="Bandwidth" href="bandwidth.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> FDApy
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../apilist.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bandwidth.html">Bandwidth</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Basis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpca.html">Functional Principal Components Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="irregular_functional.html">Irregular Functional Data representation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="local_polynomial.html">Local Polynomial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="multivariate_functional.html">Multivariate Functional Data representation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot.html">Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="univariate_functional.html">Univariate Functional Data representation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../auto_examples/index.html">Examples</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">FDApy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../apilist.html">API Reference</a> &raquo;</li>
+        
+      <li>Basis</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/modules/basis.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-FDApy.basis">
+<span id="basis"></span><h1>Basis<a class="headerlink" href="#module-FDApy.basis" title="Permalink to this headline">¶</a></h1>
+<p>Module for Simulation classes.</p>
+<p>This module is used to define an abstract Simulation class and two classes
+derived from it, the Basis class and the Brownian class. Thus, we may simulate
+different data from a linear combination of basis functions or multiple
+realizations of diverse Brownian motion.</p>
+<dl class="py class">
+<dt id="FDApy.basis.Basis">
+<em class="property">class </em><code class="sig-prename descclassname">FDApy.basis.</code><code class="sig-name descname">Basis</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="n">M</span></em>, <em class="sig-param"><span class="n">basis</span></em>, <em class="sig-param"><span class="n">K</span></em>, <em class="sig-param"><span class="n">eigenvalues</span></em>, <em class="sig-param"><span class="n">norm</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.basis.Basis" title="Permalink to this definition">¶</a></dt>
+<dd><p>A functional data object representing an orthogonal basis of functions.</p>
+<p>The function are simulated using the Karhunen-Loève decomposition :
+.. math:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">X_i</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">=</span> \<span class="n">mu</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">+</span> \<span class="n">sum_</span><span class="p">{</span><span class="n">j</span> <span class="o">=</span> <span class="mi">1</span><span class="p">}</span><span class="o">^</span><span class="n">M</span> <span class="n">c_</span><span class="p">{</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">}</span>\<span class="n">phi_</span><span class="p">{</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">}(</span><span class="n">t</span><span class="p">),</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">N</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>basis: str or numpy.ndarray</dt><dd><p>If basis is str, denotes the basis of functions to use.
+If basis is numpy.ndarray, provides the basis to use.</p>
+</dd>
+<dt>K: int</dt><dd><p>Number of basis functions to use to simulate the data.</p>
+</dd>
+<dt>eigenvalues: str or numpy.ndarray</dt><dd><p>Define the decreasing of the eigenvalues of the process.
+If <cite>eigenvalues</cite> is str, we define the eigenvalues as using the
+corresponding function. Otherwise, we keep it like that.</p>
+</dd>
+<dt>norm: bool</dt><dd><p>Should we normalize the basis function?</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt>
+<code class="sig-name descname">coef\_</code></dt>
+<dd><p>Array of coefficients c_{i,j}</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="FDApy.basis.Basis.obs">
+<code class="sig-name descname">obs</code><a class="headerlink" href="#FDApy.basis.Basis.obs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulation of univariate functional data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="univariate_functional.html#FDApy.univariate_functional.UnivariateFunctionalData" title="FDApy.univariate_functional.UnivariateFunctionalData">FDApy.univariate_functional.UnivariateFunctionalData</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.basis.Basis.new">
+<code class="sig-name descname">new</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.basis.Basis.new" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that simulates :math::<cite>N</cite> observations.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="FDApy.basis.Brownian">
+<em class="property">class </em><code class="sig-prename descclassname">FDApy.basis.</code><code class="sig-name descname">Brownian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="n">M</span></em>, <em class="sig-param"><span class="n">brownian_type</span><span class="o">=</span><span class="default_value">'standard'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.basis.Brownian" title="Permalink to this definition">¶</a></dt>
+<dd><p>A functional data object representing a brownian motion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>N</strong> (<em>int</em><em>, </em><em>default=100</em>) – Number of curves to simulate.</p></li>
+<li><p><strong>brownian_type</strong> (<em>str</em><em>, </em><em>default='regular'</em>) – Type of brownian motion to simulate.
+One of ‘regular’, ‘geometric’ or ‘fractional’.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="FDApy.basis.Brownian.new">
+<code class="sig-name descname">new</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.basis.Brownian.new" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that simulates <cite>N</cite> observations.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="FDApy.basis.Simulation">
+<em class="property">class </em><code class="sig-prename descclassname">FDApy.basis.</code><code class="sig-name descname">Simulation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="n">M</span></em>, <em class="sig-param"><span class="n">G</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.basis.Simulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>An object to simulate functional data.</p>
+<dl class="py method">
+<dt id="FDApy.basis.Simulation.add_noise">
+<code class="sig-name descname">add_noise</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">noise_var</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">sd_function</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.basis.Simulation.add_noise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add noise to the data.</p>
+<p>Model:
+.. math:: Z(t) = f(t) + sigma(f(t))epsilon</p>
+<p>If sd_function is None, sigma(f(t)) = 1 and epsilon ~ N(0, noise_var)
+Else, we consider heteroscedastic noise with:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>sigma(f(t)) = sd_function(self.obs.values)</p></li>
+<li><p>epsilon ~ N(0,1)</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>noise_var</strong> (<em>float</em>) – Variance of the noise to add.</p></li>
+<li><p><strong>sd_function</strong> (<em>callable</em>) – Standard deviation function for heteroscedatic noise.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.basis.Simulation.new">
+<code class="sig-name descname">new</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.basis.Simulation.new" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to simulate observations.</p>
+<p>TODO: To redefine.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="FDApy.basis.basis_legendre">
+<code class="sig-prename descclassname">FDApy.basis.</code><code class="sig-name descname">basis_legendre</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">K</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">argvals</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.basis.basis_legendre" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define Legendre basis of function.</p>
+<p>Build a basis of <span class="math notranslate nohighlight">\(K\)</span> functions using Legendre polynomials on the
+interval <cite>argvals</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>K</strong> (<em>int</em><em>, </em><em>default = 3</em>) – Maximum degree of the Legendre polynomials.</p></li>
+<li><p><strong>argvals</strong> (<em>numpy.ndarray</em><em>, </em><em>default = None</em>) – The values on which evaluated the Legendre polynomials. If <cite>None</cite>, the
+polynomials are evaluated on the interval [-1, 1].</p></li>
+<li><p><strong>norm</strong> (<em>boolean</em><em>, </em><em>default = True</em>) – Do we normalize the functions?</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>obj</strong> – A UnivariateFunctionalData object containing the Legendre
+polynomial up to <cite>K</cite> functions evaluated on <cite>argvals</cite>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="univariate_functional.html#FDApy.univariate_functional.UnivariateFunctionalData" title="FDApy.univariate_functional.UnivariateFunctionalData">UnivariateFunctionalData</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="FDApy.basis.basis_wiener">
+<code class="sig-prename descclassname">FDApy.basis.</code><code class="sig-name descname">basis_wiener</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">K</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">argvals</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.basis.basis_wiener" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define Wiener basis of function.</p>
+<p>Build a basis of functions of the Wiener process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>K</strong> (<em>int</em><em>, </em><em>default = 3</em>) – Number of functions to compute.</p></li>
+<li><p><strong>argvals</strong> (<em>numpy.ndarray</em><em>, </em><em>default = None</em>) – The values on which evaluated the Wiener basis functions.
+If <cite>None</cite>, the functions are evaluated on the interval [0, 1].</p></li>
+<li><p><strong>norm</strong> (<em>boolean</em><em>, </em><em>default = True</em>) – Do we normalize the functions?</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>obj</strong> – A UnivariateFunctionalData object containing <cite>K</cite> Wiener basis functions
+evaluated on <cite>argvals</cite>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="univariate_functional.html#FDApy.univariate_functional.UnivariateFunctionalData" title="FDApy.univariate_functional.UnivariateFunctionalData">UnivariateFunctionalData</a></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>&gt;&gt;&gt;basis_wiener(K=3, argvals=np.arange(0, 1, 0.05), norm=True)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="FDApy.basis.eigenvalues_exponential">
+<code class="sig-prename descclassname">FDApy.basis.</code><code class="sig-name descname">eigenvalues_exponential</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">M</span><span class="o">=</span><span class="default_value">3</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.basis.eigenvalues_exponential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that generate exponential decreasing eigenvalues.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>M</strong> (<em>int</em><em>, </em><em>default = 3</em>) – Number of eigenvalues to generates</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>val</strong> – The generated eigenvalues</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>&gt;&gt;&gt;eigenvalues_exponential(M=3)
+[0.36787944117144233, 0.22313016014842982, 0.1353352832366127]</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="FDApy.basis.eigenvalues_linear">
+<code class="sig-prename descclassname">FDApy.basis.</code><code class="sig-name descname">eigenvalues_linear</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">M</span><span class="o">=</span><span class="default_value">3</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.basis.eigenvalues_linear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that generate linear decreasing eigenvalues.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>M</strong> (<em>int</em><em>, </em><em>default = 3</em>) – Number of eigenvalues to generates</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>val</strong> – The generated eigenvalues</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>&gt;&gt;&gt;eigenvalues_linear(M=3)
+[1.0, 0.6666666666666666, 0.3333333333333333]</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="FDApy.basis.eigenvalues_wiener">
+<code class="sig-prename descclassname">FDApy.basis.</code><code class="sig-name descname">eigenvalues_wiener</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">M</span><span class="o">=</span><span class="default_value">3</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.basis.eigenvalues_wiener" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that generate eigenvalues from a Wiener process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>M</strong> (<em>int</em><em>, </em><em>default = 3</em>) – Number of eigenvalues to generates</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>val</strong> – The generated eigenvalues</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="FDApy.basis.fractional_brownian_">
+<code class="sig-prename descclassname">FDApy.basis.</code><code class="sig-name descname">fractional_brownian_</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">argvals</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">H</span><span class="o">=</span><span class="default_value">0.5</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.basis.fractional_brownian_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that generate fractional brownian motions.</p>
+<p>Generate one dimension fractional brownian motion with a given Hurst
+parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>argvals</strong> (<em>tuple</em><em> or </em><em>numpy.ndarray</em><em>, </em><em>default=None</em>) – The values on which evaluated the fractional brownian motion.
+If <cite>None</cite>, the brownian is evaluated on the interval [0, 1].</p></li>
+<li><p><strong>H</strong> (<em>double</em><em>, </em><em>default=0.5</em>) – Hurst parameter</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A univariate functional data object.</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/cran/somebm/blob/master/R/bm.R">https://github.com/cran/somebm/blob/master/R/bm.R</a></p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt id="FDApy.basis.geometric_brownian_">
+<code class="sig-prename descclassname">FDApy.basis.</code><code class="sig-name descname">geometric_brownian_</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">argvals</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">x0</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">mu</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">sigma</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.basis.geometric_brownian_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that generate geometric brownian motions.</p>
+<p>Generate one dimensional geometric brownian motion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>argvals</strong> (<em>tuple</em><em> or </em><em>numpy.ndarray</em><em>, </em><em>default=None</em>) – The values on which evaluated the geometric brownian motion. If <cite>None</cite>,
+the brownian is evaluated on the interval [0, 1].</p></li>
+<li><p><strong>x0</strong> (<em>double</em><em>, </em><em>default=1.0</em>) – Start of the brownian motion. Careful, should be stricly greater than 0</p></li>
+<li><p><strong>mu</strong> (<em>double</em><em>, </em><em>default=0</em>) – The interest rate</p></li>
+<li><p><strong>sigma</strong> (<em>double</em><em>, </em><em>default=1</em>) – The diffusion coefficient</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A univariate functional data object.</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/cran/somebm/blob/master/R/bm.R">https://github.com/cran/somebm/blob/master/R/bm.R</a></p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt id="FDApy.basis.simulate_basis_">
+<code class="sig-prename descclassname">FDApy.basis.</code><code class="sig-name descname">simulate_basis_</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">basis_name</span></em>, <em class="sig-param"><span class="n">K</span></em>, <em class="sig-param"><span class="n">argvals</span></em>, <em class="sig-param"><span class="n">norm</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.basis.simulate_basis_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that redirects to the right simulation basis function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>basis_name</strong> (<em>str</em>) – Name of the basis to use.</p></li>
+<li><p><strong>K</strong> (<em>int</em>) – Number of functions to compute.</p></li>
+<li><p><strong>argvals</strong> (<em>tuple</em><em> or </em><em>numpy.ndarray</em>) – The values on which evaluated the Wiener basis functions. If <cite>None</cite>,
+the functions are evaluated on the interval [0, 1].</p></li>
+<li><p><strong>norm</strong> (<em>boolean</em>) – Do we normalize the functions?</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>basis_</strong> – A UnivariateFunctionalData object containing <cite>M</cite> basis functions
+evaluated on <cite>argvals</cite>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="univariate_functional.html#FDApy.univariate_functional.UnivariateFunctionalData" title="FDApy.univariate_functional.UnivariateFunctionalData">UnivariateFunctionalData</a></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<dl class="simple">
+<dt>&gt;&gt;&gt;simulate_basis_(‘legendre’, M=3,</dt><dd><p>argvals=np.arange(-1, 1, 0.1), norm=True)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="FDApy.basis.simulate_brownian_">
+<code class="sig-prename descclassname">FDApy.basis.</code><code class="sig-name descname">simulate_brownian_</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">brownian_type</span></em>, <em class="sig-param"><span class="n">argvals</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.basis.simulate_brownian_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fonction that redirects to the right brownian motion function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>brownian_type</strong> (<em>str</em>) – Name of the brownian motion to simulate.</p></li>
+<li><p><strong>argvals</strong> (<em>tuple</em><em> or </em><em>numpy.ndarray</em>) – The sampling points for the brownian motion.</p></li>
+<li><p><strong>norm</strong> (<em>boolean</em>) – Do we normalize the simulation?</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>simu_</strong> – A UnivariateFunctionalData object containing the simulated brownian
+motion evaluated on <cite>argvals</cite>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="univariate_functional.html#FDApy.univariate_functional.UnivariateFunctionalData" title="FDApy.univariate_functional.UnivariateFunctionalData">FDApy.univariate_functional.UnivariateFunctionalData</a></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<dl class="simple">
+<dt>&gt;&gt;&gt;simulate_brownian_(brownian_type=’standard’,</dt><dd><p>argvals=np.arange(0, 1, 0.05),
+norm=False)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="FDApy.basis.simulate_eigenvalues_">
+<code class="sig-prename descclassname">FDApy.basis.</code><code class="sig-name descname">simulate_eigenvalues_</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">eigenvalues_name</span></em>, <em class="sig-param"><span class="n">M</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.basis.simulate_eigenvalues_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that redirects to the right simulation eigenvalues function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eigenvalues_name</strong> (<em>str</em>) – Name of the eigenvalues generation process to use.</p></li>
+<li><p><strong>M</strong> (<em>int</em>) – Number of eigenvalues to generates</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>eigenvalues_</strong> – The generated eigenvalues</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>&gt;&gt;&gt;simulate_eigenvalues_(‘linear’, M=3)
+[1.0, 0.6666666666666666, 0.3333333333333333]</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="FDApy.basis.standard_brownian_">
+<code class="sig-prename descclassname">FDApy.basis.</code><code class="sig-name descname">standard_brownian_</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">argvals</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">x0</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.basis.standard_brownian_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that generate standard brownian motions.</p>
+<p>Generate one dimensional standard brownian motion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>argvals</strong> (<em>tuple</em><em> or </em><em>numpy.ndarray</em><em>, </em><em>default=None</em>) – The values on which evaluated the brownian motion. If <cite>None</cite>,
+the functions are evaluated on the interval [0, 1].</p></li>
+<li><p><strong>x0</strong> (<em>double</em><em>, </em><em>default=0.0</em>) – Start of the brownian motion.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A univariate functional data object.</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/cran/somebm/blob/master/R/bm.R">https://github.com/cran/somebm/blob/master/R/bm.R</a></p></li>
+</ul>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="fpca.html" class="btn btn-neutral float-right" title="Functional Principal Components Analysis" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="bandwidth.html" class="btn btn-neutral float-left" title="Bandwidth" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

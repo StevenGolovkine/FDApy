@@ -427,7 +427,7 @@ def simulate_eigenvalues_(eigenvalues_name, M):
 class Simulation(object):
     """An object to simulate functional data."""
 
-    def __init__(self, N, M):
+    def __init__(self, N, M, G=1):
         """Initialize Simulation object.
 
         Parameters
@@ -437,13 +437,16 @@ class Simulation(object):
         M: int or numpy.ndarray
             Sampling points.
             If M is int, we use np.linspace(0, 1, M) as sampling points.
-            Otherwise, we use the numpy.ndarray.
+            Otherwise, we use the provided numpy.ndarray.
+        G: int
+            Number of clusters to simulate.
 
         """
         self.N_ = N
         if isinstance(M, int):
             M = np.linspace(0, 1, M)
         self.M_ = M
+        self.G_ = G
 
     def new(self, **kwargs):
         """Function to simulate observations.
@@ -485,7 +488,6 @@ class Simulation(object):
             noisy_data.append(i + noise_func)
 
         data = MultivariateFunctionalData(noisy_data)
-
         self.noisy_obs_ = data.asUnivariateFunctionalData()
 
 

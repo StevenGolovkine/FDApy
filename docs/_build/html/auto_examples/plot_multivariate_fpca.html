@@ -1,0 +1,362 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Multivariate Functional Principal Components Analysis &mdash; FDApy 0.3.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery-binder.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery-dataframe.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Functional data simulation" href="plot_simulation.html" />
+    <link rel="prev" title="Local Polynomial Regression" href="plot_local_polynomial.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> FDApy
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="plot_univariate_functional.html">Smooth Univariate Functional data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_cd4.html">CD4 cell count analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_univariate_fpca.html">Univariate Functional Principal Components Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_local_polynomial.html">Local Polynomial Regression</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Multivariate Functional Principal Components Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_simulation.html">Functional data simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_canadian_weather.html">Canadian weather analysis</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">FDApy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Examples</a> &raquo;</li>
+        
+      <li>Multivariate Functional Principal Components Analysis</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/auto_examples/plot_multivariate_fpca.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-auto-examples-plot-multivariate-fpca-py"><span class="std std-ref">here</span></a>     to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="multivariate-functional-principal-components-analysis">
+<span id="sphx-glr-auto-examples-plot-multivariate-fpca-py"></span><h1>Multivariate Functional Principal Components Analysis<a class="headerlink" href="#multivariate-functional-principal-components-analysis" title="Permalink to this headline">¶</a></h1>
+<p>This notebook shows how to perform an multivariate functional principal
+components analysis on an example dataset.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Author: Steven Golovkine &lt;steven_golovkine@icloud.com&gt;</span>
+<span class="c1"># License: MIT</span>
+
+<span class="c1"># shinx_gallery_thumbnail_number = 2</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">FDApy.univariate_functional</span> <span class="kn">import</span> <span class="n">UnivariateFunctionalData</span>
+<span class="kn">from</span> <span class="nn">FDApy.multivariate_functional</span> <span class="kn">import</span> <span class="n">MultivariateFunctionalData</span>
+<span class="kn">from</span> <span class="nn">FDApy.fpca</span> <span class="kn">import</span> <span class="n">MFPCA</span>
+<span class="kn">from</span> <span class="nn">FDApy.plot</span> <span class="kn">import</span> <span class="n">plot</span>
+</pre></div>
+</div>
+<p>Load the data into Pandas dataframe</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">precipitation</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;./data/canadian_precipitation_monthly.csv&#39;</span><span class="p">,</span>
+                            <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">temperature</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;./data/canadian_temperature_daily.csv&#39;</span><span class="p">,</span>
+                          <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Create univariate functional data for the precipitation and temperature
+dataset. Then, we will combine them to form a multivariate functional
+dataset.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create univariate functional data for the precipitation data</span>
+<span class="n">argvals</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">factorize</span><span class="p">(</span><span class="n">precipitation</span><span class="o">.</span><span class="n">columns</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">precipitation</span><span class="p">)</span>
+<span class="n">monthlyPrec</span> <span class="o">=</span> <span class="n">UnivariateFunctionalData</span><span class="p">(</span><span class="n">argvals</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+
+<span class="c1"># Create univariate functional data for the daily temperature data.</span>
+<span class="n">argvals</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">factorize</span><span class="p">(</span><span class="n">temperature</span><span class="o">.</span><span class="n">columns</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">temperature</span><span class="p">)</span> <span class="o">/</span> <span class="mi">4</span>
+<span class="n">dailyTemp</span> <span class="o">=</span> <span class="n">UnivariateFunctionalData</span><span class="p">(</span><span class="n">argvals</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+
+<span class="c1"># Create multivariate functional data for the Canadian weather data.</span>
+<span class="n">canadWeather</span> <span class="o">=</span> <span class="n">MultivariateFunctionalData</span><span class="p">([</span><span class="n">dailyTemp</span><span class="p">,</span> <span class="n">monthlyPrec</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Estimate the covariance for each of the components of the multivariate
+functional data.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">monthlyPrec</span><span class="o">.</span><span class="n">covariance</span><span class="p">()</span>
+<span class="n">dailyTemp</span><span class="o">.</span><span class="n">covariance</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Perform a multivariate functional PCA and explore the results.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Perform multivariate FPCA</span>
+<span class="n">mfpca</span> <span class="o">=</span> <span class="n">MFPCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="p">[</span><span class="mf">0.99</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;NumInt&#39;</span><span class="p">)</span>
+<span class="n">mfpca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">canadWeather</span><span class="p">)</span>
+
+<span class="c1"># Plot the results of the FPCA (eigenfunctions)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">mfpca</span><span class="o">.</span><span class="n">basis_</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Eigenfunctions for dailyTemp&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">mfpca</span><span class="o">.</span><span class="n">basis_</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Eigenfunctions for monthlyPrec&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="Eigenfunctions for dailyTemp, Eigenfunctions for monthlyPrec" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_multivariate_fpca_001.png" />
+<p>Compute the scores of the dailyTemp data into the eigenfunctions basis using
+numerical integration.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compute the scores</span>
+<span class="n">canadWeather_proj</span> <span class="o">=</span> <span class="n">mfpca</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">canadWeather</span><span class="p">)</span>
+
+<span class="c1"># Plot the projection of the data onto the eigenfunctions</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">plotting</span><span class="o">.</span><span class="n">scatter_matrix</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">canadWeather_proj</span><span class="p">),</span> <span class="n">diagonal</span><span class="o">=</span><span class="s1">&#39;kde&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="plot multivariate fpca" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_multivariate_fpca_002.png" />
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>array([[&lt;matplotlib.axes._subplots.AxesSubplot object at 0x7faddf8007f0&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadded4fa58&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7faddf1bdda0&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7faddedcc278&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadde88e2b0&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7faddf826518&gt;],
+       [&lt;matplotlib.axes._subplots.AxesSubplot object at 0x7faddf825780&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7faddf16a9b0&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7faddf16aa20&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7faddf725eb8&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7faddf7bd160&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7faddf0ba3c8&gt;],
+       [&lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadded70630&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadded86898&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7faddf100b00&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadde7dcd68&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadde792fd0&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadde750278&gt;],
+       [&lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadde7044e0&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadde591748&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadde5c59b0&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadde4fbc18&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadd8e94e80&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadd8e56128&gt;],
+       [&lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadd8e07390&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadd8dbd5f8&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadd8d70860&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadd8da6828&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadd8d59ba8&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadd8d0cf28&gt;],
+       [&lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadd8cce2e8&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7faddf1bdcf8&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7faddf12f550&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadde7e9ba8&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadd8e74668&gt;,
+        &lt;matplotlib.axes._subplots.AxesSubplot object at 0x7fadde3bbc88&gt;]],
+      dtype=object)
+</pre></div>
+</div>
+<p>Then, we can test if the reconstruction of the data is good.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Test if the reconstruction is good.</span>
+<span class="n">canadWheather_reconst</span> <span class="o">=</span> <span class="n">mfpca</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">canadWeather_proj</span><span class="p">)</span>
+
+<span class="c1"># Plot the reconstructed curves</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plot</span><span class="p">(</span><span class="n">canadWheather_reconst</span><span class="p">,</span>
+               <span class="n">main</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Daily temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;Monthly precipitation&#39;</span><span class="p">],</span>
+               <span class="n">xlab</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Day&#39;</span><span class="p">,</span> <span class="s1">&#39;Month&#39;</span><span class="p">],</span>
+               <span class="n">ylab</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;Precipitation&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<ul class="sphx-glr-horizontal">
+<li><img alt="Daily temperature" class="sphx-glr-multi-img" src="../_images/sphx_glr_plot_multivariate_fpca_003.png" />
+</li>
+<li><img alt="Monthly precipitation" class="sphx-glr-multi-img" src="../_images/sphx_glr_plot_multivariate_fpca_004.png" />
+</li>
+</ul>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  2.076 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-multivariate-fpca-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/3ab678ffda4e815c0c298f40889e765e/plot_multivariate_fpca.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_multivariate_fpca.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/457a1c2214bbdf995ef5e94284020cd2/plot_multivariate_fpca.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_multivariate_fpca.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="plot_simulation.html" class="btn btn-neutral float-right" title="Functional data simulation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="plot_local_polynomial.html" class="btn btn-neutral float-left" title="Local Polynomial Regression" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

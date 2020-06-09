@@ -1,0 +1,546 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Univariate Functional Data representation &mdash; FDApy 0.3.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery-binder.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery-dataframe.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Utils" href="utils.html" />
+    <link rel="prev" title="Plot" href="plot.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> FDApy
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../apilist.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bandwidth.html">Bandwidth</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basis.html">Basis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpca.html">Functional Principal Components Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="irregular_functional.html">Irregular Functional Data representation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="local_polynomial.html">Local Polynomial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="multivariate_functional.html">Multivariate Functional Data representation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot.html">Plot</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Univariate Functional Data representation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../auto_examples/index.html">Examples</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">FDApy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../apilist.html">API Reference</a> &raquo;</li>
+        
+      <li>Univariate Functional Data representation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/modules/univariate_functional.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-FDApy.univariate_functional">
+<span id="univariate-functional-data-representation"></span><h1>Univariate Functional Data representation<a class="headerlink" href="#module-FDApy.univariate_functional" title="Permalink to this headline">¶</a></h1>
+<p>Module for UnivariateFunctionalData classes.</p>
+<p>This module is used define univariate functional data.</p>
+<dl class="py class">
+<dt id="FDApy.univariate_functional.UnivariateFunctionalData">
+<em class="property">class </em><code class="sig-prename descclassname">FDApy.univariate_functional.</code><code class="sig-name descname">UnivariateFunctionalData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">argvals</span></em>, <em class="sig-param"><span class="n">values</span></em>, <em class="sig-param"><span class="n">standardize</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData" title="Permalink to this definition">¶</a></dt>
+<dd><p>An object for defining Univariate Functional Data.</p>
+<dl class="py method">
+<dt id="FDApy.univariate_functional.UnivariateFunctionalData.argvals">
+<em class="property">property </em><code class="sig-name descname">argvals</code><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.argvals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Getter for argvals.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.univariate_functional.UnivariateFunctionalData.argvals_stand">
+<em class="property">property </em><code class="sig-name descname">argvals_stand</code><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.argvals_stand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Getter for argvals_stand.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.univariate_functional.UnivariateFunctionalData.asIrregularFunctionalData">
+<code class="sig-name descname">asIrregularFunctionalData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.asIrregularFunctionalData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert to univariate to irregular functional data.</p>
+<p>Coerce univariate functional data of dimension 1 into irregular
+functional data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>obj</strong> – An object of the class IrregularFunctionalData</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="irregular_functional.html#FDApy.irregular_functional.IrregularFunctionalData" title="FDApy.irregular_functional.IrregularFunctionalData">IrregularFunctionalData</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.univariate_functional.UnivariateFunctionalData.covariance">
+<code class="sig-name descname">covariance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">smooth</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'LocalLinear'</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.covariance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the covariance function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>smooth</strong> (<em>boolean</em><em>, </em><em>default=False</em>) – Should we smooth the covariance?</p></li>
+<li><p><strong>method</strong> (<em>'LocalLinear'</em><em>, </em><em>'GAM'</em><em>, </em><em>default: 'LocalLinear'</em>) – Which smoothing method do we use?</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – <p>The following parameters are taken into account:
+* For method=’LocalLinear’</p>
+<blockquote>
+<div><ul>
+<li><dl class="simple">
+<dt>kernel: ‘gaussian’, ‘epanechnikov’, ‘tricube’, ‘bisquare’</dt><dd><p>default=’gaussian’</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>degree: int</dt><dd><p>default: 2</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>bandwidth: float</dt><dd><p>default=1</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<ul>
+<li><dl class="simple">
+<dt>For method=’GAM’</dt><dd><ul>
+<li><dl class="simple">
+<dt>n_basis: int</dt><dd><p>default=10</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>obj</strong> – Object of the class UnivariateFunctionalData with dimension 2
+and one observation.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>UnivariateFunctionalData object</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>Yao, Müller and Wang (2005), Functional Data Analysis for Sparse
+Longitudinal Data,
+Journal of the American Statistical Association, Vol. 100, No. 470</p>
+<p class="rubric">Notes</p>
+<p>Currently, for smoothing, please consider to use the ‘GAM’ method as
+the ‘LocalLinear’ is not working.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.univariate_functional.UnivariateFunctionalData.dimension">
+<code class="sig-name descname">dimension</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.dimension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Common dimension of the observations of the object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>dim</strong> – Number of dimension of the observations of the object.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.univariate_functional.UnivariateFunctionalData.estimate_noise">
+<code class="sig-name descname">estimate_noise</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.estimate_noise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimation of the noise.</p>
+<p>This method estimates the (heteroscedastic) noise for a univariate
+functional data object.
+Model: <span class="math notranslate nohighlight">\(Z_i(t_k) = f_i(t_k) + sigma(f_i(t_k))epsilon_i\)</span>
+It is assume that all the curves have been sampled on the same design
+points. Let’s t_1, …, t_k be that points, the estimation of the
+noise at t_k is::
+<span class="math notranslate nohighlight">\(sigma^2(t_k) = 1/2n sum_{i} [Z_i(t_{k+1}) - Z_i(t_{k})]^2\)</span></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.univariate_functional.UnivariateFunctionalData.integrate">
+<code class="sig-name descname">integrate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'simpson'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.integrate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Integrate all the observations over the argvals.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>method</strong> (<em>str</em><em>, </em><em>default = 'simpson'</em>) – The method used to integrated. Currently, only the Simpsons method
+is implemented.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>obj</strong> – List where entry i is the integration of the observation i over
+the argvals.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list of int</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only work with 1-dimensional functional data.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.univariate_functional.UnivariateFunctionalData.mean">
+<code class="sig-name descname">mean</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">smooth</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'LocalLinear'</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the mean function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>smooth</strong> (<em>boolean</em><em>, </em><em>default=False</em>) – Should we smooth the mean?</p></li>
+<li><p><strong>method</strong> (<em>'LocalLinear'</em><em>, </em><em>'GAM'</em><em>, </em><em>default='LocalLinear'</em>) – Which smoothing method do we use?</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – <p>The following parameters are taken into account:
+* For method=’LocalLinear’:</p>
+<blockquote>
+<div><ul>
+<li><dl class="simple">
+<dt>kernel: ‘gaussian’, ‘epanechnikov’, ‘tricube’, ‘bisquare’</dt><dd><p>default=’gaussian’</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>degree: int</dt><dd><p>default: 2</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>bandwidth: float</dt><dd><p>default=1</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<ul>
+<li><dl class="simple">
+<dt>For method=’GAM’:</dt><dd><ul>
+<li><dl class="simple">
+<dt>n_basis: int</dt><dd><p>default=10</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>obj</strong> – Object of the class UnivariateFunctionalData with the same
+argvals as self and one observation.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>UnivariateFunctionalData object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.univariate_functional.UnivariateFunctionalData.mean_">
+<em class="property">property </em><code class="sig-name descname">mean_</code><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.mean_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Getter for <a href="#id1"><span class="problematic" id="id2">mean_</span></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.univariate_functional.UnivariateFunctionalData.nObs">
+<code class="sig-name descname">nObs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.nObs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of observations of the object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>n</strong> – Number of observations of the object.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.univariate_functional.UnivariateFunctionalData.nObsPoint">
+<code class="sig-name descname">nObsPoint</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.nObsPoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of sampling points of the objects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>n</strong> – List of the length self.dimension() where the i-th entry
+correspond to the number of sampling points of the i-th dimension
+of the observations.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list of int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.univariate_functional.UnivariateFunctionalData.rangeObs">
+<code class="sig-name descname">rangeObs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.rangeObs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Range of the observations of the objects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>min(values_), max(values_)</strong> – Tuple containing the minimum and maximum number of all the
+observations for an object.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.univariate_functional.UnivariateFunctionalData.rangeObsPoint">
+<code class="sig-name descname">rangeObsPoint</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.rangeObsPoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Range of the observations of the objects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>range_</strong> (<em>list of tuples containing the minimum and maximum number</em>)</p></li>
+<li><p><em>where the i-th entry of the list contains the range of the i-th</em></p></li>
+<li><p><em>dimension of the object.</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.univariate_functional.UnivariateFunctionalData.smooth">
+<code class="sig-name descname">smooth</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t0</span></em>, <em class="sig-param"><span class="n">k0</span></em>, <em class="sig-param"><span class="n">points</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">degree</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">kernel</span><span class="o">=</span><span class="default_value">'epanechnikov'</span></em>, <em class="sig-param"><span class="n">bandwidth</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.smooth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Smooth the data.</p>
+<p>Currently, it uses local polynomial regression.
+Currently, only for one dimensional univariate functional data.
+TODO: Add other smoothing methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<em>array-like</em><em>, </em><em>shape =</em><em> [</em><em>n_samples</em><em>]</em>) – Points where evaluate the function.</p></li>
+<li><p><strong>kernel</strong> (<em>string</em><em>, </em><em>default=&quot;gaussian&quot;</em>) – Kernel name used as weight (default = ‘gaussian’).</p></li>
+<li><p><strong>bandwidth</strong> (<em>float</em><em>, </em><em>default=0.05</em>) – Strictly positive. Control the size of the associated neighborhood.</p></li>
+<li><p><strong>degree</strong> (<em>integer</em><em>, </em><em>default=2</em>) – Degree of the local polynomial to fit.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>res</strong> – Object of the class UnivariateFunctionalData which correpond to
+the data that have been smooth:: argvals = <cite>points</cite> given as input</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#FDApy.univariate_functional.UnivariateFunctionalData" title="FDApy.univariate_functional.UnivariateFunctionalData">FDApy.univariate_functional.UnivariateFunctionalData</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.univariate_functional.UnivariateFunctionalData.tensorProduct">
+<code class="sig-name descname">tensorProduct</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.tensorProduct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the tensor product of two univariate functional data.</p>
+<dl class="simple">
+<dt>data<span class="classifier">FDApy.univariate_functional.UnivariateFunctionalData object</span></dt><dd><p>A one dimensional univariate functional data</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>obj</strong> – Object of the class UnivariateFunctionalData of dimension 2
+(self.argvals x data.argvals)</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#FDApy.univariate_functional.UnivariateFunctionalData" title="FDApy.univariate_functional.UnivariateFunctionalData">FDApy.univariate_functional.UnivariateFunctionalData</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.univariate_functional.UnivariateFunctionalData.values">
+<em class="property">property </em><code class="sig-name descname">values</code><a class="headerlink" href="#FDApy.univariate_functional.UnivariateFunctionalData.values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Getter for values.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="utils.html" class="btn btn-neutral float-right" title="Utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="plot.html" class="btn btn-neutral float-left" title="Plot" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

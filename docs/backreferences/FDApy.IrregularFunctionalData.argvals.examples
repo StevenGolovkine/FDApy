@@ -1,0 +1,42 @@
+
+
+Examples using ``FDApy.IrregularFunctionalData.argvals``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This notebook shows how to smooth univariate functional data.">
+
+.. only:: html
+
+ .. figure:: /auto_examples/images/thumb/sphx_glr_plot_univariate_functional_thumb.png
+     :alt: Smooth Univariate Functional data
+
+     :ref:`sphx_glr_auto_examples_plot_univariate_functional.py`
+
+.. raw:: html
+
+    </div>
+
+.. only:: not html
+
+ * :ref:`sphx_glr_auto_examples_plot_univariate_functional.py`
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This notebook shows how to deal with irregular functional data by analyzing the dataset CD4 cel...">
+
+.. only:: html
+
+ .. figure:: /auto_examples/images/thumb/sphx_glr_plot_cd4_thumb.png
+     :alt: CD4 cell count analysis
+
+     :ref:`sphx_glr_auto_examples_plot_cd4.py`
+
+.. raw:: html
+
+    </div>
+
+.. only:: not html
+
+ * :ref:`sphx_glr_auto_examples_plot_cd4.py`

@@ -1,0 +1,23 @@
+
+
+Examples using ``FDApy.fpca.UFPCA.transform``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This notebook shows how to perform an univariate functional principal components analysis on an...">
+
+.. only:: html
+
+ .. figure:: /auto_examples/images/thumb/sphx_glr_plot_univariate_fpca_thumb.png
+     :alt: Univariate Functional Principal Components Analysis
+
+     :ref:`sphx_glr_auto_examples_plot_univariate_fpca.py`
+
+.. raw:: html
+
+    </div>
+
+.. only:: not html
+
+ * :ref:`sphx_glr_auto_examples_plot_univariate_fpca.py`

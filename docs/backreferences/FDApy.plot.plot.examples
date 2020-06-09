@@ -1,0 +1,118 @@
+
+
+Examples using ``FDApy.plot.plot``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This notebook shows how to smooth univariate functional data.">
+
+.. only:: html
+
+ .. figure:: /auto_examples/images/thumb/sphx_glr_plot_univariate_functional_thumb.png
+     :alt: Smooth Univariate Functional data
+
+     :ref:`sphx_glr_auto_examples_plot_univariate_functional.py`
+
+.. raw:: html
+
+    </div>
+
+.. only:: not html
+
+ * :ref:`sphx_glr_auto_examples_plot_univariate_functional.py`
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This notebook shows how to deal with irregular functional data by analyzing the dataset CD4 cel...">
+
+.. only:: html
+
+ .. figure:: /auto_examples/images/thumb/sphx_glr_plot_cd4_thumb.png
+     :alt: CD4 cell count analysis
+
+     :ref:`sphx_glr_auto_examples_plot_cd4.py`
+
+.. raw:: html
+
+    </div>
+
+.. only:: not html
+
+ * :ref:`sphx_glr_auto_examples_plot_cd4.py`
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This notebook shows how to perform an univariate functional principal components analysis on an...">
+
+.. only:: html
+
+ .. figure:: /auto_examples/images/thumb/sphx_glr_plot_univariate_fpca_thumb.png
+     :alt: Univariate Functional Principal Components Analysis
+
+     :ref:`sphx_glr_auto_examples_plot_univariate_fpca.py`
+
+.. raw:: html
+
+    </div>
+
+.. only:: not html
+
+ * :ref:`sphx_glr_auto_examples_plot_univariate_fpca.py`
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This notebook shows how to perform an multivariate functional principal components analysis on ...">
+
+.. only:: html
+
+ .. figure:: /auto_examples/images/thumb/sphx_glr_plot_multivariate_fpca_thumb.png
+     :alt: Multivariate Functional Principal Components Analysis
+
+     :ref:`sphx_glr_auto_examples_plot_multivariate_fpca.py`
+
+.. raw:: html
+
+    </div>
+
+.. only:: not html
+
+ * :ref:`sphx_glr_auto_examples_plot_multivariate_fpca.py`
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This notebook shows how to simulate functional data according with different basis.">
+
+.. only:: html
+
+ .. figure:: /auto_examples/images/thumb/sphx_glr_plot_simulation_thumb.png
+     :alt: Functional data simulation
+
+     :ref:`sphx_glr_auto_examples_plot_simulation.py`
+
+.. raw:: html
+
+    </div>
+
+.. only:: not html
+
+ * :ref:`sphx_glr_auto_examples_plot_simulation.py`
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This notebook shows how to deal with univariate and multivariate functional data by analyzing t...">
+
+.. only:: html
+
+ .. figure:: /auto_examples/images/thumb/sphx_glr_plot_canadian_weather_thumb.png
+     :alt: Canadian weather analysis
+
+     :ref:`sphx_glr_auto_examples_plot_canadian_weather.py`
+
+.. raw:: html
+
+    </div>
+
+.. only:: not html
+
+ * :ref:`sphx_glr_auto_examples_plot_canadian_weather.py`

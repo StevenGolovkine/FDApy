@@ -1,0 +1,42 @@
+
+
+Examples using ``FDApy.Brownian.new``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This notebook shows how to smooth univariate functional data.">
+
+.. only:: html
+
+ .. figure:: /auto_examples/images/thumb/sphx_glr_plot_univariate_functional_thumb.png
+     :alt: Smooth Univariate Functional data
+
+     :ref:`sphx_glr_auto_examples_plot_univariate_functional.py`
+
+.. raw:: html
+
+    </div>
+
+.. only:: not html
+
+ * :ref:`sphx_glr_auto_examples_plot_univariate_functional.py`
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This notebook shows how to simulate functional data according with different basis.">
+
+.. only:: html
+
+ .. figure:: /auto_examples/images/thumb/sphx_glr_plot_simulation_thumb.png
+     :alt: Functional data simulation
+
+     :ref:`sphx_glr_auto_examples_plot_simulation.py`
+
+.. raw:: html
+
+    </div>
+
+.. only:: not html
+
+ * :ref:`sphx_glr_auto_examples_plot_simulation.py`

@@ -1,0 +1,328 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Local Polynomial &mdash; FDApy 0.3.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery-binder.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery-dataframe.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Multivariate Functional Data representation" href="multivariate_functional.html" />
+    <link rel="prev" title="Irregular Functional Data representation" href="irregular_functional.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> FDApy
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../apilist.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bandwidth.html">Bandwidth</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basis.html">Basis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpca.html">Functional Principal Components Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="irregular_functional.html">Irregular Functional Data representation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Local Polynomial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="multivariate_functional.html">Multivariate Functional Data representation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot.html">Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="univariate_functional.html">Univariate Functional Data representation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../auto_examples/index.html">Examples</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">FDApy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../apilist.html">API Reference</a> &raquo;</li>
+        
+      <li>Local Polynomial</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/modules/local_polynomial.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-FDApy.local_polynomial">
+<span id="local-polynomial"></span><h1>Local Polynomial<a class="headerlink" href="#module-FDApy.local_polynomial" title="Permalink to this headline">¶</a></h1>
+<p>Module for LocalPolynomial classes.</p>
+<p>This module is used fit local polynomial regression.</p>
+<dl class="py class">
+<dt id="FDApy.local_polynomial.LocalPolynomial">
+<em class="property">class </em><code class="sig-prename descclassname">FDApy.local_polynomial.</code><code class="sig-name descname">LocalPolynomial</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kernel</span><span class="o">=</span><span class="default_value">'gaussian'</span></em>, <em class="sig-param"><span class="n">bandwidth</span><span class="o">=</span><span class="default_value">0.05</span></em>, <em class="sig-param"><span class="n">degree</span><span class="o">=</span><span class="default_value">2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.local_polynomial.LocalPolynomial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Local polynomial regression.</p>
+<p>Let (x_1, Y_1), …, (x_n, Y_n) be a random sample of bivariate data.
+For all i, x_i belongs to R^d and Y_i in R. Assume the following model:
+Y_i = f(x_i) + e_i. We would like to estimate the unknown regression
+function f(x) = E[Y | X = x]. We approximate f(x) using Taylor series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kernel</strong> (<em>string</em><em>, </em><em>default=&quot;gaussian&quot;</em>) – Kernel name used as weight (default = ‘gaussian’).</p></li>
+<li><p><strong>bandwidth</strong> (<em>float</em><em>, </em><em>default=0.05</em>) – Strictly positive. Control the size of the associated neighborhood.</p></li>
+<li><p><strong>degree</strong> (<em>integer</em><em>, </em><em>default=2</em>) – Degree of the local polynomial to fit. If degree = 0, we fit the local
+constant estimator (equivalent to the Nadaraya-Watson estimator). If
+degree = 1, we fit the local linear estimator.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<ul class="simple">
+<li><p>Zhang and Chen, Statistical Inferences for functional data, The Annals of</p></li>
+</ul>
+<p>Statistics, 1052-1079, No. 3, Vol. 35, 2007.
+* <a class="reference external" href="https://github.com/arokem/lowess/blob/master/lowess/lowess.py">https://github.com/arokem/lowess/blob/master/lowess/lowess.py</a></p>
+<dl class="py method">
+<dt id="FDApy.local_polynomial.LocalPolynomial.bandwidth">
+<em class="property">property </em><code class="sig-name descname">bandwidth</code><a class="headerlink" href="#FDApy.local_polynomial.LocalPolynomial.bandwidth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Getter for <cite>bandwidth</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.local_polynomial.LocalPolynomial.degree">
+<em class="property">property </em><code class="sig-name descname">degree</code><a class="headerlink" href="#FDApy.local_polynomial.LocalPolynomial.degree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Getter for <cite>degree</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.local_polynomial.LocalPolynomial.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.local_polynomial.LocalPolynomial.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit local polynomial regression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>array-like</em><em>, </em><em>shape =</em><em> (</em><em>n_dim</em><em>, </em><em>n_samples</em><em>)</em>) – Training data, input array.</p></li>
+<li><p><strong>y</strong> (<em>array-like</em><em>, </em><em>shape =</em><em> (</em><em>n_samples</em><em>, </em><em>)</em>) – Target values, 1-D input array</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>self</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>returns an instance of self.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.local_polynomial.LocalPolynomial.fit_predict">
+<code class="sig-name descname">fit_predict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">X_pred</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.local_polynomial.LocalPolynomial.fit_predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit the model using X and predict on X_pred.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>array-like</em><em>, </em><em>shape =</em><em> (</em><em>n_dim</em><em>, </em><em>n_samples</em><em>)</em>) – Training data, input array</p></li>
+<li><p><strong>y</strong> (<em>array-like</em><em>, </em><em>shape =</em><em> (</em><em>n_sample</em><em>, </em><em>)</em>) – Target values, 1-D input array</p></li>
+<li><p><strong>X_pred</strong> (<em>array-like</em><em>, </em><em>shape =</em><em> (</em><em>n_dim</em><em>, </em><em>n_samples2</em><em>)</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>y_pred</strong> – Return predicted values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array-like, shape = (n_samples2,)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.local_polynomial.LocalPolynomial.kernel">
+<em class="property">property </em><code class="sig-name descname">kernel</code><a class="headerlink" href="#FDApy.local_polynomial.LocalPolynomial.kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Getter for <cite>kernel</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="FDApy.local_polynomial.LocalPolynomial.predict">
+<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em><span class="sig-paren">)</span><a class="headerlink" href="#FDApy.local_polynomial.LocalPolynomial.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict using local polynomial regression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>array-like</em><em>, </em><em>shape =</em><em> (</em><em>n_dim</em><em>, </em><em>n_samples</em><em>)</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>y_pred</strong> – Return predicted values.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array-like, shape = (n_samples,)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="multivariate_functional.html" class="btn btn-neutral float-right" title="Multivariate Functional Data representation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="irregular_functional.html" class="btn btn-neutral float-left" title="Irregular Functional Data representation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
