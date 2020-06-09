@@ -6,7 +6,10 @@
 Welcome to FDApy's documentation!
 =================================
 
+.. toctree::
+   :hidden:
 
+   /auto_examples/plot_cd4
 
 An exhaustive list of all the contents of the package can be found in the
 :ref:`genindex`.
