@@ -14,7 +14,6 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../..'))
 
-
 # -- Project information -----------------------------------------------------
 
 project = 'FDApy'
@@ -87,15 +86,15 @@ intersphinx_mapping = {
 
 sphinx_gallery_conf = {
     # path to your examples scripts
-    'examples_dirs': '../../examples',
+    #'examples_dirs': '../../examples',
     # path where to save gallery generated examples
-    'gallery_dirs': 'auto_examples',
-    'reference_url': {
+    #'gallery_dirs': 'auto_examples',
+    #'reference_url': {
         # The module you locally document uses None
-        'FDApy': None,
-    },
-    'backreferences_dir': 'backreferences',
-    'doc_module': 'FDApy',
+    #    'FDApy': None,
+    #},
+    #'backreferences_dir': 'backreferences',
+    #'doc_module': 'FDApy',
 }
 
 autosummary_generate = True
