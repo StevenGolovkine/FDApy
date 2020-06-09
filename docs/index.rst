@@ -8,7 +8,7 @@ Welcome to FDApy's documentation!
 
 .. toctree::
 
-   /auto_examples/plot_cd4
+   modules/fpca
 
 An exhaustive list of all the contents of the package can be found in the
 :ref:`genindex`.
