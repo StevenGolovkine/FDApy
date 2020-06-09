@@ -4,10 +4,6 @@ build:
 python:
   version: 3.7
 
-# Before the installation
-before_install:
-  - sudo apt-get -y install python3-gdbm
-
 requirements_file: requirements.txt
 
 sphinx:
