@@ -89,12 +89,12 @@ sphinx_gallery_conf = {
     #'examples_dirs': '../../examples',
     # path where to save gallery generated examples
     #'gallery_dirs': 'auto_examples',
-    #'reference_url': {
+    'reference_url': {
         # The module you locally document uses None
-    #    'FDApy': None,
-    #},
-    #'backreferences_dir': 'backreferences',
-    #'doc_module': 'FDApy',
+        'FDApy': None,
+    },
+    'backreferences_dir': 'backreferences',
+    'doc_module': 'FDApy',
 }
 
 autosummary_generate = True
