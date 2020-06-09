@@ -22,7 +22,7 @@ from FDApy.plot import plot
 
 # Simulate some fractional brownian motions.
 sim = Brownian(N=1000, M=300, brownian_type='fractional')
-sim.new(x0=0, hurst=0.5)
+sim.new(x0=0, H=0.5)
 sim.add_noise(0.05)
 
 # Plot some simulations
