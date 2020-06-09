@@ -237,7 +237,7 @@ def geometric_brownian_(argvals=None, x0=1.0, mu=0, sigma=1):
     return obj
 
 
-def fractional_brownian_(argvals=None, hurst=0.5):
+def fractional_brownian_(argvals=None, H=0.5):
     """Function that generate fractional brownian motions.
 
     Generate one dimension fractional brownian motion with a given Hurst
@@ -248,7 +248,7 @@ def fractional_brownian_(argvals=None, hurst=0.5):
     argvals: tuple or numpy.ndarray, default=None
         The values on which evaluated the fractional brownian motion.
         If `None`, the brownian is evaluated on the interval [0, 1].
-    hurst: double, default=0.5
+    H: double, default=0.5
         Hurst parameter
 
     Returns
@@ -260,6 +260,9 @@ def fractional_brownian_(argvals=None, hurst=0.5):
     - https://github.com/cran/somebm/blob/master/R/bm.R
 
     """
+    def p(idx, H):
+        return np.power(idx, 2 * H)
+
     if argvals is None:
         argvals = np.arange(0, 1, 0.05)
 
@@ -267,17 +270,14 @@ def fractional_brownian_(argvals=None, hurst=0.5):
     R = np.zeros(M + 1)
     R[0] = 1
     for idx in range(1, M + 1):
-        R[idx] = 0.5 * (np.power(idx + 1, 2 * hurst) - 2 *
-                        np.power(idx, 2 * hurst) +
-                        np.power(idx - 1, 2 * hurst))
-
+        R[idx] = 0.5 * (p(idx + 1, H) - 2 * p(idx, H) + p(idx - 1, H))
     invR = R[::-1]
     R = np.append(R, invR[1:len(invR) - 1])
     lamb = np.real(np.fft.fft(R) / (2 * M))
 
-    W = np.fft.fft(np.sqrt(lamb) * (np.random.normal(size=2 * M) +
-                                    np.random.normal(size=2 * M) * (0 + 1j)))
-    W = np.power(M, -hurst) * np.cumsum(np.real(W[1:(M + 1)]))
+    rng = (np.random.normal(size=2 * M) + np.random.normal(size=2 * M) * 1j)
+    W = np.fft.fft(np.sqrt(lamb) * rng)
+    W = np.power(M, -H) * np.cumsum(np.real(W[1:(M + 1)]))
 
     obj = UnivariateFunctionalData(
         argvals=argvals, values=W[np.newaxis])
@@ -547,7 +547,7 @@ class Basis(Simulation):
         obs = np.empty(shape=(self.N_, len(self.M_)))
         coef = np.empty(shape=(self.N_, len(self.eigenvalues_)))
         for i in range(self.N_):
-            coef_ = np.random.normal(0, self.eigenvalues_)
+            coef_ = np.random.normal(0, np.sqrt(self.eigenvalues_))
             prod_ = np.matmul(coef_[np.newaxis], self.basis_)
 
             obs[i, :] = prod_

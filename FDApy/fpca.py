@@ -130,8 +130,8 @@ class UFPCA():
         Evalues, Evectors = np.linalg.eigh(V)
         Evalues[Evalues < 0] = 0
         Evalues = Evalues[::-1]
-        npc = np.sum(np.cumsum(Evalues) /
-                     np.sum(Evalues) < self.n_components) + 1
+        exp_variance = np.cumsum(Evalues) / np.sum(Evalues)
+        npc = np.sum(exp_variance < self.n_components) + 1
 
         self.eigenvalues = Evalues[:npc]
         # Compute eigenfunction = W^{-1/2}U

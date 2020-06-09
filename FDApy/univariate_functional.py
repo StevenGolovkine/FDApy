@@ -546,9 +546,9 @@ class UnivariateFunctionalData(object):
         T1_lower = np.sum(~(D >= (D[0] + 0.25 * T_len)))
         T1_upper = np.sum((D <= (D[len(D) - 1] - 0.25 * T_len)))
         W = integrationWeights_(D[T1_lower:T1_upper], method='trapz')
-        sigma2 = np.maximum(
-            np.dot(W, (V_hat - np.diag(cov))[T1_lower:T1_upper]) /
-            (D[T1_upper] - D[T1_lower]), 0)
+
+        nume = np.dot(W, (V_hat - np.diag(cov))[T1_lower:T1_upper])
+        sigma2 = np.maximum(nume / (D[T1_upper] - D[T1_lower]), 0)
 
         self.covariance_ = UnivariateFunctionalData(new_argvals,
                                                     np.array(cov, ndmin=3))
