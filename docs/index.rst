@@ -7,7 +7,6 @@ Welcome to FDApy's documentation!
 =================================
 
 .. toctree::
-   :hidden:
 
    /auto_examples/plot_cd4
 
