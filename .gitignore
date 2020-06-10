@@ -18,6 +18,7 @@
 .ipynb_checkpoints/*
 examples/.ipynb_checkpoints/*
 FDApy/.ipynb_checkpoints/*
+notebooks/*
 
 # Some data files
 *.rda
