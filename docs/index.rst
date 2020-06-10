@@ -6,9 +6,13 @@
 Welcome to FDApy's documentation!
 =================================
 
-.. toctree::
+API References
+--------------
 
-   modules/fpca
+.. toctree::
+	
+	modules/basis
+	modules/fpca
 
 An exhaustive list of all the contents of the package can be found in the
 :ref:`genindex`.
