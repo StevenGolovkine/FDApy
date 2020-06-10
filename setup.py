@@ -2,7 +2,7 @@
 
 import Cython.Build
 
-from setuptools import setup, Extension
+from setuptools import Extension, find_packages, setup
 
 
 def get_readme():
@@ -24,7 +24,7 @@ setup(name='FDApy',
       license='MIT',
       cmdclass={'build_ext': Cython.Build.build_ext},
       package_dir={'FDApy': 'FDApy'},
-      packages=['FDApy'],
+      packages=find_packages(),
       install_requires=['ggplot',
                         'cython',
                         'numpy',

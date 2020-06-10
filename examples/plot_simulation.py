@@ -45,39 +45,39 @@ fig, ax = plot(WP, main='Wiener basis', xlab='Sampling points')
 
 ###############################################################################
 # Legendre basis and exponential eigenvalues decay
-sim = Basis(N=100, M=50, basis='legendre', K=5,
+sim = Basis(N=100, M=50, basis='legendre', n_features=5,
             eigenvalues='exponential', norm=True)
 sim.new()
 
 # Plot some simulations
-fig, ax = plot(sim.obs_, main='Simulation', xlab='Sampling points')
+fig, ax = plot(sim.data, main='Simulation', xlab='Sampling points')
 
 ###############################################################################
 # Legendre basis and linear eigenvalues decay
-sim = Basis(N=100, M=50, basis='legendre', K=5,
+sim = Basis(N=100, M=50, basis='legendre', n_features=5,
             eigenvalues='linear', norm=True)
 sim.new()
 
 # Plot some simulations
-fig, ax = plot(sim.obs_, main='Simulation', xlab='Sampling points')
+fig, ax = plot(sim.data, main='Simulation', xlab='Sampling points')
 
 ###############################################################################
 # Wiener basis and Wiener eigenvalues decay
-sim = Basis(N=100, M=50, basis='wiener', K=5,
+sim = Basis(N=100, M=50, basis='wiener', n_features=5,
             eigenvalues='wiener', norm=True)
 sim.new()
 
 # Plot some simulations
-fig, ax = plot(sim.obs_, main='Simulation', xlab='Sampling points')
+fig, ax = plot(sim.data, main='Simulation', xlab='Sampling points')
 
 ###############################################################################
 # Wiener basis and user-set eigenvalues
-sim = Basis(N=100, M=50, basis='wiener', K=3,
+sim = Basis(N=100, M=50, basis='wiener', n_features=3,
             eigenvalues=[100, 25, 5], norm=True)
 sim.new()
 
 # Plot some simulations
-fig, ax = plot(sim.obs_, main='Simulation', xlab='Sampling points')
+fig, ax = plot(sim.data, main='Simulation', xlab='Sampling points')
 
 ###############################################################################
 # We can also add some noise to the data.
@@ -91,7 +91,7 @@ fig, ax = plot(sim.obs_, main='Simulation', xlab='Sampling points')
 sim.add_noise(5)
 
 # Plot the noisy simulations
-fig, ax = plot(sim.noisy_obs_,
+fig, ax = plot(sim.noisy_obs,
                main='Noisy simulation',
                xlab='Sampling points')
 
@@ -105,7 +105,7 @@ fig, ax = plot(sim.noisy_obs_,
 sim.add_noise(sd_function=lambda x: np.sqrt(np.abs(x) + 1))
 
 # Plot the heteroscedastic noisy simulations
-fig, ax = plot(sim.noisy_obs_,
+fig, ax = plot(sim.noisy_obs,
                main='Noisy heteroscedastic simulation',
                xlab='Sampling points')
 
@@ -120,7 +120,7 @@ sim = Brownian(N=100, M=50, brownian_type='standard')
 sim.new(x0=0)
 
 # Plot some simulations
-fig, ax = plot(sim.obs_,
+fig, ax = plot(sim.data,
                main='Standard Brownian motion',
                xlab='Sampling points')
 
@@ -130,7 +130,7 @@ sim = Brownian(N=100, M=50, brownian_type='geometric')
 sim.new(x0=1, mu=5, sigma=1)
 
 # Plot some simulations
-fig, ax = plot(sim.obs_,
+fig, ax = plot(sim.data,
                main='Geometric Brownian motion',
                xlab='Sampling points')
 
@@ -140,6 +140,6 @@ sim = Brownian(N=100, M=50, brownian_type='fractional')
 sim.new(H=0.7)
 
 # Plot some simulations
-fig, ax = plot(sim.obs_,
+fig, ax = plot(sim.data,
                main='Fractional Brownian motion',
                xlab='Sampling points')

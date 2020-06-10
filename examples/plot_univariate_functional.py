@@ -26,7 +26,7 @@ sim.new(x0=0, H=0.5)
 sim.add_noise(0.05)
 
 # Plot some simulations
-fig, ax = plot(sim.noisy_obs_,
+fig, ax = plot(sim.noisy_obs,
                main='Fractional Brownian motion',
                xlab='Sampling points')
 
@@ -35,7 +35,7 @@ fig, ax = plot(sim.noisy_obs_,
 #
 
 # Smooth the data
-sim_smooth = sim.noisy_obs_.smooth(t0=0.5, k0=14)
+sim_smooth = sim.noisy_obs.smooth(t0=0.5, k0=14)
 
 # Plot of the smoothing data
 fig, ax = plot(sim_smooth,
@@ -50,10 +50,10 @@ fig, ax = plot(sim_smooth,
 # Plot individual curves
 idx = 5
 fig, ax = plt.subplots(1, 1)
-ax.scatter(sim.noisy_obs_.argvals[0],
-           sim.noisy_obs_.values[idx, :],
+ax.scatter(sim.noisy_obs.argvals[0],
+           sim.noisy_obs.values[idx, :],
            alpha=0.5, label='Noisy')
-ax.plot(sim.obs_.argvals[0], sim.obs_.values[idx, :],
+ax.plot(sim.data.argvals[0], sim.data.values[idx, :],
         color='red', label='True')
 ax.plot(sim_smooth.argvals[idx], sim_smooth.values[idx],
         color='green', label='Smooth')

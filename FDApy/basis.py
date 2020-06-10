@@ -1,7 +1,7 @@
 #!/usr/bin/python3.7
 # -*-coding:utf8 -*
 
-"""Simulation functions
+"""Simulation functions.
 
 This module is used to define an abstract Simulation class and two classes
 derived from it, the Basis class and the Brownian class. Thus, we may simulate
@@ -118,7 +118,7 @@ def basis_wiener(K=3, argvals=None, norm=True):
 
 
 def simulate_basis(basis_name, K=3, argvals=None, norm=False):
-    """Redirects to the right simulation basis function.
+    """Redirect to the right simulation basis function.
 
     Parameters
     ----------
@@ -314,7 +314,7 @@ def fractional_brownian(argvals=None, H=0.5):
 
 
 def simulate_brownian(brownian_type, argvals=None, norm=False, **kwargs):
-    """Redirects to the right brownian motion function.
+    """Redirect to the right brownian motion function.
 
     Parameters
     ----------
@@ -436,7 +436,7 @@ def eigenvalues_wiener(M=3):
 
 
 def simulate_eigenvalues(eigenvalues_name, M=3):
-    """Redirects to the right simulation eigenvalues function.
+    """Redirect to the right simulation eigenvalues function.
 
     Parameters
     ----------
@@ -534,19 +534,19 @@ class Simulation(ABC):
 
         """
         noisy_data = []
-        for i in self.obs_:
+        for i in self.data:
             if sd_function is None:
                 noise = np.random.normal(0, np.sqrt(noise_var),
-                                         size=len(self.M_))
+                                         size=len(self.M))
             else:
                 noise = sd_function(i.values) *\
-                    np.random.normal(0, 1, size=len(self.obs_.argvals[0]))
+                    np.random.normal(0, 1, size=len(self.data.argvals[0]))
             noise_func = UnivariateFunctionalData(
-                self.obs_.argvals, np.array(noise, ndmin=2))
+                self.data.argvals, np.array(noise, ndmin=2))
             noisy_data.append(i + noise_func)
 
         data = MultivariateFunctionalData(noisy_data)
-        self.noisy_obs_ = data.asUnivariateFunctionalData()
+        self.noisy_obs = data.asUnivariateFunctionalData()
 
 
 class Basis(Simulation):
@@ -587,9 +587,9 @@ class Basis(Simulation):
     def __init__(self, N, M, basis, n_features, eigenvalues,
                  n_clusters=1, norm=False):
         """Initialize Basis object."""
-        super().__init__(self, N, M, n_clusters)
+        super().__init__(N, M, n_clusters)
         self.n_features = n_features
-        self.norm_ = norm
+        self.norm = norm
 
         # Define the basis
         self.basis_name = basis
@@ -598,7 +598,7 @@ class Basis(Simulation):
 
         # Define the decreasing of the eigenvalues
         if isinstance(eigenvalues, str):
-            eigenvalues = simulate_eigenvalues(eigenvalues, self.K_)
+            eigenvalues = simulate_eigenvalues(eigenvalues, self.n_features)
         self.eigenvalues = eigenvalues
 
     def new(self, **kwargs):
@@ -622,8 +622,8 @@ class Basis(Simulation):
             obs[i, :] = prod_
             coef[i, :] = coef_
 
-        data = UnivariateFunctionalData(self.M, obs)
-        return data, coef
+        self.data = UnivariateFunctionalData(self.M, obs)
+        self.coef = coef
 
 
 class BasisFPCA(Simulation):
@@ -681,9 +681,10 @@ class BasisFPCA(Simulation):
                               cluster_std=self.cluster_std[idx, :],
                               shuffle=False)
             coef[:, idx] = X.squeeze()
-        data = self.basis.inverse_transform(coef)
-        labels = y
-        return data, coef, labels
+
+        self.data = self.basis.inverse_transform(coef)
+        self.labels = y
+        self.coef = coef
 
 
 class Brownian(Simulation):
@@ -706,7 +707,7 @@ class Brownian(Simulation):
 
     def __init__(self, N, M, brownian_type='standard', n_clusters=1):
         """Initialize Brownian object."""
-        super().__init__(self, N, M, n_clusters)
+        super().__init__(N, M, n_clusters)
         self.basis_name = brownian_type
 
     def new(self, **kwargs):
@@ -733,9 +734,9 @@ class Brownian(Simulation):
 
         # Simulate the N observations
         obs = []
-        for _ in range(self.N_):
+        for _ in range(self.N):
             obs.append(simulate_brownian(self.basis_name,
                                          self.M, **param_dict))
 
         data = MultivariateFunctionalData(obs)
-        return data.asUnivariateFunctionalData()
+        self.data = data.asUnivariateFunctionalData()
