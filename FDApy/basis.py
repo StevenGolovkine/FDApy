@@ -1,7 +1,7 @@
 #!/usr/bin/python3.7
 # -*-coding:utf8 -*
 
-"""Module for Simulation classes.
+"""Simulation functions
 
 This module is used to define an abstract Simulation class and two classes
 derived from it, the Basis class and the Brownian class. Thus, we may simulate
@@ -22,23 +22,27 @@ def basis_legendre(K=3, argvals=None, norm=True):
     """Define Legendre basis of function.
 
     Build a basis of :math:`K` functions using Legendre polynomials on the
-    interval `argvals`.
+    interval defined by ``argvals``.
 
     Parameters
     ----------
     K : int, default = 3
         Maximum degree of the Legendre polynomials.
     argvals : numpy.ndarray, default = None
-        The values on which evaluated the Legendre polynomials. If `None`, the
-        polynomials are evaluated on the interval [-1, 1].
+        The values on which evaluated the Legendre polynomials. If ``None``,
+        the polynomials are evaluated on the interval :math:`[-1, 1]`.
     norm : boolean, default = True
-        Do we normalize the functions?
+        Should we normalize the functions?
 
     Returns
     -------
     obj : UnivariateFunctionalData
-        A UnivariateFunctionalData object containing the Legendre
-        polynomial up to `K` functions evaluated on `argvals`.
+        A UnivariateFunctionalData object containing the Legendre polynomial
+        up to :math:`K` functions evaluated on ``argvals``.
+
+    Examples
+    --------
+    >>> basis_legendre(K=3, argvals=np.arange(-1, 1, 0.1), norm=True)
 
     """
     if argvals is None:
@@ -65,27 +69,29 @@ def basis_legendre(K=3, argvals=None, norm=True):
 def basis_wiener(K=3, argvals=None, norm=True):
     """Define Wiener basis of function.
 
-    Build a basis of functions of the Wiener process.
+    Build a basis of :math:`K` functions using the eigenfunctions of a Wiener
+    process on the interval defined by ``argvals``.
 
     Parameters
     ----------
     K : int, default = 3
-        Number of functions to compute.
+        Number of functions to consider.
     argvals : numpy.ndarray, default = None
-         The values on which evaluated the Wiener basis functions.
-         If `None`, the functions are evaluated on the interval [0, 1].
+         The values on which the eigenfunctions of a Wiener process are
+         evaluated. If ``None``, the functions are evaluated on the interval
+         :math:`[0, 1]`.
     norm : boolean, default = True
-        Do we normalize the functions?
+        Should we normalize the functions?
 
     Returns
     -------
     obj : UnivariateFunctionalData
-        A UnivariateFunctionalData object containing `K` Wiener basis functions
-        evaluated on `argvals`.
+        A UnivariateFunctionalData object containing the Wiener process
+        eigenvalues up to :math:`K` functions evaluated on ``argvals``.
 
     Example
     -------
-    >>>basis_wiener(K=3, argvals=np.arange(0, 1, 0.05), norm=True)
+    >>> basis_wiener(K=3, argvals=np.arange(0, 1, 0.05), norm=True)
 
     """
     if argvals is None:
@@ -108,80 +114,100 @@ def basis_wiener(K=3, argvals=None, norm=True):
     return obj
 
 
-def simulate_basis_(basis_name, K, argvals, norm):
-    """Function that redirects to the right simulation basis function.
+def simulate_basis(basis_name, K=3, argvals=None, norm=False):
+    """Redirects to the right simulation basis function.
 
     Parameters
     ----------
-    basis_name : str
+    basis_name : str, {'legendre', 'wiener'}
         Name of the basis to use.
-    K : int
+    K : int, default = 3
         Number of functions to compute.
-    argvals : tuple or numpy.ndarray
-        The values on which evaluated the Wiener basis functions. If `None`,
-        the functions are evaluated on the interval [0, 1].
+    argvals : numpy.ndarray, default = None
+        The values on which the basis functions are evaluated. If ``None``,
+        the functions are evaluated on the interval :math:`[0, 1]`.
     norm : boolean
-        Do we normalize the functions?
+        Should we normalize the functions?
 
     Returns
     -------
-    basis_ : UnivariateFunctionalData
-        A UnivariateFunctionalData object containing `M` basis functions
-        evaluated on `argvals`.
+    basis : UnivariateFunctionalData
+        A UnivariateFunctionalData object containing :math:`K` basis functions
+        evaluated on ``argvals``.
 
     Example
     -------
-    >>>simulate_basis_('legendre', M=3,
-                       argvals=np.arange(-1, 1, 0.1), norm=True)
+    >>> simulate_basis_('legendre', M=3,
+    >>>                 argvals=np.arange(-1, 1, 0.1), norm=True)
 
     """
     if basis_name == 'legendre':
-        basis_ = basis_legendre(K, argvals, norm)
+        basis = basis_legendre(K, argvals, norm)
     elif basis_name == 'wiener':
-        basis_ = basis_wiener(K, argvals, norm)
+        basis = basis_wiener(K, argvals, norm)
     else:
         raise ValueError('Basis not implemented!')
-    return basis_
+    return basis
 
 
 #############################################################################
 # Definition of the different Browian motion
 
-def standard_brownian_(argvals=None, x0=0.0):
-    """Function that generate standard brownian motions.
+def init_brownian(argvals=None):
+    """Initialize Brownian motion.
 
-    Generate one dimensional standard brownian motion.
+    Initialize the different parameters used in the simulation of the
+    different type of Brownian motion.
 
     Parameters
     ----------
-    argvals: tuple or numpy.ndarray, default=None
-        The values on which evaluated the brownian motion. If `None`,
-        the functions are evaluated on the interval [0, 1].
-    x0: double, default=0.0
-        Start of the brownian motion.
+    argvals: numpy.ndarray, default=None
+        The values on which the Brownian motion are evaluated. If ``None``,
+        the functions are evaluated on the interval :math:`[0, 1]`.
 
     Returns
     -------
-    A univariate functional data object.
-
-    References
-    ----------
-    - https://github.com/cran/somebm/blob/master/R/bm.R
+    delta, argvals : (float, numpy.ndarray)
+        A tuple containing the step size, ``delta``, and the ``argvals``.
 
     """
     if argvals is None:
         argvals = np.arange(0, 1, 0.05)
 
-    t0 = np.min(argvals)
-    t1 = np.max(argvals)
-    M = np.size(argvals)
+    delta = (np.max(argvals) - np.min(argvals)) / np.size(argvals)
+    return delta, argvals
 
-    # For one brownian motion
-    delta = (t1 - t0) / M
-    W = np.zeros(M)
+
+def standard_brownian(argvals=None, x0=0.0):
+    """Generate standard Brownian motion.
+
+    Parameters
+    ----------
+    argvals: numpy.ndarray, default=None
+        The values on which the Brownian motion is evaluated. If ``None``,
+        the functions are evaluated on the interval :math:`[0, 1]`.
+    x0: float, default=0.0
+        Start of the Brownian motion.
+
+    Returns
+    -------
+    obj : UnivariateFunctionalData
+        A univariate functional data object containing one Brownian motion.
+
+    References
+    ----------
+    - https://github.com/cran/somebm/blob/master/R/bm.R
+
+    Example
+    -------
+    >>> standard_brownian(argvals=np.arange(0, 1, 0.01), x0=0.0)
+
+    """
+    delta, argvals = init_brownian(argvals)
+
+    W = np.zeros(np.size(argvals))
     W[0] = x0
-
-    for idx in range(1, M):
+    for idx in range(1, np.size(argvals)):
         W[idx] = W[idx - 1] + np.sqrt(delta) * np.random.normal()
 
     obj = UnivariateFunctionalData(
@@ -189,75 +215,75 @@ def standard_brownian_(argvals=None, x0=0.0):
     return obj
 
 
-def geometric_brownian_(argvals=None, x0=1.0, mu=0, sigma=1):
-    """Function that generate geometric brownian motions.
-
-    Generate one dimensional geometric brownian motion.
+def geometric_brownian(argvals=None, x0=1.0, mu=0.0, sigma=1.0):
+    """Generate geometric Brownian motion.
 
     Parameters
     ----------
-    argvals: tuple or numpy.ndarray, default=None
-        The values on which evaluated the geometric brownian motion. If `None`,
-        the brownian is evaluated on the interval [0, 1].
-    x0: double, default=1.0
-        Start of the brownian motion. Careful, should be stricly greater than 0
-    mu: double, default=0
+    argvals : numpy.ndarray, default=None
+        The values on which the geometric brownian motion is evaluated. If
+        ``None``, the Brownian is evaluated on the interval :math:`[0, 1]`.
+    x0 : float, default = 1.0
+        Start of the Brownian motion. Careful, ``x0`` should be stricly
+        greater than 0.
+    mu : float, default = 0
         The interest rate
-    sigma: double, default=1
+    sigma : float, default = 1
         The diffusion coefficient
 
     Returns
     -------
-    A univariate functional data object.
+    obj : UnivariateFunctionalData
+        A univariate functional data object containing one geometric Brownian
+        motion.
 
     References
     ----------
     - https://github.com/cran/somebm/blob/master/R/bm.R
 
+    Example
+    -------
+    >>> geometric_brownian(argvals=np.arange(0, 1, 0.01), x0=1.0)
+
     """
-    if argvals is None:
-        argvals = np.arange(0, 1, 0.05)
+    delta, argvals = init_brownian(argvals)
 
-    t0 = np.min(argvals)
-    t1 = np.max(argvals)
-    M = np.size(argvals)
-
-    # For one geometric brownian motion.
-    delta = (t1 - t0) / M
-    W = np.zeros(M)
-    W[0] = 0
-
-    for idx in range(1, M):
+    W = np.zeros(np.size(argvals))
+    for idx in range(1, np.size(argvals)):
         W[idx] = W[idx - 1] + np.sqrt(delta) * np.random.normal()
 
-    S = x0 * np.exp((mu - np.power(sigma, 2) / 2) * (argvals - t0) + sigma * W)
+    in_exp = (mu - np.power(sigma, 2) / 2) * (argvals - argvals[0]) + sigma * W
+    S = x0 * np.exp(in_exp)
 
     obj = UnivariateFunctionalData(
         argvals=argvals, values=S[np.newaxis])
     return obj
 
 
-def fractional_brownian_(argvals=None, H=0.5):
-    """Function that generate fractional brownian motions.
-
-    Generate one dimension fractional brownian motion with a given Hurst
-    parameter.
+def fractional_brownian(argvals=None, H=0.5):
+    """Generate fractional Brownian motion.
 
     Parameters
     ----------
-    argvals: tuple or numpy.ndarray, default=None
-        The values on which evaluated the fractional brownian motion.
-        If `None`, the brownian is evaluated on the interval [0, 1].
-    H: double, default=0.5
+    argvals: numpy.ndarray, default=None
+        The values on which the fractional Brownian motion is evaluated. If
+        ``None``, the Brownian is evaluated on the interval :math:`[0, 1]`.
+    H: double, default = 0.5
         Hurst parameter
 
     Returns
     -------
-    A univariate functional data object.
+    obj : UnivariateFunctionalData
+        A univariate functional data object containing one fractional Brownian
+        motion.
 
     References
     ----------
     - https://github.com/cran/somebm/blob/master/R/bm.R
+
+    Example
+    -------
+    >>> fractional_brownian(argvals=np.arange(0, 1, 0.01), H=0.7)
 
     """
     def p(idx, H):
@@ -284,50 +310,63 @@ def fractional_brownian_(argvals=None, H=0.5):
     return obj
 
 
-def simulate_brownian_(brownian_type, argvals=None, norm=False, **kwargs):
-    """Fonction that redirects to the right brownian motion function.
+def simulate_brownian(brownian_type, argvals=None, norm=False, **kwargs):
+    """Redirects to the right brownian motion function.
 
     Parameters
     ----------
-    brownian_type: str
-        Name of the brownian motion to simulate.
-    argvals: tuple or numpy.ndarray
-        The sampling points for the brownian motion.
-    norm: boolean
-        Do we normalize the simulation?
+    brownian_type : str
+        Name of the Brownian motion to simulate.
+    argvals : numpy.ndarray
+        The sampling points on which the Brownian motion is evaluated. If
+        ``None``, the Brownian is evaluated on the interval :math:`[0, 1]`.
+    norm : boolean
+        Should we normalize the simulation?
+
+    Keyword Args
+    ------------
+    x0 : float, default = 0.0 or 1.0
+        Start of the Brownian motion. Should be strictly positive if
+        ``brownian_type == 'geometric'``.
+    mu : float, default = 0
+        The interest rate
+    sigma : float, default = 1
+        The diffusion coefficient
+    H: double, default = 0.5
+        Hurst parameter
 
     Returns
     -------
-    simu_: FDApy.univariate_functional.UnivariateFunctionalData
+    simu : UnivariateFunctionalData
         A UnivariateFunctionalData object containing the simulated brownian
-        motion evaluated on `argvals`.
+        motion evaluated on ``argvals``.
 
     Example
     -------
-    >>>simulate_brownian_(brownian_type='standard',
-                          argvals=np.arange(0, 1, 0.05),
-                          norm=False)
+    >>> simulate_brownian_(brownian_type='standard',
+    >>>                    argvals=np.arange(0, 1, 0.05),
+    >>>                    norm=False)
 
     """
     if brownian_type == 'standard':
-        simu_ = standard_brownian_(argvals, x0=kwargs['x0'])
+        simu = standard_brownian(argvals, x0=kwargs.get('x0', 0.0))
     elif brownian_type == 'geometric':
-        simu_ = geometric_brownian_(argvals,
-                                    x0=kwargs['x0'],
-                                    mu=kwargs['mu'],
-                                    sigma=kwargs['sigma'])
+        simu = geometric_brownian(argvals,
+                                  x0=kwargs.get('x0', 1.0),
+                                  mu=kwargs.get('mu', 0.0),
+                                  sigma=kwargs.get('sigma', 1.0))
     elif brownian_type == 'fractional':
-        simu_ = fractional_brownian_(argvals, H=kwargs['H'])
+        simu = fractional_brownian(argvals, H=kwargs.get('H', 0.5))
     else:
         raise ValueError('Brownian type not implemented!')
-    return simu_
+    return simu
 
 
 #############################################################################
 # Definition of the eigenvalues
 
 def eigenvalues_linear(M=3):
-    """Function that generate linear decreasing eigenvalues.
+    """Generate linear decreasing eigenvalues.
 
     Parameters
     ----------
@@ -336,20 +375,20 @@ def eigenvalues_linear(M=3):
 
     Returns
     -------
-    val : list
+    val : numpy.ndarray
         The generated eigenvalues
 
     Example
     -------
-    >>>eigenvalues_linear(M=3)
-    [1.0, 0.6666666666666666, 0.3333333333333333]
+    >>> eigenvalues_linear(M=3)
+    array([1.0, 0.6666666666666666, 0.3333333333333333])
 
     """
-    return [(M - m + 1) / M for m in np.linspace(1, M, M)]
+    return np.array([(M - m + 1) / M for m in np.linspace(1, M, M)])
 
 
 def eigenvalues_exponential(M=3):
-    """Function that generate exponential decreasing eigenvalues.
+    """Generate exponential decreasing eigenvalues.
 
     Parameters
     ----------
@@ -358,20 +397,20 @@ def eigenvalues_exponential(M=3):
 
     Returns
     -------
-    val : list
+    val : numpy.ndarray
         The generated eigenvalues
 
     Example
     -------
-    >>>eigenvalues_exponential(M=3)
-    [0.36787944117144233, 0.22313016014842982, 0.1353352832366127]
+    >>> eigenvalues_exponential(M=3)
+    array([0.36787944117144233, 0.22313016014842982, 0.1353352832366127])
 
     """
     return [np.exp(-(m + 1) / 2) for m in np.linspace(1, M, M)]
 
 
 def eigenvalues_wiener(M=3):
-    """Function that generate eigenvalues from a Wiener process.
+    """Generate eigenvalues from a Wiener process.
 
     Parameters
     ----------
@@ -380,44 +419,49 @@ def eigenvalues_wiener(M=3):
 
     Returns
     -------
-    val : list
+    val : numpy.ndarray
         The generated eigenvalues
 
+    Example
+    -------
+    >>> eigenvalues_wiener(M=3)
+    array([0.4052847345693511, 0.04503163717437235, 0.016211389382774045])
+
     """
-    return [np.power((np.pi / 2) * (2 * m - 1), -2)
-            for m in np.linspace(1, M, M)]
+    return np.array([np.power((np.pi / 2) * (2 * m - 1), -2)
+                    for m in np.linspace(1, M, M)])
 
 
-def simulate_eigenvalues_(eigenvalues_name, M):
-    """Function that redirects to the right simulation eigenvalues function.
+def simulate_eigenvalues_(eigenvalues_name, M=3):
+    """Redirects to the right simulation eigenvalues function.
 
     Parameters
     ----------
     eigenvalues_name : str
         Name of the eigenvalues generation process to use.
-    M : int
-        Number of eigenvalues to generates
+    M : int, default = 3
+        Number of eigenvalues to generates.
 
     Returns
     -------
-    eigenvalues_: list
+    eigenvalues: numpy.ndarray
         The generated eigenvalues
 
     Example
     -------
-    >>>simulate_eigenvalues_('linear', M=3)
-    [1.0, 0.6666666666666666, 0.3333333333333333]
+    >>> simulate_eigenvalues('linear', M=3)
+    array([1.0, 0.6666666666666666, 0.3333333333333333])
 
     """
     if eigenvalues_name == 'linear':
-        eigenvalues_ = eigenvalues_linear(M)
+        eigenvalues = eigenvalues_linear(M)
     elif eigenvalues_name == 'exponential':
-        eigenvalues_ = eigenvalues_exponential(M)
+        eigenvalues = eigenvalues_exponential(M)
     elif eigenvalues_name == 'wiener':
-        eigenvalues_ = eigenvalues_wiener(M)
+        eigenvalues = eigenvalues_wiener(M)
     else:
         raise ValueError('Eigenvalues not implemented!')
-    return eigenvalues_
+    return eigenvalues
 
 
 #############################################################################
