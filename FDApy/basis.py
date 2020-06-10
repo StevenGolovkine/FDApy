@@ -11,6 +11,9 @@ realizations of diverse Brownian motion.
 import numpy as np
 import scipy
 
+from abc import ABC, abstractmethod
+from sklearn.datasets import make_blobs
+
 from .univariate_functional import UnivariateFunctionalData
 from .multivariate_functional import MultivariateFunctionalData
 
@@ -26,17 +29,17 @@ def basis_legendre(K=3, argvals=None, norm=True):
 
     Parameters
     ----------
-    K : int, default = 3
+    K: int, default = 3
         Maximum degree of the Legendre polynomials.
-    argvals : numpy.ndarray, default = None
+    argvals: numpy.ndarray, default = None
         The values on which evaluated the Legendre polynomials. If ``None``,
         the polynomials are evaluated on the interval :math:`[-1, 1]`.
-    norm : boolean, default = True
+    norm: boolean, default = True
         Should we normalize the functions?
 
     Returns
     -------
-    obj : UnivariateFunctionalData
+    obj: UnivariateFunctionalData
         A UnivariateFunctionalData object containing the Legendre polynomial
         up to :math:`K` functions evaluated on ``argvals``.
 
@@ -74,18 +77,18 @@ def basis_wiener(K=3, argvals=None, norm=True):
 
     Parameters
     ----------
-    K : int, default = 3
+    K: int, default = 3
         Number of functions to consider.
-    argvals : numpy.ndarray, default = None
+    argvals: numpy.ndarray, default = None
          The values on which the eigenfunctions of a Wiener process are
          evaluated. If ``None``, the functions are evaluated on the interval
          :math:`[0, 1]`.
-    norm : boolean, default = True
+    norm: boolean, default = True
         Should we normalize the functions?
 
     Returns
     -------
-    obj : UnivariateFunctionalData
+    obj: UnivariateFunctionalData
         A UnivariateFunctionalData object containing the Wiener process
         eigenvalues up to :math:`K` functions evaluated on ``argvals``.
 
@@ -119,19 +122,19 @@ def simulate_basis(basis_name, K=3, argvals=None, norm=False):
 
     Parameters
     ----------
-    basis_name : str, {'legendre', 'wiener'}
+    basis_name: str, {'legendre', 'wiener'}
         Name of the basis to use.
-    K : int, default = 3
+    K: int, default = 3
         Number of functions to compute.
-    argvals : numpy.ndarray, default = None
+    argvals: numpy.ndarray, default = None
         The values on which the basis functions are evaluated. If ``None``,
         the functions are evaluated on the interval :math:`[0, 1]`.
-    norm : boolean
+    norm: boolean
         Should we normalize the functions?
 
     Returns
     -------
-    basis : UnivariateFunctionalData
+    basis: UnivariateFunctionalData
         A UnivariateFunctionalData object containing :math:`K` basis functions
         evaluated on ``argvals``.
 
@@ -167,7 +170,7 @@ def init_brownian(argvals=None):
 
     Returns
     -------
-    delta, argvals : (float, numpy.ndarray)
+    delta, argvals: (float, numpy.ndarray)
         A tuple containing the step size, ``delta``, and the ``argvals``.
 
     """
@@ -191,7 +194,7 @@ def standard_brownian(argvals=None, x0=0.0):
 
     Returns
     -------
-    obj : UnivariateFunctionalData
+    obj: UnivariateFunctionalData
         A univariate functional data object containing one Brownian motion.
 
     References
@@ -220,20 +223,20 @@ def geometric_brownian(argvals=None, x0=1.0, mu=0.0, sigma=1.0):
 
     Parameters
     ----------
-    argvals : numpy.ndarray, default=None
+    argvals: numpy.ndarray, default=None
         The values on which the geometric brownian motion is evaluated. If
         ``None``, the Brownian is evaluated on the interval :math:`[0, 1]`.
-    x0 : float, default = 1.0
+    x0: float, default = 1.0
         Start of the Brownian motion. Careful, ``x0`` should be stricly
         greater than 0.
-    mu : float, default = 0
+    mu: float, default = 0
         The interest rate
-    sigma : float, default = 1
+    sigma: float, default = 1
         The diffusion coefficient
 
     Returns
     -------
-    obj : UnivariateFunctionalData
+    obj: UnivariateFunctionalData
         A univariate functional data object containing one geometric Brownian
         motion.
 
@@ -273,7 +276,7 @@ def fractional_brownian(argvals=None, H=0.5):
 
     Returns
     -------
-    obj : UnivariateFunctionalData
+    obj: UnivariateFunctionalData
         A univariate functional data object containing one fractional Brownian
         motion.
 
@@ -315,37 +318,37 @@ def simulate_brownian(brownian_type, argvals=None, norm=False, **kwargs):
 
     Parameters
     ----------
-    brownian_type : str
+    brownian_type: str, {'standard', 'geometric', 'fractional'}
         Name of the Brownian motion to simulate.
-    argvals : numpy.ndarray
+    argvals: numpy.ndarray
         The sampling points on which the Brownian motion is evaluated. If
         ``None``, the Brownian is evaluated on the interval :math:`[0, 1]`.
-    norm : boolean
+    norm: boolean
         Should we normalize the simulation?
 
     Keyword Args
     ------------
-    x0 : float, default = 0.0 or 1.0
+    x0: float, default = 0.0 or 1.0
         Start of the Brownian motion. Should be strictly positive if
         ``brownian_type == 'geometric'``.
-    mu : float, default = 0
+    mu: float, default = 0
         The interest rate
-    sigma : float, default = 1
+    sigma: float, default = 1
         The diffusion coefficient
     H: double, default = 0.5
         Hurst parameter
 
     Returns
     -------
-    simu : UnivariateFunctionalData
+    simu: UnivariateFunctionalData
         A UnivariateFunctionalData object containing the simulated brownian
         motion evaluated on ``argvals``.
 
     Example
     -------
-    >>> simulate_brownian_(brownian_type='standard',
-    >>>                    argvals=np.arange(0, 1, 0.05),
-    >>>                    norm=False)
+    >>> simulate_brownian(brownian_type='standard',
+    >>>                   argvals=np.arange(0, 1, 0.05),
+    >>>                   norm=False)
 
     """
     if brownian_type == 'standard':
@@ -370,12 +373,12 @@ def eigenvalues_linear(M=3):
 
     Parameters
     ----------
-    M : int, default = 3
+    M: int, default = 3
         Number of eigenvalues to generates
 
     Returns
     -------
-    val : numpy.ndarray
+    val: numpy.ndarray
         The generated eigenvalues
 
     Example
@@ -392,12 +395,12 @@ def eigenvalues_exponential(M=3):
 
     Parameters
     ----------
-    M : int, default = 3
+    M: int, default = 3
         Number of eigenvalues to generates
 
     Returns
     -------
-    val : numpy.ndarray
+    val: numpy.ndarray
         The generated eigenvalues
 
     Example
@@ -414,12 +417,12 @@ def eigenvalues_wiener(M=3):
 
     Parameters
     ----------
-    M : int, default = 3
+    M: int, default = 3
         Number of eigenvalues to generates
 
     Returns
     -------
-    val : numpy.ndarray
+    val: numpy.ndarray
         The generated eigenvalues
 
     Example
@@ -432,14 +435,14 @@ def eigenvalues_wiener(M=3):
                     for m in np.linspace(1, M, M)])
 
 
-def simulate_eigenvalues_(eigenvalues_name, M=3):
+def simulate_eigenvalues(eigenvalues_name, M=3):
     """Redirects to the right simulation eigenvalues function.
 
     Parameters
     ----------
-    eigenvalues_name : str
+    eigenvalues_name: str
         Name of the eigenvalues generation process to use.
-    M : int, default = 3
+    M: int, default = 3
         Number of eigenvalues to generates.
 
     Returns
@@ -468,48 +471,45 @@ def simulate_eigenvalues_(eigenvalues_name, M=3):
 # Class Simulation
 
 
-class Simulation(object):
-    """An object to simulate functional data."""
+class Simulation(ABC):
+    """An abstract class for the simulation of functional data.
 
-    def __init__(self, N, M, G=1):
-        """Initialize Simulation object.
+    Parameters
+    ----------
+    N: int
+        Number of curves to simulate.
+    M: int or numpy.ndarray
+        Sampling points. If ``M`` is an integer, we use
+        ``np.linspace(0, 1, M)`` as sampling points. Otherwise, we use the
+        provided numpy.ndarray.
+    n_clusters: int, default = 1
+        Number of clusters to simulate.
 
-        Parameters
-        ----------
-        N: int
-            Number of curves to simulate.
-        M: int or numpy.ndarray
-            Sampling points.
-            If M is int, we use np.linspace(0, 1, M) as sampling points.
-            Otherwise, we use the provided numpy.ndarray.
-        G: int
-            Number of clusters to simulate.
+    Attributes
+    ----------
+    basis_name: str
+        Name of the basis used.
 
-        """
-        self.N_ = N
+    """
+
+    def __init__(self, N, M, n_clusters=1):
+        """Initialize Simulation object."""
         if isinstance(M, int):
             M = np.linspace(0, 1, M)
-        self.M_ = M
-        self.G_ = G
 
+        super().__init__()
+        self.basis_name = None
+        self.N = N
+        self.M = M
+        self.n_clusters = n_clusters
+
+    @abstractmethod
     def new(self, **kwargs):
-        """Function to simulate observations.
-
-        TODO: To redefine.
-
-        """
+        """Function to simulate observations."""
         pass
 
     def add_noise(self, noise_var=1, sd_function=None):
         r"""Add noise to the data.
-
-        Model:
-        .. math:: Z(t) = f(t) + \sigma(f(t))\epsilon
-
-        If sd_function is None, sigma(f(t)) = 1 and epsilon ~ N(0, noise_var)
-        Else, we consider heteroscedastic noise with:
-            - sigma(f(t)) = sd_function(self.obs.values)
-            - epsilon ~ N(0,1)
 
         Parameters
         ----------
@@ -517,6 +517,20 @@ class Simulation(object):
             Variance of the noise to add.
         sd_function : callable
             Standard deviation function for heteroscedatic noise.
+
+        Notes
+        -----
+
+        Model:
+
+        .. math::
+            Z(t) = f(t) + \sigma(f(t))\epsilon
+
+        If ``sd_function is None``, :math:`\sigma(f(t)) = 1` and
+        :math:`\epsilon \sim \mathcal{N}(0, \sigma^2)`.
+        Else, we consider heteroscedastic noise with:
+            - :math:`\sigma(f(t)) =` sd_function(self.obs.values)
+            - :math:`\epsilon \sim \mathcal{N}(0,1)`.
 
         """
         noisy_data = []
@@ -538,99 +552,190 @@ class Simulation(object):
 class Basis(Simulation):
     r"""A functional data object representing an orthogonal basis of functions.
 
-    The function are simulated using the Karhunen-Loève decomposition :
-    .. math::
-        X_i(t) = \mu(t) + \sum_{j = 1}^M c_{i,j}\phi_{i,j}(t), i = 1, ..., N
-
     Parameters:
     -----------
-    basis: str or numpy.ndarray
-        If basis is str, denotes the basis of functions to use.
-        If basis is numpy.ndarray, provides the basis to use.
-    K: int
+    N: int
+        Number of curves to simulate.
+    M: int or numpy.ndarray
+        Sampling points. If ``M`` is an integer, we use
+        ``np.linspace(0, 1, M)`` as sampling points. Otherwise, we use the
+        provided numpy.ndarray.
+    basis: str, {'legendre', 'wiener'}
+        Denotes the basis of functions to use.
+    n_features: int
         Number of basis functions to use to simulate the data.
     eigenvalues: str or numpy.ndarray
         Define the decreasing of the eigenvalues of the process.
         If `eigenvalues` is str, we define the eigenvalues as using the
         corresponding function. Otherwise, we keep it like that.
-    norm: bool
+    n_clusters: int, default = 1
+        Number of clusters to simulate. Not used in this context.
+    norm: bool, default=False
         Should we normalize the basis function?
 
-    Attributes
-    ----------
-    coef_: numpy.ndarray
-        Array of coefficients c_{i,j}
-    obs: FDApy.univariate_functional.UnivariateFunctionalData
-        Simulation of univariate functional data
+    Notes
+    -----
+
+    The function are simulated using the Karhunen-Loève decomposition:
+
+    .. math::
+        X_i(t) = \mu(t) + \sum_{j = 1}^K c_{i,j}\phi_{j}(t), i = 1, ..., N
+
 
     """
 
-    def __init__(self, N, M, basis, K, eigenvalues, norm):
+    def __init__(self, N, M, basis, n_features, eigenvalues,
+                 n_clusters=1, norm=False):
         """Initialize Basis object."""
-        Simulation.__init__(self, N, M)
-        self.K_ = K
+        super().__init__(self, N, M, n_clusters)
+        self.n_features = n_features
         self.norm_ = norm
 
         # Define the basis
-        if isinstance(basis, str):
-            self.basis_name_ = basis
-            self.basis_ = simulate_basis_(self.basis_name_, self.K_,
-                                          self.M_, self.norm_).values
-        elif isinstance(basis, np.ndarray):
-            self.basis_name_ = 'user_provided'
-            self.basis_ = basis
-        else:
-            raise ValueError('Error with the basis.')
+        self.basis_name = basis
+        self.basis = simulate_basis(self.basis_name, self.n_features,
+                                    self.M, self.norm)
 
         # Define the decreasing of the eigenvalues
         if isinstance(eigenvalues, str):
-            eigenvalues = simulate_eigenvalues_(eigenvalues, self.K_)
-        self.eigenvalues_ = eigenvalues
+            eigenvalues = simulate_eigenvalues(eigenvalues, self.K_)
+        self.eigenvalues = eigenvalues
 
     def new(self, **kwargs):
-        """Function that simulates :math::`N` observations."""
+        """Function that simulates :math:`N` observations.
+
+        Returns
+        -------
+        coef: numpy.ndarray, (N, n_features)
+            Array of simulated coefficients :math:`c_{i,j}`.
+        data: UnivariateFunctionalData
+            The simulated data :math:`X_i(t)`.
+
+        """
         # Simulate the N observations
-        obs = np.empty(shape=(self.N_, len(self.M_)))
-        coef = np.empty(shape=(self.N_, len(self.eigenvalues_)))
-        for i in range(self.N_):
-            coef_ = np.random.normal(0, np.sqrt(self.eigenvalues_))
-            prod_ = np.matmul(coef_[np.newaxis], self.basis_)
+        obs = np.empty(shape=(self.N, len(self.M)))
+        coef = np.empty(shape=(self.N, len(self.eigenvalues)))
+        for i in range(self.N):
+            coef_ = np.random.normal(0, np.sqrt(self.eigenvalues))
+            prod_ = np.matmul(coef_[np.newaxis], self.basis.values)
 
             obs[i, :] = prod_
             coef[i, :] = coef_
 
-        self.coef_ = coef
-        self.obs_ = UnivariateFunctionalData(self.M_, obs)
+        data = UnivariateFunctionalData(self.M, obs)
+        return data, coef
 
 
-class Brownian(Simulation):
-    """A functional data object representing a brownian motion.
+class BasisFPCA(Simulation):
+    r"""Class for the simulation of data using a FPCA basis.
 
-    Parameters
-    ----------
-    N: int, default=100
-        Number of curves to simulate.
-    brownian_type: str, default='regular'
-        Type of brownian motion to simulate.
-        One of 'regular', 'geometric' or 'fractional'.
+    Parameters:
+    -----------
+    basis: FPCA or MFPCA object
+        Results of a functional principal component analysis or a multivariate
+        functional data analysis.
+    centers: numpy.ndarray, (n_features, n_clusters)
+        The centers of the clusters to generate. The ``n_features`` correspond
+        to the number of functions within the FPCA or MFPCA basis.
+    cluster_std: np.ndarray, (n_features, n_clusters)
+        The standard deviation of the clusters to generate. The ``n_features``
+        correspond to the number of functions within the FPCA or MFPCA basis.
+
+    Notes:
+    ------
+    The function are simulated using the Karhunen-Loève decomposition:
+
+    .. math::
+        X_i(t) = \mu(t) + \sum_{j = 1}^M c_{i, j}\phi_{i, j}(t), i = , \dots, N
+
+    The number of sampling points :math:`M` is not used for the simulation of
+    data using FPCA or MFPCA. The simulated curves will have the same length
+    than the eigenfunctions.
 
     """
 
-    def __init__(self, N, M, brownian_type='standard'):
-        """Initialize Brownian object."""
-        Simulation.__init__(self, N, M)
-        self.brownian_type_ = brownian_type
+    def __init__(self, N, M, basis, n_clusters=1, centers=0, cluster_std=1):
+        """Initialize BasisFPCA object."""
+        super().__init__(N, M, n_clusters)
+        self.basis = basis
+        self.n_features = len(basis.eigenvalues)
+        self.centers = centers
+        self.cluster_std = cluster_std
 
     def new(self, **kwargs):
-        """Function that simulates `N` observations."""
+        """Function that simulates :math:`N` observations.
+
+        Returns
+        -------
+        data: UnivariateFunctionalData or MultivariateFunctionalData
+            The simulated data :math:`X_i(t)`.
+        coef: numpy.ndarray, (N, n_features)
+            The simulated coefficient :math:`c_{i,j}`.
+        labels: numpy.array, (N, )
+
+        """
+        coef = np.zeros((self.N, self.n_features))
+        for idx in np.arange(self.n_features):
+            X, y = make_blobs(n_samples=self.N, n_features=1,
+                              centers=self.centers[idx, :].reshape(-1, 1),
+                              cluster_std=self.cluster_std[idx, :],
+                              shuffle=False)
+            coef[:, idx] = X.squeeze()
+        data = self.basis.inverse_transform(coef)
+        labels = y
+        return data, coef, labels
+
+
+class Brownian(Simulation):
+    """A functional data object representing a Brownian motion.
+
+    Parameters
+    ----------
+    N: int
+        Number of curves to simulate.
+    M: int or numpy.ndarray
+        Sampling points. If ``M`` is an integer, we use
+        ``np.linspace(0, 1, M)`` as sampling points. Otherwise, we use the
+        provided numpy.ndarray.
+    brownian_type: str, {'standard', 'geometric', 'fractional'}
+        Type of brownian motion to simulate.
+    n_clusters: int, default = 1
+        Number of clusters to simulate. Not used in this context.
+
+    """
+
+    def __init__(self, N, M, brownian_type='standard', n_clusters=1):
+        """Initialize Brownian object."""
+        super().__init__(self, N, M, n_clusters)
+        self.basis_name = brownian_type
+
+    def new(self, **kwargs):
+        """Function that simulates `N` observations.
+
+        Keyword Args
+        ------------
+        x0: float, default = 0.0 or 1.0
+            Start of the Brownian motion. Should be strictly positive if
+            ``brownian_type == 'geometric'``.
+        mu: float, default = 0
+            The interest rate
+        sigma: float, default = 1
+            The diffusion coefficient
+        H: double, default = 0.5
+            Hurst parameter
+
+        Returns
+        -------
+        data: UnivariateFunctionalData
+            The simulated functions
+        """
         param_dict = {k: kwargs.pop(k) for k in dict(kwargs)}
 
         # Simulate the N observations
         obs = []
         for _ in range(self.N_):
-            obs.append(simulate_brownian_(self.brownian_type_,
-                                          self.M_, **param_dict))
+            obs.append(simulate_brownian(self.basis_name,
+                                         self.M, **param_dict))
 
         data = MultivariateFunctionalData(obs)
-
-        self.obs_ = data.asUnivariateFunctionalData()
+        return data.asUnivariateFunctionalData()
