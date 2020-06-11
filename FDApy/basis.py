@@ -14,6 +14,7 @@ import scipy
 from abc import ABC, abstractmethod
 from sklearn.datasets import make_blobs
 
+from .fpca import MFPCA, UFPCA
 from .univariate_functional import UnivariateFunctionalData
 from .multivariate_functional import MultivariateFunctionalData
 
@@ -703,7 +704,12 @@ class BasisFPCA(Simulation):
         super().__init__(N, M)
         self.basis = basis
         self.n_clusters = n_clusters
-        self.n_features = len(basis.eigenvalues)
+        if isinstance(basis, UFPCA):
+            self.n_features = len(basis.eigenvalues)
+        elif isinstance(basis, MFPCA):
+            self.n_features = len(basis.eigenvaluesCovariance_)
+        else:
+            raise TypeError('Wrong basis type!')
         self.centers = centers
         self.cluster_std = cluster_std
 
