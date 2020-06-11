@@ -547,9 +547,7 @@ class Simulation(ABC):
         -----
 
         Model:
-
-        .. math::
-            Z(t) = f(t) + \sigma(f(t))\epsilon
+        .. math:: Z(t) = f(t) + \sigma(f(t))\epsilon
 
         If ``sd_function is None``, :math:`\sigma(f(t)) = 1` and
         :math:`\epsilon \sim \mathcal{N}(0, \sigma^2)`.
@@ -726,22 +724,14 @@ class Brownian(Simulation):
 
     Parameters
     ----------
-    N: int
-        Number of curves to simulate.
-    M: int or numpy.ndarray
-        Sampling points. If ``M`` is an integer, we use
-        ``np.linspace(0, 1, M)`` as sampling points. Otherwise, we use the
-        provided numpy.ndarray.
     brownian_type: str, {'standard', 'geometric', 'fractional'}
         Type of brownian motion to simulate.
-    n_clusters: int, default = 1
-        Number of clusters to simulate. Not used in this context.
 
     """
 
-    def __init__(self, N, M, brownian_type='standard', n_clusters=1):
+    def __init__(self, N, M, brownian_type='standard'):
         """Initialize Brownian object."""
-        super().__init__(N, M, n_clusters)
+        super().__init__(N, M)
         self.basis_name = brownian_type
 
     def new(self, **kwargs):

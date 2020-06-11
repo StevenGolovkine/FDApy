@@ -45,8 +45,13 @@ fig, ax = plot(WP, main='Wiener basis', xlab='Sampling points')
 
 ###############################################################################
 # Legendre basis and exponential eigenvalues decay
-sim = Basis(N=100, M=50, basis='legendre', n_features=5,
-            eigenvalues='exponential', norm=True)
+sim = Basis(N=100, M=50,
+            basis='legendre',
+            n_features=5,
+            n_clusters=1,
+            centers=np.array([[0], [0], [0], [0], [0]]),
+            cluster_std='exponential',
+            norm=True)
 sim.new()
 
 # Plot some simulations
@@ -54,8 +59,13 @@ fig, ax = plot(sim.data, main='Simulation', xlab='Sampling points')
 
 ###############################################################################
 # Legendre basis and linear eigenvalues decay
-sim = Basis(N=100, M=50, basis='legendre', n_features=5,
-            eigenvalues='linear', norm=True)
+sim = Basis(N=100, M=50,
+            basis='legendre',
+            n_features=5,
+            n_clusters=1,
+            centers=np.array([[0], [0], [0], [0], [0]]),
+            cluster_std='linear',
+            norm=True)
 sim.new()
 
 # Plot some simulations
@@ -63,8 +73,13 @@ fig, ax = plot(sim.data, main='Simulation', xlab='Sampling points')
 
 ###############################################################################
 # Wiener basis and Wiener eigenvalues decay
-sim = Basis(N=100, M=50, basis='wiener', n_features=5,
-            eigenvalues='wiener', norm=True)
+sim = Basis(N=100, M=50,
+            basis='wiener',
+            n_features=5,
+            n_clusters=1,
+            centers=np.array([[0], [0], [0], [0], [0]]),
+            cluster_std='wiener',
+            norm=True)
 sim.new()
 
 # Plot some simulations
@@ -72,8 +87,13 @@ fig, ax = plot(sim.data, main='Simulation', xlab='Sampling points')
 
 ###############################################################################
 # Wiener basis and user-set eigenvalues
-sim = Basis(N=100, M=50, basis='wiener', n_features=3,
-            eigenvalues=[100, 25, 5], norm=True)
+sim = Basis(N=100, M=50,
+            basis='wiener',
+            n_features=3,
+            n_clusters=1,
+            centers=np.array([[0], [0], [0]]),
+            cluster_std=np.array([[100], [50], [10]]),
+            norm=True)
 sim.new()
 
 # Plot some simulations
