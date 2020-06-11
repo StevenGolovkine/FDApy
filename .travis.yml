@@ -1,20 +1,32 @@
-# Python for travis: see documentation at https://docs.travis-ci.com/user/languages/python/
+# Config file for automatic testing at travis-ci.org
 
 language: python
+
 python:
-  - "3.7"
+- '3.7'
 
-# Before the installation
+# Command to install dependencies before the installation of the package
 before_install:
-  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  - sudo apt-get -q update
-  - sudo apt-get -y install gcc-4.8
+- sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+- sudo apt-get -q update
+- sudo apt-get -y install gcc-4.8
 
-# Command to install dependencies, e.g. pip install -r requirements.txt 
+# Command to install dependencies, e.g. pipi install -r requirements.txt
 install:
-  - pip install -r requirements.txt
-  - pip install -U tox-travis
+- pip install -r requirements.txt
+- pip install -U tox-travis
 
-# Command to run tests, e.g. python setup.py test
+# Command to run test, e.g. python setup.py test
 script:
-  - tox
+- tox
+
+# Command for package deployment
+deploy:
+  provider: pypi
+  username: __token__
+  password:
+    secure: O8Fi4z3ekpFq98pL27r2F9MZRaB+in+s4y/JaRjYdD6va5dB4hca0RXQpbgdltKXPN9unTV8ilsdDz8UQwVFHuxhN4oEruEU4QA3H+leaj1e7cTHbMWAGanwstmYgQPwufzgh3vz+wMjlUj5uAlDRC/2Dtk3IJ7xWGj4U+iscsudrverij3OcdqbnTvXPieI54EmbGgpWRB8nS3NRdPklohDWoM6k5RzyzpjQP55v1svVxo59Gsx3fbV1nEPZkIoCtt4gYy7q79QsqFyOoEN6v7SLW/8H5ESUrXWNZjsgmD0ZESNCpYGcJpp6b3UGJ+ZvmzmDNO+C1628hibfpD6slRiS6PByWYQPLQONfcOeSnwcicgMRTdySrDc37f3myFP0EwarU9tIgRhmdy+cNJ2K8YU90b+KfmsfYwRAeaq/d1qjLXsnmdd3uDd7U2qCsw0fGlY2glIRKdr+by/nVmK9DBSTnGKb+XcHx8h4A35kYxO/RO1/0I0wZKz7xIgZxu5dfuMoMnssAtJfqKQo2eRDKteaBqmtPqiye93LERPI2GcbWlh/yh/kjz2W7AefrtJ1a5N12YgJ1B86rhg4+PJsLoHrAGeKXXbZ2tyIgUOF1O2VMWDAIasxQeVIMYssIBc+jpPfZuAvkxbGF6yM0dGAsF7hGwZrVSx5FfHBIMr1w=
+  on:
+    tags: true
+  distributions: "sdist bdist_wheel"
+  skip_existing: true
