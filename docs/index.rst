@@ -11,8 +11,14 @@ API References
 
 .. toctree::
 	
+	modules/bandwidth
 	modules/basis
 	modules/fpca
+	modules/irregular_functional
+	modules/multivariate_functional
+	modules/plot
+	modules/univariate_functional
+	modules/utils
 
 An exhaustive list of all the contents of the package can be found in the
 :ref:`genindex`.
