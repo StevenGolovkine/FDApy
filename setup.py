@@ -11,7 +11,7 @@ def get_readme():
 
 
 setup(name='FDApy',
-      version='0.3.5',
+      version='0.3.6',
       description='Python package for Functional Data Analysis',
       long_description=get_readme(),
       classifiers=[
