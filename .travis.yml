@@ -21,6 +21,7 @@ script:
 - tox
 
 # Command for package deployment
+# python setup.py bdist_wheel --plat-name manylinux1_x86_64
 deploy:
   provider: pypi
   username: __token__
