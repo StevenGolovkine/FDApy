@@ -482,8 +482,6 @@ class Simulation(ABC):
         Sampling points. If ``M`` is an integer, we use
         ``np.linspace(0, 1, M)`` as sampling points. Otherwise, we use the
         provided numpy.ndarray.
-    n_clusters: int, default = 1
-        Number of clusters to simulate.
 
     Attributes
     ----------
@@ -492,7 +490,7 @@ class Simulation(ABC):
 
     """
 
-    def __init__(self, N, M, n_clusters=1):
+    def __init__(self, N, M):
         """Initialize Simulation object."""
         if isinstance(M, int):
             M = np.linspace(0, 1, M)
@@ -501,12 +499,39 @@ class Simulation(ABC):
         self.basis_name = None
         self.N = N
         self.M = M
-        self.n_clusters = n_clusters
 
     @abstractmethod
     def new(self, **kwargs):
         """Function to simulate observations."""
         pass
+
+    def make_coef(self, n_features, n_clusters, centers, cluster_std):
+        """Simulate coefficient for the Karhunen-Loève decomposition.
+
+        Parameters
+        ----------
+        n_features: int
+            Number of features to simulate.
+        n_clusters: int
+            Number of clusters to simulate.
+        centers: numpy.ndarray, (n_features, n_clusters)
+            The centers of the clusters to generate. The ``n_features``
+            correspond to the number of functions within the basis.
+        cluster_std: np.ndarray, (n_features, n_clusters)
+            The standard deviation of the clusters to generate. The
+            ``n_features`` correspond to the number of functions within the
+            basis.
+
+        """
+        coef = np.zeros((self.N, n_features))
+        for idx in np.arange(n_features):
+            X, y = make_blobs(n_samples=self.N, n_features=1,
+                              centers=centers[idx, :].reshape(-1, 1),
+                              cluster_std=cluster_std[idx, :],
+                              shuffle=False)
+            coef[:, idx] = X.squeeze()
+        labels = y
+        return coef, labels
 
     def add_noise(self, noise_var=1, sd_function=None):
         r"""Add noise to the data.
@@ -552,26 +577,29 @@ class Simulation(ABC):
 class Basis(Simulation):
     r"""A functional data object representing an orthogonal basis of functions.
 
-    Parameters:
-    -----------
-    N: int
-        Number of curves to simulate.
-    M: int or numpy.ndarray
-        Sampling points. If ``M`` is an integer, we use
-        ``np.linspace(0, 1, M)`` as sampling points. Otherwise, we use the
-        provided numpy.ndarray.
+    Parameters
+    ----------
     basis: str, {'legendre', 'wiener'}
         Denotes the basis of functions to use.
-    n_features: int
+    n_features: int, default = 1
         Number of basis functions to use to simulate the data.
-    eigenvalues: str or numpy.ndarray
-        Define the decreasing of the eigenvalues of the process.
-        If `eigenvalues` is str, we define the eigenvalues as using the
-        corresponding function. Otherwise, we keep it like that.
     n_clusters: int, default = 1
-        Number of clusters to simulate. Not used in this context.
+        Number of clusters to simulate.
+    centers: numpy.ndarray, (n_features, n_clusters)
+        The centers of the clusters to generate.
+    cluster_std: str, np.ndarray, (n_features, n_clusters)
+        The standard deviation of the clusters to generate.
     norm: bool, default=False
         Should we normalize the basis function?
+
+    Attributes
+    ----------
+    data: UnivariateFunctionalData or MultivariateFunctionalData
+        The simulated data :math:`X_i(t)`.
+    labels: numpy.array, (N, )
+        True class labels for each data.
+    coef: numpy.ndarray, (N, n_features)
+        The simulated coefficient :math:`c_{i,j}`.
 
     Notes
     -----
@@ -584,22 +612,31 @@ class Basis(Simulation):
 
     """
 
-    def __init__(self, N, M, basis, n_features, eigenvalues,
-                 n_clusters=1, norm=False):
+    def __init__(self, N, M, basis, n_features=1, n_clusters=1, centers=0,
+                 cluster_std=1, norm=False):
         """Initialize Basis object."""
-        super().__init__(N, M, n_clusters)
+        super().__init__(N, M)
+        self.n_clusters = n_clusters
         self.n_features = n_features
         self.norm = norm
+        self.centers = centers
 
         # Define the basis
         self.basis_name = basis
-        self.basis = simulate_basis(self.basis_name, self.n_features,
-                                    self.M, self.norm)
+        self.basis = simulate_basis(self.basis_name,
+                                    self.n_features,
+                                    self.M,
+                                    self.norm)
 
         # Define the decreasing of the eigenvalues
-        if isinstance(eigenvalues, str):
-            eigenvalues = simulate_eigenvalues(eigenvalues, self.n_features)
-        self.eigenvalues = eigenvalues
+        if isinstance(cluster_std, str):
+            eigenvalues = simulate_eigenvalues(cluster_std,
+                                               self.n_features)
+            eigenvalues = np.repeat(eigenvalues, self.n_clusters)
+            self.cluster_std = eigenvalues.reshape((self.n_features,
+                                                    self.n_clusters))
+        else:
+            self.cluster_std = cluster_std
 
     def new(self, **kwargs):
         """Function that simulates :math:`N` observations.
@@ -612,28 +649,26 @@ class Basis(Simulation):
             The simulated data :math:`X_i(t)`.
 
         """
-        # Simulate the N observations
-        obs = np.empty(shape=(self.N, len(self.M)))
-        coef = np.empty(shape=(self.N, len(self.eigenvalues)))
-        for i in range(self.N):
-            coef_ = np.random.normal(0, np.sqrt(self.eigenvalues))
-            prod_ = np.matmul(coef_[np.newaxis], self.basis.values)
-
-            obs[i, :] = prod_
-            coef[i, :] = coef_
-
+        coef, y = self.make_coef(self.n_features,
+                                 self.n_clusters,
+                                 self.centers,
+                                 self.cluster_std)
+        obs = np.matmul(coef, self.basis.values)
         self.data = UnivariateFunctionalData(self.M, obs)
+        self.labels = y
         self.coef = coef
 
 
 class BasisFPCA(Simulation):
     r"""Class for the simulation of data using a FPCA basis.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     basis: FPCA or MFPCA object
         Results of a functional principal component analysis or a multivariate
         functional data analysis.
+    n_clusters: int, default = 1
+        Number of clusters to simulate.
     centers: numpy.ndarray, (n_features, n_clusters)
         The centers of the clusters to generate. The ``n_features`` correspond
         to the number of functions within the FPCA or MFPCA basis.
@@ -641,8 +676,19 @@ class BasisFPCA(Simulation):
         The standard deviation of the clusters to generate. The ``n_features``
         correspond to the number of functions within the FPCA or MFPCA basis.
 
-    Notes:
-    ------
+    Attributes
+    ----------
+    n_features: int
+        Number of functions within the FPCA or MFPCA basis.
+    data: UnivariateFunctionalData or MultivariateFunctionalData
+        The simulated data :math:`X_i(t)`.
+    labels: numpy.array, (N, )
+        True class labels for each data.
+    coef: numpy.ndarray, (N, n_features)
+        The simulated coefficient :math:`c_{i,j}`.
+
+    Notes
+    -----
     The function are simulated using the Karhunen-Loève decomposition:
 
     .. math::
@@ -656,31 +702,19 @@ class BasisFPCA(Simulation):
 
     def __init__(self, N, M, basis, n_clusters=1, centers=0, cluster_std=1):
         """Initialize BasisFPCA object."""
-        super().__init__(N, M, n_clusters)
+        super().__init__(N, M)
         self.basis = basis
+        self.n_clusters = n_clusters
         self.n_features = len(basis.eigenvalues)
         self.centers = centers
         self.cluster_std = cluster_std
 
     def new(self, **kwargs):
-        """Function that simulates :math:`N` observations.
-
-        Returns
-        -------
-        data: UnivariateFunctionalData or MultivariateFunctionalData
-            The simulated data :math:`X_i(t)`.
-        coef: numpy.ndarray, (N, n_features)
-            The simulated coefficient :math:`c_{i,j}`.
-        labels: numpy.array, (N, )
-
-        """
-        coef = np.zeros((self.N, self.n_features))
-        for idx in np.arange(self.n_features):
-            X, y = make_blobs(n_samples=self.N, n_features=1,
-                              centers=self.centers[idx, :].reshape(-1, 1),
-                              cluster_std=self.cluster_std[idx, :],
-                              shuffle=False)
-            coef[:, idx] = X.squeeze()
+        """Function that simulates :math:`N` observations."""
+        coef, y = self.make_coef(self.n_features,
+                                 self.n_clusters,
+                                 self.centers,
+                                 self.cluster_std)
 
         self.data = self.basis.inverse_transform(coef)
         self.labels = y
