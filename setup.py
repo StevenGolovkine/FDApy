@@ -42,6 +42,6 @@ setup(name='FDApy',
       tests_require=['nose'],
       # extra_requires={'tests': ['cython']},
       include_package_data=True,
-      ext_modules=Cython.Build.cythonize(extensions),
+      ext_modules=extensions,
       setup_requires=['cython'],
       zip_safe=False)
