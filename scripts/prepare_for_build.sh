@@ -6,4 +6,4 @@
 
 pip install Cython
 
-MPLLOCALFREETYPE=1
+export MPLLOCALFREETYPE=1
