@@ -42,7 +42,7 @@ install:
 script:
   - tox
   - find . -type f -iname '*.so' -print -delete
-  - $PIP install cibuildwheel==1.0.0
+  - $PIP install cibuildwheel==1.0.0 cython
   - cibuildwheel --output-dir wheelhouse
   - ls wheelhouse
 
