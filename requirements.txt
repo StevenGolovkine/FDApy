@@ -1,6 +1,4 @@
-abc
 Cython
-itertools
 matplotlib
 numpy
 pandas
