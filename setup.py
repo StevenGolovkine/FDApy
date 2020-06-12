@@ -2,7 +2,6 @@
 
 import Cython.Build
 
-import numpy as np
 
 from setuptools import Extension, find_packages, setup
 
