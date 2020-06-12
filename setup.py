@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import cython.Build
+import Cython.Build
 
 
 from setuptools import Extension, find_packages, setup
@@ -29,7 +29,7 @@ setup(name='FDApy',
       author='Steven Golovkine',
       author_email='steven_golovkine@icloud.com',
       license='MIT',
-      cmdclass={'build_ext': cython.Build.build_ext},
+      cmdclass={'build_ext': Cython.Build.build_ext},
       package_dir={'FDApy': 'FDApy'},
       packages=find_packages(),
       install_requires=['ggplot',
