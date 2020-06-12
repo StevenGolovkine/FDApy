@@ -2,6 +2,7 @@ Cython
 matplotlib
 mpldatacursor
 numpy
+pandas
 pillow
 pygam
 scikit-learn
