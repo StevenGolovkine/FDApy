@@ -1,0 +1,11 @@
+Cython
+matplotlib
+mpldatacursor
+numpy
+pillow
+pygam
+scikit-learn
+scipy
+Sphinx
+sphinx-gallery
+sphinx_rtd_theme
