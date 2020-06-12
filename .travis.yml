@@ -1,9 +1,11 @@
 # Config file for continuous integration at travis-ci.org
-matrix:
+language: python
+
+jobs:
   include:
-    - language: python
+    - os: linux
+      language: python
       dist: xenial # Because python3.7
-      sudo: required
       python: "3.7"
       services:
         - docker # Needed for cibuildwheel

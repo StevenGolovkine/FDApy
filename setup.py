@@ -2,6 +2,8 @@
 
 import Cython.Build
 
+import numpy as np
+
 from setuptools import Extension, find_packages, setup
 
 
@@ -9,6 +11,13 @@ def get_readme():
     with open('README.rst') as f:
         return f.read()
 
+
+extensions = [
+    Extension('sigma',
+              sources=['FDApy/src/sigma.pyx'],
+              include_dirs=[np.get_include()],
+              language='c++')
+]
 
 setup(name='FDApy',
       version='0.3.7',
@@ -33,10 +42,8 @@ setup(name='FDApy',
                         'sklearn'],
       test_suite='nose.collector',
       tests_require=['nose'],
-      extra_reuires={'tests': []},
+      # extra_requires={'tests': ['cython']},
       include_package_data=True,
-      ext_modules=[Extension('FDApy.src.sigma',
-                             sources=['FDApy/src/sigma.pyx'],
-                             language='c++')],
+      ext_modules=Cython.Build.cythonize(extensions),
       setup_requires=['cython'],
       zip_safe=False)
