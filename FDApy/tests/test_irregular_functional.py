@@ -30,12 +30,12 @@ class TestIrregularFunctionalData(unittest.TestCase):
     def test_check_argvals_work(self):
         argvals = [np.array([1, 2, 3]), np.array([4, 5, 6])]
         test = _check_argvals(argvals)
-        self.assertEquals(len(test), 2)
+        self.assertEqual(len(test), 2)
 
     def test_check_argvals_work2(self):
         argvals = np.array([1, 2, 3])
         test = _check_argvals(argvals)
-        self.assertEquals(len(test), 1)
+        self.assertEqual(len(test), 1)
 
     # Tests _check_values function
     def test_check_values(self):
@@ -45,12 +45,12 @@ class TestIrregularFunctionalData(unittest.TestCase):
     def test_check_values_work(self):
         values = [np.array([1, 2, 3]), np.array([1, 2])]
         values = _check_values(values)
-        self.assertEquals(len(values), 2)
+        self.assertEqual(len(values), 2)
 
     def test_check_values_work2(self):
         values = np.array([1, 2, 3])
         values = _check_values(values)
-        self.assertEquals(len(values), 1)
+        self.assertEqual(len(values), 1)
 
     # Tests __init__ function
     def test_init_dimensions(self):

@@ -32,12 +32,12 @@ class TestUnivariateFunctionalData(unittest.TestCase):
     def test_check_argvals_work(self):
         argvals = [np.array([1, 2, 3]), np.array([4, 5, 6])]
         test = _check_argvals(argvals)
-        self.assertEquals(len(test), 2)
+        self.assertEqual(len(test), 2)
 
     def test_check_argvals_work2(self):
         argvals = np.array([1, 2, 3])
         test = _check_argvals(argvals)
-        self.assertEquals(len(test), 1)
+        self.assertEqual(len(test), 1)
 
     # Tests _check_values function
     def test_check_values(self):
@@ -86,7 +86,7 @@ class TestUnivariateFunctionalData(unittest.TestCase):
         argvals = np.array([1, 2, 3])
         values = np.array([[1, 2, 3], [4, 5, 6]])
         uni = UnivariateFunctionalData(argvals, values)
-        self.assertEquals(uni.nObs(), 2)
+        self.assertEqual(uni.nObs(), 2)
 
     # Tests rangeObs function
     def test_rangeObs(self):
@@ -95,7 +95,7 @@ class TestUnivariateFunctionalData(unittest.TestCase):
         values = np.array([[1, 2, 3],
                            [7, 8, 9]])
         uni = UnivariateFunctionalData(argvals, values)
-        self.assertEquals(uni.rangeObs(), (1, 9))
+        self.assertEqual(uni.rangeObs(), (1, 9))
 
     def test_rangeObs2(self):
         # Test in dimension 2
@@ -103,7 +103,7 @@ class TestUnivariateFunctionalData(unittest.TestCase):
         values = np.array([[[1, 2], [3, 4], [5, 6]],
                            [[7, 8], [9, 10], [11, 12]]])
         uni = UnivariateFunctionalData(argvals, values)
-        self.assertEquals(uni.rangeObs(), (1, 12))
+        self.assertEqual(uni.rangeObs(), (1, 12))
 
     # Tests nObsPoint function
     def test_nObsPoint(self):
@@ -111,7 +111,7 @@ class TestUnivariateFunctionalData(unittest.TestCase):
         values = np.array([[[1, 2], [3, 4], [5, 6]],
                            [[7, 8], [9, 10], [11, 12]]])
         uni = UnivariateFunctionalData(argvals, values)
-        self.assertEquals(uni.nObsPoint(), [3, 2])
+        self.assertEqual(uni.nObsPoint(), [3, 2])
 
     # Tests rangeObsPoint function
     def test_rangeObsPoint(self):
@@ -119,21 +119,21 @@ class TestUnivariateFunctionalData(unittest.TestCase):
         values = np.array([[[1, 2], [3, 4], [5, 6]],
                            [[7, 8], [9, 10], [11, 12]]])
         uni = UnivariateFunctionalData(argvals, values)
-        self.assertEquals(uni.rangeObsPoint(), [(1, 3), (1, 2)])
+        self.assertEqual(uni.rangeObsPoint(), [(1, 3), (1, 2)])
 
     # Tests dimension function
     def test_dimension(self):
         argvals = np.array([1, 2, 3])
         values = np.array([[1, 2, 3], [4, 5, 6]])
         uni = UnivariateFunctionalData(argvals, values)
-        self.assertEquals(uni.dimension(), 1)
+        self.assertEqual(uni.dimension(), 1)
 
     def test_dimension2(self):
         argvals = [np.array([1, 2, 3]), np.array([1, 2])]
         values = np.array([[[1, 2], [3, 4], [5, 6]],
                            [[7, 8], [9, 10], [11, 12]]])
         uni = UnivariateFunctionalData(argvals, values)
-        self.assertEquals(uni.dimension(), 2)
+        self.assertEqual(uni.dimension(), 2)
 
 
 if __name__ == '__main__':

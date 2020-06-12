@@ -28,7 +28,7 @@ class TestMultivariateFunctionalData(unittest.TestCase):
         X = np.array([[1, 2, 3], [4, 5, 6]])
         uni = UnivariateFunctionalData(argvals, X)
         multi = MultivariateFunctionalData(uni)
-        self.assertEquals(multi.nFunctions(), 1)
+        self.assertEqual(multi.nFunctions(), 1)
 
     def test_check_data_observations(self):
         argvals = np.array([1, 2, 3])
@@ -43,7 +43,7 @@ class TestMultivariateFunctionalData(unittest.TestCase):
         X = np.array([[1, 2, 3], [4, 5, 6]])
         uni = UnivariateFunctionalData(argvals, X)
         multi = MultivariateFunctionalData([uni, uni])
-        self.assertEquals(multi.nFunctions(), 2)
+        self.assertEqual(multi.nFunctions(), 2)
 
     # Tests nFunction function
     def test_nFunction(self):
@@ -55,7 +55,7 @@ class TestMultivariateFunctionalData(unittest.TestCase):
         uni = UnivariateFunctionalData(argvals, X)
         uni1 = UnivariateFunctionalData(argvals1, X1)
         multi = MultivariateFunctionalData([uni, uni1])
-        self.assertEquals(multi.nFunctions(), 2)
+        self.assertEqual(multi.nFunctions(), 2)
 
     # Tests nObs function
     def test_nObs(self):
@@ -67,7 +67,7 @@ class TestMultivariateFunctionalData(unittest.TestCase):
         uni = UnivariateFunctionalData(argvals, X)
         uni1 = UnivariateFunctionalData(argvals1, X1)
         multi = MultivariateFunctionalData([uni, uni1])
-        self.assertEquals(multi.nObs(), 2)
+        self.assertEqual(multi.nObs(), 2)
 
     # Tests rangeObs function
     def test_rangeObs(self):
@@ -79,7 +79,7 @@ class TestMultivariateFunctionalData(unittest.TestCase):
         uni = UnivariateFunctionalData(argvals, X)
         uni1 = UnivariateFunctionalData(argvals1, X1)
         multi = MultivariateFunctionalData([uni, uni1])
-        self.assertEquals(multi.rangeObs(), [(1, 6), (1, 12)])
+        self.assertEqual(multi.rangeObs(), [(1, 6), (1, 12)])
 
     # Tests nObsPoint function
     def test_nObsPoint(self):
@@ -91,7 +91,7 @@ class TestMultivariateFunctionalData(unittest.TestCase):
         uni = UnivariateFunctionalData(argvals, X)
         uni1 = UnivariateFunctionalData(argvals1, X1)
         multi = MultivariateFunctionalData([uni, uni1])
-        self.assertEquals(multi.nObsPoint(), [[3], [3, 2]])
+        self.assertEqual(multi.nObsPoint(), [[3], [3, 2]])
 
     # Tests rangeObsPoint function
     def test_rangeObsPoint(self):
@@ -103,7 +103,7 @@ class TestMultivariateFunctionalData(unittest.TestCase):
         uni = UnivariateFunctionalData(argvals, X)
         uni1 = UnivariateFunctionalData(argvals1, X1)
         multi = MultivariateFunctionalData([uni, uni1])
-        self.assertEquals(multi.rangeObsPoint(), [[(1, 3)], [(1, 3), (1, 2)]])
+        self.assertEqual(multi.rangeObsPoint(), [[(1, 3)], [(1, 3), (1, 2)]])
 
     # Tests dimension function
     def test_dimension(self):
@@ -115,7 +115,7 @@ class TestMultivariateFunctionalData(unittest.TestCase):
         uni = UnivariateFunctionalData(argvals, X)
         uni1 = UnivariateFunctionalData(argvals1, X1)
         multi = MultivariateFunctionalData([uni, uni1])
-        self.assertEquals(multi.dimension(), [1, 2])
+        self.assertEqual(multi.dimension(), [1, 2])
 
 
 if __name__ == '__main__':
