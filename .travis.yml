@@ -54,6 +54,8 @@ deploy:
   skip_cleanup: true
   provider: script
   script: $PIP install twine && $PYTHON -m twine upload --verbose --skip-existing wheelhouse/*
+  password:
+    secure: "O8Fi4z3ekpFq98pL27r2F9MZRaB+in+s4y/JaRjYdD6va5dB4hca0RXQpbgdltKXPN9unTV8ilsdDz8UQwVFHuxhN4oEruEU4QA3H+leaj1e7cTHbMWAGanwstmYgQPwufzgh3vz+wMjlUj5uAlDRC/2Dtk3IJ7xWGj4U+iscsudrverij3OcdqbnTvXPieI54EmbGgpWRB8nS3NRdPklohDWoM6k5RzyzpjQP55v1svVxo59Gsx3fbV1nEPZkIoCtt4gYy7q79QsqFyOoEN6v7SLW/8H5ESUrXWNZjsgmD0ZESNCpYGcJpp6b3UGJ+ZvmzmDNO+C1628hibfpD6slRiS6PByWYQPLQONfcOeSnwcicgMRTdySrDc37f3myFP0EwarU9tIgRhmdy+cNJ2K8YU90b+KfmsfYwRAeaq/d1qjLXsnmdd3uDd7U2qCsw0fGlY2glIRKdr+by/nVmK9DBSTnGKb+XcHx8h4A35kYxO/RO1/0I0wZKz7xIgZxu5dfuMoMnssAtJfqKQo2eRDKteaBqmtPqiye93LERPI2GcbWlh/yh/kjz2W7AefrtJ1a5N12YgJ1B86rhg4+PJsLoHrAGeKXXbZ2tyIgUOF1O2VMWDAIasxQeVIMYssIBc+jpPfZuAvkxbGF6yM0dGAsF7hGwZrVSx5FfHBIMr1w="
   on:
     branch: master
     tags: true
