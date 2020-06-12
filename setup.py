@@ -18,7 +18,7 @@ extensions = [
 ]
 
 setup(name='FDApy',
-      version='0.3.7',
+      version='0.3.8',
       description='Python package for Functional Data Analysis',
       long_description=get_readme(),
       classifiers=[
