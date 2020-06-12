@@ -23,7 +23,7 @@ from .multivariate_functional import MultivariateFunctionalData
 # Definition of the basis (eigenfunctions)
 
 def basis_legendre(K=3, argvals=None, norm=True):
-    """Define Legendre basis of function.
+    r"""Define Legendre basis of function.
 
     Build a basis of :math:`K` functions using Legendre polynomials on the
     interval defined by ``argvals``.
@@ -43,6 +43,17 @@ def basis_legendre(K=3, argvals=None, norm=True):
     obj: UnivariateFunctionalData
         A UnivariateFunctionalData object containing the Legendre polynomial
         up to :math:`K` functions evaluated on ``argvals``.
+
+    Notes
+    -----
+
+    The Legendre basis is defined by induction as:
+
+    .. math::
+        (n + 1)P_{n + 1}(t) = (2n + 1)tP_n(t) - nP_{n - 1}(t), \quad\text{for}
+        \quad n \geq 1,
+
+    with :math:`P_0(t) = 1` and :math:`P_1(t) = t`.
 
     Examples
     --------
@@ -71,7 +82,7 @@ def basis_legendre(K=3, argvals=None, norm=True):
 
 
 def basis_wiener(K=3, argvals=None, norm=True):
-    """Define Wiener basis of function.
+    r"""Define Wiener basis of function.
 
     Build a basis of :math:`K` functions using the eigenfunctions of a Wiener
     process on the interval defined by ``argvals``.
@@ -91,7 +102,17 @@ def basis_wiener(K=3, argvals=None, norm=True):
     -------
     obj: UnivariateFunctionalData
         A UnivariateFunctionalData object containing the Wiener process
-        eigenvalues up to :math:`K` functions evaluated on ``argvals``.
+        eigenfunctions up to :math:`K` functions evaluated on ``argvals``.
+
+    Notes
+    -----
+
+    The Wiener basis is defined as the eigenfunctions of the Brownian motion:
+
+    .. math::
+        \phi_k(t) = \sqrt{2}\sin\left(\left(k - \frac{1}{2}\right)\pi t\right),
+        \quad 1 \leq k \leq K
+
 
     Example
     -------
@@ -118,12 +139,77 @@ def basis_wiener(K=3, argvals=None, norm=True):
     return obj
 
 
-def simulate_basis(basis_name, K=3, argvals=None, norm=False):
+def basis_fourier(K=3, argvals=None, period=2 * np.pi, norm=True):
+    r"""Define Fourier basis of function.
+
+    Build a basis of :math:`K` functions using Fourier series on the
+    interval defined by ``argvals``.
+
+    Parameters
+    ----------
+    K: int, default = 3
+        Number of considered Fourier series. Should be odd.
+    argvals: numpy.ndarray, default = None
+        The values on which evaluated the Fourier series. If ``None``,
+        the polynomials are evaluated on the interval :math:`[0, period]`.
+    period: float, default = 2*numpy.pi
+        The period of the circular functions.
+    norm: boolean, default = True
+        Should we normalize the functions?
+
+    Returns
+    -------
+    obj: UnivariateFunctionalData
+        A UnivariateFunctionalData object containing the Fourier series
+        up to :math:`K` functions evaluated on ``argvals``.
+
+    Notes
+    -----
+
+    The Fourier basis is defined as:
+
+    .. math::
+        \Phi(t) = \left(1, \sin(\omega t), \cos(\omega t), \dots \right)
+
+    where :math:`\omega` is the period.
+
+    Examples
+    --------
+    >>> basis_fourier(K=3, argvals=np.arange(0, 2*np.pi, 0.1), norm=True)
+
+    """
+    K_new = K + 1 if K % 2 == 0 else K
+    if argvals is None:
+        argvals = np.arange(0, period, 0.1)
+    if isinstance(argvals, list):
+        raise ValueError('argvals has to be a tuple or a numpy array!')
+
+    values = np.empty((K_new, len(argvals)))
+    values[0, :] = 1
+    for k in np.arange(1, (K_new + 1) // 2):
+        sin = np.sin(2 * np.pi * k * argvals / period)
+        cos = np.cos(2 * np.pi * k * argvals / period)
+
+        if norm:
+            sin_norm2 = np.sqrt(scipy.integrate.simps(
+                sin * sin, argvals))
+            cos_norm2 = np.sqrt(scipy.integrate.simps(
+                cos * cos, argvals))
+            sin = sin / sin_norm2
+            cos = cos / cos_norm2
+        values[(2 * k - 1), :] = sin
+        values[(2 * k), :] = cos
+
+    obj = UnivariateFunctionalData(argvals, values[:K, :])
+    return obj
+
+
+def simulate_basis(basis_name, K=3, argvals=None, norm=False, **kwargs):
     """Redirect to the right simulation basis function.
 
     Parameters
     ----------
-    basis_name: str, {'legendre', 'wiener'}
+    basis_name: str, {'legendre', 'wiener', 'fourier'}
         Name of the basis to use.
     K: int, default = 3
         Number of functions to compute.
@@ -132,6 +218,11 @@ def simulate_basis(basis_name, K=3, argvals=None, norm=False):
         the functions are evaluated on the interval :math:`[0, 1]`.
     norm: boolean
         Should we normalize the functions?
+
+    Keyword Args
+    ------------
+    period: float, default = 2*numpy.pi
+        The period of the circular functions for the Fourier basis.
 
     Returns
     -------
@@ -149,6 +240,9 @@ def simulate_basis(basis_name, K=3, argvals=None, norm=False):
         basis = basis_legendre(K, argvals, norm)
     elif basis_name == 'wiener':
         basis = basis_wiener(K, argvals, norm)
+    elif basis_name == 'fourier':
+        basis = basis_fourier(K, argvals,
+                              kwargs.get('period', 2 * np.pi), norm)
     else:
         raise ValueError('Basis not implemented!')
     return basis
@@ -211,7 +305,7 @@ def standard_brownian(argvals=None, x0=0.0):
 
     W = np.zeros(np.size(argvals))
     W[0] = x0
-    for idx in range(1, np.size(argvals)):
+    for idx in np.arange(1, np.size(argvals)):
         W[idx] = W[idx - 1] + np.sqrt(delta) * np.random.normal()
 
     obj = UnivariateFunctionalData(
@@ -253,7 +347,7 @@ def geometric_brownian(argvals=None, x0=1.0, mu=0.0, sigma=1.0):
     delta, argvals = init_brownian(argvals)
 
     W = np.zeros(np.size(argvals))
-    for idx in range(1, np.size(argvals)):
+    for idx in np.arange(1, np.size(argvals)):
         W[idx] = W[idx - 1] + np.sqrt(delta) * np.random.normal()
 
     in_exp = (mu - np.power(sigma, 2) / 2) * (argvals - argvals[0]) + sigma * W
@@ -299,7 +393,7 @@ def fractional_brownian(argvals=None, H=0.5):
     M = np.size(argvals)
     R = np.zeros(M + 1)
     R[0] = 1
-    for idx in range(1, M + 1):
+    for idx in np.arange(1, M + 1):
         R[idx] = 0.5 * (p(idx + 1, H) - 2 * p(idx, H) + p(idx - 1, H))
     invR = R[::-1]
     R = np.append(R, invR[1:len(invR) - 1])
@@ -433,7 +527,7 @@ def eigenvalues_wiener(M=3):
 
     """
     return np.array([np.power((np.pi / 2) * (2 * m - 1), -2)
-                    for m in np.linspace(1, M, M)])
+                     for m in np.linspace(1, M, M)])
 
 
 def simulate_eigenvalues(eigenvalues_name, M=3):
@@ -548,7 +642,10 @@ class Simulation(ABC):
         -----
 
         Model:
-        .. math:: Z(t) = f(t) + \sigma(f(t))\epsilon
+
+        .. math::
+            Z(t) = f(t) + \sigma(f(t))\epsilon
+
 
         If ``sd_function is None``, :math:`\sigma(f(t)) = 1` and
         :math:`\epsilon \sim \mathcal{N}(0, \sigma^2)`.
@@ -612,7 +709,7 @@ class Basis(Simulation):
     """
 
     def __init__(self, N, M, basis, n_features=1, n_clusters=1, centers=0,
-                 cluster_std=1, norm=False):
+                 cluster_std=1, norm=False, **kwargs):
         """Initialize Basis object."""
         super().__init__(N, M)
         self.n_clusters = n_clusters
@@ -625,7 +722,8 @@ class Basis(Simulation):
         self.basis = simulate_basis(self.basis_name,
                                     self.n_features,
                                     self.M,
-                                    self.norm)
+                                    self.norm,
+                                    **kwargs)
 
         # Define the decreasing of the eigenvalues
         if isinstance(cluster_std, str):
@@ -638,16 +736,7 @@ class Basis(Simulation):
             self.cluster_std = cluster_std
 
     def new(self, **kwargs):
-        """Function that simulates :math:`N` observations.
-
-        Returns
-        -------
-        coef: numpy.ndarray, (N, n_features)
-            Array of simulated coefficients :math:`c_{i,j}`.
-        data: UnivariateFunctionalData
-            The simulated data :math:`X_i(t)`.
-
-        """
+        """Function that simulates :math:`N` observations."""
         coef, y = self.make_coef(self.n_features,
                                  self.n_clusters,
                                  self.centers,
@@ -681,7 +770,7 @@ class BasisFPCA(Simulation):
         Number of functions within the FPCA or MFPCA basis.
     data: UnivariateFunctionalData or MultivariateFunctionalData
         The simulated data :math:`X_i(t)`.
-    labels: numpy.array, (N, )
+    labels: numpy.ndarray, (N, )
         True class labels for each data.
     coef: numpy.ndarray, (N, n_features)
         The simulated coefficient :math:`c_{i,j}`.
@@ -764,7 +853,7 @@ class Brownian(Simulation):
 
         # Simulate the N observations
         obs = []
-        for _ in range(self.N):
+        for _ in np.arange(self.N):
             obs.append(simulate_brownian(self.basis_name,
                                          self.M, **param_dict))
 
