@@ -12,7 +12,7 @@ def get_readme():
 
 
 extensions = [
-    Extension('sigma',
+    Extension('FDApy.src.sigma',
               sources=['FDApy/src/sigma.pyx'],
               language='c++')
 ]
