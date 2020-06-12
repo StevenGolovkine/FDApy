@@ -37,7 +37,7 @@ install:
   fi
 - $PIP install -e .[tests]
 - $PYTHON -m unittest discover -v -f -s ./FDApy/tests
-- find . -type f -iname '*.so' -print -delete
+#- find . -type f -iname '*.so' -print -delete
 
 # Command to run test, e.g. python setup.py test
 script:
