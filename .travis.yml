@@ -42,7 +42,7 @@ install:
 
 # Command to run test, e.g. python setup.py test
 script:
-  - $PYTHON -m $PIP install cibuildwheel==1.4.2
+  - $PYTHON -m pip install cibuildwheel==1.4.2
   - $PYTHON -m cibuildwheel --output-dir wheelhouse
   - ls wheelhouse
 
