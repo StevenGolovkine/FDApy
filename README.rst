@@ -27,6 +27,10 @@ FDApy: a Python package to analyze functional data
 		:target: https://fdapy.readthedocs.io/en/latest/?badge=latest
 		:alt: Documentation Status
 
+.. image:: https://zenodo.org/badge/155183454.svg
+   		:target: https://zenodo.org/badge/latestdoi/155183454
+   		:alt: DOI
+
 Description
 ===========
 
