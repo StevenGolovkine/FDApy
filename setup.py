@@ -15,7 +15,6 @@ def get_readme():
 extensions = [
     Extension('sigma',
               sources=['FDApy/src/sigma.pyx'],
-              include_dirs=[np.get_include()],
               language='c++')
 ]
 
