@@ -12,6 +12,7 @@ import numpy as np
 import scipy
 
 from abc import ABC, abstractmethod
+from patsy import bs
 from sklearn.datasets import make_blobs
 
 from .fpca import MFPCA, UFPCA
@@ -204,6 +205,62 @@ def basis_fourier(K=3, argvals=None, period=2 * np.pi, norm=True):
     return obj
 
 
+def basis_bsplines(K=5, argvals=None, degree=3, knots=None, norm=False):
+    """Define B-splines basis of function.
+
+    Build a basis of :math:`K` functions using B-splines basis on the
+    interval defined by ``argvals``.
+
+    Parameters
+    ----------
+    K: int, default = 5
+        Number of considered B-splines.
+    argvals: numpy.ndarray, default = None
+        The values on which evaluated the B-splines. If ``None``,
+        the polynomials are evaluated on the interval :math:`[0, 1]`.
+    degree: int, default = 3
+        Degree of the B-splines. The default gives cubic splines.
+    knots: numpy.ndarray, (n_knots,)
+        Specify the break points defining the B-splines. If ``knots``
+        are provided, the provided value of ``K`` is ignored. And the
+        number of basis functions is ``n_knots + degree - 1``.
+    norm: boolean, default = True
+        Should we normalize the functions?
+
+    Returns
+    -------
+    obj: UnivariateFunctionalData
+        A UnivariateFunctionalData object containing the ``K`` B-splines
+        functions evaluated on ``argvals``.
+
+    Examples
+    --------
+    >>> basis_bsplines(K=5, argvals=np.arange(0, 1, 0.01), norm=False)
+
+    """
+    if argvals is None:
+        argvals = np.arange(0, 1, 0.01)
+    if isinstance(argvals, list):
+        raise ValueError('argvals has to be a tuple or a numpy array!')
+
+    if knots is not None:
+        n_knots = len(knots)
+        K = n_knots + degree - 1
+    else:
+        n_knots = K - degree + 1
+        knots = np.linspace(argvals[0], argvals[-1], n_knots)
+
+    values = bs(argvals, df=K, knots=knots[1:-1], degree=degree,
+                include_intercept=True)
+    if norm:
+        norm2 = np.sqrt(scipy.integrate.simps(values * values, argvals,
+                                              axis=0))
+        values = values / norm2
+
+    obj = UnivariateFunctionalData(argvals, values.T)
+    return obj
+
+
 def simulate_basis(basis_name, K=3, argvals=None, norm=False, **kwargs):
     """Redirect to the right simulation basis function.
 
@@ -223,6 +280,10 @@ def simulate_basis(basis_name, K=3, argvals=None, norm=False, **kwargs):
     ------------
     period: float, default = 2*numpy.pi
         The period of the circular functions for the Fourier basis.
+    degree: int, default = 3
+        Degree of the B-splines. The default gives cubic splines.
+    knots: numpy.ndarray, (n_knots,)
+        Specify the break points defining the B-splines.
 
     Returns
     -------
@@ -243,6 +304,10 @@ def simulate_basis(basis_name, K=3, argvals=None, norm=False, **kwargs):
     elif basis_name == 'fourier':
         basis = basis_fourier(K, argvals,
                               kwargs.get('period', 2 * np.pi), norm)
+    elif basis_name == 'bsplines':
+        basis = basis_bsplines(K, argvals,
+                               kwargs.get('degree', 3),
+                               kwargs.get('knots', None), norm)
     else:
         raise ValueError('Basis not implemented!')
     return basis

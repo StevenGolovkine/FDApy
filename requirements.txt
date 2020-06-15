@@ -2,6 +2,7 @@ Cython
 matplotlib
 numpy
 pandas
+patsy
 pygam
 scikit-learn
 scipy

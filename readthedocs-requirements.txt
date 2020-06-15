@@ -3,6 +3,7 @@ matplotlib
 mpldatacursor
 numpy
 pandas
+patsy
 pillow
 pygam
 scikit-learn
