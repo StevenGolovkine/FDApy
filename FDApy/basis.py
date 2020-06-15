@@ -16,6 +16,7 @@ from patsy import bs
 from sklearn.datasets import make_blobs
 
 from .fpca import MFPCA, UFPCA
+from .irregular_functional import IrregularFunctionalData
 from .univariate_functional import UnivariateFunctionalData
 from .multivariate_functional import MultivariateFunctionalData
 
@@ -734,13 +735,42 @@ class Simulation(ABC):
         data = MultivariateFunctionalData(noisy_data)
         self.noisy_obs = data.asUnivariateFunctionalData()
 
+    def sparsify(self, perc=0.9, epsilon=0.05):
+        """Sparsify the data.
+
+        Arguments
+        ---------
+        perc: double, default = 0.9
+            Percentage of data to keep.
+        epsilon: double, default = 0.05
+            Uncertainty on the percentage to keep.
+
+        Returns
+        -------
+        obj: IrregularFunctionalData
+            The data that have been sparsify.
+
+        """
+        argvals = []
+        values = []
+        for obs in self.data:
+            s = obs.values.size
+            p = np.random.uniform(max(0, perc - epsilon),
+                                  min(1, perc + epsilon))
+            idx = np.sort(np.random.choice(np.arange(0, s),
+                                           size=int(p * s),
+                                           replace=False))
+            argvals.append(obs.argvals[0][idx])
+            values.append(obs.values[0][idx])
+        return IrregularFunctionalData(argvals, values)
+
 
 class Basis(Simulation):
     r"""A functional data object representing an orthogonal basis of functions.
 
     Parameters
     ----------
-    basis: str, {'legendre', 'wiener'}
+    basis: str, {'legendre', 'wiener', 'fourier', 'bsplines'}
         Denotes the basis of functions to use.
     n_features: int, default = 1
         Number of basis functions to use to simulate the data.
@@ -859,8 +889,10 @@ class BasisFPCA(Simulation):
         self.basis = basis
         self.n_clusters = n_clusters
         if isinstance(basis, UFPCA):
+            self.basis_name = 'ufpca'
             self.n_features = len(basis.eigenvalues)
         elif isinstance(basis, MFPCA):
+            self.basis_name = 'mfpca'
             self.n_features = len(basis.eigenvaluesCovariance_)
         else:
             raise TypeError('Wrong basis type!')
