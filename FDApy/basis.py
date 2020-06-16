@@ -1000,11 +1000,13 @@ class SimulationMulti(Collection):
         """Get the basis at ``index``."""
         return self.basis[index]
 
-    def __contains__(self):
-        pass
+    def __contains__(self, obj):
+        """Test if ``obj`` is contains in ``self.basis``."""
+        return obj in self.basis
 
     def __iter__(self):
-        pass
+        """Iterate through the element of the basis."""
+        return iter(self.basis)
 
     def __len__(self):
         """Return the number of basis."""
