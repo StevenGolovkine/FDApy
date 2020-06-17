@@ -16,7 +16,6 @@ from patsy import bs
 from sklearn.datasets import make_blobs
 
 from .fpca import MFPCA, UFPCA
-from .irregular_functional import IrregularFunctionalData
 from .univariate_functional import UnivariateFunctionalData
 from .multivariate_functional import MultivariateFunctionalData
 

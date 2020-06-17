@@ -22,11 +22,11 @@ from FDApy.plot import plot
 
 # Simulate some fractional brownian motions.
 sim = Brownian(N=1000, M=300, brownian_type='fractional')
-sim.new(x0=0, H=0.5)
-sim.add_noise(0.05)
+data = sim.new(x0=0, H=0.5)
+data_noisy = data.add_noise(0.05)
 
 # Plot some simulations
-fig, ax = plot(sim.noisy_obs,
+fig, ax = plot(data_noisy,
                main='Fractional Brownian motion',
                xlab='Sampling points')
 
@@ -35,10 +35,10 @@ fig, ax = plot(sim.noisy_obs,
 #
 
 # Smooth the data
-sim_smooth = sim.noisy_obs.smooth(t0=0.5, k0=14)
+data_smooth = data_noisy.smooth(t0=0.5, k0=14)
 
 # Plot of the smoothing data
-fig, ax = plot(sim_smooth,
+fig, ax = plot(data_smooth,
                main='Fractional Brownian motion smoothed',
                xlab='Sampling points')
 
@@ -50,12 +50,12 @@ fig, ax = plot(sim_smooth,
 # Plot individual curves
 idx = 5
 fig, ax = plt.subplots(1, 1)
-ax.scatter(sim.noisy_obs.argvals[0],
-           sim.noisy_obs.values[idx, :],
+ax.scatter(data_noisy.argvals[0],
+           data_noisy.values[idx, :],
            alpha=0.5, label='Noisy')
-ax.plot(sim.data.argvals[0], sim.data.values[idx, :],
+ax.plot(data.argvals[0], data.values[idx, :],
         color='red', label='True')
-ax.plot(sim_smooth.argvals[idx], sim_smooth.values[idx],
+ax.plot(data_smooth.argvals[idx], data_smooth.values[idx],
         color='green', label='Smooth')
 ax.set_xlabel('Sampling points')
 ax.legend()

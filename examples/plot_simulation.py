@@ -46,58 +46,58 @@ fig, ax = plot(WP, main='Wiener basis', xlab='Sampling points')
 ###############################################################################
 # Legendre basis and exponential eigenvalues decay
 sim = Basis(N=100, M=50,
-            basis='legendre',
+            name='legendre',
             n_features=5,
             n_clusters=1,
-            centers=np.array([[0], [0], [0], [0], [0]]),
+            centers=None,
             cluster_std='exponential',
             norm=True)
-sim.new()
+data = sim.new()
 
 # Plot some simulations
-fig, ax = plot(sim.data, main='Simulation', xlab='Sampling points')
+fig, ax = plot(data, main='Simulation', xlab='Sampling points')
 
 ###############################################################################
 # Legendre basis and linear eigenvalues decay
 sim = Basis(N=100, M=50,
-            basis='legendre',
+            name='legendre',
             n_features=5,
             n_clusters=1,
-            centers=np.array([[0], [0], [0], [0], [0]]),
+            centers=None,
             cluster_std='linear',
             norm=True)
-sim.new()
+data = sim.new()
 
 # Plot some simulations
-fig, ax = plot(sim.data, main='Simulation', xlab='Sampling points')
+fig, ax = plot(data, main='Simulation', xlab='Sampling points')
 
 ###############################################################################
 # Wiener basis and Wiener eigenvalues decay
 sim = Basis(N=100, M=50,
-            basis='wiener',
+            name='wiener',
             n_features=5,
             n_clusters=1,
-            centers=np.array([[0], [0], [0], [0], [0]]),
+            centers=None,
             cluster_std='wiener',
             norm=True)
-sim.new()
+data = sim.new()
 
 # Plot some simulations
-fig, ax = plot(sim.data, main='Simulation', xlab='Sampling points')
+fig, ax = plot(data, main='Simulation', xlab='Sampling points')
 
 ###############################################################################
 # Wiener basis and user-set eigenvalues
 sim = Basis(N=100, M=50,
-            basis='wiener',
+            name='wiener',
             n_features=3,
             n_clusters=1,
-            centers=np.array([[0], [0], [0]]),
+            centers=None,
             cluster_std=np.array([[100], [50], [10]]),
             norm=True)
-sim.new()
+data = sim.new()
 
 # Plot some simulations
-fig, ax = plot(sim.data, main='Simulation', xlab='Sampling points')
+fig, ax = plot(data, main='Simulation', xlab='Sampling points')
 
 ###############################################################################
 # We can also add some noise to the data.
@@ -108,10 +108,10 @@ fig, ax = plot(sim.data, main='Simulation', xlab='Sampling points')
 #
 
 # Add some noise to the simulation.
-sim.add_noise(5)
+data_noisy = data.add_noise(5)
 
 # Plot the noisy simulations
-fig, ax = plot(sim.noisy_obs,
+fig, ax = plot(data_noisy,
                main='Noisy simulation',
                xlab='Sampling points')
 
@@ -122,10 +122,10 @@ fig, ax = plot(sim.noisy_obs,
 #
 
 # Add some heteroscedastic noise to the simulation
-sim.add_noise(sd_function=lambda x: np.sqrt(np.abs(x) + 1))
+data_noisy = data.add_noise(noise_var=lambda x: np.abs(x) + 1)
 
 # Plot the heteroscedastic noisy simulations
-fig, ax = plot(sim.noisy_obs,
+fig, ax = plot(data_noisy,
                main='Noisy heteroscedastic simulation',
                xlab='Sampling points')
 
@@ -137,29 +137,29 @@ fig, ax = plot(sim.noisy_obs,
 ###############################################################################
 # Simulate some standard brownian motions.
 sim = Brownian(N=100, M=50, brownian_type='standard')
-sim.new(x0=0)
+data = sim.new(x0=0)
 
 # Plot some simulations
-fig, ax = plot(sim.data,
+fig, ax = plot(data,
                main='Standard Brownian motion',
                xlab='Sampling points')
 
 ###############################################################################
 # Simulate some geometric brownian motions.
 sim = Brownian(N=100, M=50, brownian_type='geometric')
-sim.new(x0=1, mu=5, sigma=1)
+data = sim.new(x0=1, mu=5, sigma=1)
 
 # Plot some simulations
-fig, ax = plot(sim.data,
+fig, ax = plot(data,
                main='Geometric Brownian motion',
                xlab='Sampling points')
 
 ###############################################################################
 # Simulate some fractional brownian motions.
 sim = Brownian(N=100, M=50, brownian_type='fractional')
-sim.new(H=0.7)
+data = sim.new(H=0.7)
 
 # Plot some simulations
-fig, ax = plot(sim.data,
+fig, ax = plot(data,
                main='Fractional Brownian motion',
                xlab='Sampling points')
