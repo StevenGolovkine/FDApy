@@ -20,6 +20,12 @@ API References
 	modules/univariate_functional
 	modules/utils
 
+Examples
+--------
+.. toctree::
+
+	auto_examples/index
+
 An exhaustive list of all the contents of the package can be found in the
 :ref:`genindex`.
 
