@@ -750,16 +750,6 @@ class Simulation(ABC):
         self.coef, self.labels = make_coef(self.N, self.n_features,
                                            self.centers, self.cluster_std)
 
-    @abstractmethod
-    def add_noise(self):
-        """Add noise to the data."""
-        pass
-
-    @abstractmethod
-    def sparsify(self):
-        """Sparsify the data."""
-        pass
-
 
 #############################################################################
 # Class SimulationUni
@@ -791,75 +781,6 @@ class SimulationUni(Simulation):
         """Function to simulate observations."""
         super().new()
 
-    def add_noise(self, noise_var=1, sd_function=None):
-        r"""Add noise to the data.
-
-        Parameters
-        ----------
-        noise_var : float
-            Variance of the noise to add.
-        sd_function : callable
-            Standard deviation function for heteroscedatic noise.
-
-        Notes
-        -----
-
-        Model:
-
-        .. math::
-            Z(t) = f(t) + \sigma(f(t))\epsilon
-
-
-        If ``sd_function is None``, :math:`\sigma(f(t)) = 1` and
-        :math:`\epsilon \sim \mathcal{N}(0, \sigma^2)`.
-        Else, we consider heteroscedastic noise with:
-            - :math:`\sigma(f(t)) =` sd_function(self.obs.values)
-            - :math:`\epsilon \sim \mathcal{N}(0,1)`.
-
-        """
-        noisy_data = []
-        for i in self.data:
-            if sd_function is None:
-                noise = np.random.normal(0, np.sqrt(noise_var), len(self.M))
-            else:
-                noise = sd_function(i.values) *\
-                    np.random.normal(0, 1, len(self.data.argvals[0]))
-            noise_func = UnivariateFunctionalData(
-                self.data.argvals, np.array(noise, ndmin=2))
-            noisy_data.append(i + noise_func)
-
-        data = MultivariateFunctionalData(noisy_data)
-        return data.asUnivariateFunctionalData()
-
-    def sparsify(self, perc=0.9, epsilon=0.05):
-        """Sparsify the data.
-
-        Arguments
-        ---------
-        perc: double, default = 0.9
-            Percentage of data to keep.
-        epsilon: double, default = 0.05
-            Uncertainty on the percentage to keep.
-
-        Returns
-        -------
-        obj: IrregularFunctionalData
-            The data that have been sparsify.
-
-        """
-        argvals = []
-        values = []
-        for obs in self.data:
-            s = obs.values.size
-            p = np.random.uniform(max(0, perc - epsilon),
-                                  min(1, perc + epsilon))
-            idx = np.sort(np.random.choice(np.arange(0, s),
-                                           size=int(p * s),
-                                           replace=False))
-            argvals.append(obs.argvals[0][idx])
-            values.append(obs.values[0][idx])
-        return IrregularFunctionalData(argvals, values)
-
 
 class Basis(SimulationUni):
     r"""A functional data object representing an orthogonal basis of functions.
@@ -875,8 +796,6 @@ class Basis(SimulationUni):
     ----------
     basis: UnivariateFunctionalData
         The basis of functions to use.
-    data: UnivariateFunctionalData
-        The simulated data :math:`X_i(t)`.
 
     Keyword Args
     ------------
@@ -914,7 +833,7 @@ class Basis(SimulationUni):
         """Function that simulates :math:`N` observations."""
         super().new()
         obs = np.matmul(self.coef, self.basis.values)
-        self.data = UnivariateFunctionalData(self.M, obs)
+        return UnivariateFunctionalData(self.M, obs)
 
 
 class BasisUFPCA(SimulationUni):
@@ -955,7 +874,7 @@ class BasisUFPCA(SimulationUni):
     def new(self, **kwargs):
         """Function that simulates :math:`N` observations."""
         super().new()
-        self.data = self.basis.inverse_transform(self.coef)
+        return self.basis.inverse_transform(self.coef)
 
 
 class Brownian(SimulationUni):
@@ -1002,7 +921,7 @@ class Brownian(SimulationUni):
             obs.append(simulate_brownian(self.name, self.M, **param_dict))
 
         data = MultivariateFunctionalData(obs)
-        self.data = data.asUnivariateFunctionalData()
+        return data.asUnivariateFunctionalData()
 
 #############################################################################
 # Class SimulationMulti
@@ -1042,14 +961,6 @@ class SimulationMulti(Simulation):
     def new(self, **kwargs):
         """Function to simulate observations."""
         super().new()
-
-    def add_noise(self):
-        """Add noise to the data."""
-        pass
-
-    def sparsify(self):
-        """Sparsify the data."""
-        pass
 
 
 class BasisMulti(SimulationMulti):
@@ -1108,7 +1019,7 @@ class BasisMulti(SimulationMulti):
         for basis in self.basis:
             obs = np.matmul(self.coef, basis.values)
             obs_uni.append(UnivariateFunctionalData(basis.argvals, obs))
-        self.data = MultivariateFunctionalData(obs_uni)
+        return MultivariateFunctionalData(obs_uni)
 
 
 class BasisMFPCA(SimulationMulti):
@@ -1156,4 +1067,4 @@ class BasisMFPCA(SimulationMulti):
     def new(self, **kwargs):
         """Function that simulates :math:`N` observations."""
         super().new()
-        self.data = self.basis.inverse_transform(self.coef)
+        return self.basis.inverse_transform(self.coef)

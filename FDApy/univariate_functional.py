@@ -7,6 +7,7 @@ Module for UnivariateFunctionalData classes.
 This module is used define univariate functional data.
 """
 import itertools
+import inspect
 import numpy as np
 import pygam
 
@@ -618,8 +619,8 @@ class UnivariateFunctionalData(object):
                       for j in data.values]
         return UnivariateFunctionalData(new_argvals, np.array(new_values))
 
-    def smooth(self, t0, k0,
-               points=None, degree=0, kernel="epanechnikov", bandwidth=None):
+    def smooth(self, t0, k0, points=None, degree=0, kernel="epanechnikov",
+               bandwidth=None):
         """Smooth the data.
 
         Currently, it uses local polynomial regression.
@@ -655,3 +656,59 @@ class UnivariateFunctionalData(object):
                                   kernel=kernel, bandwidth=bandwidth)
 
         return data_smooth
+
+    def add_noise(self, noise_var=1):
+        r"""Add noise to the data.
+
+        Parameters
+        ----------
+        noise_var : float or callable, default = 1
+            Variance of the noise to add. May be callable for heteroscedastic
+            noise.
+
+        Notes
+        -----
+
+        Model:
+
+        .. math::
+            Z(t) = f(t) + \sigma(f(t))\epsilon
+
+        """
+        noisy_data = np.random.normal(0, 1, (self.nObs(), self.nObsPoint()[0]))
+
+        if inspect.isfunction(noise_var):
+            noise_var = noise_var(self.values)
+
+        noise_std = np.sqrt(noise_var)
+        noisy_data = self.values + np.multiply(noise_std, noisy_data)
+        return UnivariateFunctionalData(self.argvals, noisy_data)
+
+    def sparsify(self, perc=0.9, epsilon=0.05):
+        """Sparsify the data.
+
+        Arguments
+        ---------
+        perc: double, default = 0.9
+            Percentage of data to keep.
+        epsilon: double, default = 0.05
+            Uncertainty on the percentage to keep.
+
+        Returns
+        -------
+        obj: IrregularFunctionalData
+            The data that have been sparsify.
+
+        """
+        argvals = []
+        values = []
+        for obs in self:
+            s = obs.values.size
+            p = np.random.uniform(max(0, perc - epsilon),
+                                  min(1, perc + epsilon))
+            idx = np.sort(np.random.choice(np.arange(0, s),
+                                           size=int(p * s),
+                                           replace=False))
+            argvals.append(obs.argvals[0][idx])
+            values.append(obs.values[0][idx])
+        return IrregularFunctionalData(argvals, values)
