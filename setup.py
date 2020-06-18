@@ -1,15 +1,27 @@
 #!/usr/bin/env python
+"""
+FDApy: a Python package to analyze functional data
 
+Functional Data Analysis, usually referred as FDA, concerns the field of
+Statistics that deals with discrete observations of continuous d-dimensional
+functions.
+
+This package provide modules for the analysis of such data. It includes
+methods for different dimensional data as well as irregularly sampled
+functional data. An implementation of (multivariate) functional principal
+component analysis is also given. Moreover, a simulation toolbox is provided.
+It might be used to simulate different clusters of functional data.
+
+Check out the `documentation <https://fdapy.readthedocs.io/en/stable/>`_ for
+more complete information on the available features within the package.
+"""
 import Cython.Build
 
 
 from setuptools import Extension, find_packages, setup
 
 
-def get_readme():
-    with open('README.rst') as f:
-        return f.read()
-
+DOCLINES = (__doc__ or '').split('\n')
 
 extensions = [
     Extension('FDApy.src.sigma',
@@ -19,11 +31,12 @@ extensions = [
 
 setup(name='FDApy',
       version='0.4.0',
-      description='Python package for Functional Data Analysis',
-      long_description=get_readme(),
+      description=DOCLINES[1],
+      long_description='\n'.join(DOCLINES[3:]),
+      long_description_content_type='text/x-rst',
       classifiers=[
-                  'Programming Language :: Python :: 3.7',
-                  'Topic :: Scientific/Engineering :: Mathematics'],
+          'Programming Language :: Python :: 3.7',
+          'Topic :: Scientific/Engineering :: Mathematics'],
       keywords='functional data analysis',
       url='https://github.com/StevenGolovkine/FDApy',
       author='Steven Golovkine',
