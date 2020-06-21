@@ -11,7 +11,7 @@ Multivariate Functional Data.
 import itertools
 import numpy as np
 
-from abs import ABC, abstractmethods
+from abc import ABC, abstractmethod
 
 ###############################################################################
 # Checkers for parameters
@@ -26,14 +26,17 @@ class FunctionalData(ABC):
 
     Parameters
     ----------
-    argvals: list 
+    argvals: list
     values: list
-    type: str, {'univariate', 'irregular', 'multivariate'}
+    category: str, {'univariate', 'irregular', 'multivariate'}
     """
 
-    def __init__(self, argvals, values, type):
+    def __init__(self, argvals, values, category):
         """Initialize FunctionalData object."""
-        pass
+        super().__init__()
+        self.argvals = argvals
+        self.values = values
+        self.category = category
 
     def __repr__(self):
         """Override print function."""
@@ -65,11 +68,15 @@ class FunctionalData(ABC):
 
     @argvals.setter
     def argvals(self, new_argvals):
-        pass
+        self._argvals = new_argvals
 
     @property
     def argvals_stand(self):
         return self._argvals_stand
+
+    @argvals_stand.setter
+    def argvals_stand(self, new_argvals_stand):
+        self._argvals_stand = new_argvals_stand
 
     @property
     def values(self):
@@ -77,4 +84,52 @@ class FunctionalData(ABC):
 
     @values.setter
     def values(self, new_values):
-        pass
+        self._values = new_values
+
+    @property
+    def n_obs(self):
+        """Number of observations within the functional data.
+
+        Returns
+        -------
+        n_obs: int
+            Number of observations within the functional data.
+
+        """
+        return len(self.values)
+
+    @abstractmethod
+    @property
+    def n_points(self):
+        """Number of sampling points within the functional data."""
+        return [len(i) for i in self.argvals]
+
+
+###############################################################################
+# Class UnivariateFunctionalData
+
+class UnivariateFunctionalData(FunctionalData):
+    """A class for defining Univariate Functional Data.
+
+    Parameters
+    ----------
+    """
+
+    def __init__(self, argvals, values):
+        """Initialize UnivariateFunctionalData object."""
+        super().__init__(argvals, values, 'univariate')
+
+
+###############################################################################
+# Class IrregularFunctionalData
+
+class IrregularFunctionalData(FunctionalData):
+    """A class for defining Irregular Functional Data.
+
+    Parameters
+    ----------
+    """
+
+    def __init__(self, argvals, values):
+        """Initialize IrregularFunctionalData object."""
+        self().__init__(argvals, values, 'irregular')
