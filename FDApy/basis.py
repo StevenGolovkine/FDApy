@@ -820,7 +820,7 @@ class Basis(SimulationUni):
                  cluster_std=None, norm=False, **kwargs):
         """Initialize Basis object."""
         if not isinstance(name, str):
-            raise TypeError(f'{name:r} has to be `str`.')
+            raise TypeError(f'{name!r} has to be `str`.')
 
         super().__init__(N, M, name, n_features, n_clusters,
                          centers, cluster_std)
