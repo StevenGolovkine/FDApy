@@ -143,6 +143,10 @@ def colVar_(X):
 # Array manipulation functions.
 ############################################################################
 
+def get_axis_dimension(X, axis=0):
+    """Get the dimension of an array :math:`X` along the `axis`."""
+    return X.shape[axis]
+
 
 def shift_(X, num, fill_value=np.nan):
     """Shift an array.

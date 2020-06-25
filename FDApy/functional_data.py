@@ -8,14 +8,37 @@ This modules is used to defined different types of functional data. The
 different types are: Univariate Functional Data, Irregular Functional data and
 Multivariate Functional Data.
 """
-import itertools
 import numpy as np
 
 from abc import ABC, abstractmethod
 
+from .utils import get_axis_dimension
+
 
 ###############################################################################
 # Checkers for parameters
+def _check_len(argv1, argv2):
+    """Raise an arror if `argv1` and `argv2` do not have the same length."""
+    if len(argv1) != len(argv2):
+        raise ValueError(f"""{type(argv1).__name__} and {type(argv2).__name__}
+                         must have the same length.""")
+    return None
+
+
+def _check_dict_dimension(argv1, argv2, axis=0):
+    """Raise an error in case of dimension conflicts along the `axis`.
+
+    An error is raised when elements of `argv1` and `argv2`, which are assumed
+    to be dictionary, do not have the length along the `axis`. Elements are
+    assumed to be numpy.ndarray.
+    """
+    has_len = [i.shape[0] == get_axis_dimension(j, axis)
+               for i, j in zip(argv1.values(), argv2.values())]
+    if not np.all(has_len):
+        raise ValueError(f"""Dimension are not the same.""")
+    return None
+
+
 def _check_type(argv, category):
     """Raise an error if `argv` is not of type category."""
     if not isinstance(argv, category):
@@ -58,6 +81,15 @@ class FunctionalData(ABC):
     @abstractmethod
     def _check_argv(argv):
         _check_type(argv, dict)
+
+    @staticmethod
+    def _check_values(values):
+        _check_dict_len(values)
+
+    @staticmethod
+    @abstractmethod
+    def _check_argvals_values(argvals, values):
+        _check_len(argvals, values)
 
     def __init__(self, argvals, values, category):
         """Initialize FunctionalData object."""
@@ -113,6 +145,7 @@ class FunctionalData(ABC):
 
     @property
     def category(self):
+        """Getter for category."""
         return self._category
 
     @category.setter
@@ -147,7 +180,12 @@ class UnivariateFunctionalData(FunctionalData):
         """Check the user provided `argv`."""
         FunctionalData._check_argv(argv)
         _check_dict_type(argv, np.ndarray)
-        return argv
+
+    @staticmethod
+    def _check_argvals_values(argvals, values):
+        """Check the compatibility of argvals and values."""
+        FunctionalData._check_argvals_values(argvals, values)
+        _check_dict_dimension(argvals, values, axis=1)
 
     def __init__(self, argvals, values):
         """Initialize UnivariateFunctionalData object."""
@@ -161,6 +199,8 @@ class UnivariateFunctionalData(FunctionalData):
     @argvals.setter
     def argvals(self, new_argvals):
         self._check_argv(new_argvals)
+        if hasattr(self, 'values'):
+            self._check_argvals_values(new_argvals, self.values)
         self._argvals = new_argvals
 
     @property
@@ -171,6 +211,9 @@ class UnivariateFunctionalData(FunctionalData):
     @values.setter
     def values(self, new_values):
         self._check_argv(new_values)
+        FunctionalData._check_values(new_values)
+        if hasattr(self, 'argvals'):
+            self._check_argvals_values(self.argvals, new_values)
         self._values = new_values
 
 
@@ -191,7 +234,13 @@ class IrregularFunctionalData(FunctionalData):
         for obj in argv.values():
             _check_type(obj, dict)
             _check_dict_type(obj, np.ndarray)
-        return argv
+
+    @staticmethod
+    def _check_argvals_values(argvals, values):
+        """Check the compatibility of argvals and values."""
+        FunctionalData._check_argvals_values(argvals, values)
+        for points, obj in zip(argvals.values(), values.values()):
+            _check_dict_dimension(points, obj, axis=0)
 
     def __init__(self, argvals, values):
         """Initialize IrregularFunctionalData object."""
@@ -205,6 +254,8 @@ class IrregularFunctionalData(FunctionalData):
     @argvals.setter
     def argvals(self, new_argvals):
         self._check_argv(new_argvals)
+        if hasattr(self, 'values'):
+            self._check_argvals_values(new_argvals, self.values)
         self._argvals = new_argvals
 
     @property
@@ -215,4 +266,7 @@ class IrregularFunctionalData(FunctionalData):
     @values.setter
     def values(self, new_values):
         self._check_argv(new_values)
+        FunctionalData._check_values(new_values)
+        if hasattr(self, 'argvals'):
+            self._check_argvals_values(self.argvals, new_values)
         self._values = new_values
