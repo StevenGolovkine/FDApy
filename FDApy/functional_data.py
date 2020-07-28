@@ -153,26 +153,49 @@ class FunctionalData(ABC):
         self._category = new_category
 
     @property
-    def n_obs(self):
-        """Number of observations within the functional data.
+    def n_dim(self):
+        """Number of dimensions of the functional data.
 
         Returns
         -------
-        n_obs: int
-            Number of observations within the functional data.
+        n_dim: int
+            Number of dimension within the functional data.
 
         """
         return len(self.values)
 
 
 ###############################################################################
-# Class UnivariateFunctionalData
+# Class DenseFunctionalData
 
-class UnivariateFunctionalData(FunctionalData):
-    """A class for defining Univariate Functional Data.
+class DenseFunctionalData(FunctionalData):
+    r"""A class for defining Dense Functional Data.
+
+    A class used to define dense functional data. We denote by :math:`n`, the
+    number of observations and by :math:`p`, the number of input dimensions.
+    Here, we are in the case of univariate functional data, and so the output
+    dimension will be :math:`\mathbb{R}`.
 
     Parameters
     ----------
+    argvals: dict
+        The sampling points of the functional data. Each entry of the
+        dictionary represents an input dimension. The shape of the :math:`j`th
+        dimension is :math:`(m_j,)` for :math:`0 \leq j \leq p`.
+    values: np.ndarray
+        The values of the functional data. The shape of the array is
+        :math:`(n, m_1, \dots, m_p)`. It should not contain any missing values.
+
+    Examples
+    --------
+    >>> argvals = {'input_dim_0': np.array([1, 2, 3, 4]),
+                   'input_dim_1': np.array([5, 6, 7])}
+
+    >>> values = np.array([[[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]],
+                           [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]],
+                           [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]]])
+
+    >>> DenseFunctionalData(argvals, values)
     """
 
     @staticmethod
