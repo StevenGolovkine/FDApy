@@ -10,7 +10,8 @@ pyflakes:
 mccabe:
     run: false
 pep8:
-    full: true
+    disable:
+      - E501
 pep257:
     disable:
       - D203
@@ -18,4 +19,3 @@ pep257:
       - D213
       - D406
       - D407
-      - E501
