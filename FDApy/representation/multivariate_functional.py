@@ -215,7 +215,7 @@ class MultivariateFunctionalData(object):
 
         """
         if not all([isinstance(i, UnivariateFunctionalData)
-                   for i in self.data]):
+                    for i in self.data]):
             raise ValueError(
                 'The data must be a list of UnivariateFunctionalData!')
         if not all([self.data[i - 1].argvals == self.data[i].argvals
