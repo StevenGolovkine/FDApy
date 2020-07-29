@@ -10,9 +10,7 @@ from FDApy.irregular_functional import IrregularFunctionalData
 
 
 class TestIrregularFunctionalData(unittest.TestCase):
-    """Test class for the class IrregularFunctionalData.
-
-    """
+    """Test class for the class IrregularFunctionalData."""
 
     # Tests _check_argvals function
     def test_check_argvals_type(self):

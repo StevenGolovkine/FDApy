@@ -5,6 +5,7 @@
 This module is used to define diverse helper functions. These functions are
 designed to standardize, manipulate and do computation on array.
 """
+import itertools
 import numpy as np
 import scipy
 
@@ -142,6 +143,21 @@ def colVar_(X):
 ############################################################################
 # Array manipulation functions.
 ############################################################################
+
+def get_axis_dimension(X, axis=0):
+    """Get the dimension of an array :math:`X` along the `axis`."""
+    return X.shape[axis]
+
+
+def get_dict_dimension(X):
+    """Return the shape of `X` defined as a dict of np.ndarray."""
+    return tuple(i.shape[0] for i in X.values())
+
+
+def get_obs_shape(X, obs):
+    """Return the shape of `obs` if `X` is a nested dict."""
+    shapes = tuple(dim[obs].shape for _, dim in X.items())
+    return tuple(itertools.chain.from_iterable(shapes))
 
 
 def shift_(X, num, fill_value=np.nan):
