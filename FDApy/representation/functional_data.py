@@ -12,33 +12,11 @@ import numpy as np
 
 from abc import ABC, abstractmethod
 
-from ..misc.utils import get_axis_dimension, get_dict_dimension, get_obs_shape
+from ..misc.utils import get_dict_dimension, get_obs_shape
 
 
 ###############################################################################
 # Checkers for parameters
-def _check_len(argv1, argv2):
-    """Raise an arror if `argv1` and `argv2` do not have the same length."""
-    if len(argv1) != len(argv2):
-        raise ValueError(f"{type(argv1).__name__} and {type(argv2).__name__}"
-                         " must have the same length.")
-    return None
-
-
-def _check_dict_dimension(argv1, argv2, axis=0):
-    """Raise an error in case of dimension conflicts along the `axis`.
-
-    An error is raised when elements of `argv1` and `argv2`, which are assumed
-    to be dictionary, do not have the length along the `axis`. Elements are
-    assumed to be numpy.ndarray.
-    """
-    has_len = [i.shape[0] == get_axis_dimension(j, axis)
-               for i, j in zip(argv1.values(), argv2.values())]
-    if not np.all(has_len):
-        raise ValueError(f"Dimension are not the same.")
-    return None
-
-
 def _check_dict_array(argv_dict, argv_array):
     """Raise an error in case of dimension conflicts between the arguments.
 
@@ -48,7 +26,7 @@ def _check_dict_array(argv_dict, argv_array):
     dim_dict = get_dict_dimension(argv_dict)
     dim_array = argv_array.shape[1:]
     if dim_dict != dim_array:
-        raise ValueError(f"{argv_dict.__name__} and {argv_array.__name__}"
+        raise ValueError(f"{argv_dict} and {argv_array}"
                          " do not have coherent dimension.")
 
 
@@ -60,7 +38,7 @@ def _check_dict_dict(argv1, argv2):
     has_obs_shape = [obs.shape == get_obs_shape(argv1, idx)
                      for idx, obs in argv2.items()]
     if not np.all(has_obs_shape):
-        raise ValueError(f"{argv1.__name} and {argv2.__name__} do not"
+        raise ValueError(f"{argv1} and {argv2} do not"
                          " have coherent dimension.")
 
 
@@ -69,7 +47,6 @@ def _check_type(argv, category):
     if not isinstance(argv, category):
         raise ValueError(f"Argument must be {category.__name__}, not"
                          f" {type(argv).__name__}")
-    return None
 
 
 def _check_dict_type(argv, category):
@@ -77,7 +54,6 @@ def _check_dict_type(argv, category):
     is_cat = [isinstance(obj, category) for obj in argv.values()]
     if not np.all(is_cat):
         raise ValueError(f"Argument values must be {category.__name__}")
-    return None
 
 
 def _check_dict_len(argv):
@@ -86,7 +62,40 @@ def _check_dict_len(argv):
     if len(set(lengths)) > 1:
         raise ValueError("The number of observations is different across the"
                          " dimensions.""")
-    return None
+
+
+def _check_is_compatible(argv1, argv2):
+    """Raise an error if `argv1` and `argv2` are not compatibles.
+
+    `argv1` and `argv2` are elements of DenseFunctionalData or
+    IrregularFunctionalData. We say that they are compatible if they have the
+    same number of observations and they share the same `argvals`.
+    """
+    if type(argv1) != type(argv2):
+        raise TypeError(f"{argv1} and {argv2} do not have the same type.")
+    if argv1.n_obs != argv2.n_obs:
+        raise ValueError(f"{argv1} and {argv2} do not have the same number"
+                         " of observations.")
+    if argv1.n_dim != argv2.n_dim:
+        raise ValueError(f"{argv1} and {argv2} do not have the same number"
+                         " of dimensions.")
+
+    if isinstance(argv1, DenseFunctionalData):
+        argvals_equal = all(np.array_equal(argv1.argvals[key],
+                                           argv2.argvals[key])
+                            for key in argv1.argvals)
+    else:
+        temp = []
+        for points1, points2 in zip(argv1.argvals.values(),
+                                    argv2.argvals.values()):
+            temp.append(all(np.array_equal(points1[key1], points2[key2])
+                            for (key1, key2) in zip(points1, points2)))
+        argvals_equal = all(temp)
+
+    if not argvals_equal:
+        raise ValueError(f"{argv1} and {argv2} do not have the same sampling"
+                         " points.")
+
 
 ###############################################################################
 # Class FunctionalData
@@ -360,6 +369,30 @@ class DenseFunctionalData(FunctionalData):
         """
         return {idx: len(dim) for idx, dim in self.argvals.items()}
 
+    def as_irregular(self):
+        """Convert `self` from Dense to Irregular functional data.
+
+        Coerce a DenseFunctionalData object into an IrregularFunctionalData
+        object.
+
+        Returns
+        -------
+        obj: IrregularFunctionalData
+            An object of the class IrregularFunctionalData
+        """
+        new_argvals = dict.fromkeys(self.argvals.keys(), {})
+        for dim in new_argvals.keys():
+            temp = {}
+            for idx in range(self.n_obs):
+                temp[idx] = self.argvals[dim]
+            new_argvals[dim] = temp
+
+        new_values = {}
+        for idx in range(self.n_obs):
+            new_values[idx] = self.values[idx]
+
+        return IrregularFunctionalData(new_argvals, new_values)
+
 
 ###############################################################################
 # Class IrregularFunctionalData
@@ -525,3 +558,48 @@ class IrregularFunctionalData(FunctionalData):
         """
         return {idx: np.unique(np.hstack(list(dim.values())))
                 for idx, dim in self.argvals.items()}
+
+    def as_dense(self):
+        """Convert `self` from Irregular to Dense functional data.
+
+        Coerce an IrregularFunctionalData object into a DenseFunctionalData
+        object.
+
+        Note
+        ----
+        We coerce an IrregularFunctionalData object into a DenseFunctionalData
+        object by gathering all the sampling points from the different
+        dimension into one, and set the value to `np.nan` for the not observed
+        points.
+
+        Returns
+        -------
+        obj: DenseFunctionalData
+            An object of the class DenseFunctionalData
+        """
+        new_argvals = self.gather_points()
+        new_values = np.full((self.n_obs,) + tuple(self.shape.values()),
+                             np.nan)
+
+        # Create the index definition domain for each of the observation
+        index_obs = {}
+        for obs in self.values.keys():
+            index_obs_dim = []
+            for dim in new_argvals.keys():
+                _, idx, _ = np.intersect1d(new_argvals[dim],
+                                           self.argvals[dim][obs],
+                                           return_indices=True)
+                index_obs_dim.append(idx)
+            index_obs[obs] = index_obs_dim
+
+        # Create mask arrays
+        mask_obs = {obs: np.full(tuple(self.shape.values()), False)
+                    for obs in self.values.keys()}
+        for obs in self.values.keys():
+            mask_obs[obs][tuple(np.meshgrid(*index_obs[obs]))] = True
+
+        # Assign values
+        for obs in self.values.keys():
+            new_values[obs][mask_obs[obs]] = self.values[obs].flatten()
+
+        return DenseFunctionalData(new_argvals, new_values)
