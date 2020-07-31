@@ -15,7 +15,7 @@ from sklearn.preprocessing import StandardScaler
 #############################################################################
 # Standardization functions
 #############################################################################
-def rangeStandardization_(X):
+def rangeStandardization_(X, max_x=None, min_x=None):
     r"""Transform a vector [a, b] into a vector [0, 1].
 
     This function standardizes a vector by applying the following
@@ -26,6 +26,10 @@ def rangeStandardization_(X):
     ----------
     X : array-like, shape = (n_features, )
         Data
+    max_x : float, default=None
+        Maximum value
+    min_x : float, default=None
+        Minimum value
 
     Returns
     -------
@@ -37,7 +41,10 @@ def rangeStandardization_(X):
     array([0., 0.5, 1.])
 
     """
-    range_ = (X - np.min(X)) / (np.max(X) - np.min(X))
+    if (max_x is None) and (min_x is None):
+        max_x = np.max(X)
+        min_x = np.min(X)
+    range_ = (X - min_x) / (max_x - min_x)
     return range_
 
 
@@ -144,17 +151,17 @@ def colVar_(X):
 # Array manipulation functions.
 ############################################################################
 
-def get_axis_dimension(X, axis=0):
+def get_axis_dimension_(X, axis=0):
     """Get the dimension of an array :math:`X` along the `axis`."""
     return X.shape[axis]
 
 
-def get_dict_dimension(X):
+def get_dict_dimension_(X):
     """Return the shape of `X` defined as a dict of np.ndarray."""
     return tuple(i.shape[0] for i in X.values())
 
 
-def get_obs_shape(X, obs):
+def get_obs_shape_(X, obs):
     """Return the shape of `obs` if `X` is a nested dict."""
     shapes = tuple(dim[obs].shape for _, dim in X.items())
     return tuple(itertools.chain.from_iterable(shapes))

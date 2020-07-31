@@ -12,7 +12,8 @@ import numpy as np
 
 from abc import ABC, abstractmethod
 
-from ..misc.utils import get_dict_dimension, get_obs_shape
+from ..misc.utils import get_dict_dimension_, get_obs_shape_
+from ..misc.utils import rangeStandardization_
 
 
 ###############################################################################
@@ -24,7 +25,7 @@ def _check_dict_array(argv_dict, argv_array):
     (a np.ndarray) do not have coherent common dimensions. The first dimension
     of `arg_array` is assumed to represented the number of observation.
     """
-    dim_dict = get_dict_dimension(argv_dict)
+    dim_dict = get_dict_dimension_(argv_dict)
     dim_array = argv_array.shape[1:]
     if dim_dict != dim_array:
         raise ValueError(f"{argv_dict} and {argv_array}"
@@ -37,7 +38,7 @@ def _check_dict_dict(argv1, argv2):
     An error is raised when `argv1` (a nested dictonary) and `argv2` (a
     dictionary) do not have coherent common dimensions.
     """
-    has_obs_shape = [obs.shape == get_obs_shape(argv1, idx)
+    has_obs_shape = [obs.shape == get_obs_shape_(argv1, idx)
                      for idx, obs in argv2.items()]
     if not np.all(has_obs_shape):
         raise ValueError(f"{argv1} and {argv2} do not"
@@ -201,6 +202,10 @@ class FunctionalData(ABC):
         """Getter for argvals_stand."""
         return self._argvals_stand
 
+    @argvals_stand.setter
+    def argvals_stand(self, new_argvals_stand):
+        self._argvals_stand = new_argvals_stand
+
     @property
     def values(self):
         """Getter for values."""
@@ -291,7 +296,7 @@ class DenseFunctionalData(FunctionalData):
         dimension is :math:`(m_j,)` for :math:`0 \leq j \leq p`.
     values: np.ndarray
         The values of the functional data. The shape of the array is
-        :math:`(n, m_1, \dots, m_p)`. It should not contain any missing values.
+        :math:`(n, m_1, \dots, m_p)`.
 
     Examples
     --------
@@ -355,6 +360,21 @@ class DenseFunctionalData(FunctionalData):
         if len(argvals) == len(values.shape):
             values = values[np.newaxis]
         return DenseFunctionalData(argvals, values)
+
+    @property
+    def argvals(self):
+        """Getter for argvals."""
+        return super().argvals
+
+    @argvals.setter
+    def argvals(self, new_argvals):
+        super(DenseFunctionalData, self.__class__).\
+            argvals.fset(self, new_argvals)
+
+        argvals_stand = {}
+        for dim, points in new_argvals.items():
+            argvals_stand[dim] = rangeStandardization_(points)
+        self.argvals_stand = argvals_stand
 
     @property
     def range_obs(self):
@@ -544,6 +564,27 @@ class IrregularFunctionalData(FunctionalData):
                        for idx, points in self.argvals.items()}
             values = {index: self.values.get(index)}
         return IrregularFunctionalData(argvals, values)
+
+    @property
+    def argvals(self):
+        """Getter for argvals."""
+        return super().argvals
+
+    @argvals.setter
+    def argvals(self, new_argvals):
+        super(IrregularFunctionalData, self.__class__).\
+            argvals.fset(self, new_argvals)
+
+        points = self.gather_points()
+        argvals_stand = {}
+        for dim, obss in new_argvals.items():
+            max_x, min_x = np.max(points[dim]), np.min(points[dim])
+
+            argvals_stand[dim] = {}
+            for obs, point in obss.items():
+                argvals_stand[dim][obs] = rangeStandardization_(point,
+                                                                max_x, min_x)
+        self.argvals_stand = argvals_stand
 
     @property
     def range_obs(self):
