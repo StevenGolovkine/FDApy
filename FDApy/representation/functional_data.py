@@ -237,11 +237,12 @@ class FunctionalData(ABC):
     @property
     @abstractmethod
     def range_obs(self):
+        """Get the range of the observations of the object."""
         pass
 
     @property
     def n_dim(self):
-        """Number of input dimension of the functional data.
+        """Get the number of input dimension of the functional data.
 
         Returns
         -------
@@ -357,7 +358,7 @@ class DenseFunctionalData(FunctionalData):
 
     @property
     def range_obs(self):
-        """Range of the observations of the object.
+        """Get the range of the observations of the object.
 
         Returns
         -------
@@ -370,7 +371,7 @@ class DenseFunctionalData(FunctionalData):
 
     @property
     def range_dim(self):
-        """Range of the `argvals` for each of the dimension.
+        """Get the range of the `argvals` for each of the dimension.
 
         Returns
         -------
@@ -384,7 +385,7 @@ class DenseFunctionalData(FunctionalData):
 
     @property
     def shape(self):
-        r"""Shape of the data for each dimension.
+        r"""Get the shape of the data for each dimension.
 
         Returns
         -------
@@ -518,7 +519,7 @@ class IrregularFunctionalData(FunctionalData):
         super().__init__(argvals, values, 'irregular')
 
     def __getitem__(self, index):
-        """Function call when self[index].
+        """Overrride getitem function, called when self[index].
 
         Parameters
         ----------
@@ -546,7 +547,7 @@ class IrregularFunctionalData(FunctionalData):
 
     @property
     def range_obs(self):
-        """Range of the observations of the object.
+        """Get the range of the observations of the object.
 
         Returns
         -------
@@ -560,7 +561,7 @@ class IrregularFunctionalData(FunctionalData):
 
     @property
     def range_dim(self):
-        """Range of the `argvals` for each of the dimension.
+        """Get the range of the `argvals` for each of the dimension.
 
         Returns
         -------
@@ -576,7 +577,7 @@ class IrregularFunctionalData(FunctionalData):
 
     @property
     def shape(self):
-        r"""Shape of the data for each dimension.
+        r"""Get the shape of the data for each dimension.
 
         Returns
         -------
