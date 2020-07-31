@@ -64,35 +64,43 @@ def _check_dict_len(argv):
                          " dimensions.""")
 
 
-def _check_is_compatible(argv1, argv2):
-    """Raise an error if `argv1` and `argv2` are not compatibles.
-
-    `argv1` and `argv2` are elements of DenseFunctionalData or
-    IrregularFunctionalData. We say that they are compatible if they have the
-    same number of observations and they share the same `argvals`.
-    """
+def _check_same_type(argv1, argv2):
+    """Raise an error if `argv1` and `argv2` have different type."""
     if type(argv1) != type(argv2):
         raise TypeError(f"{argv1} and {argv2} do not have the same type.")
+
+
+def _check_same_nobs(argv1, argv2):
+    """Raise an arror if `argv1` and `argv2` have different number of obs."""
     if argv1.n_obs != argv2.n_obs:
         raise ValueError(f"{argv1} and {argv2} do not have the same number"
                          " of observations.")
+
+
+def _check_same_ndim(argv1, argv2):
+    """Raise an error if `argv1` and `argv2` have different number of dim."""
     if argv1.n_dim != argv2.n_dim:
         raise ValueError(f"{argv1} and {argv2} do not have the same number"
                          " of dimensions.")
 
-    if isinstance(argv1, DenseFunctionalData):
-        argvals_equal = all(np.array_equal(argv1.argvals[key],
-                                           argv2.argvals[key])
-                            for key in argv1.argvals)
-    else:
-        temp = []
-        for points1, points2 in zip(argv1.argvals.values(),
-                                    argv2.argvals.values()):
-            temp.append(all(np.array_equal(points1[key1], points2[key2])
-                            for (key1, key2) in zip(points1, points2)))
-        argvals_equal = all(temp)
 
-    if not argvals_equal:
+def _check_argvals_equality_dense(argv1, argv2):
+    """Raise an error if `argv1` and `argv2` are not equal."""
+    argvs_equal = all(np.array_equal(argv1[key], argv2[key]) for key in argv1)
+    if not argvs_equal:
+        raise ValueError(f"{argv1} and {argv2} do not have the same sampling"
+                         " points.")
+
+
+def _check_argvals_equality_irregular(argv1, argv2):
+    """Raise an error if `argv1` and `argv2` are not equal."""
+    temp = []
+    for points1, points2 in zip(argv1.values(), argv2.values()):
+        temp.append(all(np.array_equal(points1[key], points2[key])
+                        for key in points1))
+
+    argvs_equal = all(temp)
+    if not argvs_equal:
         raise ValueError(f"{argv1} and {argv2} do not have the same sampling"
                          " points.")
 
@@ -144,14 +152,17 @@ class FunctionalData(ABC):
         """Function call when self[index]."""
         pass
 
+    @abstractmethod
     def __add__(self, obj):
         """Override add function."""
         pass
 
+    @abstractmethod
     def __sub__(self, obj):
         """Override sub function."""
         pass
 
+    @abstractmethod
     def __mul__(self, obj):
         """Overrude mul function."""
         pass
@@ -159,6 +170,15 @@ class FunctionalData(ABC):
     def __rmul__(self, obj):
         """Override rmul function."""
         return self * obj
+
+    @abstractmethod
+    def __truediv__(self, obj):
+        """Override truediv function."""
+        pass
+
+    def __floordiv__(self, obj):
+        """Override floordiv function."""
+        return self / obj
 
     @property
     def argvals(self):
@@ -231,6 +251,12 @@ class FunctionalData(ABC):
     @abstractmethod
     def shape(self):
         pass
+
+    @abstractmethod
+    def is_compatible(self, fdata):
+        _check_same_type(self, fdata)
+        _check_same_nobs(self, fdata)
+        _check_same_ndim(self, fdata)
 
 
 ###############################################################################
@@ -307,6 +333,30 @@ class DenseFunctionalData(FunctionalData):
         if len(argvals) == len(values.shape):
             values = values[np.newaxis]
         return DenseFunctionalData(argvals, values)
+
+    def __add__(self, obj):
+        """Override add function."""
+        if self.is_compatible(obj):
+            new_values = self.values + obj.values
+        return DenseFunctionalData(self.argvals, new_values)
+
+    def __sub__(self, obj):
+        """Override sub function."""
+        if self.is_compatible(obj):
+            new_values = self.values - obj.values
+        return DenseFunctionalData(self.argvals, new_values)
+
+    def __mul__(self, obj):
+        """Overrride mul function."""
+        if self.is_compatible(obj):
+            new_values = np.multiply(self.values, obj.values)
+        return DenseFunctionalData(self.argvals, new_values)
+
+    def __truediv__(self, obj):
+        """Override truediv function."""
+        if self.is_compatible(obj):
+            new_values = np.divide(self.values, obj.values)
+        return DenseFunctionalData(self.argvals, new_values)
 
     @property
     def argvals(self):
@@ -392,6 +442,27 @@ class DenseFunctionalData(FunctionalData):
             new_values[idx] = self.values[idx]
 
         return IrregularFunctionalData(new_argvals, new_values)
+
+    def is_compatible(self, fdata):
+        """Check if `fdata` is compatible with `self`.
+
+        Two DenseFunctionalData object are said to be compatible if they
+        have the same number of observations and dimensions. Moreover, they
+        must have (strictly) the same sampling points.
+
+        Parameters
+        ----------
+        fdata : DenseFunctionalData object
+            The object to compare with `self`.
+
+        Returns
+        -------
+        True
+            If the objects are compatible.
+        """
+        super().is_compatible(fdata)
+        _check_argvals_equality_dense(self.argvals, fdata.argvals)
+        return True
 
 
 ###############################################################################
@@ -481,6 +552,42 @@ class IrregularFunctionalData(FunctionalData):
                        for idx, points in self.argvals.items()}
             values = {index: self.values.get(index)}
         return IrregularFunctionalData(argvals, values)
+
+    def __add__(self, obj):
+        """Override add function."""
+        if self.is_compatible(obj):
+            new_values = {}
+            for (idx, obs1), (_, obs2) in zip(self.values.items(),
+                                              obj.values.items()):
+                new_values[idx] = obs1 + obs2
+        return IrregularFunctionalData(self.argvals, new_values)
+
+    def __sub__(self, obj):
+        """Override sub function."""
+        if self.is_compatible(obj):
+            new_values = {}
+            for (idx, obs1), (_, obs2) in zip(self.values.items(),
+                                              obj.values.items()):
+                new_values[idx] = obs1 - obs2
+        return IrregularFunctionalData(self.argvals, new_values)
+
+    def __mul__(self, obj):
+        """Override mul function."""
+        if self.is_compatible(obj):
+            new_values = {}
+            for (idx, obs1), (_, obs2) in zip(self.values.items(),
+                                              obj.values.items()):
+                new_values[idx] = np.multiply(obs1, obs2)
+        return IrregularFunctionalData(self.argvals, new_values)
+
+    def __truediv__(self, obj):
+        """Override mul function."""
+        if self.is_compatible(obj):
+            new_values = {}
+            for (idx, obs1), (_, obs2) in zip(self.values.items(),
+                                              obj.values.items()):
+                new_values[idx] = np.divide(obs1, obs2)
+        return IrregularFunctionalData(self.argvals, new_values)
 
     @property
     def argvals(self):
@@ -603,3 +710,24 @@ class IrregularFunctionalData(FunctionalData):
             new_values[obs][mask_obs[obs]] = self.values[obs].flatten()
 
         return DenseFunctionalData(new_argvals, new_values)
+
+    def is_compatible(self, fdata):
+        """Check if `fdata` is compatible with `self`.
+
+        Two IrregularFunctionalData object are said to be compatible if they
+        have the same number of observations and dimensions. Moreover, they
+        must have (strictly) the same sampling points.
+
+        Parameters
+        ----------
+        fdata : IrregularFunctionalData object
+            The object to compare with `self`.
+
+        Returns
+        -------
+        True
+            If the objects are compatible.
+        """
+        super().is_compatible(fdata)
+        _check_argvals_equality_irregular(self.argvals, fdata.argvals)
+        return True
