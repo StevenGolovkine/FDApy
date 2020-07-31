@@ -486,8 +486,8 @@ class IrregularFunctionalData(FunctionalData):
         `np.ndarray` of shape :math:`(n, m_1, \dots, m_p)`. It should not
         contain any missing values.
 
-    Examples:
-    ---------
+    Examples
+    --------
     >>> argvals = {'input_dim_0': {
                         0: np.array([1, 2, 3, 4]),
                         1: np.array([2, 4])},
