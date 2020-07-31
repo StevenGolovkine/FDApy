@@ -35,7 +35,8 @@ def _check_dict_dict(argv1, argv2):
     """Raise an error in case of dimension conflicts between the arguments.
 
     An error is raised when `argv1` (a nested dictonary) and `argv2` (a
-    dictionary) do not have coherent common dimensions."""
+    dictionary) do not have coherent common dimensions.
+    """
     has_obs_shape = [obs.shape == get_obs_shape(argv1, idx)
                      for idx, obs in argv2.items()]
     if not np.all(has_obs_shape):
@@ -67,7 +68,7 @@ def _check_dict_len(argv):
 
 def _check_same_type(argv1, argv2):
     """Raise an error if `argv1` and `argv2` have different type."""
-    if type(argv1) != type(argv2):
+    if not isinstance(argv2, type(argv1)):
         raise TypeError(f"{argv1} and {argv2} do not have the same type.")
 
 
@@ -223,7 +224,7 @@ class FunctionalData(ABC):
 
     @property
     def n_obs(self):
-        """Number of observations of the functional data.
+        """Get the number of observations of the functional data.
 
         Returns
         -------
@@ -246,21 +247,25 @@ class FunctionalData(ABC):
         -------
         n_dim: int
             Number of input dimension with the functional data.
+
         """
         return len(self.argvals)
 
     @property
     @abstractmethod
     def range_dim(self):
+        """Range of the `argvals` for each of the dimension."""
         pass
 
     @property
     @abstractmethod
     def shape(self):
+        """Shape of the data for each dimension."""
         pass
 
     @abstractmethod
     def is_compatible(self, fdata):
+        """Check if `fdata` is compatible with `self`."""
         _check_same_type(self, fdata)
         _check_same_nobs(self, fdata)
         _check_same_ndim(self, fdata)
@@ -299,6 +304,7 @@ class DenseFunctionalData(FunctionalData):
                    [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]]])
 
     >>> DenseFunctionalData(argvals, values)
+
     """
 
     @staticmethod
@@ -329,7 +335,7 @@ class DenseFunctionalData(FunctionalData):
         super().__init__(argvals, values, 'univariate')
 
     def __getitem__(self, index):
-        """Function call when self[index].
+        """Overrride getitem function, called when self[index].
 
         Parameters
         ----------
@@ -340,6 +346,7 @@ class DenseFunctionalData(FunctionalData):
         -------
         data: DenseFunctionalData object
             The selected observation(s) as DenseFunctionalData object.
+
         """
         argvals = self.argvals
         values = self.values[index]
@@ -357,6 +364,7 @@ class DenseFunctionalData(FunctionalData):
         min, max: tuple
             Tuple containing the mimimum and maximum values taken by all the
             observations for the object.
+
         """
         return np.min(self.values), np.max(self.values)
 
@@ -368,7 +376,9 @@ class DenseFunctionalData(FunctionalData):
         -------
         ranges: dict
             Dictionary containing the range of the argvals for each of the
-            input dimension."""
+            input dimension.
+
+        """
         return {idx: (min(argval), max(argval))
                 for idx, argval in self.argvals.items()}
 
@@ -382,6 +392,7 @@ class DenseFunctionalData(FunctionalData):
             Dictionary containing the number of points for each of the
             dimension. It corresponds to :math:`m_j` for
             :math:`0 \leq j \leq p`.
+
         """
         return {idx: len(dim) for idx, dim in self.argvals.items()}
 
@@ -395,6 +406,7 @@ class DenseFunctionalData(FunctionalData):
         -------
         obj: IrregularFunctionalData
             An object of the class IrregularFunctionalData
+
         """
         new_argvals = dict.fromkeys(self.argvals.keys(), {})
         for dim in new_argvals.keys():
@@ -425,6 +437,7 @@ class DenseFunctionalData(FunctionalData):
         -------
         True
             If the objects are compatible.
+
         """
         super().is_compatible(fdata)
         _check_argvals_equality_dense(self.argvals, fdata.argvals)
@@ -466,6 +479,7 @@ class IrregularFunctionalData(FunctionalData):
                   1: np.array([[1, 2, 3], [1, 2, 3]])}
 
     >>> IrregularFunctionalData(argvals, values)
+
     """
 
     @staticmethod
@@ -515,6 +529,7 @@ class IrregularFunctionalData(FunctionalData):
         -------
         data: IrregularFunctionalData object
             The selected observation(s) as IrregularFunctionalData object.
+
         """
         if isinstance(index, slice):
             indices = index.indices(self.n_obs)
@@ -538,6 +553,7 @@ class IrregularFunctionalData(FunctionalData):
         min, max: tuple
             Tuple containing the mimimum and maximum values taken by all the
             observations for the object.
+
         """
         ranges = [(np.min(obs), np.max(obs)) for obs in self.values.values()]
         return min(min(ranges)), max(max(ranges))
@@ -551,6 +567,7 @@ class IrregularFunctionalData(FunctionalData):
         ranges: dict
             Dictionary containing the range of the argvals for each of the
             input dimension.
+
         """
         ranges = {idx: list(argval.values())
                   for idx, argval in self.argvals.items()}
@@ -567,6 +584,7 @@ class IrregularFunctionalData(FunctionalData):
             Dictionary containing the number of points for each of the
             dimension. It corresponds to :math:`m_j` for
             :math:`0 \leq j \leq p`.
+
         """
         return {idx: len(dim) for idx, dim in self.gather_points().items()}
 
@@ -578,6 +596,7 @@ class IrregularFunctionalData(FunctionalData):
         argvals: dict
             Dictionary containing all the unique observations points for each
             of the input dimension.
+
         """
         return {idx: np.unique(np.hstack(list(dim.values())))
                 for idx, dim in self.argvals.items()}
@@ -599,6 +618,7 @@ class IrregularFunctionalData(FunctionalData):
         -------
         obj: DenseFunctionalData
             An object of the class DenseFunctionalData
+
         """
         new_argvals = self.gather_points()
         new_values = np.full((self.n_obs,) + tuple(self.shape.values()),
@@ -643,6 +663,7 @@ class IrregularFunctionalData(FunctionalData):
         -------
         True
             If the objects are compatible.
+
         """
         super().is_compatible(fdata)
         _check_argvals_equality_irregular(self.argvals, fdata.argvals)
