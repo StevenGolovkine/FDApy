@@ -22,7 +22,8 @@ def _check_dict_array(argv_dict, argv_array):
 
     An error is raised when `argv_dict` (a dictionary) and `argv_array`
     (a np.ndarray) do not have coherent common dimensions. The first dimension
-    of `arg_array` is assumed to represented the number of observation."""
+    of `arg_array` is assumed to represented the number of observation.
+    """
     dim_dict = get_dict_dimension(argv_dict)
     dim_array = argv_array.shape[1:]
     if dim_dict != dim_array:
@@ -117,6 +118,7 @@ class FunctionalData(ABC):
     argvals: list
     values: list
     category: str, {'univariate', 'irregular', 'multivariate'}
+
     """
 
     @staticmethod
@@ -134,6 +136,11 @@ class FunctionalData(ABC):
     def _check_argvals_values(argvals, values):
         pass
 
+    @staticmethod
+    @abstractmethod
+    def _perform_computation(fdata1, fdata2, func):
+        pass
+
     def __init__(self, argvals, values, category):
         """Initialize FunctionalData object."""
         super().__init__()
@@ -149,32 +156,28 @@ class FunctionalData(ABC):
 
     @abstractmethod
     def __getitem__(self, index):
-        """Function call when self[index]."""
+        """Override getitem function, called when self[index]."""
         pass
 
-    @abstractmethod
     def __add__(self, obj):
         """Override add function."""
-        pass
+        return self._perform_computation(self, obj, np.add)
 
-    @abstractmethod
     def __sub__(self, obj):
         """Override sub function."""
-        pass
+        return self._perform_computation(self, obj, np.subtract)
 
-    @abstractmethod
     def __mul__(self, obj):
         """Overrude mul function."""
-        pass
+        return self._perform_computation(self, obj, np.multiply)
 
     def __rmul__(self, obj):
         """Override rmul function."""
         return self * obj
 
-    @abstractmethod
     def __truediv__(self, obj):
         """Override truediv function."""
-        pass
+        return self._perform_computation(self, obj, np.divide)
 
     def __floordiv__(self, obj):
         """Override floordiv function."""
@@ -186,9 +189,11 @@ class FunctionalData(ABC):
         return self._argvals
 
     @argvals.setter
-    @abstractmethod
     def argvals(self, new_argvals):
-        pass
+        self._check_argvals(new_argvals)
+        if hasattr(self, 'values'):
+            self._check_argvals_values(new_argvals, self.values)
+        self._argvals = new_argvals
 
     @property
     def argvals_stand(self):
@@ -201,9 +206,11 @@ class FunctionalData(ABC):
         return self._values
 
     @values.setter
-    @abstractmethod
     def values(self, new_values):
-        pass
+        self._check_values(new_values)
+        if hasattr(self, 'argvals'):
+            self._check_argvals_values(self.argvals, new_values)
+        self._values = new_values
 
     @property
     def category(self):
@@ -310,6 +317,13 @@ class DenseFunctionalData(FunctionalData):
         """Check the compatibility of argvals and values."""
         _check_dict_array(argvals, values)
 
+    @staticmethod
+    def _perform_computation(fdata1, fdata2, func):
+        """Perform computation defined by `func`."""
+        if fdata1.is_compatible(fdata2):
+            new_values = func(fdata1.values, fdata2.values)
+        return DenseFunctionalData(fdata1.argvals, new_values)
+
     def __init__(self, argvals, values):
         """Initialize UnivariateFunctionalData object."""
         super().__init__(argvals, values, 'univariate')
@@ -333,54 +347,6 @@ class DenseFunctionalData(FunctionalData):
         if len(argvals) == len(values.shape):
             values = values[np.newaxis]
         return DenseFunctionalData(argvals, values)
-
-    def __add__(self, obj):
-        """Override add function."""
-        if self.is_compatible(obj):
-            new_values = self.values + obj.values
-        return DenseFunctionalData(self.argvals, new_values)
-
-    def __sub__(self, obj):
-        """Override sub function."""
-        if self.is_compatible(obj):
-            new_values = self.values - obj.values
-        return DenseFunctionalData(self.argvals, new_values)
-
-    def __mul__(self, obj):
-        """Overrride mul function."""
-        if self.is_compatible(obj):
-            new_values = np.multiply(self.values, obj.values)
-        return DenseFunctionalData(self.argvals, new_values)
-
-    def __truediv__(self, obj):
-        """Override truediv function."""
-        if self.is_compatible(obj):
-            new_values = np.divide(self.values, obj.values)
-        return DenseFunctionalData(self.argvals, new_values)
-
-    @property
-    def argvals(self):
-        """Getter for argvals."""
-        return super().argvals
-
-    @argvals.setter
-    def argvals(self, new_argvals):
-        self._check_argvals(new_argvals)
-        if hasattr(self, 'values'):
-            self._check_argvals_values(new_argvals, self.values)
-        self._argvals = new_argvals
-
-    @property
-    def values(self):
-        """Getter for values."""
-        return super().values
-
-    @values.setter
-    def values(self, new_values):
-        self._check_values(new_values)
-        if hasattr(self, 'argvals'):
-            self._check_argvals_values(self.argvals, new_values)
-        self._values = new_values
 
     @property
     def range_obs(self):
@@ -523,6 +489,16 @@ class IrregularFunctionalData(FunctionalData):
         """Check the compatibility of argvals and values."""
         _check_dict_dict(argvals, values)
 
+    @staticmethod
+    def _perform_computation(fdata1, fdata2, func):
+        """Perform computation defined by `func`."""
+        if fdata1.is_compatible(fdata2):
+            new_values = {}
+            for (idx, obs1), (_, obs2) in zip(fdata1.values.items(),
+                                              fdata2.values.items()):
+                new_values[idx] = func(obs1, obs2)
+        return IrregularFunctionalData(fdata1.argvals, new_values)
+
     def __init__(self, argvals, values):
         """Initialize IrregularFunctionalData object."""
         super().__init__(argvals, values, 'irregular')
@@ -552,66 +528,6 @@ class IrregularFunctionalData(FunctionalData):
                        for idx, points in self.argvals.items()}
             values = {index: self.values.get(index)}
         return IrregularFunctionalData(argvals, values)
-
-    def __add__(self, obj):
-        """Override add function."""
-        if self.is_compatible(obj):
-            new_values = {}
-            for (idx, obs1), (_, obs2) in zip(self.values.items(),
-                                              obj.values.items()):
-                new_values[idx] = obs1 + obs2
-        return IrregularFunctionalData(self.argvals, new_values)
-
-    def __sub__(self, obj):
-        """Override sub function."""
-        if self.is_compatible(obj):
-            new_values = {}
-            for (idx, obs1), (_, obs2) in zip(self.values.items(),
-                                              obj.values.items()):
-                new_values[idx] = obs1 - obs2
-        return IrregularFunctionalData(self.argvals, new_values)
-
-    def __mul__(self, obj):
-        """Override mul function."""
-        if self.is_compatible(obj):
-            new_values = {}
-            for (idx, obs1), (_, obs2) in zip(self.values.items(),
-                                              obj.values.items()):
-                new_values[idx] = np.multiply(obs1, obs2)
-        return IrregularFunctionalData(self.argvals, new_values)
-
-    def __truediv__(self, obj):
-        """Override mul function."""
-        if self.is_compatible(obj):
-            new_values = {}
-            for (idx, obs1), (_, obs2) in zip(self.values.items(),
-                                              obj.values.items()):
-                new_values[idx] = np.divide(obs1, obs2)
-        return IrregularFunctionalData(self.argvals, new_values)
-
-    @property
-    def argvals(self):
-        """Getter for argvals."""
-        return super().argvals
-
-    @argvals.setter
-    def argvals(self, new_argvals):
-        self._check_argvals(new_argvals)
-        if hasattr(self, 'values'):
-            self._check_argvals_values(new_argvals, self.values)
-        self._argvals = new_argvals
-
-    @property
-    def values(self):
-        """Getter for values."""
-        return super().values
-
-    @values.setter
-    def values(self, new_values):
-        self._check_values(new_values)
-        if hasattr(self, 'argvals'):
-            self._check_argvals_values(self.argvals, new_values)
-        self._values = new_values
 
     @property
     def range_obs(self):
