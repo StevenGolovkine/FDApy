@@ -48,15 +48,15 @@ def _check_dict_dict(argv1, argv2):
 def _check_type(argv, category):
     """Raise an error if `argv` is not of type category."""
     if not isinstance(argv, category):
-        raise ValueError(f"Argument must be {category.__name__}, not"
-                         f" {type(argv).__name__}")
+        raise TypeError(f"Argument must be {category.__name__}, not"
+                        f" {type(argv).__name__}")
 
 
 def _check_dict_type(argv, category):
     """Raise an error if all elements of `argv` are not of type `category`."""
     is_cat = [isinstance(obj, category) for obj in argv.values()]
     if not np.all(is_cat):
-        raise ValueError(f"Argument values must be {category.__name__}")
+        raise TypeError(f"Argument values must be {category.__name__}")
 
 
 def _check_dict_len(argv):
