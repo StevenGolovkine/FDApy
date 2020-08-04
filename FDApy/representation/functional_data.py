@@ -13,7 +13,7 @@ import numpy as np
 from abc import ABC, abstractmethod
 
 from ..misc.utils import get_dict_dimension_, get_obs_shape_
-from ..misc.utils import rangeStandardization_
+from ..misc.utils import rangeStandardization_, rowMean_
 
 
 ###############################################################################
@@ -276,6 +276,11 @@ class FunctionalData(ABC):
         _check_same_nobs(self, fdata)
         _check_same_ndim(self, fdata)
 
+    @abstractmethod
+    def mean(self):
+        """Compute an estimate of the mean."""
+        pass
+
 
 ###############################################################################
 # Class DenseFunctionalData
@@ -451,7 +456,7 @@ class DenseFunctionalData(FunctionalData):
 
         Parameters
         ----------
-        fdata : DenseFunctionalData object
+        fdata: DenseFunctionalData object
             The object to compare with `self`.
 
         Returns
@@ -463,6 +468,22 @@ class DenseFunctionalData(FunctionalData):
         super().is_compatible(fdata)
         _check_argvals_equality_dense(self.argvals, fdata.argvals)
         return True
+
+    def mean(self):
+        """Compute an estimate of the mean.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj: DenseFunctionalData object
+            An estimate of the mean as a DenseFunctionalData object with the
+            same argvals as `self` and one observation.
+
+        """
+        mean_estim = self.values.mean(axis=0, keepdims=True)
+        return DenseFunctionalData(self.argvals, mean_estim)
 
 
 ###############################################################################
@@ -710,3 +731,20 @@ class IrregularFunctionalData(FunctionalData):
         super().is_compatible(fdata)
         _check_argvals_equality_irregular(self.argvals, fdata.argvals)
         return True
+
+    def mean(self):
+        """Compute an estimate of the mean.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj: DenseFunctionalData object
+            An estimate of the mean as a DenseFunctionalData object with a
+            concatenation of the self.argvals as argvals and one observation.
+
+        """
+        dense_self = self.as_dense()
+        mean_estim = np.nanmean(dense_self.values, axis=0, keepdims=True)
+        return DenseFunctionalData(dense_self.argvals, mean_estim)
