@@ -69,6 +69,7 @@ def read_csv_dense(data, argvals):
     -------
     obj: DenseFunctionalData
         The loaded csv file
+
     """
     argvals = {'input_dim_0': argvals}
     values = np.array(data)
@@ -89,6 +90,7 @@ def read_csv_irregular(data, argvals):
     -------
     obj: IrregularFunctionalData
         The loaded csv file
+
     """
     argvals = {'input_dim_0': {idx: np.array(argvals[~np.isnan(row)])
                                for idx, row in enumerate(data.values)}}

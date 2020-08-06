@@ -277,7 +277,7 @@ class FunctionalData(ABC):
         _check_same_ndim(self, fdata)
 
     @abstractmethod
-    def mean(self):
+    def mean(self, smooth=None):
         """Compute an estimate of the mean."""
         pass
 
