@@ -60,6 +60,12 @@ class TestIrregularFunctionalData1D(unittest.TestCase):
     def test_is_compatible(self):
         self.assertTrue(self.irregu_fd.is_compatible(self.irregu_fd))
 
+    def test_mean(self):
+        mean_fd = self.irregu_fd.mean()
+        is_equal = np.allclose(mean_fd.values,
+                               np.array([[8., 1., 5.33333333, 5., 5.]]))
+        self.assertTrue(is_equal)
+
 
 class TestIrregularFunctionalData2D(unittest.TestCase):
     """Test class for the class IrregularFunctionalData in two dimension."""
@@ -123,6 +129,19 @@ class TestIrregularFunctionalData2D(unittest.TestCase):
 
     def test_is_compatible(self):
         self.assertTrue(self.irregu_fd.is_compatible(self.irregu_fd))
+
+    def test_mean(self):
+        N = np.nan
+        mean_fd = self.irregu_fd.mean()
+        is_equal = np.allclose(mean_fd.values,
+                               np.array([[[N, N, N, 1., 2., 3., N, N],
+                                          [1., 2., 3., 4., 1., 2., N, N],
+                                          [N, N, N, 3., 4., 1., N, N],
+                                          [1., 2., 3., 2., 3., 4., 8., 9.],
+                                          [N, N, N, N, N, N, 8., 9.],
+                                          [N, N, N, N, N, N, 8., 9.]]]),
+                               equal_nan=True)
+        self.assertTrue(is_equal)
 
 
 if __name__ == '__main__':

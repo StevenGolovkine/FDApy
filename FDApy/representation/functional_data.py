@@ -13,7 +13,7 @@ import numpy as np
 from abc import ABC, abstractmethod
 
 from ..misc.utils import get_dict_dimension_, get_obs_shape_
-from ..misc.utils import rangeStandardization_, rowMean_
+from ..misc.utils import rangeStandardization_
 
 
 ###############################################################################
@@ -469,11 +469,13 @@ class DenseFunctionalData(FunctionalData):
         _check_argvals_equality_dense(self.argvals, fdata.argvals)
         return True
 
-    def mean(self):
+    def mean(self, smooth=None):
         """Compute an estimate of the mean.
 
         Parameters
         ----------
+        smooth: str, default=None
+            Name of the smoothing method to use. Currently, not implemented.
 
         Returns
         -------
@@ -732,11 +734,13 @@ class IrregularFunctionalData(FunctionalData):
         _check_argvals_equality_irregular(self.argvals, fdata.argvals)
         return True
 
-    def mean(self):
+    def mean(self, smooth=None):
         """Compute an estimate of the mean.
 
         Parameters
         ----------
+        smooth: str, default=None
+            Name of the smoothing method. Currently, not implemented.
 
         Returns
         -------

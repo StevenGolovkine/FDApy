@@ -56,6 +56,12 @@ class TestDenseFunctionalData1D(unittest.TestCase):
     def test_is_compatible(self):
         self.assertTrue(self.dense_fd.is_compatible(self.dense_fd))
 
+    def test_mean(self):
+        mean_fd = self.dense_fd.mean()
+        is_equal = np.allclose(mean_fd.values,
+                               np.array([[3., 4., 5.6, 5.4]]))
+        self.assertTrue(is_equal)
+
 
 class TestDenseFunctionalData2D(unittest.TestCase):
     """Test class for the class DenseFunctionalData in two dimension."""
@@ -110,6 +116,15 @@ class TestDenseFunctionalData2D(unittest.TestCase):
 
     def test_is_compatible(self):
         self.assertTrue(self.dense_fd.is_compatible(self.dense_fd))
+
+    def test_mean(self):
+        mean_fd = self.dense_fd.mean()
+        is_equal = np.allclose(mean_fd.values,
+                               np.array([[[3., 4., 5.6],
+                                          [3., 4., 5.],
+                                          [3., 4., 5.],
+                                          [3., 4., 5.]]]))
+        self.assertTrue(is_equal)
 
 
 if __name__ == '__main__':
