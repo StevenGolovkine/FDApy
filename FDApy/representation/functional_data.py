@@ -11,6 +11,7 @@ Multivariate Functional Data.
 import numpy as np
 
 from abc import ABC, abstractmethod
+from collections import UserList
 
 from ..misc.utils import get_dict_dimension_, get_obs_shape_
 from ..misc.utils import rangeStandardization_
@@ -752,3 +753,50 @@ class IrregularFunctionalData(FunctionalData):
         dense_self = self.as_dense()
         mean_estim = np.nanmean(dense_self.values, axis=0, keepdims=True)
         return DenseFunctionalData(dense_self.argvals, mean_estim)
+
+
+###############################################################################
+# Class MultivariateFunctionalData
+
+class MultivariateFunctionalData(UserList):
+    r"""A class for defining Multivariate Functional Data.
+
+    An instance of MultivariateFunctionalData is a list containing objects of
+    the class DenseFunctionalData or IrregularFunctionalData.
+
+    Notes
+    -----
+    Be careful that we will not check if all the elements have the same type.
+    It is possible to create MultivariateFunctionalData containing both
+    Dense and Iregular functional data. However, only this two types are
+    allowed to be in the list.
+
+    Parameters
+    ----------
+    data: list
+        The list containing the elements of the MultivariateFunctionalData.
+
+    """
+
+    @staticmethod
+    def _check_data(new_data):
+        """Check the user provided `data`."""
+        for obj in new_data:
+            if not isinstance(obj, DenseFunctionalData):
+                if not isinstance(obj, IrregularFunctionalData):
+                    raise TypeError("One of the element does not have the"
+                                    " right type")
+
+    def __init__(self, initlist=None):
+        """Initialize MultivariateFunctionalData object."""
+        self.data = initlist
+
+    @property
+    def data(self):
+        """Getter for data."""
+        return self._data
+
+    @data.setter
+    def data(self, new_data):
+        self._check_data(new_data)
+        self._data = new_data
