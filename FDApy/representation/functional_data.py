@@ -822,12 +822,13 @@ class MultivariateFunctionalData(UserList):
 
     @property
     def n_functional(self):
-        """Get the number of functional data with `self`."
+        """Get the number of functional data with `self`.
 
         Returns
         -------
         n_functional: int
             Number of functions in the list.
+
         """
         return len(self)
 
@@ -850,32 +851,32 @@ class MultivariateFunctionalData(UserList):
         """Extend the list of FunctionalData by appending from iterable."""
         super().extend(iterable)
 
-    def insert(self, i, x):
-        """Insert an item `x` at a given position `x`."""
-        _check_same_nobs(self, x)
-        self.data.insert(i, x)
+    def insert(self, i, item):
+        """Insert an item `item` at a given position `i`."""
+        _check_same_nobs(self, item)
+        self.data.insert(i, item)
 
-    def remove(self, x):
-        """Remove the first item from `self` where value is `x`."""
-        super().remove(x)
+    def remove(self, item):
+        """Remove the first item from `self` where value is `item`."""
+        raise NotImplementedError
 
-    def pop(self, *i):
+    def pop(self, i=-1):
         """Remove the item at the given position in the list, and return it."""
-        return super().pop(*i)
+        return super().pop(i)
 
     def clear(self):
         """Remove all items from the list."""
         super().clear()
 
-    def index(self, x, start=0, end=0):
+    def index(self, item, *args):
         """Return first item of the list equald to x."""
         raise NotImplementedError
 
-    def count(self, x):
-        """Return the number of times `x` appears in the list."""
+    def count(self, item):
+        """Return the number of times `item` appears in the list."""
         raise NotImplementedError
 
-    def sort(self, key=None, reverse=False):
+    def sort(self, *args, **kwds):
         """Sort the items of the list in place."""
         raise NotImplementedError
 
