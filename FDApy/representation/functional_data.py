@@ -847,9 +847,9 @@ class MultivariateFunctionalData(UserList):
             _check_same_nobs(self, item)
             self.data.append(item)
 
-    def extend(self, iterable):
+    def extend(self, other):
         """Extend the list of FunctionalData by appending from iterable."""
-        super().extend(iterable)
+        super().extend(other)
 
     def insert(self, i, item):
         """Insert an item `item` at a given position `i`."""

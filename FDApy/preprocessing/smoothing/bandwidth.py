@@ -8,7 +8,7 @@ the case of kernel regression.
 """
 import numpy as np
 
-from .src.sigma import estimate_sigma
+from ...src.sigma import estimate_sigma
 
 
 ##############################################################################

@@ -9,9 +9,9 @@ concerned with UFPCA, whereas multivariate functional data with MFPCA.
 """
 import numpy as np
 
-from .univariate_functional import UnivariateFunctionalData
-from .multivariate_functional import MultivariateFunctionalData
-from .utils import integrationWeights_
+from ...representation.univariate_functional import UnivariateFunctionalData
+from ..representation.multivariate_functional import MultivariateFunctionalData
+from ...misc.utils import integrationWeights_
 
 
 #############################################################################
