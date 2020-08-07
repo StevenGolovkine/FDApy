@@ -49,7 +49,7 @@ def _check_dict_dict(argv1, argv2):
 def _check_type(argv, category):
     """Raise an error if `argv` is not of type category."""
     if not isinstance(argv, category):
-        raise TypeError(f"Argument must be {category.__name__}, not"
+        raise TypeError(f"Argument must be FunctionalData, not"
                         f" {type(argv).__name__}")
 
 
@@ -74,10 +74,11 @@ def _check_same_type(argv1, argv2):
         raise TypeError(f"{argv1} and {argv2} do not have the same type.")
 
 
-def _check_same_nobs(argv1, argv2):
-    """Raise an arror if `argv1` and `argv2` have different number of obs."""
-    if argv1.n_obs != argv2.n_obs:
-        raise ValueError(f"{argv1} and {argv2} do not have the same number"
+def _check_same_nobs(*argv):
+    """Raise an arror if elements in argv have different number of obs."""
+    n_obs = set(obj.n_obs for obj in argv)
+    if len(n_obs) > 1:
+        raise ValueError(f"Elements do not have the same number"
                          " of observations.")
 
 
@@ -782,14 +783,17 @@ class MultivariateFunctionalData(UserList):
     def _check_data(new_data):
         """Check the user provided `data`."""
         for obj in new_data:
-            if not isinstance(obj, DenseFunctionalData):
-                if not isinstance(obj, IrregularFunctionalData):
-                    raise TypeError("One of the element does not have the"
-                                    " right type")
+            _check_type(obj, (DenseFunctionalData, IrregularFunctionalData))
+        _check_same_nobs(*new_data)
 
     def __init__(self, initlist=None):
         """Initialize MultivariateFunctionalData object."""
         self.data = initlist
+
+    def __repr__(self):
+        """Override print function."""
+        return (f"Multivariate functional data object with {self.n_functional}"
+                f" functions of {self.n_obs} observations.")
 
     @property
     def data(self):
@@ -798,5 +802,87 @@ class MultivariateFunctionalData(UserList):
 
     @data.setter
     def data(self, new_data):
-        self._check_data(new_data)
-        self._data = new_data
+        if new_data is not None:
+            self._check_data(new_data)
+            self._data = new_data
+        else:
+            self._data = []
+
+    @property
+    def n_obs(self):
+        """Get the number of observations of the functional data.
+
+        Returns
+        -------
+        n_obs: int
+            Number of observations within the functional data.
+
+        """
+        return self.data[0].n_obs if len(self) > 0 else 0
+
+    @property
+    def n_functional(self):
+        """Get the number of functional data with `self`."
+
+        Returns
+        -------
+        n_functional: int
+            Number of functions in the list.
+        """
+        return len(self)
+
+    def append(self, item):
+        """Add an item to `self`.
+
+        Parameters
+        ----------
+        item: DenseFunctionalData or IrregularFunctionalData
+            Item to add.
+
+        """
+        if len(self.data) == 0:
+            self.data = [item]
+        else:
+            _check_same_nobs(self, item)
+            self.data.append(item)
+
+    def extend(self, iterable):
+        """Extend the list of FunctionalData by appending from iterable."""
+        super().extend(iterable)
+
+    def insert(self, i, x):
+        """Insert an item `x` at a given position `x`."""
+        _check_same_nobs(self, x)
+        self.data.insert(i, x)
+
+    def remove(self, x):
+        """Remove the first item from `self` where value is `x`."""
+        super().remove(x)
+
+    def pop(self, *i):
+        """Remove the item at the given position in the list, and return it."""
+        return super().pop(*i)
+
+    def clear(self):
+        """Remove all items from the list."""
+        super().clear()
+
+    def index(self, x, start=0, end=0):
+        """Return first item of the list equald to x."""
+        raise NotImplementedError
+
+    def count(self, x):
+        """Return the number of times `x` appears in the list."""
+        raise NotImplementedError
+
+    def sort(self, key=None, reverse=False):
+        """Sort the items of the list in place."""
+        raise NotImplementedError
+
+    def reverse(self):
+        """Reserve the elements of the list in place."""
+        super().reverse()
+
+    def copy(self):
+        """Return a shallow copy of the list."""
+        return super().copy()
