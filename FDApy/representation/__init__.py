@@ -1,0 +1,3 @@
+from .functional_data import DenseFunctionalData
+from .functional_data import IrregularFunctionalData
+from .functional_data import MultivariateFunctionalData
