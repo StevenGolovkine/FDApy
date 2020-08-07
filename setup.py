@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""
-FDApy: a Python package to analyze functional data
+"""FDApy: a Python package to analyze functional data
 
 Functional Data Analysis, usually referred as FDA, concerns the field of
 Statistics that deals with discrete observations of continuous d-dimensional

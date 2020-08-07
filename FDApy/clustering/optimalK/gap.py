@@ -4,7 +4,15 @@
 """Module for the representation of the Gap statistic.
 
 This module is used to represent the Gap statistic as an object.
+
+References
+----------
+    Estimating the number of clusters in a data setp via the gap statistic,
+    Tibshirani R., Walther G., and Hastie T., J. R. Statist. Soc. B (2001)
+    63, Part 2, pp.411-423
+    Granger M. - https://github.com/milesgranger/gap_statistic
 """
+
 from typing import Callable, NamedTuple
 
 
@@ -13,11 +21,13 @@ from typing import Callable, NamedTuple
 
 class GapResult(NamedTuple):
     """An object containing the Gap statistic for given dataset and k."""
+
     value: float
     k: int
     sd_k: float
 
     def __repr__(self) -> str:
+        """Override print function."""
         return (f"For {self.k} clusters considered, the Gap statistic is"
                 f" {self.value} ({self.sd_k})")
 
