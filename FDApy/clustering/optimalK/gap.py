@@ -13,6 +13,7 @@ References
     A comparison of Gap statistic definitions with and without logarithm
     function, Mohajer M., Englmeier K.-H., Schmid V. J., 2010
     Granger M. - https://github.com/milesgranger/gap_statistic
+
 """
 
 import pandas as pd
@@ -38,7 +39,6 @@ def _compute_dispersion(
 
     Notes
     -----
-
     ..math::
 
         W_k = \sum_{r=1}^k \frac{1}{2n_r}\sum_{i, i^\prime \in C_r}
@@ -96,7 +96,7 @@ def _clustering(
     n_clusters: int,
     **clusterer_kwargs
 ):
-    """Default clustering algorithm for Gap computation."""
+    """Cluster algorithm for Gap computation."""
     return KMeans(n_clusters=n_clusters, **clusterer_kwargs).fit_predict(data)
 
 
@@ -160,7 +160,7 @@ class Gap():
             An user-provided function for the clustering of the dataset. The
             function has to be compliant with sklearn clutering class and
             return only the labels such as the `predict` function.
-        clusterer: dict, default=None
+        clusterer_kwargs: dict, default=None
             The parameters to be used by the clustering function.
         generating_process: str, default='pca'
             The generating process of the data for the reference datasets. One
@@ -206,7 +206,6 @@ class Gap():
             Number of random reference datasets to consider.
 
         """
-
         # Define compute engine
         if self.parallel_backend == 'multiprocessing':
             engine = self._process_with_multiprocessing
@@ -258,7 +257,7 @@ class Gap():
         n_refs: int,
         metric: str = 'euclidean'
     ) -> GapResult:
-        """Computation of the Gap statistic.
+        """Compute the Gap statistic.
 
         Parameters
         ----------
