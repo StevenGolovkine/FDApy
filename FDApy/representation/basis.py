@@ -15,7 +15,7 @@ from abc import ABC, abstractmethod
 from patsy import bs
 from sklearn.datasets import make_blobs
 
-from ..preprocessing.dim_rediction.fpca import MFPCA, UFPCA
+from ..preprocessing.dim_reduction.fpca import MFPCA, UFPCA
 from ..representation.univariate_functional import UnivariateFunctionalData
 from ..representation.multivariate_functional import MultivariateFunctionalData
 

@@ -8,9 +8,9 @@ This module is used define irregular functional data.
 import itertools
 import numpy as np
 
-from .bandwidth import Bandwidth
-from .local_polynomial import LocalPolynomial
-from .utils import rangeStandardization_
+from ..preprocessing.smoothing.bandwidth import Bandwidth
+from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
+from ..misc.utils import rangeStandardization_
 
 ############################################################################
 # Checkers used by the IrregularFunctionalData class

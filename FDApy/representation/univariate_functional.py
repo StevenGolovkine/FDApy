@@ -13,10 +13,10 @@ import pygam
 
 from .irregular_functional import IrregularFunctionalData
 
-from .local_polynomial import LocalPolynomial
-from .utils import (integrate_, integrationWeights_,
-                    rangeStandardization_, rowMean_,
-                    tensorProduct_)
+from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
+from ..misc.utils import (integrate_, integrationWeights_,
+                          rangeStandardization_, rowMean_,
+                          tensorProduct_)
 
 
 ###############################################################################
