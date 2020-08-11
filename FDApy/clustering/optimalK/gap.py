@@ -216,7 +216,6 @@ class Gap():
             Number of random reference datasets to consider.
 
         """
-        # Define compute engine
         if self.parallel_backend == 'multiprocessing':
             engine = self._process_with_multiprocessing
         else:
