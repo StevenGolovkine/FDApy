@@ -18,6 +18,7 @@ References
 
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from multiprocessing import cpu_count
@@ -189,6 +190,15 @@ class Gap():
                              " have to be 'uniform' or 'pca'.")
         self.metric = metric if metric is not None else 'euclidean'
 
+    def __str__(self):
+        """Override __str__ function."""
+        return (f'Gap(n_jobs={self.n_jobs}, parallel'
+                f' backend={self.parallel_backend})')
+
+    def __repr__(self):
+        """Override __repr__ function."""
+        return self.__str__()
+
     def __call__(
         self,
         data: np.ndarray,
@@ -221,7 +231,7 @@ class Gap():
         for gap_results in engine(data, n_refs, cluster_array):
             gap_df = gap_df.append(
                 {
-                    'n_clusters': gap_results.k,
+                    'n_clusters': int(gap_results.k),
                     'gap_value': gap_results.value,
                     'sk': gap_results.sk,
                     'gap_value_star': gap_results.value_star,
@@ -249,6 +259,59 @@ class Gap():
             self.gap_df.loc[np.argmax(self.gap_df.gap_value.values)].n_clusters
         )
         return self.n_clusters
+
+    def plot(self, axes=None, scatter_args=None, **plt_kwargs):
+        """Plot the results of the Gap computation.
+
+        axex: matplotlib.axes._subplots.AxesSubplot
+            Axes object onto which the objects are plotted.
+        scatter_args: dict
+            Keywords scatter plot arguments
+        **plt_kwargs:
+            Keywords plotting arguments
+
+        """
+        if axes is None:
+            _, axes = plt.subplots(2, 2)
+
+        gap_df = self.gap_df
+
+        # Gap value plots
+        axes[0, 0].errorbar(gap_df['n_clusters'],
+                            gap_df['gap_value'],
+                            gap_df['sk'], **plt_kwargs)
+        axes[0, 0].scatter(gap_df[gap_df['n_clusters'] == 3].n_clusters,
+                           gap_df[gap_df['n_clusters'] == 3].gap_value,
+                           c='r', **scatter_args)
+        axes[0, 0].set_title('Gap value per cluster count')
+        axes[0, 0].set_xlabel('Cluster count')
+        axes[0, 0].set_ylabel(r'Gap($k$)')
+
+        axes[0, 1].plot(gap_df['n_clusters'],
+                        gap_df['diff'], **plt_kwargs)
+        axes[0, 1].set_title(r'Diff value per cluster count')
+        axes[0, 1].set_xlabel(r'$k$')
+        axes[0, 1].set_ylabel(r'Gap($k$) - Gap($k+1$) + $s_{k+1}$')
+
+        # Gap_star value plots
+        axes[1, 0].errorbar(gap_df['n_clusters'],
+                            gap_df['gap_value_star'],
+                            gap_df['sk_star'], **plt_kwargs)
+        axes[1, 0].scatter(gap_df[gap_df['n_clusters'] == 3].n_clusters,
+                           gap_df[gap_df['n_clusters'] == 3].gap_value_star,
+                           c='r', **scatter_args)
+        axes[1, 0].set_title(r'Gap$^\star$ value per cluster count')
+        axes[1, 0].set_xlabel(r'$k$')
+        axes[1, 0].set_ylabel(r'Gap$^\star$($k$)')
+
+        axes[1, 1].plot(gap_df['n_clusters'],
+                        gap_df['diff_star'], **plt_kwargs)
+        axes[1, 1].set_title(r'Diff$^\star$ value per cluster count')
+        axes[1, 1].set_xlabel(r'$k$')
+        axes[1, 1].set_ylabel(
+            r'Gap$^\star$($k$) - Gap$^\star$($k+1$) + $s_{k+1}$')
+
+        return axes
 
     def _compute_gap(
         self,
