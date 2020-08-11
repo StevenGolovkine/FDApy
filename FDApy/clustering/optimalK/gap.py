@@ -204,7 +204,7 @@ class Gap():
         data: np.ndarray,
         cluster_array: Iterable[int] = (),
         n_refs: int = 3
-    ):
+    ) -> int:
         """Compute the Gap statistic.
 
         Parameters
