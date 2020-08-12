@@ -168,7 +168,7 @@ def _loc_poly(x, y, x0, design_matrix, design_matrix_x0,
         Design matrix of the matrix x.
     design_matrix_x0 : array-like, shape = (n_dim, degree + 1)
         Design matrix of the observation point x0.
-    kernel : string, default='epanechnikov'
+    kernel_name : string, default='epanechnikov'
         Kernel name used as weight.
     h : float or float-array, default=0.05
         Bandwidth for the kernel trick.
@@ -331,7 +331,7 @@ class LocalPolynomial():
         return y_pred
 
     def fit_predict(self, x, y, x_pred=None):
-        """Fit the model using X and predict on X_pred.
+        """Fit the model using `x` and predict on `x_pred`.
 
         Parameters
         ----------
@@ -340,6 +340,7 @@ class LocalPolynomial():
         y : array-like, shape = (n_sample, )
             Target values, 1-D input array
         x_pred : array-like, shape = (n_dim, n_samples2)
+            Data to predict
 
         Returns
         -------
