@@ -14,7 +14,7 @@ from sklearn.preprocessing import PolynomialFeatures
 # Inner functions for the LocalPolynomial class.
 
 def _gaussian(t):
-    """Compute the gaussian density with mean 0 and stadard deviation 1.
+    """Compute the gaussian density with mean 0 and standard deviation 1.
 
     Parameters
     ----------
@@ -23,7 +23,7 @@ def _gaussian(t):
 
     Returns
     -------
-    K : array-like, shape = (n_samples,)
+    kernel : array-like, shape = (n_samples,)
 
     """
     return np.exp(- t**2 / 2) / np.sqrt(2 * np.pi)
@@ -39,7 +39,7 @@ def _epanechnikov(t):
 
     Returns
     -------
-    K : array-like, shape = (n_samples,)
+    kernel : array-like, shape = (n_samples,)
 
     References
     ----------
@@ -47,10 +47,10 @@ def _epanechnikov(t):
     equation 6.4
 
     """
-    K = np.zeros(t.shape)
+    kernel = np.zeros(t.shape)
     idx = np.where(np.abs(t) <= 1)
-    K[idx] = 0.75 * (1 - t[idx]**2)
-    return K
+    kernel[idx] = 0.75 * (1 - t[idx]**2)
+    return kernel
 
 
 def _tri_cube(t):
@@ -63,7 +63,7 @@ def _tri_cube(t):
 
     Returns
     -------
-    K : array-like, shape = (n_samples,)
+    kernel : array-like, shape = (n_samples,)
 
     References
     ----------
@@ -71,10 +71,10 @@ def _tri_cube(t):
     equation 6.6
 
     """
-    K = np.zeros(t.shape)
+    kernel = np.zeros(t.shape)
     idx = np.where(np.abs(t) < 1)
-    K[idx] = (1 - np.abs(t[idx])**3)**3
-    return K
+    kernel[idx] = (1 - np.abs(t[idx])**3)**3
+    return kernel
 
 
 def _bi_square(t):
@@ -87,7 +87,7 @@ def _bi_square(t):
 
     Returns
     -------
-    K : array-like, shape = (n_samples,)
+    kernel : array-like, shape = (n_samples,)
 
     References
     ----------
@@ -95,13 +95,13 @@ def _bi_square(t):
     1979, p.831
 
     """
-    K = np.zeros(t.shape)
+    kernel = np.zeros(t.shape)
     idx = np.where(np.abs(t) < 1)
-    K[idx] = (1 - t[idx]**2)**2
-    return K
+    kernel[idx] = (1 - t[idx]**2)**2
+    return kernel
 
 
-def _compute_kernel(x, x0, h, kernel='gaussian'):
+def _compute_kernel(x, x0, h, kernel_name='gaussian'):
     """Compute kernel at point norm(x - x0) / h.
 
     Parameters
@@ -112,12 +112,12 @@ def _compute_kernel(x, x0, h, kernel='gaussian'):
         Number around which compute the kernel.
     h : float or float-array, shape = (n_samples, )
         Bandwidth to control the importance of points far from x0.
-    kernel : string, default='gaussian'
+    kernel_name : string, default='gaussian'
         Kernel name used.
 
     Returns
     -------
-    K : array-like , shape = (n_samples, )
+    kernel : array-like , shape = (n_samples, )
 
     References
     ----------
@@ -128,46 +128,45 @@ def _compute_kernel(x, x0, h, kernel='gaussian'):
     if not np.iterable(x0):
         x0 = np.asarray([x0])
     if x.ndim != np.size(x0):
-        raise ValueError("""
-        x and x0 do not have the same dimension!""")
+        raise ValueError('x and x0 do not have the same dimension!')
 
     t = np.sqrt(np.sum(np.power(x - x0[:, np.newaxis], 2), axis=0)) / h
 
-    if kernel == 'gaussian':
-        K = _gaussian(t)
-    elif kernel == 'epanechnikov':
-        K = _epanechnikov(t)
-    elif kernel == 'tricube':
-        K = _tri_cube(t)
-    elif kernel == 'bisquare':
-        K = _bi_square(t)
+    if kernel_name == 'gaussian':
+        kernel = _gaussian(t)
+    elif kernel_name == 'epanechnikov':
+        kernel = _epanechnikov(t)
+    elif kernel_name == 'tricube':
+        kernel = _tri_cube(t)
+    elif kernel_name == 'bisquare':
+        kernel = _bi_square(t)
     else:
-        raise ValueError(''.join[
-            'The kernel `', kernel, '` is not implemented!'])
+        raise NotImplementedError(f'The kernel {kernel_name} is not'
+                                  ' implemented')
+    return kernel
 
-    return K
 
+def _loc_poly(x, y, x0, design_matrix, design_matrix_x0,
+              kernel_name='epanechnikov', h=0.05):
+    r"""Local polynomial regression for one point.
 
-def _loc_poly(x, y, x0, B, B0,
-              kernel='epanechnikov', h=0.05):
-    """Local polynomial regression for one point.
-
-    Let (x_1, Y_1), ..., (x_n, Y_n) be a random sample of bivariate data.
-    Assume the following model: Y_i = f(x_i) + e_i. We would like to estimate
-    the unknown regression function f(x) = E[Y | X = x]. We approximate f(x)
-    using Taylor series.
+    Let :math:`(x_1, Y_1), ..., (x_n, Y_n)` be a random sample of bivariate
+    data. Assume the following model: :math:`Y_i = f(x_i) + e_i`. We would
+    like to estimate the unknown regression function
+    :math:`f(x) = E[Y | X = x]`. We approximate :math:`f(x)` using Taylor
+    series.
 
     Parameters
     ----------
     x : array-like, shape = (n_dim, n_samples)
         Input array.
     y : array-like, shape = (n_samples, )
-        1-D input array such that y = f(x) + e.
+        1-D input array such that :math:`y = f(x) + e`.
     x0 : array-like, shape = (n_dim, )
         1-D array on which estimate the function f(x).
-    B : array-like, shape = (n_sample, degree + 1)
+    design_matrix : array-like, shape = (n_sample, degree + 1)
         Design matrix of the matrix x.
-    B0 : array-like, shape = (n_dim, degree + 1)
+    design_matrix_x0 : array-like, shape = (n_dim, degree + 1)
         Design matrix of the observation point x0.
     kernel : string, default='epanechnikov'
         Kernel name used as weight.
@@ -186,25 +185,27 @@ def _loc_poly(x, y, x0, B, B0,
 
     """
     # Compute kernel.
-    K = _compute_kernel(x=x, x0=x0, h=h, kernel=kernel)
+    kernel = _compute_kernel(x=x, x0=x0, h=h, kernel_name=kernel_name)
 
     # Compute the estimation of f (and derivatives) at x0.
-    BtW = np.dot(B.T, np.diag(K))
-    beta = np.dot(np.linalg.pinv(np.dot(BtW, B)), np.dot(BtW, y))
+    temp = np.dot(design_matrix.T, np.diag(kernel))
+    beta = np.dot(np.linalg.pinv(np.dot(temp, design_matrix)), np.dot(temp, y))
 
-    return np.dot(B0, beta)
+    return np.dot(design_matrix_x0, beta)
 
 #############################################################################
 # Class LocalPolynomial
 
 
 class LocalPolynomial():
-    """Local polynomial regression.
+    r"""Local polynomial regression.
 
-    Let (x_1, Y_1), ..., (x_n, Y_n) be a random sample of bivariate data.
-    For all i, x_i belongs to R^d and Y_i in R. Assume the following model:
-    Y_i = f(x_i) + e_i. We would like to estimate the unknown regression
-    function f(x) = E[Y | X = x]. We approximate f(x) using Taylor series.
+    Let :math:`(x_1, Y_1), ..., (x_n, Y_n)` be a random sample of bivariate
+    data. For all :math:`i, x_i` belongs to :math:`\mathbb{R}^d` and
+    :math:`Y_i` in :math:`\mathbb{R}`. Assume the following model:
+    :math:`Y_i = f(x_i) + e_i`. We would like to estimate the unknown
+    regression function :math:`f(x) = E[Y | X = x]`. We approximate :math`f(x)`
+    using Taylor series.
 
     Parameters
     ----------
@@ -225,22 +226,22 @@ class LocalPolynomial():
 
     """
 
-    def __init__(self, kernel="gaussian", bandwidth=0.05, degree=2):
+    def __init__(self, kernel_name="gaussian", bandwidth=0.05, degree=2):
         """Initialize LocalPolynomial object."""
         # TODO: Add test on parameters.
-        self.kernel = kernel
+        self.kernel_name = kernel_name
         self.bandwidth = bandwidth
         self.degree = degree
         self.poly_features = PolynomialFeatures(degree=degree)
 
     @property
-    def kernel(self):
-        """Getter for `kernel`."""
-        return self._kernel
+    def kernel_name(self):
+        """Getter for `kernel_name`."""
+        return self._kernel_name
 
-    @kernel.setter
-    def kernel(self, new_kernel):
-        self._kernel = new_kernel
+    @kernel_name.setter
+    def kernel_name(self, new_kernel_name):
+        self._kernel_name = new_kernel_name
 
     @property
     def bandwidth(self):
@@ -261,12 +262,12 @@ class LocalPolynomial():
         self._degree = new_degree
         self._poly_features = PolynomialFeatures(degree=new_degree)
 
-    def fit(self, X, y):
+    def fit(self, x, y):
         """Fit local polynomial regression.
 
         Parameters
         ----------
-        X : array-like, shape = (n_dim, n_samples)
+        x : array-like, shape = (n_dim, n_samples)
             Training data, input array.
         y : array-like, shape = (n_samples, )
             Target values, 1-D input array
@@ -277,31 +278,32 @@ class LocalPolynomial():
 
         """
         # TODO: Add tests on the parameters.
-        self.X = X
-        self.Y = y
+        self.x = x
+        self.y = y
 
-        x0 = np.unique(self.X, axis=0)
+        x0 = np.unique(self.x, axis=0)
         if not np.iterable(self.bandwidth):
             bandwidth = np.repeat(self.bandwidth, np.size(x0) / np.ndim(x0))
 
         design_matrix = self.poly_features.\
-            fit_transform(np.array(self.X, ndmin=2).T)
+            fit_transform(np.array(self.x, ndmin=2).T)
         design_matrix_x0 = self.poly_features.\
             fit_transform(np.array(x0, ndmin=2).T)
 
-        self.X_fit_ = np.array([_loc_poly(self.X, self.Y, i, design_matrix, j,
-                                          self.kernel, h)
+        self.X_fit_ = np.array([_loc_poly(self.x, self.y, i, design_matrix, j,
+                                          self.kernel_name, h)
                                 for (i, j, h) in zip(x0.T,
                                                      design_matrix_x0,
                                                      bandwidth)])
         return self
 
-    def predict(self, X):
+    def predict(self, x):
         """Predict using local polynomial regression.
 
         Parameters
         ----------
-        X : array-like, shape = (n_dim, n_samples)
+        x : array-like, shape = (n_dim, n_samples)
+            Data
 
         Returns
         -------
@@ -309,35 +311,35 @@ class LocalPolynomial():
             Return predicted values.
 
         """
-        if isinstance(X, (int, float, np.int_, np.float_)):
-            X = [X]
+        if isinstance(x, (int, float, np.int_, np.float_)):
+            x = [x]
 
         if not np.iterable(self.bandwidth):
-            bandwidth = np.repeat(self.bandwidth, np.size(X) / np.ndim(X))
+            bandwidth = np.repeat(self.bandwidth, np.size(x) / np.ndim(x))
 
         design_matrix = self.poly_features.\
-            fit_transform(np.array(self.X, ndmin=2).T)
+            fit_transform(np.array(self.x, ndmin=2).T)
         design_matrix_x0 = self.poly_features.\
-            fit_transform(np.array(X, ndmin=2).T)
+            fit_transform(np.array(x, ndmin=2).T)
 
-        y_pred = np.array([_loc_poly(self.X, self.Y, i, design_matrix, j,
-                                     self.kernel, h)
-                           for (i, j, h) in zip(X.T,
+        y_pred = np.array([_loc_poly(self.x, self.y, i, design_matrix, j,
+                                     self.kernel_name, h)
+                           for (i, j, h) in zip(x.T,
                                                 design_matrix_x0,
                                                 bandwidth)])
 
         return y_pred
 
-    def fit_predict(self, X, y, X_pred=None):
+    def fit_predict(self, x, y, x_pred=None):
         """Fit the model using X and predict on X_pred.
 
         Parameters
         ----------
-        X : array-like, shape = (n_dim, n_samples)
+        x : array-like, shape = (n_dim, n_samples)
             Training data, input array
         y : array-like, shape = (n_sample, )
             Target values, 1-D input array
-        X_pred : array-like, shape = (n_dim, n_samples2)
+        x_pred : array-like, shape = (n_dim, n_samples2)
 
         Returns
         -------
@@ -345,24 +347,24 @@ class LocalPolynomial():
             Return predicted values
 
         """
-        self.X = X
-        self.Y = y
+        self.x = x
+        self.y = y
 
-        if isinstance(X_pred, (int, float, np.int_, np.float_)):
-            X_pred = [X_pred]
+        if isinstance(x_pred, (int, float, np.int_, np.float_)):
+            x_pred = [x_pred]
 
         if not np.iterable(self.bandwidth):
             bandwidth = np.repeat(self.bandwidth,
-                                  np.size(X_pred) / np.ndim(X_pred))
+                                  np.size(x_pred) / np.ndim(x_pred))
 
         design_matrix = self.poly_features.\
-            fit_transform(np.array(self.X, ndmin=2).T)
+            fit_transform(np.array(self.x, ndmin=2).T)
         design_matrix_x0 = self.poly_features.\
-            fit_transform(np.array(X_pred, ndmin=2).T)
+            fit_transform(np.array(x_pred, ndmin=2).T)
 
-        y_pred = np.array([_loc_poly(self.X, self.Y, i, design_matrix, j,
-                                     self.kernel, h)
-                           for (i, j, h) in zip(X_pred.T,
+        y_pred = np.array([_loc_poly(self.x, self.y, i, design_matrix, j,
+                                     self.kernel_name, h)
+                           for (i, j, h) in zip(x_pred.T,
                                                 design_matrix_x0,
                                                 bandwidth)])
 
