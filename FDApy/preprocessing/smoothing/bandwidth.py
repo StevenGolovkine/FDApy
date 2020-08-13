@@ -8,20 +8,28 @@ the case of kernel regression.
 """
 import numpy as np
 
+from typing import NamedTuple
+
 from ...src.sigma import estimate_sigma
 
 
 ##############################################################################
 # Estimation of mu
 def estimate_mu(data):
-    """Perform an estimation of the mean number of sampling points.
+    """Perform an estimation of the mean number of sampling points in the data.
 
     Parameters
     ----------
     data: FunctionalData
-        An element of the class IrregularFunctionalData
+        An element of the class FunctionalData
+
+    Returns
+    -------
+    mu: dict
+        Mean number of sampling points for each input dimension.
+
     """
-    return np.mean([len(i) for i in data.argvals])
+    return data.n_points
 
 
 ##############################################################################
@@ -220,6 +228,28 @@ def estimate_bandwidth_list(data, H0, L0, sigma, K="epanechnikov"):
     :math:`L_0` are lists.
     """
     return [estimate_bandwidth(data, i, j, sigma, K) for (i, j) in zip(H0, L0)]
+
+
+##############################################################################
+# Class BandwithResult
+
+class BandwidthResult(NamedTuple):
+    """An object containing the Bandwidth."""
+
+    points: list
+    neighborhood: list
+    hurst_coefficient: list
+    constants: list
+    bandwidths: list
+
+    def __repr__(self) -> str:
+        """Override print function."""
+        return (f"Bandtwith:\n"
+                f"\t Sampling points: {str(self.points)}.\n"
+                f"\t Neighborhood: {str(self.neighborhood)}.\n"
+                f"\t Hurst estimates: {str(self.hurst_coefficient)}.\n"
+                f"\t Constant estimates: {str(self.constants)}.\n"
+                f"\t Bandwidth esimtates: {str(self.bandwidths)}.")
 
 
 ##############################################################################

@@ -261,6 +261,12 @@ class FunctionalData(ABC):
 
     @property
     @abstractmethod
+    def n_points(self):
+        """Get the mean number of sampling points."""
+        pass
+
+    @property
+    @abstractmethod
     def range_dim(self):
         """Range of the `argvals` for each of the dimension."""
         pass
@@ -281,6 +287,12 @@ class FunctionalData(ABC):
     @abstractmethod
     def mean(self, smooth=None):
         """Compute an estimate of the mean."""
+        pass
+
+    @abstractmethod
+    def smooth(self, points, neighborhood, points_estim=None, degree=0,
+               kernel="epanechnikov", bandwith=None):
+        """Smooth the data."""
         pass
 
 
@@ -397,6 +409,19 @@ class DenseFunctionalData(FunctionalData):
         return np.min(self.values), np.max(self.values)
 
     @property
+    def n_points(self):
+        """Get the mean number of sampling points.
+
+        Returns
+        -------
+        n_points: dict
+            A dictionary with the same shape than argavls with the number of
+            sampling points along each axis.
+
+        """
+        return {i: len(points) for i, points in self.argvals.items()}
+
+    @property
     def range_dim(self):
         """Get the range of the `argvals` for each of the dimension.
 
@@ -488,6 +513,11 @@ class DenseFunctionalData(FunctionalData):
         """
         mean_estim = self.values.mean(axis=0, keepdims=True)
         return DenseFunctionalData(self.argvals, mean_estim)
+
+    def smooth(self, points, neighborhood, points_estim=None, degree=0,
+               kernel="epanechnikov", bandwith=None):
+        """Smooth the data."""
+        pass
 
 
 ###############################################################################
@@ -626,6 +656,22 @@ class IrregularFunctionalData(FunctionalData):
         return min(min(ranges)), max(max(ranges))
 
     @property
+    def n_points(self):
+        """Get the mean number of sampling points.
+
+        Returns
+        -------
+        n_points: dict
+            A dictionary with the same shape than argavls with the number of
+            sampling points along each axis.
+
+        """
+        n_points = {}
+        for i, points in self.argvals.items():
+            n_points[i] = np.mean([len(p) for p in points.values()])
+        return n_points
+
+    @property
     def range_dim(self):
         """Get the range of the `argvals` for each of the dimension.
 
@@ -754,6 +800,11 @@ class IrregularFunctionalData(FunctionalData):
         dense_self = self.as_dense()
         mean_estim = np.nanmean(dense_self.values, axis=0, keepdims=True)
         return DenseFunctionalData(dense_self.argvals, mean_estim)
+
+    def smooth(self, points, neighborhood, points_estim=None, degree=0,
+               kernel="epanechnikov", bandwith=None):
+        """Smooth the data."""
+        pass
 
 
 ###############################################################################
