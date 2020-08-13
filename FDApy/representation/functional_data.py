@@ -14,7 +14,7 @@ from abc import ABC, abstractmethod
 from collections import UserList
 
 from ..misc.utils import get_dict_dimension_, get_obs_shape_
-from ..misc.utils import rangeStandardization_
+from ..misc.utils import range_standardization_
 
 
 ###############################################################################
@@ -380,7 +380,7 @@ class DenseFunctionalData(FunctionalData):
 
         argvals_stand = {}
         for dim, points in new_argvals.items():
-            argvals_stand[dim] = rangeStandardization_(points)
+            argvals_stand[dim] = range_standardization_(points)
         self.argvals_stand = argvals_stand
 
     @property
@@ -607,8 +607,8 @@ class IrregularFunctionalData(FunctionalData):
 
             argvals_stand[dim] = {}
             for obs, point in obss.items():
-                argvals_stand[dim][obs] = rangeStandardization_(point,
-                                                                max_x, min_x)
+                argvals_stand[dim][obs] = range_standardization_(point,
+                                                                 max_x, min_x)
         self.argvals_stand = argvals_stand
 
     @property
