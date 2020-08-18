@@ -18,24 +18,95 @@ from ...src.sigma import estimate_sigma
 ##############################################################################
 # Misc functions
 def theta(v, k, idx):
+    """Estimate theta.
+
+    Parameters
+    ----------
+    v: np.ndarray or list
+    k: int
+    idx: int
+
+    Returns
+    -------
+    res: float
+
+    """
     return (v[idx + 2 * k - 1] - v[idx + k])**2
 
 
-def eta(v, k, idx, H):
-    return (v[idx + 2 * k - 1] - v[idx + k])**(2 * H)
+def eta(v, k, idx, hurst):
+    """Estimate eta.
+
+    Parameters
+    ----------
+    v: np.ndarray or list
+    k: int
+    idx: int
+    hurst: float
+
+    Returns
+    -------
+    res: float
+
+    """
+    return (v[idx + 2 * k - 1] - v[idx + k])**(2 * hurst)
 
 
 def indices(data, t0, ranges):
+    """Get indices.
+
+    Parameters
+    ----------
+    data: dict_values
+        Values dictionary from an IrregularFunctionalData object.
+    t0: float
+    ranges: int
+
+    Returns
+    -------
+    res: list of int
+
+    """
     return [np.min(np.argsort(abs(argval - t0))[np.arange(ranges)])
             for argval in data]
 
 
 def mean_theta(data, idxs, ranges):
+    """Compute mean theta.
+
+    Parameters
+    ----------
+    data: dict_values
+        Values dictionary from an IrregularFunctionalData object.
+    idxs: list of int
+    ranges: int
+
+    Returns
+    -------
+    res: float
+
+    """
     return np.mean([theta(obs, ranges, idx) for obs, idx in zip(data, idxs)])
 
 
-def mean_eta(data, idxs, ranges, H):
-    return np.mean([eta(obs, ranges, idx, H) for obs, idx in zip(data, idxs)])
+def mean_eta(data, idxs, ranges, hurst):
+    """Compute mean eta.
+
+    Parameters
+    ----------
+    data: dict_values
+        Values dictionary from an IrregularFunctionalData object.
+    idxs: list of int
+    ranges: int
+    hurst: float
+
+    Returns
+    -------
+    res: float
+
+    """
+    return np.mean([eta(obs, ranges, idx, hurst)
+                    for obs, idx in zip(data, idxs)])
 
 
 ##############################################################################
@@ -132,6 +203,7 @@ def estimate_hurst_list(argvals, values, t0, k0, sigma=None):
     hurst: list of float
         An estimation of the Hurst parameter along a list of :math:`t_0`. It
         has the same length than the list of :math:`t_0`.
+
     """
     if len(t0) != len(k0):
         raise ValueError('t0 and k0 do not have the same length.')
@@ -258,6 +330,7 @@ def estimate_bandwidth(argvals, hurst, constant, sigma, kernel="epanechnikov"):
     -------
     bandwidth: list of float
         An estimation of the bandwidth.
+
     """
     if kernel == "epanechnikov":
         k_norm2 = 0.6
@@ -296,10 +369,12 @@ def estimate_bandwidth_list(argvals, hurst, constant, sigma,
     kernel: str, default="epanechnikov"
         The kernel used for the estimation. Should be "epanechnikov" or
         "uniform".
+
     Returns
     -------
     bandwidth: list of float
         An estimation of the bandwidth along a list of :math:`t_0`.
+
     """
     return [estimate_bandwidth(argvals, i, j, k, kernel)
             for (i, j, k) in zip(hurst, constant, sigma)]
@@ -384,6 +459,7 @@ class Bandwidth(object):
         ----------
         data: FunctionalData
             An element of the class FunctionalData.
+
         """
 
     def estimate_H(self, data, sigma=None):
