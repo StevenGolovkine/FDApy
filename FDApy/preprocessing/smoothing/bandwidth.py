@@ -10,21 +10,26 @@ import numpy as np
 
 from typing import NamedTuple
 
-from FDApy.representation import FunctionalData
+from FDApy.representation import (FunctionalData,
+                                  DenseFunctionalData,
+                                  IrregularFunctionalData)
 
 from ...src.sigma import estimate_sigma
 
 
 ##############################################################################
 # Misc functions
-def theta(v, k, idx):
+def theta_(v, k, idx):
     """Estimate theta.
 
     Parameters
     ----------
     v: np.ndarray or list
+        A vector
     k: int
+        An integer
     idx: int
+        An integer
 
     Returns
     -------
@@ -34,15 +39,19 @@ def theta(v, k, idx):
     return (v[idx + 2 * k - 1] - v[idx + k])**2
 
 
-def eta(v, k, idx, hurst):
+def eta_(v, k, idx, hurst):
     """Estimate eta.
 
     Parameters
     ----------
     v: np.ndarray or list
+        A vector
     k: int
+        An integer
     idx: int
+        An integer
     hurst: float
+        A float
 
     Returns
     -------
@@ -52,7 +61,7 @@ def eta(v, k, idx, hurst):
     return (v[idx + 2 * k - 1] - v[idx + k])**(2 * hurst)
 
 
-def indices(data, t0, ranges):
+def indices_(data, t0, ranges):
     """Get indices.
 
     Parameters
@@ -60,7 +69,9 @@ def indices(data, t0, ranges):
     data: dict_values
         Values dictionary from an IrregularFunctionalData object.
     t0: float
+        A float
     ranges: int
+        An integer
 
     Returns
     -------
@@ -71,7 +82,7 @@ def indices(data, t0, ranges):
             for argval in data]
 
 
-def mean_theta(data, idxs, ranges):
+def mean_theta_(data, idxs, ranges):
     """Compute mean theta.
 
     Parameters
@@ -79,17 +90,19 @@ def mean_theta(data, idxs, ranges):
     data: dict_values
         Values dictionary from an IrregularFunctionalData object.
     idxs: list of int
+        A list of integer
     ranges: int
+        An integer
 
     Returns
     -------
     res: float
 
     """
-    return np.mean([theta(obs, ranges, idx) for obs, idx in zip(data, idxs)])
+    return np.mean([theta_(obs, ranges, idx) for obs, idx in zip(data, idxs)])
 
 
-def mean_eta(data, idxs, ranges, hurst):
+def mean_eta_(data, idxs, ranges, hurst):
     """Compute mean eta.
 
     Parameters
@@ -97,40 +110,24 @@ def mean_eta(data, idxs, ranges, hurst):
     data: dict_values
         Values dictionary from an IrregularFunctionalData object.
     idxs: list of int
+        A list of integer
     ranges: int
+        An integer
     hurst: float
+        A float
 
     Returns
     -------
     res: float
 
     """
-    return np.mean([eta(obs, ranges, idx, hurst)
+    return np.mean([eta_(obs, ranges, idx, hurst)
                     for obs, idx in zip(data, idxs)])
 
 
 ##############################################################################
-# Estimation of mu
-def estimate_mu(data):
-    """Perform an estimation of the mean number of sampling points in the data.
-
-    Parameters
-    ----------
-    data: FunctionalData
-        An element of the class FunctionalData
-
-    Returns
-    -------
-    mu: dict
-        Mean number of sampling points for each input dimension.
-
-    """
-    return data.n_points
-
-
-##############################################################################
 # Estimation of Hurst parameters
-def estimate_hurst(argvals, values, t0, k0, sigma=None):
+def estimate_hurst_(argvals, values, t0, k0, sigma=None):
     """Perform an estimation of the Hurst parameter.
 
     This function performs an estimation of the Hurst coefficients, which is
@@ -149,7 +146,7 @@ def estimate_hurst(argvals, values, t0, k0, sigma=None):
     k0: int
         Considered neighborhood.
     sigma: float, default=None
-        Estimation of the standard deviation of the noise
+        Estimation of the standard deviation of the noise.
 
     Returns
     -------
@@ -160,24 +157,24 @@ def estimate_hurst(argvals, values, t0, k0, sigma=None):
     first_part = 0
     second_part = 0
     if sigma is None:
-        idxs = indices(argvals, t0, 8 * k0 - 6)
-        a = mean_theta(values, idxs, 4 * k0 - 3)
-        b = mean_theta(values, idxs, 2 * k0 - 1)
-        c = mean_theta(values, idxs, k0)
+        idxs = indices_(argvals, t0, 8 * k0 - 6)
+        a = mean_theta_(values, idxs, 4 * k0 - 3)
+        b = mean_theta_(values, idxs, 2 * k0 - 1)
+        c = mean_theta_(values, idxs, k0)
         if (a - b > 0) and (b - c > 0) and (a - 2 * b + c > 0):
             first_part = np.log(a - b)
             second_part = np.log(b - c)
     else:  # Case where sigma is known
-        idxs = indices(argvals, t0, 4 * k0 - 2)
-        a = mean_theta(values, idxs, 2 * k0 - 1)
-        b = mean_theta(values, idxs, k0)
+        idxs = indices_(argvals, t0, 4 * k0 - 2)
+        a = mean_theta_(values, idxs, 2 * k0 - 1)
+        b = mean_theta_(values, idxs, k0)
         if min(a, b) > (2 * np.power(sigma, 2)):
             first_part = np.log(a - 2 * np.power(sigma, 2))
             second_part = np.log(b - np.power(sigma, 2))
     return (first_part - second_part) / np.log(4)
 
 
-def estimate_hurst_list(argvals, values, t0, k0, sigma=None):
+def estimate_hurst_list_(argvals, values, t0, k0, sigma=None):
     """Perform an estimation of the Hurst coefficient along a list.
 
     This function performs an estimation of the Hurst coefficient :math:`H_0`
@@ -196,7 +193,7 @@ def estimate_hurst_list(argvals, values, t0, k0, sigma=None):
     k0: list of int
         Neighborhood of :math:`t_0` to consider.
     sigma: float, default:None
-        An estimation of the standard deviation of the noise
+        An estimation of the standard deviation of the noise.
 
     Returns
     -------
@@ -207,13 +204,13 @@ def estimate_hurst_list(argvals, values, t0, k0, sigma=None):
     """
     if len(t0) != len(k0):
         raise ValueError('t0 and k0 do not have the same length.')
-    return [estimate_hurst(argvals, values, i, j, sigma)
+    return [estimate_hurst_(argvals, values, i, j, sigma)
             for (i, j) in zip(t0, k0)]
 
 
 ##############################################################################
 # Estimation of L0
-def estimate_constant(argvals, values, t0, k0, hurst, sigma=None):
+def estimate_constant_(argvals, values, t0, k0, hurst, sigma=None):
     """Perform an estimation of the Lipschitz constant.
 
     This function performs an estimation of the Lipschitz constant, which is
@@ -245,25 +242,25 @@ def estimate_constant(argvals, values, t0, k0, hurst, sigma=None):
     nume = 1
     deno = 1
     if sigma is None:  # Subcase where sigma is not known
-        idxs = indices(argvals, t0, 4 * k0 - 2)
-        a = mean_theta(values, idxs, 2 * k0 - 1)
-        b = mean_theta(values, idxs, k0)
-        c = mean_eta(argvals, idxs, 2 * k0 - 1, hurst)
-        d = mean_eta(argvals, idxs, k0, hurst)
+        idxs = indices_(argvals, t0, 4 * k0 - 2)
+        a = mean_theta_(values, idxs, 2 * k0 - 1)
+        b = mean_theta_(values, idxs, k0)
+        c = mean_eta_(argvals, idxs, 2 * k0 - 1, hurst)
+        d = mean_eta_(argvals, idxs, k0, hurst)
         if (a - b > 0) and (c - d > 0):
             nume = a - b
             deno = c - d
     else:  # Subcase where sigma is known
-        idxs = indices(argvals, t0, 2 * k0)
-        a = mean_theta(values, idxs, k0)
-        b = mean_eta(argvals, idxs, k0, hurst)
+        idxs = indices_(argvals, t0, 2 * k0)
+        a = mean_theta_(values, idxs, k0)
+        b = mean_eta_(argvals, idxs, k0, hurst)
         if (a - 2 * np.power(sigma, 2)) and (b > 0):
             nume = a - 2 * np.power(sigma, 2)
             deno = b
     return np.power(nume / deno, 0.5)
 
 
-def estimate_constant_list(argvals, values, t0, k0, hurst, sigma=None):
+def estimate_constant_list_(argvals, values, t0, k0, hurst, sigma=None):
     """Perform an estimation of the Lipschitz constant along a list.
 
     This function performs an estimation of the Lipschitz constant :math:`L_0`
@@ -284,7 +281,7 @@ def estimate_constant_list(argvals, values, t0, k0, hurst, sigma=None):
     hurst: list of float
         An estimation of the Hurst parameter at each :math:`t_0`.
     sigma: float, default:None
-        An estimation of the standard deviation of the noise
+        An estimation of the standard deviation of the noise.
 
     Returns
     -------
@@ -299,13 +296,14 @@ def estimate_constant_list(argvals, values, t0, k0, hurst, sigma=None):
         raise ValueError('t0 and hurst do not have the same length.')
     if len(k0) != len(hurst):
         raise ValueError('k0 and hurst do not have the same length.')
-    return [estimate_constant(argvals, values, i, j, k, sigma)
+    return [estimate_constant_(argvals, values, i, j, k, sigma)
             for (i, j, k) in zip(t0, k0, hurst)]
 
 
 ##############################################################################
 # Estimation of the bandwidth
-def estimate_bandwidth(argvals, hurst, constant, sigma, kernel="epanechnikov"):
+def estimate_bandwidth_(argvals, hurst, constant, sigma,
+                        kernel="epanechnikov"):
     """Perform an estimation of the bandwidth.
 
     This function performs an estimation of the bandwidth, which is
@@ -348,8 +346,8 @@ def estimate_bandwidth(argvals, hurst, constant, sigma, kernel="epanechnikov"):
     return [(frac / len(obs))**(1 / (2 * hurst + 1)) for obs in argvals]
 
 
-def estimate_bandwidth_list(argvals, hurst, constant, sigma,
-                            kernel="epanechnikov"):
+def estimate_bandwidth_list_(argvals, hurst, constant, sigma,
+                             kernel="epanechnikov"):
     r"""Perform an estimation of the bandwidth along a list.
 
     Perform an estimation of the bandwidth in case :math:`H_0`, :math:`L_0`
@@ -364,7 +362,7 @@ def estimate_bandwidth_list(argvals, hurst, constant, sigma,
         An estimation of the Hurst parameter.
     constant: list of float
         An estimation of the Lipschitz constant.
-    sigma: list of float
+    sigma: float
         An estimation of the standard deviation of the noise.
     kernel: str, default="epanechnikov"
         The kernel used for the estimation. Should be "epanechnikov" or
@@ -376,8 +374,8 @@ def estimate_bandwidth_list(argvals, hurst, constant, sigma,
         An estimation of the bandwidth along a list of :math:`t_0`.
 
     """
-    return [estimate_bandwidth(argvals, i, j, k, kernel)
-            for (i, j, k) in zip(hurst, constant, sigma)]
+    return [estimate_bandwidth_(argvals, i, j, sigma, kernel)
+            for (i, j) in zip(hurst, constant)]
 
 
 ##############################################################################
@@ -390,6 +388,7 @@ class BandwidthResult(NamedTuple):
     neighborhood: list
     hurst_coefficient: list
     constants: list
+    sigma: float
     bandwidths: list
 
     def __repr__(self) -> str:
@@ -422,7 +421,8 @@ class Bandwidth(object):
     def __init__(
         self,
         points: list = 0.5,
-        neighborhood: list = 2
+        neighborhood: list = 2,
+        kernel: str = "epanechnikov"
     ) -> None:
         """Initialize Bandwidth object.
 
@@ -432,10 +432,13 @@ class Bandwidth(object):
             A list of sampling points at which the estimation should be done.
         neighborhood: list of int
             A list of neighborhood
+        kernel: str, default="epanechnikov"
+            The kernel used to compute the bandwidth.
 
         """
         self.points = points
         self.neighborhood = neighborhood
+        self.kernel = kernel
 
     def __str__(self):
         """Override __str__ functions."""
@@ -452,66 +455,136 @@ class Bandwidth(object):
         hurst: list = None,
         constants: list = None,
         sigma: float = None
-    ) -> bool:
+    ) -> BandwidthResult:
         """Compute the bandwidths.
 
         Parameters
         ----------
         data: FunctionalData
             An element of the class FunctionalData.
+        hurst: list of float
+            An estimate of the Hurst coefficient.
+        constants: list of float
+            An estimate of the Lipschitz constant
+        sigma: float
+            An estimate of the standard deviation of the noise.
+
+        Returns
+        -------
+        res: BandwidthResult
+            Return an instance of BandwidthResult.
 
         """
+        if not isinstance(data, (DenseFunctionalData,
+                                 IrregularFunctionalData)):
+            raise ValueError("Data must be elements of DenseFunctionalData or"
+                             " IrregularFunctionalData")
+        if data.n_dim > 1:
+            raise NotImplementedError("Bandwidth computation is only"
+                                      " implement for one dimensional data.")
+        if isinstance(data, DenseFunctionalData):
+            data = data.as_irregular()
 
-    def estimate_H(self, data, sigma=None):
-        """Perform an estimation of :math:`H_0`."""
-        if isinstance(self.t0, list):
-            self.H = estimate_H0_list(data, self.t0, self.k0, sigma)
+        argvals = data.argvals['input_dim_0'].values()
+        values = data.values.values()
+
+        if hurst is None:
+            hurst = self.estimate_hurst(argvals, values)
+        if constants is None:
+            constants = self.estimate_constant(argvals, values, hurst)
+        if sigma is None:
+            sigma = estimate_sigma(values)
+
+        bandwidth = self.estimate_bandwidth(argvals, hurst, constants, sigma,
+                                            self.kernel)
+        return BandwidthResult(self.points, self.neighborhood,
+                               hurst, constants, sigma, bandwidth)
+
+    def estimate_hurst(self, argvals, values, sigma=None):
+        """Perform an estimation of the Hurst coeffifient.
+
+        Parameters
+        ----------
+        argvals: dict_values
+            The values of the argvals dictionary from an
+            IrregularFunctionalData object.
+        values: dict_values
+            The values of the values dictionary from an IrregularFunctionalData
+            object.
+        sigma: float, default:None
+            An estimation of the standard deviation of the noise.
+
+        Returns
+        -------
+        hurst: list of float or float
+            An estimation of the Hurst parameter along a list of :math:`t_0`.
+            It has the same length than the list of :math:`t_0`.
+
+        """
+        if isinstance(self.points, list):
+            return estimate_hurst_list_(argvals, values, self.points,
+                                        self.neighborhood, sigma)
         else:
-            self.H = estimate_H0(data, self.t0, self.k0, sigma)
+            return estimate_hurst_(argvals, values, self.points,
+                                   self.neighborhood, sigma)
 
-    def estimate_L(self, data, H0=None, sigma=None, density=False):
-        """Perform an estimation of :math:`L_0`."""
-        # Estimate parameters
-        if (not hasattr(self, 'H')) or (H0 is None):
-            self.estimate_H(data, sigma)
+    def estimate_constant(self, argvals, values, hurst, sigma=None):
+        """Perform an estimation of the Lipschitz constant.
 
-        # Set parameters
-        H = H0 if H0 is not None else self.H
+        Parameters
+        ----------
+        argvals: dict_values
+            The values of the argvals dictionary from an
+            IrregularFunctionalData object.
+        values: dict_values
+            The values of the values dictionary from an IrregularFunctionalData
+            object.
+        hurst: list of float
+            An estimation of the Hurst parameter at each :math:`t_0`.
+        sigma: float, default:None
+            An estimation of the standard deviation of the noise.
 
-        if isinstance(self.t0, list):
-            self.L = estimate_L0_list(data, self.t0, self.k0, H,
-                                      sigma, density)
+        Returns
+        -------
+        constant: list of float or float
+            An estimation of the Lipschitz constant along a list of
+            :math:`t_0`. It has the same length than the list of :math:`t_0`.
+
+        """
+        if isinstance(self.points, list):
+            return estimate_constant_list_(argvals, values, self.points,
+                                           self.neighborhood, hurst, sigma)
         else:
-            self.L = estimate_L0(data, self.t0, self.k0, H,
-                                 sigma, density)
+            return estimate_constant_(argvals, values, self.points,
+                                      self.neighborhood, hurst, sigma)
 
-    def estimate_bandwidth(self, data, H0=None, L0=None, sigma=None):
+    def estimate_bandwidth(self, argvals, hurst, constants, sigma,
+                           kernel="epanechnikov"):
         """Perform an estimation of the bandwidth.
 
         Parameters
         ----------
-        data: FunctionalData
-        H0: list of float, default=None
-            An estimation of H0
-        L0: list of float, default=None
-            An estimation of L0
-        sigma: float, default:None
-            An estimation of the standard deviation of the noise
+        argvals: dict_values
+            The values of the argvals dictionary from an
+            IrregularFunctionalData object.
+        hurst: list of float
+            An estimation of the Hurst parameter.
+        constant: list of float
+            An estimation of the Lipschitz constant.
+        sigma: list of float
+            An estimation of the standard deviation of the noise.
+        kernel: str, default="epanechnikov"
+            The kernel used for the estimation. Should be "epanechnikov" or
+            "uniform".
 
+        Returns
+        -------
+        bandwidth: list of float
+            An estimation of the bandwidth along a list of :math:`t_0`.
         """
-        # Estimate parameters
-        if (not hasattr(self, 'H')) or (H0 is None):
-            self.estimate_H(data, sigma)
-
-        if (not hasattr(self, 'L')) or (L0 is None and H0 is None):
-            self.estimate_L(data, self.H, sigma)
-
-        #  Set parameters
-        H = H0 if H0 is not None else self.H
-        L = L0 if L0 is not None else self.L
-        s = sigma if sigma is not None else estimate_sigma(data.values)
-
-        if isinstance(self.t0, list):
-            self.b = estimate_bandwidth_list(data, H, L, s)
+        if isinstance(self.points, list):
+            return estimate_bandwidth_list_(argvals, hurst, constants,
+                                            sigma, kernel)
         else:
-            self.b = estimate_bandwidth(data, H, L, s)
+            return estimate_bandwidth_(argvals, hurst, constants, sigma,
+                                       kernel)
