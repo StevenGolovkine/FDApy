@@ -14,9 +14,9 @@ import pygam
 from .irregular_functional import IrregularFunctionalData
 
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
-from ..misc.utils import (integrate_, integrationWeights_,
-                          rangeStandardization_, rowMean_,
-                          tensorProduct_)
+from ..misc.utils import (integrate_, integration_weights_,
+                          range_standardization_, row_mean_,
+                          tensor_product_)
 
 
 ###############################################################################
@@ -159,7 +159,7 @@ class UnivariateFunctionalData(object):
         if standardize:
             argvals_stand = []
             for argval in self.argvals:
-                argvals_stand.append(rangeStandardization_(argval))
+                argvals_stand.append(range_standardization_(argval))
             self.argvals_stand = argvals_stand
 
     def __repr__(self):
@@ -417,7 +417,7 @@ class UnivariateFunctionalData(object):
             argvals as self and one observation.
 
         """
-        mean_ = rowMean_(self.values)
+        mean_ = row_mean_(self.values)
         if smooth:
             if method == 'LocalLinear':
                 kernel = kwargs.get('kernel', 'gaussian')
@@ -546,7 +546,7 @@ class UnivariateFunctionalData(object):
         T_len = D[len(D) - 1] - D[0]
         T1_lower = np.sum(~(D >= (D[0] + 0.25 * T_len)))
         T1_upper = np.sum((D <= (D[len(D) - 1] - 0.25 * T_len)))
-        W = integrationWeights_(D[T1_lower:T1_upper], method='trapz')
+        W = integration_weights_(D[T1_lower:T1_upper], method='trapz')
 
         nume = np.dot(W, (V_hat - np.diag(cov))[T1_lower:T1_upper])
         sigma2 = np.maximum(nume / (D[T1_upper] - D[T1_lower]), 0)
@@ -615,7 +615,7 @@ class UnivariateFunctionalData(object):
                 'Only one dimensional functional data are supported!')
 
         new_argvals = [self.argvals[0], data.argvals[0]]
-        new_values = [tensorProduct_(i, j) for i in self.values
+        new_values = [tensor_product_(i, j) for i in self.values
                       for j in data.values]
         return UnivariateFunctionalData(new_argvals, np.array(new_values))
 

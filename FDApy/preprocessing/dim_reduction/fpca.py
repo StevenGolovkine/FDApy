@@ -11,7 +11,7 @@ import numpy as np
 
 from ...representation.univariate_functional import UnivariateFunctionalData
 from ...representation.multivariate_functional import MultivariateFunctionalData
-from ...misc.utils import integrationWeights_
+from ...misc.utils import integration_weights_
 
 
 #############################################################################
@@ -120,7 +120,7 @@ class UFPCA():
         # Choose n, the wj's and the sj's (from Ramsey and Silverman, 2005)
         # N = X.nObsPoint()
         S = np.asarray(X.argvals).squeeze()
-        W = integrationWeights_(S, method='trapz')
+        W = integration_weights_(S, method='trapz')
 
         # Compute the eigenvalues and eigenvectors of W^{1/2}VW^{1/2}
         Wsqrt = np.diag(np.sqrt(W))

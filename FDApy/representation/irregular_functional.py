@@ -10,7 +10,7 @@ import numpy as np
 
 from ..preprocessing.smoothing.bandwidth import Bandwidth
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
-from ..misc.utils import rangeStandardization_
+from ..misc.utils import range_standardization_
 
 ############################################################################
 # Checkers used by the IrregularFunctionalData class
@@ -138,7 +138,7 @@ class IrregularFunctionalData(object):
             argvals_stand = []
             for argval in self.argvals:
                 if len(argval) > 1:
-                    argvals_stand.append(rangeStandardization_(argval))
+                    argvals_stand.append(range_standardization_(argval))
                 else:
                     argvals_stand.append(tuple([0]))
             self.argvals_stand = argvals_stand

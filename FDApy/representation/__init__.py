@@ -9,6 +9,7 @@ It also includes a Simulation class to generate some functional data with
 different properties.
 """
 
+from .functional_data import FunctionalData
 from .functional_data import DenseFunctionalData
 from .functional_data import IrregularFunctionalData
 from .functional_data import MultivariateFunctionalData
