@@ -9,6 +9,8 @@ realizations of diverse Brownian motion.
 """
 import numpy as np
 
+from abc import ABC, abstractmethod
+
 
 #############################################################################
 # Definition of the different Browian motion
@@ -43,7 +45,7 @@ def standard_brownian(argvals=None, x0=0.0):
 
     Parameters
     ----------
-    argvals: numpy.ndarray, default=None
+    argvals: numpy.ndarray, default=None, shape=(n,)
         The values on which the Brownian motion is evaluated. If ``None``,
         the functions are evaluated on the interval :math:`[0, 1]`.
     x0: float, default=0.0
@@ -51,8 +53,9 @@ def standard_brownian(argvals=None, x0=0.0):
 
     Returns
     -------
-    obj: UnivariateFunctionalData
-        A univariate functional data object containing one Brownian motion.
+    values: np.ndarray, shape=(n,)
+        An array representing a standard brownian motion with the same shape
+        than argvals.
 
     References
     ----------
@@ -65,14 +68,11 @@ def standard_brownian(argvals=None, x0=0.0):
     """
     delta, argvals = init_brownian(argvals)
 
-    W = np.zeros(np.size(argvals))
-    W[0] = x0
+    values = np.zeros(np.size(argvals))
+    values[0] = x0
     for idx in np.arange(1, np.size(argvals)):
-        W[idx] = W[idx - 1] + np.sqrt(delta) * np.random.normal()
-
-    obj = UnivariateFunctionalData(
-        argvals=argvals, values=W[np.newaxis])
-    return obj
+        values[idx] = values[idx - 1] + np.sqrt(delta) * np.random.normal()
+    return values
 
 
 def geometric_brownian(argvals=None, x0=1.0, mu=0.0, sigma=1.0):
@@ -80,7 +80,7 @@ def geometric_brownian(argvals=None, x0=1.0, mu=0.0, sigma=1.0):
 
     Parameters
     ----------
-    argvals: numpy.ndarray, default=None
+    argvals: numpy.ndarray, default=None, shape=(n,)
         The values on which the geometric brownian motion is evaluated. If
         ``None``, the Brownian is evaluated on the interval :math:`[0, 1]`.
     x0: float, default = 1.0
@@ -93,9 +93,9 @@ def geometric_brownian(argvals=None, x0=1.0, mu=0.0, sigma=1.0):
 
     Returns
     -------
-    obj: UnivariateFunctionalData
-        A univariate functional data object containing one geometric Brownian
-        motion.
+    values: np.ndarray, shape=(n,)
+        An array representing a geometric brownian motion with the same shape
+        than argvals.
 
     References
     ----------
@@ -106,36 +106,32 @@ def geometric_brownian(argvals=None, x0=1.0, mu=0.0, sigma=1.0):
     >>> geometric_brownian(argvals=np.arange(0, 1, 0.01), x0=1.0)
 
     """
+    if not x0 > 0:
+        raise ValueError('x0 must be stricly greater than 0.')
+
     delta, argvals = init_brownian(argvals)
-
-    W = np.zeros(np.size(argvals))
-    for idx in np.arange(1, np.size(argvals)):
-        W[idx] = W[idx - 1] + np.sqrt(delta) * np.random.normal()
-
-    in_exp = (mu - np.power(sigma, 2) / 2) * (argvals - argvals[0]) + sigma * W
-    S = x0 * np.exp(in_exp)
-
-    obj = UnivariateFunctionalData(
-        argvals=argvals, values=S[np.newaxis])
-    return obj
+    const = mu - sigma**2 / 2
+    values = np.random.normal(0, np.sqrt(delta), size=len(argvals))
+    in_exp = const * delta + sigma * values
+    return x0 * np.cumprod(np.exp(in_exp))
 
 
-def fractional_brownian(argvals=None, H=0.5):
+def fractional_brownian(argvals=None, hurst=0.5):
     """Generate fractional Brownian motion.
 
     Parameters
     ----------
-    argvals: numpy.ndarray, default=None
+    argvals: numpy.ndarray, default=None, shape=(n,)
         The values on which the fractional Brownian motion is evaluated. If
         ``None``, the Brownian is evaluated on the interval :math:`[0, 1]`.
-    H: double, default = 0.5
+    hurst: float, default=0.5
         Hurst parameter
 
     Returns
     -------
-    obj: UnivariateFunctionalData
-        A univariate functional data object containing one fractional Brownian
-        motion.
+    values: np.ndarray, shape=(n,)
+        An array representing a standard brownian motion with the same shape
+        than argvals.
 
     References
     ----------
@@ -143,83 +139,74 @@ def fractional_brownian(argvals=None, H=0.5):
 
     Example
     -------
-    >>> fractional_brownian(argvals=np.arange(0, 1, 0.01), H=0.7)
+    >>> fractional_brownian(argvals=np.arange(0, 1, 0.01), hurst=0.7)
 
     """
-    def p(idx, H):
-        return np.power(idx, 2 * H)
+    def p(idx, hurst):
+        return np.power(idx, 2 * hurst)
 
-    if argvals is None:
-        argvals = np.arange(0, 1, 0.05)
+    _, argvals = init_brownian(argvals)
+    n = np.size(argvals)
 
-    M = np.size(argvals)
-    R = np.zeros(M + 1)
-    R[0] = 1
-    for idx in np.arange(1, M + 1):
-        R[idx] = 0.5 * (p(idx + 1, H) - 2 * p(idx, H) + p(idx - 1, H))
-    invR = R[::-1]
-    R = np.append(R, invR[1:len(invR) - 1])
-    lamb = np.real(np.fft.fft(R) / (2 * M))
+    vec = np.ones(n + 1)
+    for idx in np.arange(1, n + 1):
+        temp = (p(idx + 1, hurst) - 2 * p(idx, hurst) + p(idx - 1, hurst))
+        vec[idx] = 0.5 * temp
+    inv_vec = vec[::-1]
+    vec = np.append(vec, inv_vec[1:len(inv_vec) - 1])
+    lamb = np.real(np.fft.fft(vec) / (2 * n))
 
-    rng = (np.random.normal(size=2 * M) + np.random.normal(size=2 * M) * 1j)
-    W = np.fft.fft(np.sqrt(lamb) * rng)
-    W = np.power(M, -H) * np.cumsum(np.real(W[1:(M + 1)]))
-
-    obj = UnivariateFunctionalData(
-        argvals=argvals, values=W[np.newaxis])
-    return obj
+    rng = (np.random.normal(size=2 * n) + np.random.normal(size=2 * n) * 1j)
+    values = np.fft.fft(np.sqrt(lamb) * rng)
+    return np.power(n, -hurst) * np.cumsum(np.real(values[1:(n + 1)]))
 
 
-def simulate_brownian(brownian_type, argvals=None, norm=False, **kwargs):
+def simulate_brownian(name, argvals=None, **kwargs):
     """Redirect to the right brownian motion function.
 
     Parameters
     ----------
-    brownian_type: str, {'standard', 'geometric', 'fractional'}
+    name: str, {'standard', 'geometric', 'fractional'}
         Name of the Brownian motion to simulate.
-    argvals: numpy.ndarray
+    argvals: numpy.ndarray, shape=(n,)
         The sampling points on which the Brownian motion is evaluated. If
         ``None``, the Brownian is evaluated on the interval :math:`[0, 1]`.
-    norm: boolean
-        Should we normalize the simulation?
 
     Keyword Args
     ------------
-    x0: float, default = 0.0 or 1.0
+    x0: float, default=0.0 or 1.0
         Start of the Brownian motion. Should be strictly positive if
-        ``brownian_type == 'geometric'``.
-    mu: float, default = 0
+        ``brownian_type=='geometric'``.
+    mu: float, default=0
         The interest rate
-    sigma: float, default = 1
+    sigma: float, default=1
         The diffusion coefficient
-    H: double, default = 0.5
+    hust: float, default=0.5
         Hurst parameter
 
     Returns
     -------
-    simu: UnivariateFunctionalData
-        A UnivariateFunctionalData object containing the simulated brownian
-        motion evaluated on ``argvals``.
+    values: np.ndarray, shape=(n,)
+        An array representing a standard brownian motion with the same shape
+        than argvals.
 
     Example
     -------
     >>> simulate_brownian(brownian_type='standard',
-    >>>                   argvals=np.arange(0, 1, 0.05),
-    >>>                   norm=False)
+    >>>                   argvals=np.arange(0, 1, 0.05))
 
     """
-    if brownian_type == 'standard':
-        simu = standard_brownian(argvals, x0=kwargs.get('x0', 0.0))
-    elif brownian_type == 'geometric':
-        simu = geometric_brownian(argvals,
+    if name == 'standard':
+        return standard_brownian(argvals, x0=kwargs.get('x0', 0.0))
+    elif name == 'geometric':
+        return geometric_brownian(argvals,
                                   x0=kwargs.get('x0', 1.0),
                                   mu=kwargs.get('mu', 0.0),
                                   sigma=kwargs.get('sigma', 1.0))
-    elif brownian_type == 'fractional':
-        simu = fractional_brownian(argvals, H=kwargs.get('H', 0.5))
+    elif name == 'fractional':
+        return fractional_brownian(argvals, hurst=kwargs.get('hurst', 0.5))
     else:
-        raise ValueError('Brownian type not implemented!')
-    return simu
+        raise NotImplementedError('Brownian type not implemented!')
 
 
 #############################################################################

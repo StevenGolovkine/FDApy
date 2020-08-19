@@ -344,6 +344,7 @@ class Basis(DenseFunctionalData):
 
     @property
     def name(self):
+        """Getter for name."""
         return self._name
 
     @name.setter
@@ -354,6 +355,7 @@ class Basis(DenseFunctionalData):
 
     @property
     def norm(self):
+        """Getter for norm."""
         return self._norm
 
     @norm.setter

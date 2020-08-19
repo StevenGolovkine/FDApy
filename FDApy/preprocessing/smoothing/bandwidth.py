@@ -581,6 +581,7 @@ class Bandwidth(object):
         -------
         bandwidth: list of float
             An estimation of the bandwidth along a list of :math:`t_0`.
+
         """
         if isinstance(self.points, list):
             return estimate_bandwidth_list_(argvals, hurst, constants,
