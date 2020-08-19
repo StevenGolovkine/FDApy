@@ -358,7 +358,7 @@ class Basis(DenseFunctionalData):
 
     @property
     def norm(self):
-        """Getter for norm.B"""
+        """Getter for norm."""
         return self._norm
 
     @norm.setter

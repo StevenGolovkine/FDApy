@@ -7,13 +7,15 @@ This module is used to define an abstract Simulation class. We may simulate
 different data from a linear combination of basis functions or multiple
 realizations of diverse Brownian motion.
 """
+import inspect
+
 import numpy as np
 
 from abc import ABC, abstractmethod
 
 from sklearn.datasets import make_blobs
 
-from FDApy.representation import DenseFunctionalData
+from FDApy.representation import DenseFunctionalData, IrregularFunctionalData
 from FDApy.representation.basis import Basis
 
 
@@ -430,8 +432,18 @@ class Simulation(ABC):
     ---------
     data: DenseFunctionalData
         An object that represents the simulated data.
+    noisy_data: DenseFunctionalData
+        An object that represents a noisy version of the simulated data.
+    sparse_data: IrregularFunctionalData
+        An object that represents a sparse version of the simulated data.
 
     """
+
+    def _check_data(self):
+        """Check if self has the attribut data."""
+        if not hasattr(self, 'data'):
+            raise ValueError('No data have been found in the simulation.'
+                             ' Please run new() before add_noise().')
 
     def __init__(self, name):
         """Initialize Simulation object."""
@@ -440,6 +452,7 @@ class Simulation(ABC):
 
     @property
     def name(self):
+        """Getter for name."""
         return self._name
 
     @name.setter
@@ -447,15 +460,65 @@ class Simulation(ABC):
         self._name = new_name
 
     @abstractmethod
-    def new(self, n_obs, n_features=1, n_clusters=1, centers=None,
-            cluster_std=None, **kwargs):
+    def new(self, n_obs, argvals=None, **kwargs):
         """Simulate a new set of data."""
         pass
 
-    @abstractmethod
-    def add_noise(self):
-        """Add noise to the data."""
-        pass
+    def add_noise(self, var_noise=1):
+        r"""Add noise to the data.
+
+        Parameters
+        ----------
+        var_noise: float or Callable, default=1
+            Variance of the noise to add. May be a callable for heteroscedastic
+            noise.
+
+        Notes
+        -----
+        Model used to generate the data:
+
+        .. math::
+            Z(t) = f(t) + \sigma(f(t))\epsilon
+
+        """
+        self._check_data()
+
+        shape_simu = self.data.n_obs, self.data.n_points['input_dim_0']
+        noisy_data = np.random.normal(0, 1, shape_simu)
+
+        if inspect.isfunction(var_noise):
+            var_noise = var_noise(self.values)
+
+        std_noise = np.sqrt(var_noise)
+        noisy_data = self.data.values + np.multiply(std_noise, noisy_data)
+        self.noisy_data = DenseFunctionalData(self.data.argvals, noisy_data)
+
+    def sparsify(self, percentage=0.9, epsilon=0.05):
+        """Sparsify the simulated data.
+
+        Arguments
+        ---------
+        percentage: float, default = 0.9
+            Percentage of data to keep.
+        epsilon: float, default = 0.05
+            Uncertainty on the percentage to keep.
+
+        """
+        self._check_data()
+
+        argvals = {}
+        values = {}
+        for idx, obs in enumerate(self.data):
+            s = obs.values.size
+            p = np.random.uniform(max(0, percentage - epsilon),
+                                  min(1, percentage + epsilon))
+            indices = np.sort(np.random.choice(np.arange(0, s),
+                                               size=int(p * s),
+                                               replace=False))
+            argvals[idx] = obs.argvals['input_dim_0'][indices]
+            values[idx] = obs.values[0][indices]
+        self.sparse_data = IrregularFunctionalData({'input_dim_0': argvals},
+                                                   values)
 
 
 class Brownian(Simulation):
@@ -470,6 +533,10 @@ class Brownian(Simulation):
     ---------
     data: DenseFunctionalData
         An object that represents the simulated data.
+    noisy_data: DenseFunctionalData
+        An object that represents a noisy version of the simulated data.
+    sparse_data: IrregularFunctionalData
+        An object that represents a sparse version of the simulated data.
 
     """
 
@@ -506,9 +573,6 @@ class Brownian(Simulation):
             values[idx, :] = simulate_brownian(self.name, argvals, **kwargs)
         self.data = DenseFunctionalData({'input_dim_0': argvals}, values)
 
-    def add_noise(self):
-        pass
-
 
 class KarhunenLoeve(Simulation):
     r"""Class for the simulation of data using a basis of function.
@@ -527,7 +591,12 @@ class KarhunenLoeve(Simulation):
     ---------
     data: DenseFunctionalData
         An object that represents the simulated data.
+    noisy_data: DenseFunctionalData
+        An object that represents a noisy version of the simulated data.
+    sparse_data: IrregularFunctionalData
+        An object that represents a sparse version of the simulated data.
     labels: np.ndarray, shape=(n_obs,)
+        Data labels
 
     Notes
     -----
@@ -589,6 +658,3 @@ class KarhunenLoeve(Simulation):
         values = np.matmul(coef, self.basis.values)
         self.labels = labels
         self.data = DenseFunctionalData(self.basis.argvals, values)
-
-    def add_noise(self):
-        pass

@@ -291,7 +291,7 @@ class FunctionalData(ABC):
 
     @abstractmethod
     def smooth(self, points, neighborhood, points_estim=None, degree=0,
-               kernel="epanechnikov", bandwith=None):
+               kernel="epanechnikov", bandwidth=None):
         """Smooth the data."""
         pass
 
@@ -515,7 +515,7 @@ class DenseFunctionalData(FunctionalData):
         return DenseFunctionalData(self.argvals, mean_estim)
 
     def smooth(self, points, neighborhood, points_estim=None, degree=0,
-               kernel="epanechnikov", bandwith=None):
+               kernel="epanechnikov", bandwidth=None):
         """Smooth the data."""
         pass
 
@@ -802,7 +802,7 @@ class IrregularFunctionalData(FunctionalData):
         return DenseFunctionalData(dense_self.argvals, mean_estim)
 
     def smooth(self, points, neighborhood, points_estim=None, degree=0,
-               kernel="epanechnikov", bandwith=None):
+               kernel="epanechnikov", bandwidth=None):
         """Smooth the data."""
         pass
 
