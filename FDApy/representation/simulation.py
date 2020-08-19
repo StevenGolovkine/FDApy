@@ -496,8 +496,8 @@ class Simulation(ABC):
     def sparsify(self, percentage=0.9, epsilon=0.05):
         """Sparsify the simulated data.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         percentage: float, default = 0.9
             Percentage of data to keep.
         epsilon: float, default = 0.05
