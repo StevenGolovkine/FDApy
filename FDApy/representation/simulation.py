@@ -210,105 +210,104 @@ def simulate_brownian(name, argvals=None, **kwargs):
 
 
 #############################################################################
-# Definition of the eigenvalues
+# Definition of the decreasing of the eigenvalues
 
-def eigenvalues_linear(M=3):
+def eigenvalues_linear(n=3):
     """Generate linear decreasing eigenvalues.
 
     Parameters
     ----------
-    M: int, default = 3
-        Number of eigenvalues to generates
-
-    Returns
-    -------
-    val: numpy.ndarray
-        The generated eigenvalues
-
-    Example
-    -------
-    >>> eigenvalues_linear(M=3)
-    array([1.0, 0.6666666666666666, 0.3333333333333333])
-
-    """
-    return np.array([(M - m + 1) / M for m in np.linspace(1, M, M)])
-
-
-def eigenvalues_exponential(M=3):
-    """Generate exponential decreasing eigenvalues.
-
-    Parameters
-    ----------
-    M: int, default = 3
-        Number of eigenvalues to generates
-
-    Returns
-    -------
-    val: numpy.ndarray
-        The generated eigenvalues
-
-    Example
-    -------
-    >>> eigenvalues_exponential(M=3)
-    array([0.36787944117144233, 0.22313016014842982, 0.1353352832366127])
-
-    """
-    return [np.exp(-(m + 1) / 2) for m in np.linspace(1, M, M)]
-
-
-def eigenvalues_wiener(M=3):
-    """Generate eigenvalues from a Wiener process.
-
-    Parameters
-    ----------
-    M: int, default = 3
-        Number of eigenvalues to generates
-
-    Returns
-    -------
-    val: numpy.ndarray
-        The generated eigenvalues
-
-    Example
-    -------
-    >>> eigenvalues_wiener(M=3)
-    array([0.4052847345693511, 0.04503163717437235, 0.016211389382774045])
-
-    """
-    return np.array([np.power((np.pi / 2) * (2 * m - 1), -2)
-                     for m in np.linspace(1, M, M)])
-
-
-def simulate_eigenvalues(eigenvalues_name, M=3):
-    """Redirect to the right simulation eigenvalues function.
-
-    Parameters
-    ----------
-    eigenvalues_name: str
-        Name of the eigenvalues generation process to use.
-    M: int, default = 3
+    n: int, default=3
         Number of eigenvalues to generates.
 
     Returns
     -------
-    eigenvalues: numpy.ndarray
-        The generated eigenvalues
+    values: numpy.ndarray, shape=(n,)
+        The generated eigenvalues.
 
     Example
     -------
-    >>> simulate_eigenvalues('linear', M=3)
+    >>> eigenvalues_linear(n=3)
     array([1.0, 0.6666666666666666, 0.3333333333333333])
 
     """
-    if eigenvalues_name == 'linear':
-        eigenvalues = eigenvalues_linear(M)
-    elif eigenvalues_name == 'exponential':
-        eigenvalues = eigenvalues_exponential(M)
-    elif eigenvalues_name == 'wiener':
-        eigenvalues = eigenvalues_wiener(M)
+    return np.array([(n - m + 1) / n for m in np.linspace(1, n, n)])
+
+
+def eigenvalues_exponential(n=3):
+    """Generate exponential decreasing eigenvalues.
+
+    Parameters
+    ----------
+    n: int, default=3
+        Number of eigenvalues to generates.
+
+    Returns
+    -------
+    values: numpy.ndarray, shape=(n,)
+        The generated eigenvalues.
+
+    Example
+    -------
+    >>> eigenvalues_exponential(n=3)
+    array([0.36787944117144233, 0.22313016014842982, 0.1353352832366127])
+
+    """
+    return [np.exp(-(m + 1) / 2) for m in np.linspace(1, n, n)]
+
+
+def eigenvalues_wiener(n=3):
+    """Generate eigenvalues from a Wiener process.
+
+    Parameters
+    ----------
+    n: int, default=3
+        Number of eigenvalues to generates.
+
+    Returns
+    -------
+    values: numpy.ndarray, shape=(n,)
+        The generated eigenvalues.
+
+    Example
+    -------
+    >>> eigenvalues_wiener(n=3)
+    array([0.4052847345693511, 0.04503163717437235, 0.016211389382774045])
+
+    """
+    return np.array([np.power((np.pi / 2) * (2 * m - 1), -2)
+                     for m in np.linspace(1, n, n)])
+
+
+def simulate_eigenvalues(name, n=3):
+    """Redirect to the right simulation eigenvalues function.
+
+    Parameters
+    ----------
+    eigenvalues_name: str, {'linear', 'exponential', 'wiener'}
+        Name of the eigenvalues generation process to use.
+    n: int, default=3
+        Number of eigenvalues to generates.
+
+    Returns
+    -------
+    eigenvalues: numpy.ndarray, shape=(n,)
+        The generated eigenvalues.
+
+    Example
+    -------
+    >>> simulate_eigenvalues('linear', n=3)
+    array([1.0, 0.6666666666666666, 0.3333333333333333])
+
+    """
+    if name == 'linear':
+        return eigenvalues_linear(n)
+    elif name == 'exponential':
+        return eigenvalues_exponential(n)
+    elif name == 'wiener':
+        return eigenvalues_wiener(n)
     else:
-        raise ValueError('Eigenvalues not implemented!')
-    return eigenvalues
+        raise NotImplementedError('Eigenvalues not implemented!')
 
 
 #############################################################################
