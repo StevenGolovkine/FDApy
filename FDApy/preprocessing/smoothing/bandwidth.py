@@ -393,7 +393,7 @@ class BandwidthResult(NamedTuple):
 
     def __repr__(self) -> str:
         """Override print function."""
-        return (f"Bandtwith:\n"
+        return (f"Bandwidth:\n"
                 f"\t Sampling points: {str(self.points)}.\n"
                 f"\t Neighborhood: {str(self.neighborhood)}.\n"
                 f"\t Hurst estimates: {str(self.hurst_coefficient)}.\n"
@@ -569,7 +569,7 @@ class Bandwidth(object):
             IrregularFunctionalData object.
         hurst: list of float
             An estimation of the Hurst parameter.
-        constant: list of float
+        constants: list of float
             An estimation of the Lipschitz constant.
         sigma: list of float
             An estimation of the standard deviation of the noise.

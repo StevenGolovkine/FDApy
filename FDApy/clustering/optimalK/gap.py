@@ -210,6 +210,7 @@ class Gap():
         Parameters
         ----------
         data: np.ndarray, shape=(n, p)
+            The data as an array of shape (n, p).
         cluster_array: Iterable[int]
             Represents the number of clusters to try on the data.
         n_refs: int, default=3
