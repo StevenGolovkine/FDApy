@@ -13,6 +13,9 @@ from abc import ABC, abstractmethod
 
 from sklearn.datasets import make_blobs
 
+from FDApy.representation import DenseFunctionalData
+from FDApy.representation.basis import Basis
+
 
 #############################################################################
 # Definition of the different Browian motion
@@ -183,7 +186,7 @@ def simulate_brownian(name, argvals=None, **kwargs):
         The interest rate
     sigma: float, default=1
         The diffusion coefficient
-    hust: float, default=0.5
+    hurst: float, default=0.5
         Hurst parameter
 
     Returns
@@ -420,253 +423,172 @@ class Simulation(ABC):
 
     Parameters
     ----------
-    N: int
-        Number of curves to simulate.
-    name: str, default = None
+    name: str
         Name of the simulation
-    n_features: int, default = 1
-        Number of features to simulate.
-    n_clusters: int, default = 1
-        Number of clusters to simulate.
-    centers: numpy.ndarray, (n_features, n_clusters)
-        The centers of the clusters to generate. The ``n_features``
-        correspond to the number of functions within the basis.
-    cluster_std: np.ndarray, (n_features, n_clusters)
-        The standard deviation of the clusters to generate. The
-        ``n_features`` correspond to the number of functions within the
-        basis.
 
     Arguments
     ---------
-    coef: numpy.ndarray, (N, n_features)
-        Array of generated coefficients
-    labels: numpy.ndarray, (N, )
-        The integer labels for cluster membership of each observations.
+    data: DenseFunctionalData
+        An object that represents the simulated data.
 
     """
 
-    def __init__(self, N, name=None, n_features=1, n_clusters=1,
-                 centers=None, cluster_std=None):
+    def __init__(self, name):
         """Initialize Simulation object."""
         super().__init__()
-        self.N = N
         self.name = name
-        self.n_features = n_features
-        self.n_clusters = n_clusters
-        self.centers = initialize_centers(n_features, n_clusters, centers)
-        self.cluster_std = initialize_cluster_std(n_features, n_clusters,
-                                                  cluster_std)
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, new_name):
+        self._name = new_name
 
     @abstractmethod
-    def new(self, **kwargs):
-        """Function to simulate observations."""
-        self.coef, self.labels = make_coef(self.N, self.n_features,
-                                           self.centers, self.cluster_std)
-
-
-#############################################################################
-# Class SimulationUni
-
-
-class SimulationUni(Simulation):
-    """An abstract class for the simulation of univariate functional data.
-
-    Parameters
-    ----------
-    M: int or numpy.ndarray
-        Sampling points. If ``M`` is an integer, we use
-        ``np.linspace(0, 1, M)`` as sampling points. Otherwise, we use the
-        provided numpy.ndarray.
-
-    """
-
-    def __init__(self, N, M, name=None, n_features=1, n_clusters=1,
-                 centers=None, cluster_std=None):
-        """Initialize Simulation object."""
-        if isinstance(M, int):
-            M = np.linspace(0, 1, M)
-
-        super().__init__(N, name, n_features, n_clusters, centers, cluster_std)
-        self.M = M
+    def new(self, n_obs, n_features=1, n_clusters=1, centers=None,
+            cluster_std=None, **kwargs):
+        """Simulate a new set of data."""
+        pass
 
     @abstractmethod
-    def new(self, **kwargs):
-        """Function to simulate observations."""
-        super().new()
+    def add_noise(self):
+        """Add noise to the data."""
+        pass
 
 
-class BasisUFPCA(SimulationUni):
-    r"""Class for the simulation of data using a UFPCA basis.
-
-    Parameters
-    ----------
-    basis: UFPCA object
-        Results of a univariate functional principal component analysis.
-
-    Attributes
-    ----------
-    n_features: int
-        Number of functions within the FPCA basis.
-    data: UnivariateFunctionalData
-        The simulated data :math:`X_i(t)`.
-
-    Notes
-    -----
-    The function are simulated using the Karhunen-Loève decomposition:
-
-    .. math::
-        X_i(t) = \mu(t) + \sum_{j = 1}^M c_{i, j}\phi_{i, j}(t), i = , \dots, N
-
-    """
-
-    def __init__(self, N, basis, n_clusters=1, centers=None, cluster_std=None):
-        """Initialize BasisFPCA object."""
-        if isinstance(basis, UFPCA):
-            n_features = len(basis.eigenvalues)
-        else:
-            raise TypeError('Wrong basis type!')
-
-        super().__init__(N, None, 'ufpca', n_features, n_clusters,
-                         centers, cluster_std)
-        self.basis = basis
-
-    def new(self, **kwargs):
-        """Function that simulates :math:`N` observations."""
-        super().new()
-        return self.basis.inverse_transform(self.coef)
-
-
-class Brownian(SimulationUni):
-    """A functional data object representing a Brownian motion.
+class Brownian(Simulation):
+    """Class for the simulation of diverse Brownian motions.
 
     Parameters
     ----------
-    brownian_type: str, {'standard', 'geometric', 'fractional'}
-        Type of brownian motion to simulate.
+    name: str, {'standard', 'geometric', 'fractional'}
+        Type of Brownian motion to simulate.
+
+    Arguments
+    ---------
+    data: DenseFunctionalData
+        An object that represents the simulated data.
 
     """
 
-    def __init__(self, N, M, brownian_type='standard'):
+    def __init__(self, name):
         """Initialize Brownian object."""
-        super().__init__(N, M, brownian_type, n_features=1, n_clusters=1,
-                         centers=None, cluster_std=None)
+        super().__init__(name)
 
-    def new(self, **kwargs):
-        """Function that simulates `N` observations.
+    def new(self, n_obs, argvals=None, **kwargs):
+        """Simulate ``n_obs`` realizations of a Brownian on ``argvals``.
+
+        Parameters
+        ----------
+        n_obs: int
+            Number of observations to simulate.
+        argvals: numpy.ndarray, shape=(n,), default=None
+            The sampling points on which the Brownian motion is evaluated. If
+            ``None``, the Brownian is evaluated on the interval :math:`[0, 1]`.
 
         Keyword Args
         ------------
-        x0: float, default = 0.0 or 1.0
+        x0: float, default=0.0 or 1.0
             Start of the Brownian motion. Should be strictly positive if
-            ``brownian_type == 'geometric'``.
-        mu: float, default = 0
+            ``brownian_type=='geometric'``.
+        mu: float, default=0
             The interest rate
-        sigma: float, default = 1
+        sigma: float, default=1
             The diffusion coefficient
-        H: double, default = 0.5
-            Hurst parameter
-
-        Returns
-        -------
-        data: UnivariateFunctionalData
-            The generated observations
+        hurst: float, default=0.5
+            Hurst parameter.
 
         """
-        param_dict = {k: kwargs.pop(k) for k in dict(kwargs)}
+        values = np.zeros(shape=(n_obs, len(argvals)))
+        for idx in range(n_obs):
+            values[idx, :] = simulate_brownian(self.name, argvals, **kwargs)
+        self.data = DenseFunctionalData({'input_dim_0': argvals}, values)
 
-        # Simulate the N observations
-        obs = []
-        for _ in np.arange(self.N):
-            obs.append(simulate_brownian(self.name, self.M, **param_dict))
-
-        data = MultivariateFunctionalData(obs)
-        return data.asUnivariateFunctionalData()
+    def add_noise(self):
+        pass
 
 
-
-#############################################################################
-# Class SimulationMulti
-
-
-class SimulationMulti(Simulation):
-    """An abstract class for the simulation of multivariate functional data.
+class KarhunenLoeve(Simulation):
+    r"""Class for the simulation of data using a basis of function.
 
     Parameters
     ----------
-    M: list of int or list of numpy.ndarray
-        Sampling points. If ``M`` is an integer, we use
-        ``np.linspace(0, 1, M)`` as sampling points. Otherwise, we use the
-        provided numpy.ndarray.
+    name: str, {'legendre', 'wiener', 'fourier', 'bsplines'}
+        Type of basis to use.
+    basis: DenseFunctionalData or None
+        A basis of functions as a DenseFunctionalData object. Used to have a
+        user-defined basis of function.
+    n_functions: int, default=5
+        Number of functions to use to generate the basis.
 
-    """
-
-    def __init__(self, N, M, name=None, n_features=1, n_clusters=1,
-                 centers=None, cluster_std=None):
-        """Initialize SimulationMulti object."""
-        if not isinstance(M, list):
-            raise TypeError('M have to be a list!')
-
-        super().__init__(N, name, n_features, n_clusters, centers, cluster_std)
-        self.M = []
-        for m in M:
-            if isinstance(m, int):
-                self.M.append(np.linspace(0, 1, m))
-            elif isinstance(m, np.ndarray):
-                self.M.append(m)
-            else:
-                raise TypeError(f"""An element of M have a wrong type!\
-                                Have to be int or numpy.ndarray and not\
-                                {type(m)}.""")
-
-    @abstractmethod
-    def new(self, **kwargs):
-        """Function to simulate observations."""
-        super().new()
-
-
-class BasisMFPCA(SimulationMulti):
-    r"""Class for the simulation of data using a MFPCA basis.
-
-    Parameters
-    ----------
-    basis: MFPCA object
-        Results of a multivariate functional principal component analysis.
-
-    Attributes
-    ----------
-    n_features: int
-        Number of functions within the MFPCA basis.
-    data: MultivariateFunctionalData
-        The simulated data :math:`X_i(t)`.
+    Arguments
+    ---------
+    data: DenseFunctionalData
+        An object that represents the simulated data.
+    labels: np.ndarray, shape=(n_obs,)
 
     Notes
     -----
     The function are simulated using the Karhunen-Loève decomposition:
 
     .. math::
-        X_i(t) = \mu(t) + \sum_{j = 1}^M c_{i, j}\phi_{i, j}(t), i = , \dots, N
-
-    The number of sampling points :math:`M` is not used for the simulation of
-    data using FPCA. The simulated curves will have the same length
-    than the eigenfunctions.
+        X_i(t) = \mu(t) + \sum_{j = 1}^M c_{i, j}\phi_{i, j}(t),
+        i = 1, \dots, N
 
     """
 
-    def __init__(self, N, basis, n_clusters=1, centers=None, cluster_std=None):
-        """Initialize BasisMFPCA object."""
-        if isinstance(basis, MFPCA):
-            n_features = len(basis.eigenvaluesCovariance_)
-        else:
-            raise TypeError('Wrong basis type!')
+    def __init__(self, name, basis=None, n_functions=5, **kwargs_basis):
+        """Initialize Basis object."""
+        if (name is not None) and (basis is not None):
+            raise ValueError('Name or basis have to be None. Do not know'
+                             ' which basis to use.')
+        if not isinstance(basis, DenseFunctionalData) and (basis is not None):
+            raise ValueError('Basis have to be an instance of'
+                             ' DenseFunctionalData')
+        if (name is None) and isinstance(basis, DenseFunctionalData):
+            name = 'user-defined'
+        if isinstance(name, str) and (basis is None):
+            basis = Basis(name, n_functions, **kwargs_basis)
 
-        # TODO: Modify the class MFPCA to have argvals.
-        M = [ufpca.argvals[0] for ufpca in basis.ufpca_]
-
-        super().__init__(N, M, 'mfpca', n_features, n_clusters,
-                         centers, cluster_std)
+        super().__init__(name)
         self.basis = basis
 
-    def new(self, **kwargs):
-        """Function that simulates :math:`N` observations."""
-        super().new()
-        return self.basis.inverse_transform(self.coef)
+    def new(self, n_obs, argvals=None, **kwargs):
+        """Simulate ``n_obs`` realizations from a basis of function.
+
+        Parameters
+        ----------
+        n_obs: int
+            Number of observations to simulate.
+        argvals: None
+            Not used in this context. We will use the `argvals` from the Basis
+            object as `argvals` of the simulation.
+
+        Keyword Args
+        ------------
+        n_clusters: int, default=1
+            Number of clusters to generate
+        centers: numpy.ndarray, shape=(n_features, n_clusters)
+            The centers of the clusters to generate. The ``n_features``
+            correspond to the number of functions within the basis.
+        cluster_std: np.ndarray, shape=(n_features, n_clusters)
+            The standard deviation of the clusters to generate. The
+            ``n_features`` correspond to the number of functions within the
+            basis.
+
+        """
+        n_features = self.basis.n_obs
+        n_clusters = kwargs.get('n_clusters', 1)
+        centers = initialize_centers(n_features, n_clusters,
+                                     kwargs.get('centers', None))
+        cluster_std = initialize_cluster_std(n_features, n_clusters,
+                                             kwargs.get('cluster_std', None))
+        coef, labels = make_coef(n_obs, n_features, centers, cluster_std)
+        values = np.matmul(coef, self.basis.values)
+        self.labels = labels
+        self.data = DenseFunctionalData(self.basis.argvals, values)
+
+    def add_noise(self):
+        pass

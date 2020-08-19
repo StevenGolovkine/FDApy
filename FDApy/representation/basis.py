@@ -333,6 +333,9 @@ class Basis(DenseFunctionalData):
         self.name = name
         self.norm = norm
 
+        if argvals is None:
+            argvals = {'input_dim_0': np.arange(0, 1, 0.01)}
+
         super()._check_argvals(argvals)
         if len(argvals) > 1:
             raise NotImplementedError('Only one dimensional basis are'
@@ -355,7 +358,7 @@ class Basis(DenseFunctionalData):
 
     @property
     def norm(self):
-        """Getter for norm."""
+        """Getter for norm.B"""
         return self._norm
 
     @norm.setter
