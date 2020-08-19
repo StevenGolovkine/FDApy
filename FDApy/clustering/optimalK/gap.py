@@ -216,6 +216,12 @@ class Gap():
         n_refs: int, default=3
             Number of random reference datasets to consider.
 
+        Returns
+        -------
+        n_clusters: int
+            Best number of clusters fond in the data according to the Gap
+            statistic.
+
         """
         if self.parallel_backend == 'multiprocessing':
             engine = self._process_with_multiprocessing
@@ -263,12 +269,19 @@ class Gap():
     def plot(self, axes=None, scatter_args=None, **plt_kwargs):
         """Plot the results of the Gap computation.
 
-        axex: matplotlib.axes._subplots.AxesSubplot
+        Parameters
+        ----------
+        axes: matplotlib.axes._subplots.AxesSubplot
             Axes object onto which the objects are plotted.
         scatter_args: dict
             Keywords scatter plot arguments
         **plt_kwargs:
             Keywords plotting arguments
+
+        Returns
+        -------
+        axes: matplotlib.axes._subplots.AxesSubplot
+            Axes object containing the graphs.
 
         """
         if axes is None:
@@ -330,13 +343,15 @@ class Gap():
             Number of clusters to test.
         n_refs: int
             Number of reference dataset to generate.
+        metric: str, default='euclidean'
+            The metric used to compute the Gap statistic.
 
         Returns
         -------
         results: GapResult
             The results as a GapResult object.
+
         """
-        # Get properties of the data
         n_obs = np.ma.size(data, 0)
         a, b = data.min(axis=0), data.max(axis=0)
 
