@@ -11,6 +11,8 @@ import numpy as np
 
 from abc import ABC, abstractmethod
 
+from sklearn.datasets import make_blobs
+
 
 #############################################################################
 # Definition of the different Browian motion
@@ -284,7 +286,7 @@ def simulate_eigenvalues(name, n=3):
 
     Parameters
     ----------
-    eigenvalues_name: str, {'linear', 'exponential', 'wiener'}
+    name: str, {'linear', 'exponential', 'wiener'}
         Name of the eigenvalues generation process to use.
     n: int, default=3
         Number of eigenvalues to generates.
@@ -312,12 +314,12 @@ def simulate_eigenvalues(name, n=3):
 
 #############################################################################
 # Definition of clusters
-def make_coef(N, n_features, centers, cluster_std):
-    """Simulate coefficient for the Karhunen-Loève decomposition.
+def make_coef(n_obs, n_features, centers, cluster_std):
+    """Simulate a set of coefficients for the Karhunen-Loève decomposition.
 
     Parameters
     ----------
-    N: int
+    n_obs: int
         Number of wanted observations.
     n_features: int
         Number of features to simulate.
@@ -331,9 +333,9 @@ def make_coef(N, n_features, centers, cluster_std):
 
     Returns
     -------
-    coef: numpy.ndarray, (N, n_features)
-        Array of generated coefficients
-    labels: numpy.ndarray, (N, )
+    coef: numpy.ndarray, (n_obs, n_features)
+        Array of generated coefficients.
+    labels: numpy.ndarray, (n_obs,)
         The integer labels for cluster membership of each observations.
 
     Notes
@@ -343,15 +345,20 @@ def make_coef(N, n_features, centers, cluster_std):
     the standard deviations between clusters. To bypass that, we loop through
     the ``n_features``.
 
+    Examples
+    --------
+    >>> centers = np.array([[1, 2, 3], [0, 4, 6]])
+    >>> cluster_std = cluster_std = np.array([[0.5, 0.25, 1], [1, 0.1, 0.5]])
+    >>> make_coef(100, 2, centers, cluster_std)
+
     """
-    coef = np.zeros((N, n_features))
+    coef = np.zeros((n_obs, n_features))
     for idx in np.arange(n_features):
-        X, y = make_blobs(n_samples=N, n_features=1,
-                          centers=centers[idx, :].reshape(-1, 1),
-                          cluster_std=cluster_std[idx, :],
-                          shuffle=False)
-        coef[:, idx] = X.squeeze()
-    labels = y
+        x, labels = make_blobs(n_samples=n_obs, n_features=1,
+                               centers=centers[idx, :].reshape(-1, 1),
+                               cluster_std=cluster_std[idx, :],
+                               shuffle=False)
+        coef[:, idx] = x.squeeze()
     return coef, labels
 
 
@@ -364,14 +371,38 @@ def initialize_centers(n_features, n_clusters, centers=None):
         Number of features to simulate.
     n_clusters: int
         Number of clusters to simulate.
-    centers: numpy.ndarray, (n_features, n_clusters), default = None
+    centers: numpy.ndarray, shape=(n_features, n_clusters), default=None
         The centers of each cluster per feature.
+
+    Returns
+    -------
+    centers: np.ndarray, shape=(n_features, n_clusters)
+        An array with good shape for the initialization of the centers of the
+        cluster.
+
     """
     return np.zeros((n_features, n_clusters)) if centers is None else centers
 
 
 def initialize_cluster_std(n_features, n_clusters, cluster_std=None):
-    """Initialize the standard deviation of the clusters."""
+    """Initialize the standard deviation of the clusters.
+
+    Parameters
+    ----------
+    n_features: int
+        Number of features to simulate.
+    n_clusters: int
+        Number of clusters to simulate.
+    cluster_std: str or np.ndarray or None
+        The standard deviation of each cluster per feature.
+
+    Returns
+    -------
+    cluster_std: np.ndarray, shape=(n_features, n_clusters)
+        An array with good shape for the initialization of the standard
+        deviation of the cluster.
+
+    """
     if isinstance(cluster_std, str):
         eigenvalues = simulate_eigenvalues(cluster_std, n_features)
         eigenvalues = np.repeat(eigenvalues, n_clusters)
