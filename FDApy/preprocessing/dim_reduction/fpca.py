@@ -10,7 +10,7 @@ concerned with UFPCA, whereas multivariate functional data with MFPCA.
 import numpy as np
 
 from ...representation.univariate_functional import UnivariateFunctionalData
-from ...representation.multivariate_functional import MultivariateFunctionalData
+from FDApy import DenseFunctionalData, MultivariateFunctionalData
 from ...misc.utils import integration_weights_
 
 
@@ -22,86 +22,90 @@ class UFPCA():
 
     Linear dimensionality reduction of univariate functional data using
     Singular Value Decomposition of the data to project it to a lower
-    dimension space.
+    dimensional space.
 
-    It uses the PCA implementation of sklearn.
+    Parameters
+    ----------
+    n_components : int, float, None, default=None
+        Number of components to keep.
+        if n_components if None, all components are kept::
+            n_components == min(n_samples, n_features)
+        if n_components is int, n_components are kept.
+        if 0 < n_components < 1, select the number of components such that
+        the amount of variance that needs to be explained is greater than
+        the percentage specified by n_components.
 
     Attributes
     ----------
-    eigenfunctions : array, shape = (n_components, n_features)
+    eigenfunctions: DenseFunctionalData
         Principal axes in feature space, representing the directions of
-        maximum variances in the data.
-    eigenvalues : array, shape = (n_components, )
+        maximum variances in the dataas a DenseFunctionalData.
+    eigenvalues: array, shape = (n_components, )
         The singular values corresponding to each of selected components.
+    covariance: DenseFunctionalData
+        An estimation of the covariance of the training data based on the
+        results of the functional principal components analysis.
 
     """
 
     def __init__(self, n_components=None):
-        """Initaliaze UFPCA object.
-
-        Parameters
-        ----------
-        n_components : int, float, None, default=None
-            Number of components to keep.
-            if n_components if None, all components are kept::
-                n_components == min(n_samples, n_features)
-            if n_components is int, n_components are kept.
-            if 0 < n_components < 1, select the number of components such that
-            the amount of variance that needs to be explained is greater than
-            the percentage specified by n_components.
-
-        """
+        """Initaliaze UFPCA object."""
         self.n_components = n_components
 
-    def fit(self, X, **kwargs):
-        """Fit the model with X.
+    def fit(self, data, mean=None, covariance=None, **kwargs):
+        """Fit the model on data.
 
         Parameters
         ----------
-        X : UnivariateFunctionalData
+        data: DenseFunctionalData
             Training data
+        mean: DenseFunctionalData, default=None
+            An estimation of the mean of the training data.
+        covariance: DenseFunctionalData, default=None
+            An estimation of the covariance of the training data.
 
-        Returns
-        -------
-        self : object
-            Returns the instance itself.
+        Keyword Args
+        ------------
+        method: str, default='LocalLinear'
+            Smoothing method.
+        kernel: str, default='gaussian'
+            Kernel used for the smoothing.
+        bandwidth: float, default=1.0
+            Bandwidth used for the smoothing.
+        degree: int, default=2
+            Degree for the smoothing (LocalLinear).
+        n_basis: int, default=2
+            Number of basis used for the smoothing (GAM).
 
         """
         self.smoothing_parameters = {
             'method': kwargs.get('method', 'LocalLinear'),
             'kernel': kwargs.get('kernel', 'gaussian'),
-            'bandwidth': kwargs.get('bandwidth', 1),
+            'bandwidth': kwargs.get('bandwidth', 1.0),
             'degree': kwargs.get('degree', 2),
             'n_basis': kwargs.get('n_basis', 10)
         }
-        self._fit(X)
-        return self
+        self._fit(data)
 
-    def _fit(self, X):
+    def _fit(self, data, mean=None, covariance=None):
         """Dispatch to the right submethod depending on the input."""
-        if isinstance(X, UnivariateFunctionalData):
-            self._fit_uni(X)
+        if isinstance(data, DenseFunctionalData):
+            self._fit_uni(data, mean, covariance)
         else:
-            raise TypeError(
-                """UFPCA only support UnivariateFunctionalData object!""")
+            raise TypeError('UFPCA only support UnivariateFunctionalData'
+                            ' object!')
 
-    def _fit_uni(self, X):
+    def _fit_uni(self, data, mean=None, covariance=None):
         """Univariate Functional PCA.
 
         Parameters
         ----------
-        X: UnivariateFunctionalData
+        data: DenseFunctionalData
             Training data
-        n_components : int, float, None, default=None
-            Number of components to keep.
-            if n_components if None, all components are kept::
-
-            n_components == min(n_samples, n_features)
-
-            if n_components is int, n_components are kept.
-            if 0 < n_components < 1, select the number of components such that
-            the amount of variance that needs to be explained is greater than
-            the percentage specified by n_components.
+        mean: DenseFunctionalData, default=None
+            An estimation of the mean of the training data.
+        covariance: DenseFunctionalData, default=None
+            An estimation of the covariance of the training data.
 
         References
         ----------
@@ -110,47 +114,56 @@ class UFPCA():
 
         Notes
         -----
-        TODO : Add possibility to smooth the eigenfunctions
+        TODO : Add possibility to smooth the eigenfunctions.
 
         """
-        # Covariance estimation (also estimate the mean)
-        if getattr(X, 'covariance_', None) is None:
-            X.covariance(smooth=True, **self.smoothing_parameters)
+        if mean is None:
+            mean = data.mean()
+        if covariance is None:
+            covariance = data.covariance(mean=mean)
 
-        # Choose n, the wj's and the sj's (from Ramsey and Silverman, 2005)
-        # N = X.nObsPoint()
-        S = np.asarray(X.argvals).squeeze()
-        W = integration_weights_(S, method='trapz')
+        # Choose the W_j's and the S_j's (Ramsey and Silverman, 2005)
+        argvals = data.argvals['input_dim_0']
+        weight = integration_weights_(argvals, method='trapz')
 
         # Compute the eigenvalues and eigenvectors of W^{1/2}VW^{1/2}
-        Wsqrt = np.diag(np.sqrt(W))
-        Winvsqrt = np.diag(1 / np.sqrt(W))
-        V = np.dot(np.dot(Wsqrt, X.covariance_.values.squeeze()), Wsqrt)
+        weight_sqrt = np.diag(np.sqrt(weight))
+        weight_invsqrt = np.diag(1 / np.sqrt(weight))
+        var = np.dot(np.dot(weight_sqrt, covariance.values[0]), weight_sqrt)
 
-        Evalues, Evectors = np.linalg.eigh(V)
-        Evalues[Evalues < 0] = 0
-        Evalues = Evalues[::-1]
-        exp_variance = np.cumsum(Evalues) / np.sum(Evalues)
-        npc = np.sum(exp_variance < self.n_components) + 1
+        eigenvalues, eigenvectors = np.linalg.eigh(var)
+        eigenvalues[eigenvalues < 0] = 0
+        eigenvalues = eigenvalues[::-1]
+        if isinstance(self.n_components, int):
+            npc = self.n_components
+        elif isinstance(self.n_components, float) and (self.n_components < 1):
+            exp_variance = np.cumsum(eigenvalues) / np.sum(eigenvalues)
+            npc = np.sum(exp_variance < self.n_components) + 1
+        elif self.n_components is None:
+            npc = len(eigenvalues)
+        else:
+            raise ValueError('Wrong n_components')
 
-        self.eigenvalues = Evalues[:npc]
-        # Compute eigenfunction = W^{-1/2}U
-        self.eigenfunctions = np.transpose(
-            np.dot(Winvsqrt, np.fliplr(Evectors)[:, :npc]))
+        # Slice eigenvalues and compute eigenfunctions = W^{-1/2}U
+        eigenvalues = eigenvalues[:npc]
+        eigenfunctions = np.transpose(np.dot(weight_invsqrt,
+                                             np.fliplr(eigenvectors)[:, :npc]))
+        # Compute estimation of the covariance
+        temp = np.dot(np.transpose(eigenfunctions), np.diag(eigenvalues))
+        cov = np.dot(temp, eigenfunctions)
 
-        # Estimation of the covariance
-        self.covariance_hat = np.dot(
-            np.dot(np.transpose(self.eigenfunctions),
-                   np.diag(self.eigenvalues)),
-            self.eigenfunctions)
+        # Save the results
+        new_argvals = {'input_dim_0': argvals}
+        new_argvals_2 = {'input_dim_0': argvals, 'input_dim_1': argvals}
+        self.eigenvalues = eigenvalues
+        self.eigenfunctions = DenseFunctionalData(new_argvals, eigenfunctions)
+        self.mean = mean
+        self.covariance = DenseFunctionalData(new_argvals_2, cov[np.newaxis])
 
-        self.argvals = X.argvals
-        self.mean = X.mean_
+    def transform(self, data, method='PACE'):
+        """Apply dimensionality reduction to data.
 
-    def transform(self, X, method='PACE'):
-        """Apply dimensionality reduction to X.
-
-        The functional principal components scores are:
+        The functional principal components scores are given by:
             c_ik = int (X_i(t) - mu(t))phi_k(t)dt
 
         Two methods are proposed to estimate these scores:
@@ -161,14 +174,16 @@ class UFPCA():
 
         Parameters
         ----------
-        X : UnivariateFunctionalData object
+        data: UnivariateFunctionalData object
             Data
-        method : 'PACE' or 'NumInt'
+        method: 'PACE' or 'NumInt'
             Which method we should use for the estimation of the scores?
 
         Returns
         -------
-        X_proj : array-like, shape = (n_samples, n_components)
+        scores: np.ndarrray, shape=(n_obs, n_components)
+            An array representing the projection of the data onto the basis of
+            functions defined by the eigenfunctions.
 
         References
         ----------
@@ -178,42 +193,45 @@ class UFPCA():
 
         """
         # TODO: Add checkers
-        X_unmean = X - self.mean
+        data_unmean = data.values - self.mean.values
+
         if method == 'PACE':
-            Sigma_inv = np.linalg.inv(
-                self.covariance_hat + X.sigma2 * np.diagflat(
-                    np.ones(shape=self.covariance_hat.shape[0]))
+            sigma_inv = np.linalg.inv(
+                self.covariance.values[0] + data.var_noise * np.diagflat(
+                    np.ones(shape=self.covariance.values[0].shape[0]))
             )
-            X_proj = self.eigenvalues * np.dot(
-                np.dot(X_unmean.values, Sigma_inv), self.eigenfunctions.T)
+            scores = self.eigenvalues * np.dot(
+                np.dot(data_unmean, sigma_inv), self.eigenfunctions.values.T)
         elif method == 'NumInt':
-            prod = [traj * self.eigenfunctions for traj in X_unmean.values]
+            prod = [traj * self.eigenfunctions.values for traj in data_unmean]
             # TODO: Modify to add other numrical integration methods
-            X_proj = np.trapz(prod, X_unmean.argvals)
+            scores = np.trapz(prod, data.argvals['input_dim_0'])
         else:
             raise ValueError('Method not implemented!')
 
-        return X_proj
+        return scores
 
-    def inverse_transform(self, X):
+    def inverse_transform(self, scores):
         """Transform the data back to its original space.
 
-        Return a Univariate Functional data X_original whose transform would
-        be X.
+        Return a DenseFunctionalData data_original whose transform would
+        be `scores`.
 
         Parameters
         ----------
-        X : array-like, shape = (n_samples, n_components)
-            New data, where n_samples is the number of samples and n_components
-            is the number of components.
+        scores: np.ndarray, shape=(n_obs, n_components)
+            New data, where n_obs is the number of observations and
+            n_components is the number of components.
 
         Returns
         -------
-        X_original : UnivariateFunctionalData object
+        data_original: DenseFunctionalData object
+            The transformation of the scores into the original space.
 
         """
-        values = np.dot(X, self.eigenfunctions) + self.mean.values
-        return UnivariateFunctionalData(self.argvals, values)
+        argvals = self.eigenfunctions.argvals
+        values = np.dot(scores, self.eigenfunctions.values)
+        return DenseFunctionalData(argvals, values + self.mean.values)
 
 
 #############################################################################
