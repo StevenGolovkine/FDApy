@@ -9,7 +9,6 @@ concerned with UFPCA, whereas multivariate functional data with MFPCA.
 """
 import numpy as np
 
-from ...representation.univariate_functional import UnivariateFunctionalData
 from FDApy import DenseFunctionalData, MultivariateFunctionalData
 from ...misc.utils import integration_weights_
 
@@ -37,11 +36,13 @@ class UFPCA():
 
     Attributes
     ----------
+    eigenvalues: array, shape = (n_components, )
+        The singular values corresponding to each of selected components.
     eigenfunctions: DenseFunctionalData
         Principal axes in feature space, representing the directions of
         maximum variances in the dataas a DenseFunctionalData.
-    eigenvalues: array, shape = (n_components, )
-        The singular values corresponding to each of selected components.
+    mean: DenseFunctionalData
+        An estimation of the mean of the training data
     covariance: DenseFunctionalData
         An estimation of the covariance of the training data based on the
         results of the functional principal components analysis.
@@ -244,26 +245,34 @@ class MFPCA():
     Singular Value Decomposition of the data to project it to a lower
     dimension space.
 
-    It uses the PCA implementation of sklearn.
+    Parameters
+    ----------
+    n_components : list of {int, float, None}, default=None
+        Number of components to keep for each functions in data.
+        if n_components if None, all components are kept::
+            n_components == min(n_samples, n_features)
+        if n_components is int, n_components are kept.
+        if 0 < n_components < 1, select the number of components such that
+        the amount of variance that needs to be explained is greater than
+        the percentage specified by n_components.
 
     Attributes
     ----------
-    ufpca_ : list of UFPCA, shape = (X.nFunctions(),)
-        List of UFPCA where entry i is an object of the class UFPCA which the
-        univariate functional PCA of the function i of the multivariate
-        functional data.
-    uniScores_ : array-like, shape = (X.nObs(), X.nFunctions())
+    ufpca: list of UFPCA, shape=(data.n_functional,)
+        List of UFPCA where the :math:`i`th entry is an object of the class
+        UFPCA which the univariate functional PCA of the :math:`i` th process
+        of the multivariate functional data.
+    scores_univariate: list of np.ndarray, shape=(data.n_functional,)
         List of array containing the projection of the data onto the univariate
-        functional principal components.
-    covariance_ : array_like, shape = (X.nFunctions(), X.nFunctions())
-        Estimation of the covariance of the array uniScores_.
-    eigenvaluesCovariance_ : array-like, shape = (X.nFunctions())
-        Eigenvalues of the matrix covariance_.
-    nbAxis_ : int
-        Number of axis kept after the PCA of covariance_.
-    eigenvectors_ : array-like, shape = (X.nFunctions(), nbAxis_)
-        The nbAxis_ first eigenvectors of the matrix covariance_.
-    basis_ : list, shape = (X.nFunctions())
+        functional principal components. The :math:`i`th entry of the list
+        have the following shape (data.n_obs, ufpca[i].n_components)
+    covariance: np.ndarray, shape = (data.n_functional, data.n_functional)
+        Estimation of the covariance of the array scores_univariate.
+    covariance_eigenvalues: np.ndarray, shape=(data.n_functional)
+        Eigenvalues of the matrix covariance.
+    eigenvectors: np.ndarray, shape=(data.n_functional, n_axis)
+        The n_axis first eigenvectors of the matrix covariance.
+    basis: MultivariateFunctionalData
         Multivariate basis of eigenfunctions.
 
     References
@@ -274,55 +283,41 @@ class MFPCA():
 
     """
 
-    def __init__(self, n_components=None, method='PACE'):
-        """Initialize MFPCA object.
-
-        Parameters
-        ----------
-        n_components : list of integers of size X.nFunctions()
-            int, float, None, default=None
-            Number of components to keep.
-            if n_components if None, all components are kept::
-                n_components == min(n_samples, n_features)
-            if n_components is int, n_components are kept.
-            if 0 < n_components < 1, select the number of components such that
-            the amount of variance that needs to be explained is greater than
-            the percentage specified by n_components.
-        method: str, default='PACE'
-            Method for the estimation of the univariate scores.
-            Should be 'PACE' or 'NumInt'.
-
-        """
+    def __init__(self, n_components=None):
+        """Initialize MFPCA object."""
         self.n_components = n_components
-        self.method = method
 
-    def fit(self, X):
+    def fit(self, data, method='NumInt'):
         """Fit the model with X.
 
         Parameters
         ----------
-        X : MultivariateFunctionalData
+        data: MultivariateFunctionalData
             Training data
+        method: str, {'PACE', 'NumInt'}, default='NumInt'
+            Method for the estimation of the univariate scores.
 
-        Returns
-        -------
-        self : object
-            Returns the instance itself.
         """
-        self._fit(X)
-        return self
+        self._fit(data, method)
 
-    def _fit(self, X):
+    def _fit(self, data, method='NumInt'):
         """Dispatch to the right submethod depending on the input."""
         # TODO: Different possiblity for n_components
-        if isinstance(X, MultivariateFunctionalData):
-            self._fit_multi(X, self.n_components, self.method)
+        if isinstance(data, MultivariateFunctionalData):
+            self._fit_multi(data, method)
         else:
-            raise TypeError(
-                'MFPCA only support MultivariateFunctionalData object!')
+            raise TypeError('MFPCA only support MultivariateFunctionalData'
+                            ' object!')
 
-    def _fit_multi(self, X, n_components, method):
+    def _fit_multi(self, data, method='NumInt'):
         """Multivariate Functional PCA.
+
+        Parameters
+        ----------
+        data: MultivariateFunctionalData
+            Training data.
+        method: str, {'PACE', 'NumInt'}, default='PACE'
+            Method for the estimation of the univariate scores.
 
         Notes
         -----
@@ -332,17 +327,18 @@ class MFPCA():
 
         """
         # Step 1: Perform univariate fPCA on each functions.
-        ufpca = []
-        scores = []
-        for function, n in zip(X.data, n_components):
-            uni = UFPCA(n)
-            ufpca.append(uni.fit(function))
-            scores.append(uni.transform(function, method))
+        ufpca_list, scores = [], []
+        for function, n in zip(data, self.n_components):
+            ufpca = UFPCA(n)
+            ufpca.fit(function)
+            ufpca_list.append(ufpca)
+            scores.append(ufpca.transform(function, method))
 
-        scores_ = np.concatenate(scores, axis=1)
+        scores_univariate = np.concatenate(scores, axis=1)
 
         # Step 2: Estimation of the covariance of the scores.
-        covariance = np.dot(scores_.T, scores_) / (len(scores_) - 1)
+        temp = np.dot(scores_univariate.T, scores_univariate)
+        covariance = temp / (len(scores_univariate) - 1)
 
         # Step 3: Eigenanalysis of the covariance of the scores.
         eigenvalues, eigenvectors = np.linalg.eigh(covariance)
@@ -353,71 +349,60 @@ class MFPCA():
         # nb_axis = sum(eigenvalues.cumsum() / eigenvalues.sum() < n_components
         # eigenvectors = eigenvectors[:, :nb_axis]
 
-        # Retrieve the number of eigenfunctions for each univariate funtion.
+        # Retrieve the number of eigenfunctions for each univariate function.
         nb_eigenfunction_uni = [0]
-        for uni in ufpca:
-            nb_eigenfunction_uni.append(len(uni.eigenvalues))
+        for ufpca in ufpca_list:
+            nb_eigenfunction_uni.append(len(ufpca.eigenvalues))
         nb_eigenfunction_uni_cum = np.cumsum(nb_eigenfunction_uni)
 
         # Compute the multivariate eigenbasis.
         basis_multi = []
-        for idx, function in enumerate(ufpca):
+        for idx, function in enumerate(ufpca_list):
             start = nb_eigenfunction_uni_cum[idx]
             end = nb_eigenfunction_uni_cum[idx + 1]
-            basis_multi.append(
-                np.dot(function.eigenfunctions.T, eigenvectors[start:end, :]))
+            basis_multi.append(np.dot(function.eigenfunctions.values.T,
+                                      eigenvectors[start:end, :]))
 
-        self.ufpca_ = ufpca
-        self.uniScores_ = scores_
-        self.covariance_ = covariance
-        self.eigenvaluesCovariance_ = eigenvalues
-        # self.nbAxis_ = nb_axis
-        self.eigenvectors_ = eigenvectors
-        self.basis_ = basis_multi
+        self.ufpca_list = ufpca_list
+        self.scores_univariate = scores_univariate
+        self.covariance = covariance
+        self.eigenvalues = eigenvalues
+        self.eigenvectors = eigenvectors
+        self.basis = basis_multi
 
-    def transform(self, X):
-        """Apply dimensionality reduction to X.
-
-        Parameters
-        ----------
-        X : FDApy.univariate_functional.Multivariate object
-            Data
+    def transform(self):
+        """Apply dimensionality reduction to data.
 
         Returns
         -------
-        X_proj : array-like
+        scores: array-like
 
         """
         # TODO: Add checkers
-        scores_multi = np.dot(self.uniScores_, self.eigenvectors_)
+        return np.dot(self.scores_univariate, self.eigenvectors)
 
-        return scores_multi
-
-    def inverse_transform(self, X):
+    def inverse_transform(self, scores):
         """Transform the data back to its original space.
 
-        Return a Multivariate Functional data X_original whose transform would
-        be X.
+        Return a MultivariateFunctionalData data_original whose transform would
+        be `scores`.
 
         Parameters
         ----------
-        X : array-like, shape = (n_samples, n_components)
-            New data, where n_samples is the number of samples and n_components
-            is the number of components.
+        scores: np.ndarray, shape=(n_obs, n_components)
+            New data, where n_obs is the number of observations and
+            n_components is the number of components.
 
         Returns
         -------
-        X_original : UnivariateFunctionalData object
-
-        Notes
-        -----
-        If whitening is enabled, inverse_tranform will compute the exact
-        inverse operation, which includes reversing whitening.
+        data_original: MultivariateFunctionalData object
+            The transformation of the scores into the original space.
 
         """
         res = []
-        for idx, ufpca in enumerate(self.ufpca_):
-            reconst = np.dot(X, self.basis_[idx].T) + ufpca.mean.values
-            res.append(UnivariateFunctionalData(ufpca.argvals, reconst))
+        for idx, ufpca in enumerate(self.ufpca_list):
+            mean = ufpca.mean
+            reconst = np.dot(scores, self.basis[idx].T) + mean.values
+            res.append(DenseFunctionalData(mean.argvals, reconst))
 
         return MultivariateFunctionalData(res)
