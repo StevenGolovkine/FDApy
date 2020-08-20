@@ -10,10 +10,6 @@ import numpy as np
 
 from typing import NamedTuple
 
-from FDApy.representation import (FunctionalData,
-                                  DenseFunctionalData,
-                                  IrregularFunctionalData)
-
 from ...src.sigma import estimate_sigma
 
 
@@ -451,7 +447,7 @@ class Bandwidth(object):
 
     def __call__(
         self,
-        data: FunctionalData,
+        data,
         hurst: list = None,
         constants: list = None,
         sigma: float = None
@@ -475,15 +471,9 @@ class Bandwidth(object):
             Return an instance of BandwidthResult.
 
         """
-        if not isinstance(data, (DenseFunctionalData,
-                                 IrregularFunctionalData)):
-            raise ValueError("Data must be elements of DenseFunctionalData or"
-                             " IrregularFunctionalData")
         if data.n_dim > 1:
             raise NotImplementedError("Bandwidth computation is only"
                                       " implement for one dimensional data.")
-        if isinstance(data, DenseFunctionalData):
-            data = data.as_irregular()
 
         argvals = data.argvals['input_dim_0'].values()
         values = data.values.values()

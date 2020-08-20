@@ -13,6 +13,7 @@ import numpy as np
 from abc import ABC, abstractmethod
 from collections import UserList
 
+from ..preprocessing.smoothing.bandwidth import Bandwidth
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..misc.utils import get_dict_dimension_, get_obs_shape_
 from ..misc.utils import integration_weights_, range_standardization_
@@ -868,8 +869,56 @@ class IrregularFunctionalData(FunctionalData):
 
     def smooth(self, points, neighborhood, points_estim=None, degree=0,
                kernel="epanechnikov", bandwidth=None):
-        """Smooth the data."""
-        pass
+        """Smooth the data.
+
+        Notes
+        -----
+        Only, one dimensional IrregularFunctionalData can be smoothed.
+
+        Parameters
+        ----------
+        points: np.array
+            Points at which the Bandwidth is estimated.
+        neighborhood: np.array
+            Neighborhood considered for each each points. Should have the same
+            shape than points.
+        points_estim: np.array, default=None
+            Points at which the curves are estimated. The default is None,
+            meaning we use the argvals as estimation points.
+        degree: int, default=2
+            Degree for the local polynomial smoothing.
+        kernel: str, default='epanechnikov'
+        bandwidth: Bandwidth, default=None
+
+        Returns
+        -------
+        obj: IrregularFunctionalData
+            A smoothed version of the data.
+
+        """
+        if self.n_dim > 1:
+            raise NotImplementedError('Currently, only one dimensional data'
+                                      ' can be smoothed.')
+
+        if bandwidth is None:
+            band_obj = Bandwidth(points=points, neighborhood=neighborhood)
+            bandwidth = band_obj(self).bandwidths
+
+        argvals = self.argvals['input_dim_0'].values()
+        values = self.values.values()
+        smooth_argvals, smooth_values = {}, {}
+        for i, (arg, val, b) in enumerate(zip(argvals, values, bandwidth)):
+            if points_estim is None:
+                points_estim = arg
+
+            lp = LocalPolynomial(kernel_name=kernel,
+                                 bandwidth=b,
+                                 degree=degree)
+            pred = lp.fit_predict(arg, val, points_estim)
+            smooth_argvals[i] = arg
+            smooth_values[i] = pred
+        return IrregularFunctionalData({'input_dim_0': smooth_argvals},
+                                       smooth_values)
 
 
 ###############################################################################
