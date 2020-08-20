@@ -360,15 +360,18 @@ class MFPCA():
         for idx, function in enumerate(ufpca_list):
             start = nb_eigenfunction_uni_cum[idx]
             end = nb_eigenfunction_uni_cum[idx + 1]
-            basis_multi.append(np.dot(function.eigenfunctions.values.T,
-                                      eigenvectors[start:end, :]))
+
+            argvals = function.mean.argvals
+            values = np.dot(function.eigenfunctions.values.T,
+                            eigenvectors[start:end, :]).T
+            basis_multi.append(DenseFunctionalData(argvals, values))
 
         self.ufpca_list = ufpca_list
         self.scores_univariate = scores_univariate
         self.covariance = covariance
         self.eigenvalues = eigenvalues
         self.eigenvectors = eigenvectors
-        self.basis = basis_multi
+        self.basis = MultivariateFunctionalData(basis_multi)
 
     def transform(self):
         """Apply dimensionality reduction to data.
@@ -402,7 +405,7 @@ class MFPCA():
         res = []
         for idx, ufpca in enumerate(self.ufpca_list):
             mean = ufpca.mean
-            reconst = np.dot(scores, self.basis[idx].T) + mean.values
+            reconst = np.dot(scores, self.basis[idx].values) + mean.values
             res.append(DenseFunctionalData(mean.argvals, reconst))
 
         return MultivariateFunctionalData(res)
