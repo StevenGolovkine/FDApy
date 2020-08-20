@@ -13,8 +13,9 @@ import numpy as np
 from abc import ABC, abstractmethod
 from collections import UserList
 
+from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..misc.utils import get_dict_dimension_, get_obs_shape_
-from ..misc.utils import range_standardization_
+from ..misc.utils import integration_weights_, range_standardization_
 
 
 ###############################################################################
@@ -290,6 +291,11 @@ class FunctionalData(ABC):
         pass
 
     @abstractmethod
+    def covariance(self, mean=None, smooth=None, **kwargs):
+        """Compute an estimate of the covariance."""
+        pass
+
+    @abstractmethod
     def smooth(self, points, neighborhood, points_estim=None, degree=0,
                kernel="epanechnikov", bandwidth=None):
         """Smooth the data."""
@@ -513,6 +519,61 @@ class DenseFunctionalData(FunctionalData):
         """
         mean_estim = self.values.mean(axis=0, keepdims=True)
         return DenseFunctionalData(self.argvals, mean_estim)
+
+    def covariance(self, mean=None, smooth=None, **kwargs):
+        """Compute an estimate of the covariance.
+
+        Parameters
+        ----------
+        smooth: str, default=None
+            Name of the smoothing method to use. Currently, not implemented.
+        mean: DenseFunctionalData, default=None
+            An estimate of the mean of self. If None, an estimate is computed.
+
+        Returns
+        -------
+        obj: DenseFunctionalData object
+            An estimate of the covariance as a two-dimensional
+            DenseFunctionalData object with same argvals as `self`.
+
+        References
+        ----------
+        * Yao, Müller and Wang (2005), Functional Data Analysis for Sparse
+        Longitudinal Data,
+        Journal of the American Statistical Association, Vol. 100, No. 470
+        * Staniswalis, J. G., and Lee, J. J. (1998), “Nonparametric Regression
+        Analysis of Longitudinal Data,” Journal of the American Statistical
+        Association, 93, 1403–1418.
+
+        """
+        if self.n_dim > 1:
+            raise ValueError('Only one dimensional functional data are'
+                             ' supported')
+
+        argvals = self.argvals['input_dim_0']
+        if mean is None:
+            mean = self.mean(smooth)
+        data = self.values - mean.values
+        cov = np.dot(data.T, data) / (self.n_obs - 1)
+        cov_diag = np.copy(np.diag(cov))
+
+        # Ensure the covariance is symmetric.
+        cov = (cov + cov.T) / 2
+        # Smoothing the diagonal of the covariance (Yao, Müller and Wang, 2005)
+        lp = LocalPolynomial(kernel_name=kwargs.get('kernel_name', 'gaussian'),
+                             bandwidth=kwargs.get('bandwidth', 1),
+                             degree=kwargs.get('degree', 1))
+        var_hat = lp.fit_predict(argvals, cov_diag, argvals)
+        # Estimate noise variance (Staniswalis and Lee, 1998)
+        ll = argvals[len(argvals) - 1] - argvals[0]
+        lower = np.sum(~(argvals >= (argvals[0] + 0.25 * ll)))
+        upper = np.sum((argvals <= (argvals[len(argvals) - 1] - 0.25 * ll)))
+        weights = integration_weights_(argvals[lower:upper], method='trapz')
+        nume = np.dot(weights, (var_hat - cov_diag)[lower:upper])
+        self.var_noise = np.maximum(nume / argvals[upper] - argvals[lower], 0)
+
+        new_argvals = {'input_dim_0': argvals, 'input_dim_1': argvals}
+        return DenseFunctionalData(new_argvals, cov[np.newaxis])
 
     def smooth(self, points, neighborhood, points_estim=None, degree=0,
                kernel="epanechnikov", bandwidth=None):
@@ -800,6 +861,10 @@ class IrregularFunctionalData(FunctionalData):
         dense_self = self.as_dense()
         mean_estim = np.nanmean(dense_self.values, axis=0, keepdims=True)
         return DenseFunctionalData(dense_self.argvals, mean_estim)
+
+    def covariance(self, mean=None, smooth=None, **kwargs):
+        """Compute an estimate of the covariance."""
+        pass
 
     def smooth(self, points, neighborhood, points_estim=None, degree=0,
                kernel="epanechnikov", bandwidth=None):
