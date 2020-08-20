@@ -286,7 +286,7 @@ class FunctionalData(ABC):
         _check_same_ndim(self, fdata)
 
     @abstractmethod
-    def mean(self, smooth=None):
+    def mean(self, smooth=None, **kwargs):
         """Compute an estimate of the mean."""
         pass
 
@@ -502,7 +502,7 @@ class DenseFunctionalData(FunctionalData):
         _check_argvals_equality_dense(self.argvals, fdata.argvals)
         return True
 
-    def mean(self, smooth=None):
+    def mean(self, smooth=None, **kwargs):
         """Compute an estimate of the mean.
 
         Parameters
@@ -843,7 +843,7 @@ class IrregularFunctionalData(FunctionalData):
         _check_argvals_equality_irregular(self.argvals, fdata.argvals)
         return True
 
-    def mean(self, smooth=None):
+    def mean(self, smooth=None, **kwargs):
         """Compute an estimate of the mean.
 
         Parameters
@@ -948,6 +948,59 @@ class MultivariateFunctionalData(UserList):
         """
         return len(self)
 
+    @property
+    def range_obs(self):
+        """Get the range of the observations of the object.
+
+        Returns
+        -------
+        (min, max): list of tuples
+            List of tuples containing the mimimum and maximum values taken by
+            all the observations for the object for each function.
+
+        """
+        return [i.range_obs for i in self]
+
+    @property
+    def n_points(self):
+        """Get the mean number of sampling points.
+
+        Returns
+        -------
+        n_points: list of dict
+            A list of dictionary with the same shape than argvals with the
+            number of sampling points along each axis for each function.
+
+        """
+        return [i.n_points for i in self]
+
+    @property
+    def range_dim(self):
+        """Get the range of the `argvals` for each of the dimension.
+
+        Returns
+        -------
+        ranges: list of dict
+            List of dictionary containing the range of the argvals for each of
+            the input dimension for each function.
+
+        """
+        return [i.range_dim for i in self]
+
+    @property
+    def shape(self):
+        r"""Get the shape of the data for each dimension.
+
+        Returns
+        -------
+        shape: list of dict
+            List of dictionary containing the number of points for each of the
+            dimension for each function. It corresponds to :math:`m_j` for
+            :math:`0 \leq j \leq p`.
+
+        """
+        return [i.shape for i in self]
+
     def append(self, item):
         """Add an item to `self`.
 
@@ -1003,3 +1056,47 @@ class MultivariateFunctionalData(UserList):
     def copy(self):
         """Return a shallow copy of the list."""
         return super().copy()
+
+    def mean(self, smooth=None, **kwargs):
+        """Compute an estimate of the mean.
+
+        Parameters
+        ----------
+        smooth: str, default=None
+            Name of the smoothing method. Currently, not implemented.
+
+        Returns
+        -------
+        obj: MultivariateFunctionalData object
+            An estimate of the mean as a MultivariateFunctionalData object
+            with a concatenation of the self.argvals as argvals and one
+            observation.
+
+        """
+        return MultivariateFunctionalData([i.mean(smooth, **kwargs)
+                                           for i in self])
+
+    def covariance(self, mean=None, smooth=None, **kwargs):
+        """Compute an estimate of the covariance.
+
+        Parameters
+        ----------
+        smooth: str, default=None
+            Name of the smoothing method to use. Currently, not implemented.
+        mean: MultivariateFunctionalData, default=None
+            An estimate of the mean of self. If None, an estimate is computed.
+
+        Returns
+        -------
+        obj: MultivariateFunctionalData object
+            An estimate of the covariance as a two-dimensional
+            MultivariateFunctionalData object with same argvals as `self`.
+
+        """
+        if mean is not None:
+            return MultivariateFunctionalData(
+                [i.covariance(m, smooth, **kwargs)
+                    for i, m in zip(self, mean)])
+        else:
+            return MultivariateFunctionalData(
+                [i.covariance(None, smooth, **kwargs) for i in self])
