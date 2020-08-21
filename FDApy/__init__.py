@@ -18,7 +18,3 @@ And it includes the classes:
     - MultivariateFunctionalData: Representation of multivariate functional
     data as a list of Dense/Irregular functional ones.
 """
-
-from .representation import DenseFunctionalData
-from .representation import IrregularFunctionalData
-from .representation import MultivariateFunctionalData
