@@ -571,6 +571,12 @@ class DenseFunctionalData(FunctionalData):
 
         Keyword Args
         ------------
+        kernel_name: str, default='epanechnikov'
+            Name of the kernel used for local polynomial smoothing.
+        degree: int, default=1
+            Degree used for local polynomial smoothing.
+        bandwidth: float, default=1
+            Bandwidth used for local polynomial smoothing.
         n_basis: int, default=10
             Number of splines basis used for GAM smoothing.
 
@@ -646,8 +652,46 @@ class DenseFunctionalData(FunctionalData):
 
     def smooth(self, points, neighborhood, points_estim=None, degree=0,
                kernel="epanechnikov", bandwidth=None):
-        """Smooth the data."""
-        pass
+        """Smooth the data.
+
+        Notes
+        -----
+        Only, one dimensional IrregularFunctionalData can be smoothed.
+
+        Parameters
+        ----------
+        points: np.array
+            Points at which the Bandwidth is estimated.
+        neighborhood: np.array
+            Neighborhood considered for each each points. Should have the same
+            shape than points.
+        points_estim: np.array, default=None
+            Points at which the curves are estimated. The default is None,
+            meaning we use the argvals as estimation points.
+        degree: int, default=2
+            Degree for the local polynomial smoothing.
+        kernel: str, default='epanechnikov'
+            The name of the kernel to use.
+        bandwidth: Bandwidth, default=None
+            An instance of Bandwidth for the smoothing.
+
+        Returns
+        -------
+        obj: IrregularFunctionalData
+            A smoothed version of the data.
+
+        """
+        if self.n_dim != 1:
+            raise NotImplementedError('Only one dimensional data can be'
+                                      ' smoothed.')
+
+        data = self.as_irregular()
+        data_smooth = data.smooth(points, neighborhood,
+                                  points_estim=points_estim,
+                                  degree=degree,
+                                  kernel=kernel,
+                                  bandwidth=bandwidth)
+        return data_smooth.as_dense()
 
 
 ###############################################################################
