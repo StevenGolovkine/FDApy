@@ -569,6 +569,11 @@ class DenseFunctionalData(FunctionalData):
             An estimate of the covariance as a two-dimensional
             DenseFunctionalData object with same argvals as `self`.
 
+        Keyword Args
+        ------------
+        n_basis: int, default=10
+            Number of splines basis used for GAM smoothing.
+
         References
         ----------
         * Yao, Müller and Wang (2005), Functional Data Analysis for Sparse
@@ -589,6 +594,37 @@ class DenseFunctionalData(FunctionalData):
         data = self.values - mean.values
         cov = np.dot(data.T, data) / (self.n_obs - 1)
         cov_diag = np.copy(np.diag(cov))
+
+        if smooth is not None:
+            # Remove covariance diagonale because of measurement errors.
+            np.fill_diagonal(cov, None)
+            cov = cov[~np.isnan(cov)]
+
+            # Define train vector
+            train_ = np.vstack((
+                np.repeat(argvals, repeats=len(argvals)),
+                np.tile(argvals, reps=len(argvals)))
+            )
+
+            train = train_[:, train_[0, :] != train_[1, :]]
+
+            if smooth == 'LocalLinear':
+                lp = LocalPolynomial(
+                    kernel_name=kwargs.get('kernel_name', 'epanechnikov'),
+                    bandwidth=kwargs.get('bandwidth', 1),
+                    degree=kwargs.get('degree', 1)
+                )
+                cov = lp.fit_predict(train, cov, train_).\
+                    reshape((len(argvals), len(argvals)))
+            elif smooth == 'GAM':
+                n_basis = kwargs.get('n_basis', 10)
+
+                cov = pygam.LinearGAM(pygam.te(0, 1, n_splines=n_basis)).\
+                    fit(np.transpose(train), cov).\
+                    predict(np.transpose(train_)).\
+                    reshape((len(argvals), len(argvals)))
+            else:
+                raise NotImplementedError('Smoothing method not implemented.')
 
         # Ensure the covariance is symmetric.
         cov = (cov + cov.T) / 2
@@ -920,7 +956,9 @@ class IrregularFunctionalData(FunctionalData):
         degree: int, default=2
             Degree for the local polynomial smoothing.
         kernel: str, default='epanechnikov'
+            The name of the kernel to use.
         bandwidth: Bandwidth, default=None
+            An instance of Bandwidth for the smoothing.
 
         Returns
         -------
