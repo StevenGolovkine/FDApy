@@ -9,7 +9,8 @@ concerned with UFPCA, whereas multivariate functional data with MFPCA.
 """
 import numpy as np
 
-from FDApy import DenseFunctionalData, MultivariateFunctionalData
+from FDApy.representation import (DenseFunctionalData,
+                                  MultivariateFunctionalData)
 from ...misc.utils import integration_weights_
 
 

@@ -12,71 +12,43 @@ components analysis on an example dataset.
 # shinx_gallery_thumbnail_number = 2
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 
-from FDApy.univariate_functional import UnivariateFunctionalData
-from FDApy.multivariate_functional import MultivariateFunctionalData
-from FDApy.fpca import MFPCA
-from FDApy.plot import plot
+from FDApy.representation import MultivariateFunctionalData
+from FDApy.preprocessing.dim_reduction.fpca import MFPCA
+from FDApy.visualization.plot import plot
+from FDApy.misc.loader import read_csv
 
 ###############################################################################
-# Load the data into Pandas dataframe
-precipitation = pd.read_csv('./data/canadian_precipitation_monthly.csv',
-                            index_col=0)
-temperature = pd.read_csv('./data/canadian_temperature_daily.csv',
-                          index_col=0)
-
-###############################################################################
-# Create univariate functional data for the precipitation and temperature
-# dataset. Then, we will combine them to form a multivariate functional
-# dataset.
-
-# Create univariate functional data for the precipitation data
-argvals = pd.factorize(precipitation.columns)[0]
-values = np.array(precipitation)
-monthlyPrec = UnivariateFunctionalData(argvals, values)
-
-# Create univariate functional data for the daily temperature data.
-argvals = pd.factorize(temperature.columns)[0]
-values = np.array(temperature) / 4
-dailyTemp = UnivariateFunctionalData(argvals, values)
+# Load the data as DenseFunctionalData.
+precipitation = read_csv('./data/canadian_precipitation_monthly.csv',
+                         index_col=0)
+temperature = read_csv('./data/canadian_temperature_daily.csv', index_col=0)
 
 # Create multivariate functional data for the Canadian weather data.
-canadWeather = MultivariateFunctionalData([dailyTemp, monthlyPrec])
-
-###############################################################################
-# Estimate the covariance for each of the components of the multivariate
-# functional data.
-monthlyPrec.covariance()
-dailyTemp.covariance()
+canadWeather = MultivariateFunctionalData([precipitation, temperature])
 
 ###############################################################################
 # Perform a multivariate functional PCA and explore the results.
 
 # Perform multivariate FPCA
-mfpca = MFPCA(n_components=[0.99, 0.95], method='NumInt')
-mfpca.fit(canadWeather)
+mfpca = MFPCA(n_components=[0.99, 0.95])
+mfpca.fit(canadWeather, method='NumInt')
 
 # Plot the results of the FPCA (eigenfunctions)
-plt.figure(figsize=(10, 5))
-plt.subplot(1, 2, 1)
-plt.plot(mfpca.basis_[0])
-plt.title('Eigenfunctions for dailyTemp')
-plt.subplot(1, 2, 2)
-plt.plot(mfpca.basis_[1])
-plt.title('Eigenfunctions for monthlyPrec')
-plt.tight_layout()
+fig, (ax1, ax2) = plt.subplots(1, 2)
+_ = plot(mfpca.basis[0], ax=ax1)
+_ = plot(mfpca.basis[1], ax=ax2)
 
 ###############################################################################
 # Compute the scores of the dailyTemp data into the eigenfunctions basis using
 # numerical integration.
 
 # Compute the scores
-canadWeather_proj = mfpca.transform(canadWeather)
+canadWeather_proj = mfpca.transform()
 
 # Plot the projection of the data onto the eigenfunctions
-pd.plotting.scatter_matrix(pd.DataFrame(canadWeather_proj), diagonal='kde')
+_ = pd.plotting.scatter_matrix(pd.DataFrame(canadWeather_proj), diagonal='kde')
 
 ###############################################################################
 # Then, we can test if the reconstruction of the data is good.
@@ -85,7 +57,6 @@ pd.plotting.scatter_matrix(pd.DataFrame(canadWeather_proj), diagonal='kde')
 canadWheather_reconst = mfpca.inverse_transform(canadWeather_proj)
 
 # Plot the reconstructed curves
-fig, ax = plot(canadWheather_reconst,
-               main=['Daily temperature', 'Monthly precipitation'],
-               xlab=['Day', 'Month'],
-               ylab=['Temperature', 'Precipitation'])
+fig, (ax1, ax2) = plt.subplots(1, 2)
+_ = plot(canadWheather_reconst[0], ax=ax1)
+_ = plot(canadWheather_reconst[1], ax=ax2)

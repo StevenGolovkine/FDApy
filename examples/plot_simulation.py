@@ -13,91 +13,17 @@ basis.
 
 import numpy as np
 
-from FDApy.basis import Basis, Brownian, basis_legendre, basis_wiener
-from FDApy.plot import plot
+from FDApy.representation.simulation import Brownian, KarhunenLoeve
+from FDApy.visualization.plot import plot
+
 
 ###############################################################################
-# We will define a Legendre polynomial basis using the method
-# :func:`~FDApy.basis.basis_legendre`.
+# Now, we will simulate some curves data using the Karhunen-Loève expansion.
 #
+kl = KarhunenLoeve(name='bsplines', n_functions=5)
+kl.new(n_obs=100, argvals=np.linspace(0, 1, 301))
 
-argvals = np.linspace(-1, 1, 1000)
-LP = basis_legendre(K=5, argvals=argvals, norm=True)
-
-# Plot the basis
-fig, ax = plot(LP, main='Legendre basis', xlab='Sampling points')
-
-###############################################################################
-# Next, we will define a Wiener basis using the method
-# :func:`~FDApy.basis.basis_wiener`.
-#
-
-argvals = np.linspace(-1, 1, 1000)
-WP = basis_wiener(K=5, argvals=argvals, norm=True)
-
-# Plot the basis
-fig, ax = plot(WP, main='Wiener basis', xlab='Sampling points')
-
-###############################################################################
-# Now, we will simulate some curves data according to diverse basis with
-# different eigenvalues decay.
-#
-
-###############################################################################
-# Legendre basis and exponential eigenvalues decay
-sim = Basis(N=100, M=50,
-            name='legendre',
-            n_features=5,
-            n_clusters=1,
-            centers=None,
-            cluster_std='exponential',
-            norm=True)
-data = sim.new()
-
-# Plot some simulations
-fig, ax = plot(data, main='Simulation', xlab='Sampling points')
-
-###############################################################################
-# Legendre basis and linear eigenvalues decay
-sim = Basis(N=100, M=50,
-            name='legendre',
-            n_features=5,
-            n_clusters=1,
-            centers=None,
-            cluster_std='linear',
-            norm=True)
-data = sim.new()
-
-# Plot some simulations
-fig, ax = plot(data, main='Simulation', xlab='Sampling points')
-
-###############################################################################
-# Wiener basis and Wiener eigenvalues decay
-sim = Basis(N=100, M=50,
-            name='wiener',
-            n_features=5,
-            n_clusters=1,
-            centers=None,
-            cluster_std='wiener',
-            norm=True)
-data = sim.new()
-
-# Plot some simulations
-fig, ax = plot(data, main='Simulation', xlab='Sampling points')
-
-###############################################################################
-# Wiener basis and user-set eigenvalues
-sim = Basis(N=100, M=50,
-            name='wiener',
-            n_features=3,
-            n_clusters=1,
-            centers=None,
-            cluster_std=np.array([[100], [50], [10]]),
-            norm=True)
-data = sim.new()
-
-# Plot some simulations
-fig, ax = plot(data, main='Simulation', xlab='Sampling points')
+_ = plot(kl.data)
 
 ###############################################################################
 # We can also add some noise to the data.
@@ -108,26 +34,11 @@ fig, ax = plot(data, main='Simulation', xlab='Sampling points')
 #
 
 # Add some noise to the simulation.
-data_noisy = data.add_noise(5)
+kl.add_noise(0.05)
 
 # Plot the noisy simulations
-fig, ax = plot(data_noisy,
-               main='Noisy simulation',
-               xlab='Sampling points')
+_ = plot(kl.noisy_data)
 
-###############################################################################
-# Second, we may add heteroscedatic noise to the data. In this case, the
-# quantity added to the data is defined as realisations of the random variable
-# :math:`\varepsilon \sim \mathcal{N}(0, \sigma^2(t))`.
-#
-
-# Add some heteroscedastic noise to the simulation
-data_noisy = data.add_noise(noise_var=lambda x: np.abs(x) + 1)
-
-# Plot the heteroscedastic noisy simulations
-fig, ax = plot(data_noisy,
-               main='Noisy heteroscedastic simulation',
-               xlab='Sampling points')
 
 ###############################################################################
 # We can also simulate Brownian motion and some of processes derived from it,
@@ -136,30 +47,24 @@ fig, ax = plot(data_noisy,
 
 ###############################################################################
 # Simulate some standard brownian motions.
-sim = Brownian(N=100, M=50, brownian_type='standard')
-data = sim.new(x0=0)
+brownian = Brownian(name='standard')
+brownian.new(n_obs=100, argvals=np.linspace(0, 1, 301))
 
 # Plot some simulations
-fig, ax = plot(data,
-               main='Standard Brownian motion',
-               xlab='Sampling points')
+_ = plot(brownian.data)
 
 ###############################################################################
 # Simulate some geometric brownian motions.
-sim = Brownian(N=100, M=50, brownian_type='geometric')
-data = sim.new(x0=1, mu=5, sigma=1)
+brownian_geo = Brownian(name='geometric')
+brownian_geo.new(n_obs=100, argvals=np.linspace(0, 1, 301))
 
 # Plot some simulations
-fig, ax = plot(data,
-               main='Geometric Brownian motion',
-               xlab='Sampling points')
+_ = plot(brownian_geo.data)
 
 ###############################################################################
 # Simulate some fractional brownian motions.
-sim = Brownian(N=100, M=50, brownian_type='fractional')
-data = sim.new(H=0.7)
+brownian_frac = Brownian(name='fractional')
+brownian_frac.new(n_obs=100, argvals=np.linspace(0, 1, 301), hurst=0.7)
 
 # Plot some simulations
-fig, ax = plot(data,
-               main='Fractional Brownian motion',
-               xlab='Sampling points')
+_ = plot(brownian_frac.data)

@@ -11,9 +11,9 @@ data by analyzing the canadian weather dataset.
 
 # shinx_gallery_thumbnail_number = 2
 
-from FDApy import MultivariateFunctionalData
+from FDApy.representation import MultivariateFunctionalData
 from FDApy.misc.loader import read_csv
-from FDApy.plot import plot
+from FDApy.visualization.plot import plot
 
 ###############################################################################
 # Load the data as DenseFunctionalData.
@@ -39,11 +39,8 @@ print(canadWeather)
 ###############################################################################
 # We can plot the data.
 
-# Plot the multivariate functional data
-fig, ax = plot(canadWeather,
-               main=['Daily temperature', 'Monthly precipitation'],
-               xlab=['Day', 'Month'],
-               ylab=['Temperature', 'Precipitation'])
+# Plot the univariate functional data
+_ = plot(temperature)
 
 ###############################################################################
 # The attributs of the univariate functional data classes can easily be
@@ -87,7 +84,7 @@ print(precipitation[3:6])
 # can also be easily accessed.
 
 # Number of observations for the object
-canadWeather.n_obs
+print(canadWeather.n_obs)
 
 # Extract functions from MultivariateFunctionalData
 print(canadWeather[0])
@@ -99,10 +96,7 @@ print(canadWeather[0])
 precipitation_mean = precipitation.mean()
 
 # Plot the mean function of the monthly precipation
-fig, ax = plot(precipitation_mean,
-               main='Mean monthly precipitation',
-               xlab='Month',
-               ylab='Precipitation (mm)')
+_ = plot(precipitation_mean)
 
 ###############################################################################
 # Compute the covariance surface for an univariate functional data object.
@@ -111,35 +105,26 @@ fig, ax = plot(precipitation_mean,
 precipitation_covariance = precipitation.covariance()
 
 # Plot the covariance function of the monthly precipitation
-fig, ax = plot(precipitation_covariance,
-               main='Covariance monthly precipitation',
-               xlab='Month',
-               ylab='Month')
+_ = plot(precipitation_covariance)
 
 ###############################################################################
 # We can also compute a smoothed estimate of the mean function and the
 # covariance surface.
 
 # Smoothing covariance of the daily temperature
-temperature.covariance(smooth=True, method='GAM', bandwidth=20)
+temperature_covariance = temperature.covariance(smooth='GAM')
 
 # Plot the smooth covariance function of the daily temperature
-fig, ax = plot(temperature.covariance_,
-               main='Covariance daily temperature',
-               xlab='Day',
-               ylab='Day')
+_ = plot(temperature_covariance)
 
 ###############################################################################
 # Instead of directly computing an estimation of the mean and covariance by
 # smoothing, we can smooth all the curve in an individual way.
 
 # Smooth the data
-temperature_smooth = temperature.smooth(t0=200, k0=17,
-                                        points=temperature.argvals[0],
+temperature_smooth = temperature.smooth(points=200,
+                                        neighborhood=14,
                                         kernel='gaussian')
 
 # Plot the smooth data
-fig, ax = plot(temperature_smooth,
-               main='Daily temperature',
-               xlab='Day',
-               ylab='Temperature')
+_ = plot(temperature_smooth)

@@ -10,10 +10,11 @@ This notebook shows how to smooth univariate functional data.
 
 # shinx_gallery_thumbnail_number = 2
 
+import numpy as np
 import matplotlib.pyplot as plt
 
-from FDApy.basis import Brownian
-from FDApy.plot import plot
+from FDApy.representation.simulation import Brownian
+from FDApy.visualization.plot import plot
 
 
 ###############################################################################
@@ -21,26 +22,22 @@ from FDApy.plot import plot
 #
 
 # Simulate some fractional brownian motions.
-sim = Brownian(N=1000, M=300, brownian_type='fractional')
-data = sim.new(x0=0, H=0.5)
-data_noisy = data.add_noise(0.05)
+brownian = Brownian(name='standard')
+brownian.new(n_obs=1000, argvals=np.linspace(0, 1, 301))
+brownian.add_noise(0.05)
 
 # Plot some simulations
-fig, ax = plot(data_noisy,
-               main='Fractional Brownian motion',
-               xlab='Sampling points')
+_ = plot(brownian.noisy_data)
 
 ###############################################################################
 # Now, we will smooth the data according the methodology from (add ref).
 #
 
 # Smooth the data
-data_smooth = data_noisy.smooth(t0=0.5, k0=14)
+data_smooth = brownian.noisy_data.smooth(points=0.5, neighborhood=14)
 
 # Plot of the smoothing data
-fig, ax = plot(data_smooth,
-               main='Fractional Brownian motion smoothed',
-               xlab='Sampling points')
+_ = plot(data_smooth)
 
 ###############################################################################
 # In order to look more precisely at the smoothing results, let's plot one
@@ -50,12 +47,14 @@ fig, ax = plot(data_smooth,
 # Plot individual curves
 idx = 5
 fig, ax = plt.subplots(1, 1)
-ax.scatter(data_noisy.argvals[0],
-           data_noisy.values[idx, :],
+ax.scatter(brownian.noisy_data.argvals['input_dim_0'],
+           brownian.noisy_data.values[idx, :],
            alpha=0.5, label='Noisy')
-ax.plot(data.argvals[0], data.values[idx, :],
+ax.plot(brownian.data.argvals['input_dim_0'],
+        brownian.data.values[idx, :],
         color='red', label='True')
-ax.plot(data_smooth.argvals[idx], data_smooth.values[idx],
+ax.plot(data_smooth.argvals['input_dim_0'],
+        data_smooth.values[idx, :],
         color='green', label='Smooth')
 ax.set_xlabel('Sampling points')
 ax.legend()

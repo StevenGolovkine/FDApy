@@ -30,7 +30,7 @@ Y_true = 2 * np.sin(np.linspace(-2, 2, 200))
 #
 
 # Fit local polynomials
-lp = LocalPolynomial(kernel="epanechnikov", bandwidth=2, degree=2)
+lp = LocalPolynomial(kernel_name="epanechnikov", bandwidth=2, degree=2)
 lp.fit(X, Y)
 
 # Plot the results
@@ -65,7 +65,7 @@ X0 = np.vstack([X0[0].ravel(), X0[1].ravel()])
 #
 
 # Fit local polynomials
-lp = LocalPolynomial(kernel="epanechnikov", bandwidth=2, degree=1)
+lp = LocalPolynomial(kernel_name="epanechnikov", bandwidth=2, degree=1)
 lp.fit(X, Y)
 
 # Plot the results

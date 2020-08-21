@@ -11,74 +11,61 @@ dataset CD4 cell count.
 
 # shinx_gallery_thumbnail_number = 2
 
-import numpy as np
-import pandas as pd
 
-from FDApy.irregular_functional import IrregularFunctionalData
-from FDApy.plot import plot
+from FDApy.misc.loader import read_csv
+from FDApy.visualization.plot import plot
 
 ###############################################################################
 # Load the data into Pandas dataframe.
-cd4 = pd.read_csv('./data/cd4.csv', index_col=0)
-
-
-###############################################################################
-# Create IrregularFunctionalData for cd4 data.
-all_argvals = cd4.columns.astype(np.int64)
-argvals = [np.array(all_argvals[~np.isnan(row)]) for row in cd4.values]
-values = [row[~np.isnan(row)] for row in cd4.values]
-cd4counts = IrregularFunctionalData(argvals, values)
+cd4 = read_csv('./data/cd4.csv', index_col=0)
 
 ###############################################################################
 # Print out an Irregular Functional data object.
 
 # Print irregular functional data
-print(cd4counts)
+print(cd4)
 
 ###############################################################################
 # The sampling points of the data can easily be accessed.
 
 # Accessing the argvals of the object
-print(cd4counts.argvals[0:5])
+print(cd4.argvals['input_dim_0'].get(5))
 
 ###############################################################################
 # The values associated to the sampling points are retrieved in a same way
 # than the sampling points.
 
 # Accessing the values of the object
-print(cd4counts.values[0:5])
+print(cd4.values.get(5))
 
 ###############################################################################
 # The number of observations within the data are obtained using the function
-# :func:`~FDApy.irregular_functional.IrregularFunctional.nObs`.
+# :func:`~FDApy.irregular_functional.IrregularFunctional.n_obs`.
 
 # Get the number of observations for the object
-print(cd4counts.nObs())
+print(cd4.n_obs)
 
 ###############################################################################
 # The number of sampling points per observation is given by the function
-# :func:`~FDApy.irregular_functional.IrregularFunctional.nObsPoint`.
+# :func:`~FDApy.irregular_functional.IrregularFunctional.n_points`.
 
-# Retrieve the number of sampling points for the object
-print(cd4counts.nObsPoint()[0:5])
+# Retrieve the mean number of sampling points for the object
+print(cd4.n_points)
 
 ###############################################################################
 # The dimension of the data is given by the function
-# :func:`~FDApy.irregular_functional.IrregularFunctional.dimension`.
+# :func:`~FDApy.irregular_functional.IrregularFunctional.n_dim`.
 
 # Get the dimension of the domain of the observations
-print(cd4counts.dimension())
+print(cd4.n_dim)
 
 ###############################################################################
 # The extraction of observations is also easily done.
 
 # Extract observations from the object
-print(cd4counts[5:8])
+print(cd4[5:8])
 
 ###############################################################################
 # Finally, we can plot the data.
 
-fig, ax = plot(cd4counts,
-               main='CD4 cell counts',
-               xlab='Month since seroconversion',
-               ylab='CD4 cell count (log-scale)')
+_ = plot(cd4)
