@@ -9,6 +9,7 @@ different types are: Univariate Functional Data, Irregular Functional data and
 Multivariate Functional Data.
 """
 import numpy as np
+import pygam
 
 from abc import ABC, abstractmethod
 from collections import UserList
@@ -511,6 +512,17 @@ class DenseFunctionalData(FunctionalData):
         smooth: str, default=None
             Name of the smoothing method to use. Currently, not implemented.
 
+        Keyword Args
+        ------------
+        kernel_name: str, default='epanechnikov'
+            Name of the kernel used for local polynomial smoothing.
+        degree: int, default=1
+            Degree used for local polynomial smoothing.
+        bandwidth: float, default=1
+            Bandwidth used for local polynomial smoothing.
+        n_basis: int, default=10
+            Number of splines basis used for GAM smoothing.
+
         Returns
         -------
         obj: DenseFunctionalData object
@@ -518,8 +530,28 @@ class DenseFunctionalData(FunctionalData):
             same argvals as `self` and one observation.
 
         """
-        mean_estim = self.values.mean(axis=0, keepdims=True)
-        return DenseFunctionalData(self.argvals, mean_estim)
+        mean_estim = self.values.mean(axis=0)
+
+        if smooth is not None:
+            argvals = self.argvals['input_dim_0']
+            if self.n_dim > 1:
+                raise ValueError('Only one dimensional data can be smoothed.')
+            if smooth == 'LocalLinear':
+                lp = LocalPolynomial(
+                    kernel_name=kwargs.get('kernel_name', 'epanechnikov'),
+                    bandwidth=kwargs.get('bandwidth', 1),
+                    degree=kwargs.get('degree', 1)
+                )
+                mean_estim = lp.fit_predict(argvals, mean_estim, argvals)
+            elif smooth == 'GAM':
+                n_basis = kwargs.get('n_basis', 10)
+                argvals = self.argvals['input_dim_0']
+                mean_estim = pygam.LinearGAM(pygam.s(0, n_splines=n_basis)).\
+                    fit(argvals, mean_estim).\
+                    predict(argvals)
+            else:
+                raise NotImplementedError('Smoothing method not implemented.')
+        return DenseFunctionalData(self.argvals, mean_estim[np.newaxis])
 
     def covariance(self, mean=None, smooth=None, **kwargs):
         """Compute an estimate of the covariance.
