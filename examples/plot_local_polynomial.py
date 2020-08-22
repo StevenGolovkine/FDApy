@@ -14,7 +14,7 @@ one and two-dimensional data.
 import matplotlib.pyplot as plt
 import numpy as np
 
-from FDApy.preprocessing import LocalPolynomial
+from FDApy.preprocessing.smoothing.local_polynomial import LocalPolynomial
 
 
 ###############################################################################

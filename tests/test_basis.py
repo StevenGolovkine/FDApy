@@ -4,7 +4,7 @@
 import numpy as np
 import unittest
 
-from FDApy.representation import Basis
+from FDApy.representation.basis import Basis
 
 
 class TestBasis(unittest.TestCase):

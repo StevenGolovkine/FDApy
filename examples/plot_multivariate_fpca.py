@@ -14,7 +14,7 @@ components analysis on an example dataset.
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from FDApy.representation import MultivariateFunctionalData
+from FDApy.representation.functional_data import MultivariateFunctionalData
 from FDApy.preprocessing.dim_reduction.fpca import MFPCA
 from FDApy.visualization.plot import plot
 from FDApy.misc.loader import read_csv

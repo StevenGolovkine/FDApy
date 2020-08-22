@@ -4,7 +4,8 @@
 import numpy as np
 import unittest
 
-from FDApy.representation import (DenseFunctionalData, IrregularFunctionalData)
+from FDApy.representation.functional_data import (DenseFunctionalData,
+                                                  IrregularFunctionalData)
 from FDApy.representation.functional_data import (_check_dict_array,
                                                   _check_dict_dict,
                                                   _check_type,

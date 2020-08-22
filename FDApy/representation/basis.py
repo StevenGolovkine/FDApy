@@ -11,7 +11,7 @@ import scipy
 
 from patsy import bs
 
-from FDApy.representation import DenseFunctionalData
+from .functional_data import DenseFunctionalData
 
 
 #######################################################################

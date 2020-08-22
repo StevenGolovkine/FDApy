@@ -11,7 +11,7 @@ data by analyzing the canadian weather dataset.
 
 # shinx_gallery_thumbnail_number = 2
 
-from FDApy.representation import MultivariateFunctionalData
+from FDApy.representation.functional_data import MultivariateFunctionalData
 from FDApy.misc.loader import read_csv
 from FDApy.visualization.plot import plot
 

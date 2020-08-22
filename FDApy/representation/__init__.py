@@ -8,10 +8,3 @@ from which the others are build upon.
 It also includes a Simulation class to generate some functional data with
 different properties.
 """
-
-from .functional_data import DenseFunctionalData
-from .functional_data import IrregularFunctionalData
-from .functional_data import MultivariateFunctionalData
-
-from .basis import Basis
-from .simulation import Brownian, KarhunenLoeve

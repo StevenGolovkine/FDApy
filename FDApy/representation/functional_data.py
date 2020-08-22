@@ -14,8 +14,8 @@ import pygam
 from abc import ABC, abstractmethod
 from collections import UserList
 
-from FDApy.preprocessing import Bandwidth
-from FDApy.preprocessing import LocalPolynomial
+from ..preprocessing.smoothing.bandwidth import Bandwidth
+from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..misc.utils import get_dict_dimension_, get_obs_shape_
 from ..misc.utils import integration_weights_, range_standardization_
 
