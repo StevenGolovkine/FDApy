@@ -81,7 +81,7 @@ def _check_same_nobs(*argv):
     """Raise an arror if elements in argv have different number of obs."""
     n_obs = set(obj.n_obs for obj in argv)
     if len(n_obs) > 1:
-        raise ValueError(f"Elements do not have the same number"
+        raise ValueError("Elements do not have the same number"
                          " of observations.")
 
 
