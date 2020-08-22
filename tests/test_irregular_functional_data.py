@@ -4,8 +4,7 @@
 import numpy as np
 import unittest
 
-from FDApy.representation.functional_data import DenseFunctionalData
-from FDApy.representation.functional_data import IrregularFunctionalData
+from FDApy.representation import DenseFunctionalData, IrregularFunctionalData
 
 
 class TestIrregularFunctionalData1D(unittest.TestCase):

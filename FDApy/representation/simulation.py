@@ -16,7 +16,7 @@ from abc import ABC, abstractmethod
 from sklearn.datasets import make_blobs
 
 from FDApy.representation import DenseFunctionalData, IrregularFunctionalData
-from FDApy.representation.basis import Basis
+from FDApy.representation import Basis
 
 
 #############################################################################

@@ -14,3 +14,4 @@ from .functional_data import IrregularFunctionalData
 from .functional_data import MultivariateFunctionalData
 
 from .basis import Basis
+from .simulation import Brownian, KarhunenLoeve

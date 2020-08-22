@@ -11,8 +11,7 @@ IrregularFunctionalData or MultivariateFunctionalData.
 import numpy as np
 import pandas as pd
 
-from ..representation.functional_data import (DenseFunctionalData,
-                                              IrregularFunctionalData)
+from FDApy.representation import DenseFunctionalData, IrregularFunctionalData
 
 
 ###############################################################################
