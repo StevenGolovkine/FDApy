@@ -31,7 +31,7 @@ extensions = [
 ]
 
 setup(name='FDApy',
-      version='0.4.0',
+      version='0.5.0',
       description=DOCLINES[1],
       long_description='\n'.join(DOCLINES[3:]),
       long_description_content_type='text/x-rst',
