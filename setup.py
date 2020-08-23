@@ -15,8 +15,6 @@ Check out the `documentation <https://fdapy.readthedocs.io/en/stable/>`_ for
 more complete information on the available features within the package.
 """
 import Cython.Build
-import os
-
 
 from setuptools import Extension, find_packages, setup
 
@@ -26,8 +24,7 @@ DOCLINES = (__doc__ or '').split('\n')
 extensions = [
     Extension('FDApy.src.sigma',
               sources=['FDApy/src/sigma.pyx'],
-              language='c++',
-              optional=os.environ.get('CIBUILDWHEEL', '0') != 1)
+              language='c++')
 ]
 
 setup(name='FDApy',

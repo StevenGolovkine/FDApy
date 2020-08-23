@@ -18,7 +18,6 @@ env:
     #- CIBW_SKIP="cp27-* cp33-* cp34-* cp35-* *_i686" # Skip these python versions
     - CIBW_BEFORE_TEST="pip install Cython nose"
     - CIBW_TEST_COMMAND="python -VV && nosetests {project}/tests" # Test the created wheels
-    - CIBW_TEST_EXTRAS="full"
     - CIBW_BEFORE_BUILD="pip install Cython"
     - CC="gcc" # If Travis does not find a C compiler
     - PYTHON=python3

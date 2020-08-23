@@ -4,5 +4,5 @@
 
 exclude_paths:
     - 'examples/**'
-    - 'FDApy/tests/**'
+    - 'tests/**'
     - 'docs/**'
