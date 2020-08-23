@@ -4,7 +4,6 @@
 import numpy as np
 import unittest
 
-from .context import FDApy
 from FDApy.misc.utils import (col_mean_, col_var_, integrate_,
                               integration_weights_, range_standardization_,
                               row_mean_, row_var_, shift_, tensor_product_)

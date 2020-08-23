@@ -5,7 +5,6 @@ import numpy as np
 import os
 import unittest
 
-from .context import FDApy
 from FDApy.misc.loader import read_csv
 
 
