@@ -4,6 +4,7 @@
 import numpy as np
 import unittest
 
+from .context import FDApy
 from FDApy.representation.basis import Basis
 
 
