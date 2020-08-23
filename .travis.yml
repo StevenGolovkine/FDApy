@@ -46,8 +46,8 @@ install:
 
 # Command to run test, e.g. python setup.py test
 script:
-  - $PYTHON -m pip install cibuildwheel==1.4.2
-  - $PYTHON -m cibuildwheel --output-dir wheelhouse
+  - $PIP install cibuildwheel==1.4.2
+  - cibuildwheel --output-dir wheelhouse
   - ls wheelhouse
 
 # Command for package deployment
