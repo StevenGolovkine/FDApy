@@ -10,8 +10,10 @@ References
     Estimating the number of clusters in a data setp via the gap statistic,
     Tibshirani R., Walther G., and Hastie T., J. R. Statist. Soc. B (2001)
     63, Part 2, pp.411-423
+
     A comparison of Gap statistic definitions with and without logarithm
     function, Mohajer M., Englmeier K.-H., Schmid V. J., 2010
+
     Granger M. - https://github.com/milesgranger/gap_statistic
 
 """
