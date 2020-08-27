@@ -118,7 +118,7 @@ class GapResult(NamedTuple):
     def __repr__(self) -> str:
         """Override print function."""
         return (f"For {self.k} clusters considered, the Gap statistic is"
-                f" {self.value} ({self.sk})")
+                f" {self.value} ({self.sk}).")
 
 
 ##############################################################################
@@ -128,7 +128,7 @@ class Gap():
     """A module for the computation of the Gap statistic.
 
     This module is used to compute the Gap statistic for a given dataset and
-    a given number of cluster k.  The Gap statistic is defined in the article
+    a given number of cluster k. The Gap statistic is defined in the article
     of Tibshirani, Walther and Hastie - Estimating the number of clusters in a
     data set via the gap statistic.
 
@@ -221,7 +221,7 @@ class Gap():
         Returns
         -------
         n_clusters: int
-            Best number of clusters fond in the data according to the Gap
+            Best number of clusters found in the data according to the Gap
             statistic.
 
         """

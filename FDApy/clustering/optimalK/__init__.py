@@ -1,0 +1,3 @@
+"""
+OptimalK module.
+"""

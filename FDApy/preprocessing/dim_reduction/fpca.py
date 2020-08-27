@@ -81,7 +81,7 @@ class UFPCA():
 
         """
         self.smoothing_parameters = {
-            'method': kwargs.get('method', 'LocalLinear'),
+            'method': kwargs.get('method', None),
             'kernel': kwargs.get('kernel', 'gaussian'),
             'bandwidth': kwargs.get('bandwidth', 1.0),
             'degree': kwargs.get('degree', 2),
@@ -94,7 +94,7 @@ class UFPCA():
         if isinstance(data, DenseFunctionalData):
             self._fit_uni(data, mean, covariance)
         else:
-            raise TypeError('UFPCA only support UnivariateFunctionalData'
+            raise TypeError('UFPCA only support DenseFunctionalData'
                             ' object!')
 
     def _fit_uni(self, data, mean=None, covariance=None):
@@ -119,10 +119,14 @@ class UFPCA():
         TODO : Add possibility to smooth the eigenfunctions.
 
         """
+        smoothing_method = self.smoothing_parameters['method']
         if mean is None:
-            mean = data.mean()
+            mean = data.mean(smooth=smoothing_method,
+                             **self.smoothing_parameters)
         if covariance is None:
-            covariance = data.covariance(mean=mean)
+            covariance = data.covariance(mean=mean,
+                                         smooth=smoothing_method,
+                                         **self.smoothing_parameters)
 
         # Choose the W_j's and the S_j's (Ramsey and Silverman, 2005)
         argvals = data.argvals['input_dim_0']
