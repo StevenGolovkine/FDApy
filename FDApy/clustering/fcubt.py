@@ -285,7 +285,8 @@ class fCUBT():
 
     def grow(self):
         """Grow a complete tree."""
-        self.tree = self._recursive_clustering(self.tree)
+        tree = self._recursive_clustering(self.tree)
+        self.tree = sorted(tree, key=lambda node: node.identifier)
 
     def prune(self):
         """Prune the tree."""
@@ -294,6 +295,69 @@ class fCUBT():
     def join(self):
         """Join elements of the tree."""
         pass
+
+    def get_node(fcubt, idx):
+        """Get a particular node in the tree.
+
+        Parameters:
+        -----------
+        idx: int
+            The identifier of a node.
+
+        Returns
+        -------
+        node: Node
+            The node which identifier `idx`.
+
+        """
+        for node in fcubt.tree:
+            if node.identifier == idx:
+                return node
+
+    def get_siblings(self):
+        """Get the siblings in the tree.
+
+        A siblings couple is defined as a pair of nodes that are leaf node and
+        share the same parent node.
+
+        Returns
+        -------
+        list_siblings: list of tuple
+            A list of tuple where each tuple represent a siblings couple.
+
+        """
+        return [(node.identifier, node.identifier + 1) for node in self.tree
+                if node.is_leaf and node.identifier % 2 == 0]
+
+    def plot(self, fig=None, **plt_kwargs):
+        """Plot the tree.
+
+        Parameters
+        ----------
+        fig: matplotlib.figure.Figure
+            A matplotlib Figure object.
+        **plt_kwargs:
+            Keywords plotting arguments
+
+        """
+        if fig is None:
+            fig = plt.figure(constrained_layout=True, **plt_kwargs)
+        gs = fig.add_gridspec(self.height, 2 * (self.n_leaf))
+
+        row_idx = 0
+        col_idx = 2**self.height // 2 - 1
+        for node in self.tree:
+            if node.identifier >= 2**(row_idx + 1):
+                row_idx += 1
+                col_idx = 2**(self.height - row_idx) // 2 - 1
+            if not node.is_leaf:
+                ax = fig.add_subplot(gs[row_idx, col_idx:(col_idx + 2)])
+                col_idx += 2**(self.height - row_idx)
+            else:
+                ax = fig.add_subplot(
+                    gs[row_idx, (2 * col_idx):(2 * col_idx + 2)])
+                col_idx += 1
+            node.plot(axes=ax, **plt_kwargs)
 
     def _recursive_clustering(self, list_nodes):
         """Perform the binary clustering recursively."""

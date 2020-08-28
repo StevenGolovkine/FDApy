@@ -51,6 +51,7 @@ def plot(data, ax=None, **plt_kwargs):
     else:
         raise ValueError(f"Can not plot functions of dimension {data.n_dim},"
                          " limited to dimension 2.")
+    return ax
 
 
 def _plot_1d(data, ax=None, **plt_kwargs):
