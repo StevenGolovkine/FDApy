@@ -6,3 +6,4 @@ patsy
 pygam
 scikit-learn
 scipy
+sktime
