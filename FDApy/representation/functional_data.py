@@ -14,6 +14,8 @@ import pygam
 from abc import ABC, abstractmethod
 from collections import UserList
 
+from sklearn.metrics import pairwise_distances
+
 from ..preprocessing.smoothing.bandwidth import Bandwidth
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..misc.utils import get_dict_dimension_, get_obs_shape_
@@ -692,6 +694,28 @@ class DenseFunctionalData(FunctionalData):
                                   kernel=kernel,
                                   bandwidth=bandwidth)
         return data_smooth.as_dense()
+
+    def pairwise_distance(self, metric='euclidean'):
+        """Compute the pairwise distance between the data.
+
+        Parameters
+        ----------
+        metric: str, default='euclidean'
+            The metric to use when calculating distance between instances in a
+            functional data object.
+
+        Returns
+        -------
+        D: np.ndarray, shape=(n_obs, n_obs)
+            A distance matrix D such that D_{i, j} is the distance between the
+            ith and jth observations of the functional data object,
+
+        """
+        if self.n_dim > 1:
+            raise NotImplementedError('The distance computation is not'
+                                      ' implemented for data with dimension'
+                                      ' greater than 1.')
+        return pairwise_distances(self.values, metric=metric)
 
 
 ###############################################################################

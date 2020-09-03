@@ -144,7 +144,7 @@ class Node():
     def is_leaf(self, new_is_leaf):
         self._is_leaf = new_is_leaf
 
-    def split(self, splitting_criteria='bic', n_components=1):
+    def split(self, splitting_criteria='bic', n_components=1, min_size=10):
         """Split the data into two groups.
 
         Parameters
@@ -159,27 +159,31 @@ class Node():
             the percentage specified by n_components.
 
         """
-        ufpca = UFPCA(n_components=n_components)
-        ufpca.fit(data=self.data, method='GAM')
-        scores = ufpca.transform(data=self.data, method='NumInt')
+        if self.data.n_obs > min_size:
+            ufpca = UFPCA(n_components=n_components)
+            ufpca.fit(data=self.data, method='GAM')
+            scores = ufpca.transform(data=self.data, method='NumInt')
 
-        if splitting_criteria == 'bic':
-            bic_stat = BIC(parallel_backend='multiprocessing')
-            best_k = bic_stat(scores, np.arange(1, 5))
-        elif splitting_criteria == 'gam':
-            gap_stat = Gap(generating_process='uniform', metric='euclidean')
-            best_k = gap_stat(scores, np.arange(1, 5), n_refs=3)
-        else:
-            raise NotImplementedError('Splitting criteria not implemented.')
+            if splitting_criteria == 'bic':
+                bic_stat = BIC(parallel_backend='multiprocessing')
+                best_k = bic_stat(scores, np.arange(1, 5))
+            elif splitting_criteria == 'gam':
+                gap_stat = Gap(generating_process='uniform',
+                               metric='euclidean')
+                best_k = gap_stat(scores, np.arange(1, 5), n_refs=3)
+            else:
+                raise NotImplementedError('Not implemented.')
 
-        if best_k > 1:
-            gm = GaussianMixture(n_components=2)
-            prediction = gm.fit_predict(scores)
-            self.labels = prediction
-            self.left = Node(self.data[prediction == 0],
-                             2 * self.identifier)
-            self.right = Node(self.data[prediction == 1],
-                              2 * self.identifier + 1)
+            if (best_k > 1):
+                gm = GaussianMixture(n_components=2)
+                prediction = gm.fit_predict(scores)
+                self.labels = prediction
+                self.left = Node(self.data[prediction == 0],
+                                 2 * self.identifier)
+                self.right = Node(self.data[prediction == 1],
+                                  2 * self.identifier + 1)
+            else:
+                self.is_leaf = True
         else:
             self.is_leaf = True
 
@@ -280,23 +284,34 @@ class fCUBT():
 
     @property
     def height(self):
-        """Get the height of the tree."""
-        return int(np.ceil(np.log2(self.n_nodes + 1)))
+        """Get the height of the tree.
 
-    def grow(self):
+        The height of the tree is defined starting at 0. So, a tree with only
+        a root node will have height 0.
+
+        Returns
+        -------
+        height: int
+            The height of the tree.
+
+        """
+        n = self.tree[-1].identifier
+        height = 0
+        while n > 1:
+            n = n // 2
+            height += 1
+        return height
+
+    def grow(self, min_size=10):
         """Grow a complete tree."""
-        tree = self._recursive_clustering(self.tree)
+        tree = self._recursive_clustering(self.tree, min_size=min_size)
         self.tree = sorted(tree, key=lambda node: node.identifier)
-
-    def prune(self):
-        """Prune the tree."""
-        pass
 
     def join(self):
         """Join elements of the tree."""
         pass
 
-    def get_node(fcubt, idx):
+    def get_node(self, idx):
         """Get a particular node in the tree.
 
         Parameters:
@@ -310,7 +325,7 @@ class fCUBT():
             The node which identifier `idx`.
 
         """
-        for node in fcubt.tree:
+        for node in self.tree:
             if node.identifier == idx:
                 return node
 
@@ -342,30 +357,32 @@ class fCUBT():
         """
         if fig is None:
             fig = plt.figure(constrained_layout=True, **plt_kwargs)
-        gs = fig.add_gridspec(self.height, 2 * (self.n_leaf))
+        gs = fig.add_gridspec(self.height + 1, 2**(self.height + 1))
 
         row_idx = 0
-        col_idx = 2**self.height // 2 - 1
+        col_idx = 2**(self.height + 1) // 2 - 1
         for node in self.tree:
             if node.identifier >= 2**(row_idx + 1):
                 row_idx += 1
-                col_idx = 2**(self.height - row_idx) // 2 - 1
-            if not node.is_leaf:
+                col_idx = 2**(self.height - row_idx + 1) // 2 - 1
+            if not row_idx == self.height:
                 ax = fig.add_subplot(gs[row_idx, col_idx:(col_idx + 2)])
-                col_idx += 2**(self.height - row_idx)
+                col_idx += 2**(self.height - row_idx + 1)
             else:
-                ax = fig.add_subplot(
-                    gs[row_idx, (2 * col_idx):(2 * col_idx + 2)])
+                col_idx = 2 * (node.identifier - 2**self.height)
+                ax = fig.add_subplot(gs[row_idx, col_idx:(col_idx + 2)])
                 col_idx += 1
             node.plot(axes=ax, **plt_kwargs)
 
-    def _recursive_clustering(self, list_nodes):
+    def _recursive_clustering(self, list_nodes, min_size=10):
         """Perform the binary clustering recursively."""
         tree = []
         for node in list_nodes:
             if node is not None:
+                print(node.identifier)
                 tree.append(node)
-                node.split(splitting_criteria='bic', n_components=0.95)
+                node.split(splitting_criteria='bic', n_components=0.95,
+                           min_size=min_size)
                 tree.extend(self._recursive_clustering([node.left,
                                                         node.right]))
         return tree
