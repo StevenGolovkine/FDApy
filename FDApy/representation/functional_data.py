@@ -717,6 +717,28 @@ class DenseFunctionalData(FunctionalData):
                                       ' greater than 1.')
         return pairwise_distances(self.values, metric=metric)
 
+    def concatenate(self, data):
+        """Concatenate two DenseFunctionalData.
+
+        Parameters
+        ----------
+        data: DenseFunctionalData
+            The data to concatenate with self.
+
+        Returns
+        -------
+        res: DenseFunctionalData
+            The concatenation of self and data.
+
+        """
+        if self.n_dim > 1:
+            raise NotImplementedError('The concatenation is not'
+                                      ' implemented for data with dimension'
+                                      ' greater than 1.')
+        argvals = self.argvals
+        values = np.vstack([self.values, data.values])
+        return DenseFunctionalData(argvals, values)
+
 
 ###############################################################################
 # Class IrregularFunctionalData

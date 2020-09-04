@@ -145,7 +145,7 @@ class Node():
         self._is_leaf = new_is_leaf
 
     def split(self, splitting_criteria='bic', n_components=1, min_size=10):
-        """Split the data into two groups.
+        """Split a node into two groups.
 
         Parameters
         ----------
@@ -186,6 +186,25 @@ class Node():
                 self.is_leaf = True
         else:
             self.is_leaf = True
+
+    def unite(self, node):
+        """Unite two nodes into one.
+
+        Parameters
+        ----------
+        node: Node
+            The node to unite with self.
+
+        Returns
+        -------
+        res: Node
+            The unification of self and node.
+
+        """
+        data = self.data.concatenate(node.data)
+        return Node(data,
+                    is_root=(self.is_root & node.is_root),
+                    is_leaf=(self.is_leaf & node.is_leaf))
 
     def plot(self, axes=None, **plt_kwargs):
         """Plot of a Node object.
@@ -329,6 +348,17 @@ class fCUBT():
             if node.identifier == idx:
                 return node
 
+    def get_leaves(self):
+        """Get the leaves of the tree.
+
+        Returns
+        -------
+        res: list of Node
+            A list with only the leaf Node.
+
+        """
+        return [node for node in self.tree if node.is_leaf]
+
     def get_siblings(self):
         """Get the siblings in the tree.
 
@@ -341,8 +371,10 @@ class fCUBT():
             A list of tuple where each tuple represent a siblings couple.
 
         """
-        return [(node.identifier, node.identifier + 1) for node in self.tree
-                if node.is_leaf and node.identifier % 2 == 0]
+        return set([(self.get_node(node.identifier),
+                     self.get_node(node.identifier + 1))
+                    for node in self.tree
+                    if node.is_leaf and node.identifier % 2 == 0])
 
     def plot(self, fig=None, **plt_kwargs):
         """Plot the tree.
