@@ -24,6 +24,30 @@ COLORS = [v for v in mcolors.BASE_COLORS.values()]
 
 
 ###############################################################################
+# Utility functions
+def format_label(list_nodes):
+    """Format the labels.
+
+    Parameters
+    ----------
+    list_nodes: list of Nodes
+        A list of nodes representing a clustering of the observations.
+        Typically, it should the leaves of the grown tree or the result of the
+        joining step.
+
+    Returns
+    -------
+    labels: np.ndarray
+        The labels ordered using the index observation within the nodes.
+
+    """
+    labels = np.hstack([np.repeat(idx, len(node.idx_obs))
+                        for idx, node in enumerate(list_nodes)])
+    order = np.argsort(np.hstack([node.idx_obs for node in list_nodes]))
+    return labels[order]
+
+
+###############################################################################
 # Class Node
 
 class Node():
@@ -37,6 +61,13 @@ class Node():
     ----------
     data: FunctionalData
         The data as FunctionalData object.
+    identifier: int
+        An unique identifier of the node. If the Node is a root node, the id
+        will be 1. The identifier of the left will be 2 * id and the identifier
+        of the right will be 2 * id + 1.
+    idx_obs: np.array, shape=(n_samples,), default=None
+        Array to remember the observation in the node. If None, it will be
+        initialized as np.arange(data.n_obs).
     is_root: boolean
         Is the node a root node?
     is_leaf: boolean
@@ -44,10 +75,6 @@ class Node():
 
     Attributes
     ----------
-    identifier: int
-        An unique identifier of the node. If the Node is a root node, the id
-        will be 1. The identifier of the left will be 2 * id and the identifier
-        of the right will be 2 * id + 1.
     labels: np.array, shape (n_samples,)
         Component labels.
     left: Node
@@ -63,10 +90,12 @@ class Node():
         if not isinstance(new_data, DenseFunctionalData):
             raise TypeError("Provided data do not have the right type.")
 
-    def __init__(self, data, identifier=0, is_root=False, is_leaf=False):
+    def __init__(self, data, identifier=0, idx_obs=None,
+                 is_root=False, is_leaf=False):
         """Initialiaze Node object."""
         self.identifier = 1 if is_root else identifier
         self.data = data
+        self.idx_obs = np.arange(data.n_obs) if idx_obs is None else idx_obs
         self.labels = np.repeat(0, data.n_obs)
         self.left = None
         self.right = None
@@ -181,9 +210,11 @@ class Node():
                 prediction = gm.fit_predict(scores)
                 self.labels = prediction
                 self.left = Node(self.data[prediction == 0],
-                                 2 * self.identifier)
+                                 identifier=2 * self.identifier,
+                                 idx_obs=self.idx_obs[prediction == 0])
                 self.right = Node(self.data[prediction == 1],
-                                  2 * self.identifier + 1)
+                                  identifier=2 * self.identifier + 1,
+                                  idx_obs=self.idx_obs[prediction == 1])
             else:
                 self.is_leaf = True
         else:
@@ -205,6 +236,7 @@ class Node():
         """
         data = self.data.concatenate(node.data)
         return Node(data,
+                    idx_obs=np.hstack([self.idx_obs, node.idx_obs]),
                     is_root=(self.is_root & node.is_root),
                     is_leaf=(self.is_leaf & node.is_leaf))
 
@@ -251,7 +283,7 @@ class fCUBT():
     n_nodes: int
         Number of nodes in the tree.
     labels: np.array, shape (n_samples,)
-        Component labels.
+        Component labels after the tree has been grown.
     n_nodes: int
         Number of nodes in the tree.
     n_leaf: int
@@ -327,12 +359,14 @@ class fCUBT():
         """Grow a complete tree."""
         tree = self._recursive_clustering(self.tree, min_size=min_size)
         self.tree = sorted(tree, key=lambda node: node.identifier)
+        self.labels = format_label(self.get_leaves())
 
     def join(self, n_components=0.95):
         """Join elements of the tree."""
         leaves = self.get_leaves()
         siblings = self.get_siblings()
-        return self._recursive_joining(leaves, siblings, n_components)
+        final_cluster = self._recursive_joining(leaves, siblings, n_components)
+        return format_label(final_cluster)
 
     def get_node(self, idx):
         """Get a particular node in the tree.
