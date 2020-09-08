@@ -25,6 +25,60 @@ COLORS = [v for v in mcolors.BASE_COLORS.values()]
 
 ###############################################################################
 # Utility functions
+def joining_step(list_nodes, siblings, n_components=0.95):
+    """Perform a joining step.
+
+    Parameters
+    ----------
+    list_nodes: list of Nodes
+        List of nodes to consider for the joining.
+    siblings: set of tuples
+        Set of tuples where each tuple contains two siblings nodes.
+    n_components: int or float, default=0.95
+        Number of components to keep for the aggregation of the nodes.
+
+    Returns
+    -------
+    nodes: list of Nodes
+        The resulting list of nodes after the joining.
+
+    """
+    nodes_combinations = set(itertools.combinations(list_nodes, 2))
+    edges = nodes_combinations - siblings
+
+    graph = nx.Graph()
+    graph.add_nodes_from(list_nodes)
+    graph.add_edges_from(edges)
+
+    edges_to_remove = []
+    for node1, node2 in graph.edges:
+        new_values = np.vstack([node1.data.values, node2.data.values])
+        new_data = DenseFunctionalData(node1.data.argvals, new_values)
+
+        ufpca = UFPCA(n_components=n_components)
+        ufpca.fit(data=new_data, method='GAM')
+        scores = ufpca.transform(data=new_data, method='NumInt')
+
+        bic_stat = BIC(parallel_backend='multiprocessing')
+        best_k = bic_stat(scores, np.arange(1, 5))
+        if best_k > 1:
+            edges_to_remove.append((node1, node2))
+        else:
+            graph[node1][node2]['bic'] = bic_stat.bic_df['bic_value'].min()
+
+    graph.remove_edges_from(edges_to_remove)
+
+    if graph.number_of_edges() != 0:
+        nodes_to_concat = min(nx.get_edge_attributes(graph, 'bic'))
+        nodes_concat = nodes_to_concat[0].unite(nodes_to_concat[1])
+
+        graph.add_node(nodes_concat)
+        graph.remove_node(nodes_to_concat[0])
+        graph.remove_node(nodes_to_concat[1])
+
+    return list(graph.nodes)
+
+
 def format_label(list_nodes):
     """Format the labels.
 
@@ -182,12 +236,15 @@ class Node():
         ----------
         splitting_criteria: str, {'gap', 'bic'}, default='bic'
             The splitting criteria used to decide if a split is done or not.
-        n_components : int, float, None, default=None
+        n_components: int, float, None, default=None
             Number of components to keep.
             if n_components is int, n_components are kept.
             if 0 < n_components < 1, select the number of components such that
             the amount of variance that needs to be explained is greater than
             the percentage specified by n_components.
+        min_size: int, default=10
+            Minimum number of observation within the node in order to try to
+            be split.
 
         """
         if self.data.n_obs > min_size:
@@ -268,7 +325,7 @@ class Node():
 ###############################################################################
 # Class fCUBT
 
-class fCUBT():
+class FCUBT():
     """A class defining a functional CUBT.
 
     Parameters
@@ -371,8 +428,8 @@ class fCUBT():
     def get_node(self, idx):
         """Get a particular node in the tree.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         idx: int
             The identifier of a node.
 
@@ -475,63 +532,10 @@ class fCUBT():
             The resulting list of nodes after the joining.
 
         """
-        new_list_nodes = self._joining_step(list_nodes, siblings, n_components)
+        new_list_nodes = joining_step(list_nodes, siblings, n_components)
         if len(new_list_nodes) == len(list_nodes):
             return new_list_nodes
         else:
             print('Recursive part')
             return self._recursive_joining(new_list_nodes, siblings,
                                            n_components)
-
-    def _joining_step(self, list_nodes, siblings, n_components=0.95):
-        """Perform a joining step.
-
-        Parameters
-        ----------
-        list_nodes: list of Nodes
-            List of nodes to consider for the joining.
-        siblings: set of tuples
-            Set of tuples where each tuple contains two siblings nodes.
-        n_components: int or float, default=0.95
-            Number of components to keep for the aggregation of the nodes.
-
-        Returns
-        -------
-        nodes: list of Nodes
-            The resulting list of nodes after the joining.
-
-        """
-        nodes_combinations = set(itertools.combinations(list_nodes, 2))
-        edges = nodes_combinations - siblings
-
-        G = nx.Graph()
-        G.add_nodes_from(list_nodes)
-        G.add_edges_from(edges)
-
-        edges_to_remove = []
-        for node1, node2 in G.edges:
-            new_values = np.vstack([node1.data.values, node2.data.values])
-            new_data = DenseFunctionalData(node1.data.argvals, new_values)
-
-            ufpca = UFPCA(n_components=n_components)
-            ufpca.fit(data=new_data, method='GAM')
-            scores = ufpca.transform(data=new_data, method='NumInt')
-
-            bic_stat = BIC(parallel_backend='multiprocessing')
-            best_k = bic_stat(scores, np.arange(1, 5))
-            if best_k > 1:
-                edges_to_remove.append((node1, node2))
-            else:
-                G[node1][node2]['bic'] = bic_stat.bic_df['bic_value'].min()
-
-        G.remove_edges_from(edges_to_remove)
-
-        if G.number_of_edges() != 0:
-            nodes_to_concat = min(nx.get_edge_attributes(G, 'bic'))
-            nodes_concat = nodes_to_concat[0].unite(nodes_to_concat[1])
-
-            G.add_node(nodes_concat)
-            G.remove_node(nodes_to_concat[0])
-            G.remove_node(nodes_to_concat[1])
-
-        return list(G.nodes)

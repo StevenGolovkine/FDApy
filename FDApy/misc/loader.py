@@ -37,8 +37,8 @@ def read_csv(filepath, **kwargs):
     **kwargs:
         Keywords arguments to passed to the pd.read_csv function.
 
-    Return
-    ------
+    Returns
+    -------
     obj: DenseFunctionalData or IrregularFunctionalData
         The loaded csv file.
 
@@ -103,7 +103,32 @@ def read_csv_irregular(data, argvals):
 ###############################################################################
 # Loader for ts
 def read_ts(filepath, **kwargs):
-    """"""
+    """Read a ts file into Functional Data.
+
+    Build a DenseFunctionalData or IrregularFunctionalData object upon a ts
+    file passed as parameter.
+
+    Notes
+    -----
+    It is assumed that the data are unidimensional. And so, it will not be
+    checked.
+
+    Parameters
+    ----------
+    filepath: str
+        Any valid string path is acceptable.
+    **kwargs:
+        Keywords arguments to passed to the load_from_tsfile_to_dataframe
+        function.
+
+    Returns
+    -------
+    obj: DenseFunctionalData or IrregularFunctionalData
+        The loaded csv file.
+    labels: np.ndarray
+        Labels
+
+    """
     data, labels = load_from_tsfile_to_dataframe(filepath, **kwargs)
 
     len_argavals = data.applymap(len)['dim_0'].unique()

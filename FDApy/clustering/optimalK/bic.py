@@ -39,6 +39,32 @@ class BICResult(NamedTuple):
 
 
 ###############################################################################
+# Utility functions
+def _compute_bic(
+    data: np.array,
+    n_clusters: int
+) -> BICResult:
+    """Compute the BIC statistic.
+
+    Parameters
+    ----------
+    data: np.array
+        The data to cluster.
+    n_clusters: int
+        Number of clusters to test.
+
+    Returns
+    -------
+    results: BICResult
+        The results as a BICResult object.
+
+    """
+    gm = GaussianMixture(n_clusters)
+    gm.fit(data)
+    return BICResult(gm.bic(data), n_clusters)
+
+
+###############################################################################
 # Class BIC
 
 class BIC():
@@ -130,30 +156,6 @@ class BIC():
         )
         return self.n_clusters
 
-    def _compute_bic(
-        self,
-        data: np.array,
-        n_clusters: int
-    ) -> BICResult:
-        """Compute the BIC statistic.
-
-        Parameters
-        ----------
-        data: np.array
-            The data to cluster.
-        n_clusters: int
-            Number of clusters to test.
-
-        Returns
-        -------
-        results: BICResult
-            The results as a BICResult object.
-
-        """
-        gm = GaussianMixture(n_clusters)
-        gm.fit(data)
-        return BICResult(gm.bic(data), n_clusters)
-
     def _process_with_multiprocessing(
         self,
         data: np.array,
@@ -162,7 +164,7 @@ class BIC():
         """Compute BIC stat with multiprocessing parallelization."""
         with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
             jobs = [executor.submit(
-                    self._compute_bic, data, n_clusters)
+                    _compute_bic, data, n_clusters)
                     for n_clusters in cluster_array
                     ]
             for future in as_completed(jobs):
@@ -175,7 +177,7 @@ class BIC():
     ):
         """Compute BIC stat without parallelization."""
         for gap_results in [
-            self._compute_bic(data, n_clusters)
+            _compute_bic(data, n_clusters)
             for n_clusters in cluster_array
         ]:
             yield gap_results
