@@ -7,7 +7,9 @@ Module for the definition of the functional CUBT.
 This module is used to defined the algorithm functional CUBT. It is used to
 cluster functional data using binary trees.
 """
+import itertools
 import matplotlib.pyplot as plt
+import networkx as nx
 import numpy as np
 
 from ..representation.functional_data import DenseFunctionalData
@@ -326,9 +328,11 @@ class fCUBT():
         tree = self._recursive_clustering(self.tree, min_size=min_size)
         self.tree = sorted(tree, key=lambda node: node.identifier)
 
-    def join(self):
+    def join(self, n_components=0.95):
         """Join elements of the tree."""
-        pass
+        leaves = self.get_leaves()
+        siblings = self.get_siblings()
+        return self._recursive_joining(leaves, siblings, n_components)
 
     def get_node(self, idx):
         """Get a particular node in the tree.
@@ -418,3 +422,82 @@ class fCUBT():
                 tree.extend(self._recursive_clustering([node.left,
                                                         node.right]))
         return tree
+
+    def _recursive_joining(self, list_nodes, siblings, n_components=0.95):
+        """Perform the joining recursively.
+
+        Parameters
+        ----------
+        list_nodes: list of Nodes
+            List of nodes to consider for the joining.
+        siblings: set of tuples
+            Set of tuples where each tuple contains two siblings nodes.
+        n_components: int or float, default=0.95
+            Number of components to keep for the aggregation of the nodes.
+
+        Returns
+        -------
+        nodes: list of Nodes
+            The resulting list of nodes after the joining.
+
+        """
+        new_list_nodes = self._joining_step(list_nodes, siblings, n_components)
+        if len(new_list_nodes) == len(list_nodes):
+            return new_list_nodes
+        else:
+            print('Recursive part')
+            return self._recursive_joining(new_list_nodes, siblings,
+                                           n_components)
+
+    def _joining_step(self, list_nodes, siblings, n_components=0.95):
+        """Perform a joining step.
+
+        Parameters
+        ----------
+        list_nodes: list of Nodes
+            List of nodes to consider for the joining.
+        siblings: set of tuples
+            Set of tuples where each tuple contains two siblings nodes.
+        n_components: int or float, default=0.95
+            Number of components to keep for the aggregation of the nodes.
+
+        Returns
+        -------
+        nodes: list of Nodes
+            The resulting list of nodes after the joining.
+
+        """
+        nodes_combinations = set(itertools.combinations(list_nodes, 2))
+        edges = nodes_combinations - siblings
+
+        G = nx.Graph()
+        G.add_nodes_from(list_nodes)
+        G.add_edges_from(edges)
+
+        edges_to_remove = []
+        for node1, node2 in G.edges:
+            new_values = np.vstack([node1.data.values, node2.data.values])
+            new_data = DenseFunctionalData(node1.data.argvals, new_values)
+
+            ufpca = UFPCA(n_components=n_components)
+            ufpca.fit(data=new_data, method='GAM')
+            scores = ufpca.transform(data=new_data, method='NumInt')
+
+            bic_stat = BIC(parallel_backend='multiprocessing')
+            best_k = bic_stat(scores, np.arange(1, 5))
+            if best_k > 1:
+                edges_to_remove.append((node1, node2))
+            else:
+                G[node1][node2]['bic'] = bic_stat.bic_df['bic_value'].min()
+
+        G.remove_edges_from(edges_to_remove)
+
+        if G.number_of_edges() != 0:
+            nodes_to_concat = min(nx.get_edge_attributes(G, 'bic'))
+            nodes_concat = nodes_to_concat[0].unite(nodes_to_concat[1])
+
+            G.add_node(nodes_concat)
+            G.remove_node(nodes_to_concat[0])
+            G.remove_node(nodes_to_concat[1])
+
+        return list(G.nodes)

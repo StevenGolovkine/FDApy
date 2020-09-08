@@ -1,5 +1,6 @@
 Cython
 matplotlib
+networkx
 numpy
 pandas
 patsy

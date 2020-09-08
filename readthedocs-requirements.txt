@@ -1,6 +1,7 @@
 Cython
 matplotlib
 mpldatacursor
+networkx
 numpy
 pandas
 patsy
