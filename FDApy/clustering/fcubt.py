@@ -69,7 +69,8 @@ def joining_step(list_nodes, siblings, n_components=0.95):
     graph.remove_edges_from(edges_to_remove)
 
     if graph.number_of_edges() != 0:
-        nodes_to_concat = min(nx.get_edge_attributes(graph, 'bic'))
+        bic_dict = nx.get_edge_attributes(graph, 'bic')
+        nodes_to_concat = min(bic_dict, key=bic_dict.get)
         nodes_concat = nodes_to_concat[0].unite(nodes_to_concat[1])
 
         graph.add_node(nodes_concat)
@@ -412,9 +413,10 @@ class FCUBT():
             height += 1
         return height
 
-    def grow(self, min_size=10):
+    def grow(self, n_components=0.95, min_size=10):
         """Grow a complete tree."""
-        tree = self._recursive_clustering(self.tree, min_size=min_size)
+        tree = self._recursive_clustering(self.tree, n_components=n_components,
+                                          min_size=min_size)
         self.tree = sorted(tree, key=lambda node: node.identifier)
         self.labels = format_label(self.get_leaves())
 
@@ -501,17 +503,20 @@ class FCUBT():
                 col_idx += 1
             node.plot(axes=ax, **plt_kwargs)
 
-    def _recursive_clustering(self, list_nodes, min_size=10):
+    def _recursive_clustering(self, list_nodes, n_components=0.95,
+                              min_size=10):
         """Perform the binary clustering recursively."""
         tree = []
         for node in list_nodes:
             if node is not None:
                 print(node.identifier)
                 tree.append(node)
-                node.split(splitting_criteria='bic', n_components=0.95,
+                node.split(splitting_criteria='bic', n_components=n_components,
                            min_size=min_size)
-                tree.extend(self._recursive_clustering([node.left,
-                                                        node.right]))
+                tree.extend(self._recursive_clustering(
+                    [node.left, node.right],
+                    n_components=n_components,
+                    min_size=min_size))
         return tree
 
     def _recursive_joining(self, list_nodes, siblings, n_components=0.95):
