@@ -335,7 +335,7 @@ class MFPCA():
         ufpca_list, scores = [], []
         for function, n in zip(data, self.n_components):
             ufpca = UFPCA(n)
-            ufpca.fit(function)
+            ufpca.fit(function, method='GAM')
             ufpca_list.append(ufpca)
             scores.append(ufpca.transform(function, method))
 

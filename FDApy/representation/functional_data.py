@@ -1309,3 +1309,20 @@ class MultivariateFunctionalData(UserList):
         else:
             return MultivariateFunctionalData(
                 [i.covariance(None, smooth, **kwargs) for i in self])
+
+    def concatenate(self, data):
+        """Concatenate two MultivariateFunctionalData.
+
+        Parameters
+        ----------
+        data: MultivariateFunctionalData
+            The data to concatenate with self.
+
+        Returns
+        -------
+        res: MultivariateFunctionalData
+            The concatenation of self and data.
+
+        """
+        new = [data1.concatenate(data2) for data1, data2 in zip(self, data)]
+        return MultivariateFunctionalData(new)

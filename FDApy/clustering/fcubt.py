@@ -12,8 +12,9 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 
-from ..representation.functional_data import DenseFunctionalData
-from ..preprocessing.dim_reduction.fpca import UFPCA
+from ..representation.functional_data import (DenseFunctionalData,
+                                              MultivariateFunctionalData)
+from ..preprocessing.dim_reduction.fpca import UFPCA, MFPCA
 from .optimalK.gap import Gap
 from .optimalK.bic import BIC
 
@@ -52,12 +53,18 @@ def joining_step(list_nodes, siblings, n_components=0.95):
 
     edges_to_remove = []
     for node1, node2 in graph.edges:
-        new_values = np.vstack([node1.data.values, node2.data.values])
-        new_data = DenseFunctionalData(node1.data.argvals, new_values)
+        new_data = node1.data.concatenate(node2.data)
 
-        ufpca = UFPCA(n_components=n_components)
-        ufpca.fit(data=new_data, method='GAM')
-        scores = ufpca.transform(data=new_data, method='NumInt')
+        if isinstance(new_data, DenseFunctionalData):
+            ufpca = UFPCA(n_components=n_components)
+            ufpca.fit(data=new_data, method='GAM')
+            scores = ufpca.transform(data=new_data, method='NumInt')
+        elif isinstance(new_data, MultivariateFunctionalData):
+            mfpca = MFPCA(n_components=n_components)
+            mfpca.fit(data=new_data, method='NumInt')
+            scores = mfpca.transform()
+        else:
+            raise TypeError("Not the right data type!")
 
         bic_stat = BIC(parallel_backend='multiprocessing')
         best_k = bic_stat(scores, np.arange(1, 5))
@@ -142,7 +149,8 @@ class Node():
     @staticmethod
     def _check_data(new_data):
         """Check the user provided `data`."""
-        if not isinstance(new_data, DenseFunctionalData):
+        if not isinstance(new_data, (DenseFunctionalData,
+                                     MultivariateFunctionalData)):
             raise TypeError("Provided data do not have the right type.")
 
     def __init__(self, data, identifier=0, idx_obs=None,
@@ -249,9 +257,16 @@ class Node():
 
         """
         if self.data.n_obs > min_size:
-            ufpca = UFPCA(n_components=n_components)
-            ufpca.fit(data=self.data, method='GAM')
-            scores = ufpca.transform(data=self.data, method='NumInt')
+            if isinstance(self.data, DenseFunctionalData):
+                ufpca = UFPCA(n_components=n_components)
+                ufpca.fit(data=self.data, method='GAM')
+                scores = ufpca.transform(data=self.data, method='NumInt')
+            elif isinstance(self.data, MultivariateFunctionalData):
+                mfpca = MFPCA(n_components=n_components)
+                mfpca.fit(data=self.data, method='NumInt')
+                scores = mfpca.transform()
+            else:
+                raise TypeError("Not the right data type!")
 
             if splitting_criteria == 'bic':
                 bic_stat = BIC(parallel_backend='multiprocessing')
@@ -266,11 +281,20 @@ class Node():
             if (best_k > 1):
                 gm = GaussianMixture(n_components=2)
                 prediction = gm.fit_predict(scores)
+
+                if isinstance(self.data, DenseFunctionalData):
+                    left_data = self.data[prediction == 0]
+                    right_data = self.data[prediction == 1]
+                elif isinstance(self.data, MultivariateFunctionalData):
+                    left_data = MultivariateFunctionalData(
+                        [obj[prediction == 0] for obj in self.data])
+                    right_data = MultivariateFunctionalData(
+                        [obj[prediction == 1] for obj in self.data])
                 self.labels = prediction
-                self.left = Node(self.data[prediction == 0],
+                self.left = Node(left_data,
                                  identifier=2 * self.identifier,
                                  idx_obs=self.idx_obs[prediction == 0])
-                self.right = Node(self.data[prediction == 1],
+                self.right = Node(right_data,
                                   identifier=2 * self.identifier + 1,
                                   idx_obs=self.idx_obs[prediction == 1])
             else:
