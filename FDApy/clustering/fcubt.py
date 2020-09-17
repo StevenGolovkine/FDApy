@@ -66,7 +66,7 @@ def joining_step(list_nodes, siblings, n_components=0.95):
         else:
             raise TypeError("Not the right data type!")
 
-        bic_stat = BIC(parallel_backend='multiprocessing')
+        bic_stat = BIC(parallel_backend=None)
         best_k = bic_stat(scores, np.arange(1, 5))
         if best_k > 1:
             edges_to_remove.append((node1, node2))
