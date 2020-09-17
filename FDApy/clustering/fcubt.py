@@ -269,11 +269,12 @@ class Node():
                 raise TypeError("Not the right data type!")
 
             if splitting_criteria == 'bic':
-                bic_stat = BIC(parallel_backend='multiprocessing')
+                bic_stat = BIC(parallel_backend=None)
                 best_k = bic_stat(scores, np.arange(1, 5))
             elif splitting_criteria == 'gam':
                 gap_stat = Gap(generating_process='uniform',
-                               metric='euclidean')
+                               metric='euclidean',
+                               parallel_backend=None)
                 best_k = gap_stat(scores, np.arange(1, 5), n_refs=3)
             else:
                 raise NotImplementedError('Not implemented.')
