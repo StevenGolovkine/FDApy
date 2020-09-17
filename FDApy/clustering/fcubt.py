@@ -533,7 +533,6 @@ class FCUBT():
         tree = []
         for node in list_nodes:
             if node is not None:
-                print(node.identifier)
                 tree.append(node)
                 node.split(splitting_criteria='bic', n_components=n_components,
                            min_size=min_size)
@@ -565,6 +564,5 @@ class FCUBT():
         if len(new_list_nodes) == len(list_nodes):
             return new_list_nodes
         else:
-            print('Recursive part')
             return self._recursive_joining(new_list_nodes, siblings,
                                            n_components)
