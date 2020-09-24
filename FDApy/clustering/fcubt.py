@@ -67,8 +67,9 @@ def joining_step(list_nodes, siblings, n_components=0.95):
         else:
             raise TypeError("Not the right data type!")
 
+        max_group = min(5, new_data.n_obs)
         bic_stat = BIC(parallel_backend=None)
-        best_k = bic_stat(scores, np.arange(1, 5))
+        best_k = bic_stat(scores, np.arange(1, max_group))
         if best_k > 1:
             edges_to_remove.append((node1, node2))
         else:
@@ -269,14 +270,15 @@ class Node():
             else:
                 raise TypeError("Not the right data type!")
 
+            max_group = min(5, self.data.n_obs)
             if splitting_criteria == 'bic':
                 bic_stat = BIC(parallel_backend=None)
-                best_k = bic_stat(scores, np.arange(1, 5))
+                best_k = bic_stat(scores, np.arange(1, max_group))
             elif splitting_criteria == 'gam':
                 gap_stat = Gap(generating_process='uniform',
                                metric='euclidean',
                                parallel_backend=None)
-                best_k = gap_stat(scores, np.arange(1, 5), n_refs=3)
+                best_k = gap_stat(scores, np.arange(1, max_group), n_refs=3)
             else:
                 raise NotImplementedError('Not implemented.')
 
