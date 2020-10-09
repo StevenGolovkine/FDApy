@@ -378,8 +378,15 @@ class MFPCA():
         self.eigenvectors = eigenvectors
         self.basis = MultivariateFunctionalData(basis_multi)
 
-    def transform(self):
+    def transform(self, X, method='NumInt'):
         """Apply dimensionality reduction to data.
+
+        Parameters
+        ----------
+        X: MultivariateFunctionalData
+            The data to be projected onto the eigenfunctions.
+        method: str, default='NumInt'
+            The method used to estimate the projection.
 
         Returns
         -------
@@ -387,7 +394,11 @@ class MFPCA():
 
         """
         # TODO: Add checkers
-        return np.dot(self.scores_univariate, self.eigenvectors)
+        scores_uni = list()
+        for idx, (data, ufpca) in enumerate(zip(X, self.ufpca_list)):
+            scores_uni.append(ufpca.transform(data, method=method))
+        scores_uni = np.concatenate(scores_uni, axis=1)
+        return np.dot(scores_uni, self.eigenvectors)
 
     def inverse_transform(self, scores):
         """Transform the data back to its original space.

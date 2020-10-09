@@ -63,7 +63,7 @@ def joining_step(list_nodes, siblings, n_components=0.95):
         elif isinstance(new_data, MultivariateFunctionalData):
             mfpca = MFPCA(n_components=n_components)
             mfpca.fit(data=new_data, method='NumInt')
-            scores = mfpca.transform()
+            scores = mfpca.transform(new_data)
         else:
             raise TypeError("Not the right data type!")
 
@@ -169,8 +169,10 @@ class Node():
 
     def __str__(self):
         """Override __str__ function."""
-        return (f'Node(id={self.identifier}, is_root={self.is_root}'
-                f', is_leaf={self.is_leaf})')
+        return (
+            f'Node(id={self.identifier}, is_root={self.is_root}'
+            f', is_leaf={self.is_leaf})'
+        )
 
     def __repr__(self):
         """Override __repr__ function."""
@@ -266,7 +268,7 @@ class Node():
             elif isinstance(self.data, MultivariateFunctionalData):
                 mfpca = MFPCA(n_components=n_components)
                 mfpca.fit(data=self.data, method='NumInt')
-                scores = mfpca.transform()
+                scores = mfpca.transform(self.data, method='NumInt')
             else:
                 raise TypeError("Not the right data type!")
 
