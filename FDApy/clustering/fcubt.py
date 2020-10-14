@@ -265,10 +265,12 @@ class Node():
                 ufpca = UFPCA(n_components=n_components)
                 ufpca.fit(data=self.data, method='GAM')
                 scores = ufpca.transform(data=self.data, method='NumInt')
+                self.fpca = ufpca
             elif isinstance(self.data, MultivariateFunctionalData):
                 mfpca = MFPCA(n_components=n_components)
                 mfpca.fit(data=self.data, method='NumInt')
                 scores = mfpca.transform(self.data, method='NumInt')
+                self.fpca = mfpca
             else:
                 raise TypeError("Not the right data type!")
 

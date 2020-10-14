@@ -45,7 +45,7 @@ _ = plot(mfpca.basis[1], ax=ax2)
 # numerical integration.
 
 # Compute the scores
-canadWeather_proj = mfpca.transform()
+canadWeather_proj = mfpca.transform(canadWeather)
 
 # Plot the projection of the data onto the eigenfunctions
 _ = pd.plotting.scatter_matrix(pd.DataFrame(canadWeather_proj), diagonal='kde')
