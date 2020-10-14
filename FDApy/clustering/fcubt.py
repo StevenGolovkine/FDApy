@@ -276,7 +276,7 @@ class Node():
             if splitting_criteria == 'bic':
                 bic_stat = BIC(parallel_backend=None)
                 best_k = bic_stat(scores, np.arange(1, max_group))
-            elif splitting_criteria == 'gam':
+            elif splitting_criteria == 'gap':
                 gap_stat = Gap(generating_process='uniform',
                                metric='euclidean',
                                parallel_backend=None)
@@ -296,6 +296,7 @@ class Node():
                         [obj[prediction == 0] for obj in self.data])
                     right_data = MultivariateFunctionalData(
                         [obj[prediction == 1] for obj in self.data])
+                self.gaussian_model = gm
                 self.labels = prediction
                 self.left = Node(left_data,
                                  identifier=2 * self.identifier,
