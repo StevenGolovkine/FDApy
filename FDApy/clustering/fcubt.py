@@ -27,7 +27,7 @@ COLORS = ['#377eb8', '#ff7f00', '#4daf4a',
 
 ###############################################################################
 # Utility functions
-def joining_step(list_nodes, siblings, n_components=0.95):
+def joining_step(list_nodes, siblings, n_components=0.95, max_group=5):
     """Perform a joining step.
 
     Parameters
@@ -38,6 +38,8 @@ def joining_step(list_nodes, siblings, n_components=0.95):
         Set of tuples where each tuple contains two siblings nodes.
     n_components: int or float, default=0.95
         Number of components to keep for the aggregation of the nodes.
+    max_group: int, default=5
+        Number of models to try to split the data.
 
     Returns
     -------
@@ -67,7 +69,7 @@ def joining_step(list_nodes, siblings, n_components=0.95):
         else:
             raise TypeError("Not the right data type!")
 
-        max_group = min(5, new_data.n_obs)
+        max_group = min(max_group, new_data.n_obs)
         bic_stat = BIC(parallel_backend=None)
         best_k = bic_stat(scores, np.arange(1, max_group))
         if best_k > 1:
@@ -105,10 +107,12 @@ def format_label(list_nodes):
         The labels ordered using the index observation within the nodes.
 
     """
-    labels = np.hstack([np.repeat(idx, len(node.idx_obs))
-                        for idx, node in enumerate(list_nodes)])
-    order = np.argsort(np.hstack([node.idx_obs for node in list_nodes]))
-    return labels[order]
+    mapping, labels, order = {}, [], []
+    for idx, node in enumerate(list_nodes):
+        mapping[node] = idx
+        labels = np.hstack([labels, np.repeat(idx, len(node.idx_obs))])
+        order = np.hstack([order, node.idx_obs])
+    return mapping, labels[np.argsort(order)].astype(int)
 
 
 ###############################################################################
@@ -125,10 +129,12 @@ class Node():
     ----------
     data: FunctionalData
         The data as FunctionalData object.
-    identifier: int
-        An unique identifier of the node. If the Node is a root node, the id
-        will be 1. The identifier of the left will be 2 * id and the identifier
-        of the right will be 2 * id + 1.
+    identifier: tuple of int
+        An unique identifier of the node. The format is (depth, position). If
+        the Node is a root node, the id will be (0, 0). Then, for a node with
+        identifier (d, j), the identifier of the left child will be
+        (d + 1, 2 * j) and the identifier of the right node will be
+        (d + 1, 2 * j + 1).
     idx_obs: np.array, shape=(n_samples,), default=None
         Array to remember the observation in the node. If None, it will be
         initialized as np.arange(data.n_obs).
@@ -155,10 +161,10 @@ class Node():
                                      MultivariateFunctionalData)):
             raise TypeError("Provided data do not have the right type.")
 
-    def __init__(self, data, identifier=0, idx_obs=None,
+    def __init__(self, data, identifier=(0, 0), idx_obs=None,
                  is_root=False, is_leaf=False):
         """Initialiaze Node object."""
-        self.identifier = 1 if is_root else identifier
+        self.identifier = (0, 0) if is_root else identifier
         self.data = data
         self.idx_obs = np.arange(data.n_obs) if idx_obs is None else idx_obs
         self.labels = np.repeat(0, data.n_obs)
@@ -169,10 +175,8 @@ class Node():
 
     def __str__(self):
         """Override __str__ function."""
-        return (
-            f'Node(id={self.identifier}, is_root={self.is_root}'
-            f', is_leaf={self.is_leaf})'
-        )
+        return (f"Node(id={self.identifier}, is_root={self.is_root}"
+                f", is_leaf={self.is_leaf})")
 
     def __repr__(self):
         """Override __repr__ function."""
@@ -242,7 +246,8 @@ class Node():
     def is_leaf(self, new_is_leaf):
         self._is_leaf = new_is_leaf
 
-    def split(self, splitting_criteria='bic', n_components=1, min_size=10):
+    def split(self, splitting_criteria='bic', n_components=1, min_size=10,
+              max_group=5):
         """Split a node into two groups.
 
         Parameters
@@ -258,6 +263,8 @@ class Node():
         min_size: int, default=10
             Minimum number of observation within the node in order to try to
             be split.
+        max_group: int, default=5
+            Number of models to try to split the data.
 
         """
         if self.data.n_obs > min_size:
@@ -274,7 +281,7 @@ class Node():
             else:
                 raise TypeError("Not the right data type!")
 
-            max_group = min(5, self.data.n_obs)
+            max_group = min(max_group, self.data.n_obs)
             if splitting_criteria == 'bic':
                 bic_stat = BIC(parallel_backend=None)
                 best_k = bic_stat(scores, np.arange(1, max_group))
@@ -286,7 +293,7 @@ class Node():
             else:
                 raise NotImplementedError('Not implemented.')
 
-            if (best_k > 1):
+            if best_k > 1:
                 gm = GaussianMixture(n_components=2)
                 prediction = gm.fit_predict(scores)
 
@@ -301,10 +308,12 @@ class Node():
                 self.gaussian_model = gm
                 self.labels = prediction
                 self.left = Node(left_data,
-                                 identifier=2 * self.identifier,
+                                 identifier=(self.identifier[0] + 1,
+                                             2 * self.identifier[1]),
                                  idx_obs=self.idx_obs[prediction == 0])
                 self.right = Node(right_data,
-                                  identifier=2 * self.identifier + 1,
+                                  identifier=(self.identifier[0] + 1,
+                                              2 * self.identifier[1] + 1),
                                   idx_obs=self.idx_obs[prediction == 1])
             else:
                 self.is_leaf = True
@@ -326,10 +335,49 @@ class Node():
 
         """
         data = self.data.concatenate(node.data)
+
+        if isinstance(self.identifier, tuple):
+            if isinstance(node.identifier, tuple):
+                new_id = [self.identifier, node.identifier]
+            elif isinstance(node.identifier, list):
+                new_id = [self.identifier, *node.identifier]
+            else:
+                raise TypeError("Wrong type for node.identifier.")
+        elif isinstance(self.identifier, list):
+            if isinstance(node.identifier, tuple):
+                new_id = [*self.identifier, node.identifier]
+            elif isinstance(node.identifier, list):
+                new_id = [*self.identifier, *node.identifier]
+            else:
+                raise TypeError("Wrong type for node.identifier.")
+        else:
+            raise TypeError("Wrong type for self.identifier.")
         return Node(data,
+                    identifier=new_id,
                     idx_obs=np.hstack([self.idx_obs, node.idx_obs]),
                     is_root=(self.is_root & node.is_root),
                     is_leaf=(self.is_leaf & node.is_leaf))
+
+    def isin(self, node):
+        """Test whether self is include in node."""
+        return self.identifier in node.identifier
+
+    def predict(self, new_obs):
+        """Predict the label for a new observation."""
+        score = self.fpca.transform(new_obs, method='NumInt')
+        pred = self.gaussian_model.predict(score)
+        if pred == 0:
+            return self.left
+        elif pred == 1:
+            return self.right
+        else:
+            raise ValueError(f"Error in the prediction for {self}.")
+
+    def predict_proba(self, new_obs):
+        """Predict the probability for a new observation."""
+        score = self.fpca.transform(new_obs, method='NumInt')
+        proba = self.gaussian_model.predict_proba(score)
+        return proba
 
     def plot(self, axes=None, **plt_kwargs):
         """Plot of a Node object.
@@ -353,6 +401,7 @@ class Node():
         for o, i in zip(self.data.values, self.labels):
             axes.plot(self.data.argvals['input_dim_0'], o,
                       c=COLORS[i], **plt_kwargs)
+        axes.set_title(f'{self.identifier}')
         return axes
 
 
@@ -373,6 +422,8 @@ class FCUBT():
         A tree represented as a list of Node.
     n_nodes: int
         Number of nodes in the tree.
+    mapping: dict
+        A mapping between leaf nodes and cluster labels.
     labels: np.array, shape (n_samples,)
         Component labels after the tree has been grown.
     n_nodes: int
@@ -430,8 +481,8 @@ class FCUBT():
     def height(self):
         """Get the height of the tree.
 
-        The height of the tree is defined starting at 0. So, a tree with only
-        a root node will have height 0.
+        The height of the tree is defined starting at 1. So, a tree with only
+        a root node will have height 1.
 
         Returns
         -------
@@ -439,33 +490,50 @@ class FCUBT():
             The height of the tree.
 
         """
-        n = self.tree[-1].identifier
-        height = 0
-        while n > 1:
-            n = n // 2
-            height += 1
-        return height
+        return self.tree[-1].identifier[0] + 1
 
-    def grow(self, n_components=0.95, min_size=10):
+    def grow(self, n_components=0.95, min_size=10, max_group=5):
         """Grow a complete tree."""
         tree = self._recursive_clustering(self.tree, n_components=n_components,
-                                          min_size=min_size)
+                                          min_size=min_size,
+                                          max_group=max_group)
         self.tree = sorted(tree, key=lambda node: node.identifier)
-        self.labels = format_label(self.get_leaves())
+        self.mapping_grow, self.labels_grow = format_label(self.get_leaves())
 
-    def join(self, n_components=0.95):
+    def join(self, n_components=0.95, max_group=5):
         """Join elements of the tree."""
         leaves = self.get_leaves()
         siblings = self.get_siblings()
-        final_cluster = self._recursive_joining(leaves, siblings, n_components)
-        return format_label(final_cluster)
+        final_cluster = self._recursive_joining(leaves, siblings,
+                                                n_components, max_group)
+        self.mapping_join, self.labels_join = format_label(final_cluster)
+
+    def predict(self, new_data, step="join"):
+        """Predict labels for a set of new observation."""
+        if isinstance(new_data, DenseFunctionalData):
+            return np.array([self._predict(obs, step) for obs in new_data])
+        elif isinstance(new_data, MultivariateFunctionalData):
+            return np.array([self._predict(obs, step)
+                             for obs in new_data.get_obs()])
+        else:
+            raise TypeError("Wrong data type.")
+
+    def predict_proba(self, new_data, step="join"):
+        """Predict the probability for new obs to be in each classes."""
+        if isinstance(new_data, DenseFunctionalData):
+            return [self._predict_proba(obs, step) for obs in new_data]
+        elif isinstance(new_data, MultivariateFunctionalData):
+            return np.array([self._predict_proba(obs, step)
+                             for obs in new_data.get_obs()])
+        else:
+            raise TypeError("Wrong data type.")
 
     def get_node(self, idx):
         """Get a particular node in the tree.
 
         Parameters
         ----------
-        idx: int
+        idx: tuple of int
             The identifier of a node.
 
         Returns
@@ -477,6 +545,24 @@ class FCUBT():
         for node in self.tree:
             if node.identifier == idx:
                 return node
+
+    def get_parent(self, node):
+        """Get the parent of the node.
+
+        Parameters
+        ----------
+        node: Node
+            The considered node.
+
+        Returns
+        -------
+        res: Node
+            The parent
+
+        """
+        depth_index = node.identifier[0] - 1
+        node_index = int(node.identifier[1] / 2)
+        return self.get_node((depth_index, node_index))
 
     def get_leaves(self):
         """Get the leaves of the tree.
@@ -502,9 +588,10 @@ class FCUBT():
 
         """
         return set([(self.get_node(node.identifier),
-                     self.get_node(node.identifier + 1))
+                     self.get_node((node.identifier[0],
+                                    node.identifier[1] + 1)))
                     for node in self.tree
-                    if node.is_leaf and node.identifier % 2 == 0])
+                    if node.is_leaf and node.identifier[1] % 2 == 0])
 
     def plot(self, fig=None, **plt_kwargs):
         """Plot the tree.
@@ -519,39 +606,40 @@ class FCUBT():
         """
         if fig is None:
             fig = plt.figure(constrained_layout=True, **plt_kwargs)
-        gs = fig.add_gridspec(self.height + 1, 2**(self.height + 1))
+        gs = fig.add_gridspec(self.height, 2**self.height)
 
         row_idx = 0
-        col_idx = 2**(self.height + 1) // 2 - 1
+        col_idx = 2**self.height // 2 - 1
         for node in self.tree:
-            if node.identifier >= 2**(row_idx + 1):
+            if node.identifier[0] > row_idx:
                 row_idx += 1
-                col_idx = 2**(self.height - row_idx + 1) // 2 - 1
-            if not row_idx == self.height:
+                col_idx = 2**(self.height - row_idx) // 2 - 1
+            if not row_idx == (self.height - 1):
                 ax = fig.add_subplot(gs[row_idx, col_idx:(col_idx + 2)])
-                col_idx += 2**(self.height - row_idx + 1)
+                col_idx += 2**(self.height - row_idx)
             else:
-                col_idx = 2 * (node.identifier - 2**self.height)
+                col_idx = 2 * node.identifier[1]
                 ax = fig.add_subplot(gs[row_idx, col_idx:(col_idx + 2)])
-                col_idx += 1
-            node.plot(axes=ax, **plt_kwargs)
+            node.plot(axes=ax)
 
     def _recursive_clustering(self, list_nodes, n_components=0.95,
-                              min_size=10):
+                              min_size=10, max_group=5):
         """Perform the binary clustering recursively."""
         tree = []
         for node in list_nodes:
             if node is not None:
                 tree.append(node)
                 node.split(splitting_criteria='bic', n_components=n_components,
-                           min_size=min_size)
+                           min_size=min_size, max_group=max_group)
                 tree.extend(self._recursive_clustering(
                     [node.left, node.right],
                     n_components=n_components,
-                    min_size=min_size))
+                    min_size=min_size,
+                    max_group=max_group))
         return tree
 
-    def _recursive_joining(self, list_nodes, siblings, n_components=0.95):
+    def _recursive_joining(self, list_nodes, siblings, n_components=0.95,
+                           max_group=5):
         """Perform the joining recursively.
 
         Parameters
@@ -562,6 +650,8 @@ class FCUBT():
             Set of tuples where each tuple contains two siblings nodes.
         n_components: int or float, default=0.95
             Number of components to keep for the aggregation of the nodes.
+        max_group: int, default=5
+            Number of models to try to split the data.
 
         Returns
         -------
@@ -569,9 +659,109 @@ class FCUBT():
             The resulting list of nodes after the joining.
 
         """
-        new_list_nodes = joining_step(list_nodes, siblings, n_components)
+        new_list_nodes = joining_step(list_nodes, siblings, n_components,
+                                      max_group)
         if len(new_list_nodes) == len(list_nodes):
             return new_list_nodes
         else:
             return self._recursive_joining(new_list_nodes, siblings,
-                                           n_components)
+                                           n_components, max_group)
+
+    def _map_grow_join(self):
+        """Map results from grow to join step."""
+        mapping = {}
+        for node1 in self.mapping_grow.keys():
+            for node2 in self.mapping_join.keys():
+                if isinstance(node2.identifier, tuple):
+                    if node1.identifier == node2.identifier:
+                        mapping[node1] = node2
+                elif isinstance(node2.identifier, list):
+                    if node1.identifier in node2.identifier:
+                        mapping[node1] = node2
+                else:
+                    raise TypeError("Wrong identifier type.")
+        return mapping
+
+    def _predict(self, new_data, step="join"):
+        """Predict the label for a new observation.
+
+        Parameters
+        ----------
+        new_data: Functional data
+            The new data to predict the cluster.
+        step: str, default="join"
+            At which step should we predict the label. Should be 'grow' or
+            'join'.
+
+        Returns
+        -------
+        label: int
+            The label of the prediction.
+
+        """
+        node = self.root_node
+        while not node.is_leaf:
+            node = node.predict(new_data)
+
+        if step == "grow":
+            return self.mapping_grow[node]
+        elif step == "join":
+            map_grow_join = self._map_grow_join()
+            return self.mapping_join[map_grow_join[node]]
+        else:
+            raise ValueError("Wrong step value.")
+
+    def _predict_proba(self, new_data, step='join'):
+        """Predict the probability for each class for a new observation.
+
+        Parameters
+        ----------
+        new_data: Functional data
+            The new data to predict the cluster.
+        step: str, default="join"
+            At which step should we predict the label. Should be 'grow' or
+            'join'.
+
+        Returns
+        -------
+        proba: dict
+            A dictionary containing the probablity to belong to each class for
+            the new observation.
+
+        """
+        # Compute conditional probabilities
+        proba_cond = {self.root_node: 1.0}
+        for node in self.tree:
+            if not node.is_leaf:
+                pred = node.predict_proba(new_data)
+                proba_cond[node.left] = pred[0, 0]
+                proba_cond[node.right] = pred[0, 1]
+
+        # Compute probabilities to be in each class (after grow step)
+        proba_grow = {}
+        for leaf in self.get_leaves():
+            proba = proba_cond[leaf]
+            parent = self.get_parent(leaf)
+            while parent is not None:
+                proba *= proba_cond[parent]
+                parent = self.get_parent(parent)
+            proba_grow[leaf] = proba
+
+        if step == "grow":
+            return proba_grow
+        elif step == "join":
+            proba_join = {}
+            for node in self.mapping_join:
+                proba_node = 0
+                if isinstance(node.identifier, tuple):
+                    proba_node = proba_grow[node]
+                elif isinstance(node.identifier, list):
+                    for idx in node.identifier:
+                        current_node = self.get_node(idx)
+                        proba_node += proba_grow[current_node]
+                else:
+                    raise TypeError("Wrong identifier type.")
+                proba_join[node] = proba_node
+            return proba_join
+        else:
+            raise ValueError("Wrong step value.")

@@ -1266,6 +1266,11 @@ class MultivariateFunctionalData(UserList):
         """Return a shallow copy of the list."""
         return super().copy()
 
+    def get_obs(self):
+        """Return a generator over the observation."""
+        for idx in range(self.n_obs):
+            yield MultivariateFunctionalData([obs[idx] for obs in self])
+
     def mean(self, smooth=None, **kwargs):
         """Compute an estimate of the mean.
 
