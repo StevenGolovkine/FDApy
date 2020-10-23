@@ -1075,7 +1075,7 @@ class IrregularFunctionalData(FunctionalData):
                                  bandwidth=b,
                                  degree=degree)
             pred = lp.fit_predict(arg, val, points_estim)
-            smooth_argvals[i] = arg
+            smooth_argvals[i] = points_estim
             smooth_values[i] = pred
         return IrregularFunctionalData({'input_dim_0': smooth_argvals},
                                        smooth_values)
