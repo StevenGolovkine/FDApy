@@ -342,11 +342,11 @@ class MFPCA():
                 scores_uni = ufpca.transform(data=function, method='NumInt')
             elif function.n_dim == 2:
                 n_points = function.n_points
-                Pv = np.diff(np.identity(n_points['input_dim_0']))
-                Pw = np.diff(np.identity(n_points['input_dim_1']))
+                mat_v = np.diff(np.identity(n_points['input_dim_0']))
+                mat_w = np.diff(np.identity(n_points['input_dim_1']))
                 ufpca = FCPTPA(n_components=n)
-                ufpca.fit(function, penal_mat={'v': np.dot(Pv, Pv.T),
-                                               'w': np.dot(Pw, Pw.T)},
+                ufpca.fit(function, penal_mat={'v': np.dot(mat_v, mat_v.T),
+                                               'w': np.dot(mat_w, mat_w.T)},
                           alpha_range={'v': np.array([1e-4, 1e4]),
                                        'w': np.array([1e-4, 1e4])},
                           tol=1e-4, max_iter=15,

@@ -134,13 +134,14 @@ def find_opt_alpha(alpha_range, data, u, v, alpha, penal_mat, eival, dim):
 class FCPTPA():
     """Functional Canonical Polyadic - Tensor Power Algorithm (FCP-TPA).
 
+    Implement the Functional CP-TPA algorithm. This method computes an
+    eigendecomposition of image observations, which can be interpreted as
+    functions on a two-dimensional domain.
+
     Parameters
     ----------
     n_components: int, default=None
         Number of components to be calculated.
-
-    Attributes
-    ----------
 
     """
 
@@ -151,6 +152,8 @@ class FCPTPA():
     def fit(self, data, penal_mat, alpha_range, tol=1e-4, max_iter=15,
             adapt_tol=True, verbose=False):
         r"""Fit the model on data.
+        
+        This function is used to fit a model on the data.
 
         Parameters
         ----------
