@@ -75,7 +75,7 @@ def joining_step(list_nodes, siblings, n_components=0.95, max_group=5):
                            alpha_range={'v': np.array([1e-4, 1e4]),
                                         'w': np.array([1e-4, 1e4])},
                            tol=1e-4, max_iter=15,
-                           adapt_tol=True, verbose=True)
+                           adapt_tol=True)
                 scores = fcptpa.transform()
             else:
                 raise ValueError("The dimension of the input data should "
@@ -311,7 +311,7 @@ class Node():
                                alpha_range={'v': np.array([1e-4, 1e4]),
                                             'w': np.array([1e-4, 1e4])},
                                tol=1e-4, max_iter=15,
-                               adapt_tol=True, verbose=True)
+                               adapt_tol=True)
                     scores = fcptpa.transform()
                     self.fpca = fcptpa
                 else:

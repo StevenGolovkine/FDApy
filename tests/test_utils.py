@@ -6,7 +6,7 @@ import unittest
 
 from FDApy.misc.utils import (col_mean_, col_var_, integrate_,
                               integration_weights_, range_standardization_,
-                              row_mean_, row_var_, shift_, tensor_product_)
+                              row_mean_, row_var_, shift_, outer_)
 
 
 class TestUtils(unittest.TestCase):
@@ -48,7 +48,7 @@ class TestUtils(unittest.TestCase):
     def test_tensor_product_(self):
         X = np.array([1, 2, 3])
         Y = np.array([-1, 2])
-        tens_ = tensor_product_(X, Y)
+        tens_ = outer_(X, Y)
         self.assertTrue(
             np.array_equal(tens_, np.array([[-1, 2], [-2, 4], [-3, 6]])))
 

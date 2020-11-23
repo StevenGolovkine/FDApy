@@ -350,7 +350,7 @@ class MFPCA():
                           alpha_range={'v': np.array([1e-4, 1e4]),
                                        'w': np.array([1e-4, 1e4])},
                           tol=1e-4, max_iter=15,
-                          adapt_tol=True, verbose=True)
+                          adapt_tol=True)
                 scores_uni = ufpca.transform()
             ufpca_list.append(ufpca)
             scores.append(scores_uni)
