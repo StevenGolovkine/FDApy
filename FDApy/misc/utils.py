@@ -15,6 +15,7 @@ from sklearn.preprocessing import StandardScaler
 #############################################################################
 # Standardization functions
 #############################################################################
+
 def range_standardization_(x, max_x=None, min_x=None):
     r"""Transform a vector [a, b] into a vector [0, 1].
 
@@ -213,7 +214,7 @@ def shift_(x, num, fill_value=np.nan):
 # Array computation
 ##############################################################################
 
-def tensor_product_(x, y):
+def outer_(x, y):
     """Compute the tensor product of two vectors.
 
     This function computes the tensor product of two vectors.

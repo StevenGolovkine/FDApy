@@ -483,7 +483,7 @@ class Simulation(ABC):
         """
         self._check_data()
 
-        shape_simu = self.data.n_obs, self.data.n_points['input_dim_0']
+        shape_simu = self.data.n_obs, *tuple(self.data.n_points.values())
         noisy_data = np.random.normal(0, 1, shape_simu)
 
         if inspect.isfunction(var_noise):
@@ -504,6 +504,9 @@ class Simulation(ABC):
             Uncertainty on the percentage to keep.
 
         """
+        if self.data.n_dim > 1:
+            raise ValueError("The sparsification is not implemented for data"
+                             "with dimension larger than 1.")
         self._check_data()
 
         argvals = {}
@@ -586,6 +589,8 @@ class KarhunenLoeve(Simulation):
         user-defined basis of function.
     n_functions: int, default=5
         Number of functions to use to generate the basis.
+    dimension: str, ('1D', '2D'), default='1D'
+        Dimension of the basis to generate.
 
     Arguments
     ---------
@@ -608,7 +613,8 @@ class KarhunenLoeve(Simulation):
 
     """
 
-    def __init__(self, name, basis=None, n_functions=5, **kwargs_basis):
+    def __init__(self, name, basis=None, n_functions=5, dimension='1D',
+                 **kwargs_basis):
         """Initialize Basis object."""
         if (name is not None) and (basis is not None):
             raise ValueError('Name or basis have to be None. Do not know'
@@ -619,7 +625,7 @@ class KarhunenLoeve(Simulation):
         if (name is None) and isinstance(basis, DenseFunctionalData):
             name = 'user-defined'
         if isinstance(name, str) and (basis is None):
-            basis = Basis(name, n_functions, **kwargs_basis)
+            basis = Basis(name, n_functions, dimension, **kwargs_basis)
 
         super().__init__(name)
         self.basis = basis
@@ -655,6 +661,13 @@ class KarhunenLoeve(Simulation):
         cluster_std = initialize_cluster_std(n_features, n_clusters,
                                              kwargs.get('cluster_std', None))
         coef, labels = make_coef(n_obs, n_features, centers, cluster_std)
-        values = np.matmul(coef, self.basis.values)
+
+        if self.basis.dimension == '1D':
+            values = np.matmul(coef, self.basis.values)
+        elif self.basis.dimension == '2D':
+            values = np.tensordot(coef, self.basis.values, axes=1)
+        else:
+            raise ValueError("Something went wrong with the basis dimension.")
+
         self.labels = labels
         self.data = DenseFunctionalData(self.basis.argvals, values)

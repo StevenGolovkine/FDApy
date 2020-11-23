@@ -19,11 +19,13 @@ from sklearn.metrics import pairwise_distances
 from ..preprocessing.smoothing.bandwidth import Bandwidth
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..misc.utils import get_dict_dimension_, get_obs_shape_
-from ..misc.utils import integration_weights_, range_standardization_
+from ..misc.utils import integration_weights_, outer_
+from ..misc.utils import range_standardization_
 
 
 ###############################################################################
 # Checkers for parameters
+
 def _check_dict_array(argv_dict, argv_array):
     """Raise an error in case of dimension conflicts between the arguments.
 
@@ -34,8 +36,8 @@ def _check_dict_array(argv_dict, argv_array):
     dim_dict = get_dict_dimension_(argv_dict)
     dim_array = argv_array.shape[1:]
     if dim_dict != dim_array:
-        raise ValueError(f"{argv_dict} and {argv_array}"
-                         " do not have coherent dimension.")
+        raise ValueError(f"{argv_dict} and {argv_array} do not have coherent"
+                         " dimension.")
 
 
 def _check_dict_dict(argv1, argv2):
@@ -731,13 +733,7 @@ class DenseFunctionalData(FunctionalData):
             The concatenation of self and data.
 
         """
-        if self.n_dim > 1:
-            raise NotImplementedError('The concatenation is not'
-                                      ' implemented for data with dimension'
-                                      ' greater than 1.')
-        argvals = self.argvals
-        values = np.vstack([self.values, data.values])
-        return DenseFunctionalData(argvals, values)
+        return concatenate_(self, data)
 
 
 ###############################################################################
@@ -1158,6 +1154,19 @@ class MultivariateFunctionalData(UserList):
         return len(self)
 
     @property
+    def n_dim(self):
+        """Get the dimension of the functional data.
+
+        Returns
+        -------
+        dim: list
+            List containing the dimension of each component in the functional
+            data.
+
+        """
+        return [i.n_dim for i in self]
+
+    @property
     def range_obs(self):
         """Get the range of the observations of the object.
 
@@ -1184,7 +1193,7 @@ class MultivariateFunctionalData(UserList):
         return [i.n_points for i in self]
 
     @property
-    def range_dim(self):
+    def range_points(self):
         """Get the range of the `argvals` for each of the dimension.
 
         Returns
@@ -1331,3 +1340,64 @@ class MultivariateFunctionalData(UserList):
         """
         new = [data1.concatenate(data2) for data1, data2 in zip(self, data)]
         return MultivariateFunctionalData(new)
+
+
+##############################################################################
+# Functional data manipulation
+
+def concatenate_(*data):
+    """Concatenate functional data.
+
+    Compute multiple DenseFunctionalData into one. It works with higher
+    dimension for the input data.
+
+    Parameters
+    ----------
+    *data: DenseFunctionalData
+        DenseFunctionalData to concatenate.
+
+    Returns
+    -------
+    data: DenseFunctionalData
+        The concatenation of the input data.
+
+    Notes
+    -----
+    TODO :
+    * Add tests, in particular check that the data are compatible.
+
+    """
+    new_argvals = data[0].argvals
+    new_values = np.vstack([d.values for d in data])
+    return DenseFunctionalData(new_argvals, new_values)
+
+
+def tensor_product_(data1, data2):
+    """Compute the tensor product between functional data.
+
+    Compute the tensor product between all the observation of data1 with all
+    the observation of data2.
+
+    Parameters
+    ----------
+    data1: DenseFunctionalData
+        First functional data.
+    data2: DenseFunctionalData
+        Second functional data.
+
+    Returns
+    -------
+    data: DenseFunctionalData
+        The tensor product between data1 and data2. It contains data1.n_obs *
+        data2.n_obs observations.
+
+    Notes
+    -----
+    TODO:
+    * Add tests.
+
+    """
+    arg = {'input_dim_0': data1.argvals['input_dim_0'],
+           'input_dim_1': data2.argvals['input_dim_0']}
+    val = [outer_(i, j) for i in data1.values for j in data2.values]
+    return DenseFunctionalData(arg, np.array(val))

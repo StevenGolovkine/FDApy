@@ -13,6 +13,8 @@ from ...representation.functional_data import (DenseFunctionalData,
                                                MultivariateFunctionalData)
 from ...misc.utils import integration_weights_
 
+from .fcp_tpa import FCPTPA
+
 
 #############################################################################
 # Class UFPCA
@@ -334,10 +336,24 @@ class MFPCA():
         # Step 1: Perform univariate fPCA on each functions.
         ufpca_list, scores = [], []
         for function, n in zip(data, self.n_components):
-            ufpca = UFPCA(n)
-            ufpca.fit(function, method='GAM')
+            if function.n_dim == 1:
+                ufpca = UFPCA(n_components=n)
+                ufpca.fit(data=function, method='GAM')
+                scores_uni = ufpca.transform(data=function, method='NumInt')
+            elif function.n_dim == 2:
+                n_points = function.n_points
+                Pv = np.diff(np.identity(n_points['input_dim_0']))
+                Pw = np.diff(np.identity(n_points['input_dim_1']))
+                ufpca = FCPTPA(n_components=n)
+                ufpca.fit(function, penal_mat={'v': np.dot(Pv, Pv.T),
+                                               'w': np.dot(Pw, Pw.T)},
+                          alpha_range={'v': np.array([1e-4, 1e4]),
+                                       'w': np.array([1e-4, 1e4])},
+                          tol=1e-4, max_iter=15,
+                          adapt_tol=True, verbose=True)
+                scores_uni = ufpca.transform()
             ufpca_list.append(ufpca)
-            scores.append(ufpca.transform(function, method))
+            scores.append(scores_uni)
 
         scores_univariate = np.concatenate(scores, axis=1)
 
@@ -366,7 +382,7 @@ class MFPCA():
             start = nb_eigenfunction_uni_cum[idx]
             end = nb_eigenfunction_uni_cum[idx + 1]
 
-            argvals = function.mean.argvals
+            argvals = function.eigenfunctions.argvals
             values = np.dot(function.eigenfunctions.values.T,
                             eigenvectors[start:end, :]).T
             basis_multi.append(DenseFunctionalData(argvals, values))
@@ -420,8 +436,15 @@ class MFPCA():
         """
         res = []
         for idx, ufpca in enumerate(self.ufpca_list):
-            mean = ufpca.mean
-            reconst = np.dot(scores, self.basis[idx].values) + mean.values
-            res.append(DenseFunctionalData(mean.argvals, reconst))
-
+            if isinstance(ufpca, UFPCA):
+                mean = ufpca.mean
+                reconst = np.dot(scores, self.basis[idx].values) + mean.values
+                res.append(DenseFunctionalData(mean.argvals, reconst))
+            elif isinstance(ufpca, FCPTPA):
+                reconst = np.einsum('ij, jkl', scores, self.basis[idx].values)
+                res.append(DenseFunctionalData(ufpca.eigenfunctions.argvals,
+                                               reconst))
+            else:
+                raise TypeError("Something went wrong with univariate "
+                                "decomposition.")
         return MultivariateFunctionalData(res)

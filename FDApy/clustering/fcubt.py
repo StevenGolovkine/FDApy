@@ -15,6 +15,7 @@ import numpy as np
 from ..representation.functional_data import (DenseFunctionalData,
                                               MultivariateFunctionalData)
 from ..preprocessing.dim_reduction.fpca import UFPCA, MFPCA
+from ..preprocessing.dim_reduction.fcp_tpa import FCPTPA
 from .optimalK.gap import Gap
 from .optimalK.bic import BIC
 
@@ -27,6 +28,7 @@ COLORS = ['#377eb8', '#ff7f00', '#4daf4a',
 
 ###############################################################################
 # Utility functions
+
 def joining_step(list_nodes, siblings, n_components=0.95, max_group=5):
     """Perform a joining step.
 
@@ -59,9 +61,25 @@ def joining_step(list_nodes, siblings, n_components=0.95, max_group=5):
         new_data = node1.data.concatenate(node2.data)
 
         if isinstance(new_data, DenseFunctionalData):
-            ufpca = UFPCA(n_components=n_components)
-            ufpca.fit(data=new_data, method='GAM')
-            scores = ufpca.transform(data=new_data, method='NumInt')
+            if new_data.n_dim == 1:
+                ufpca = UFPCA(n_components=n_components)
+                ufpca.fit(data=new_data, method='GAM')
+                scores = ufpca.transform(data=new_data, method='NumInt')
+            elif new_data.n_dim == 2:
+                n_points = new_data.n_points
+                Pv = np.diff(np.identity(n_points['input_dim_0']))
+                Pw = np.diff(np.identity(n_points['input_dim_1']))
+                fcptpa = FCPTPA(n_components=n_components)
+                fcptpa.fit(new_data, penal_mat={'v': np.dot(Pv, Pv.T),
+                                                'w': np.dot(Pw, Pw.T)},
+                           alpha_range={'v': np.array([1e-4, 1e4]),
+                                        'w': np.array([1e-4, 1e4])},
+                           tol=1e-4, max_iter=15,
+                           adapt_tol=True, verbose=True)
+                scores = fcptpa.transform()
+            else:
+                raise ValueError("The dimension of the input data should "
+                                 "be 1 or 2.")
         elif isinstance(new_data, MultivariateFunctionalData):
             mfpca = MFPCA(n_components=n_components)
             mfpca.fit(data=new_data, method='NumInt')
@@ -202,13 +220,22 @@ class Node():
         self._identifier = new_identifier
 
     @property
-    def labels(self):
-        """Getter for labels."""
-        return self._labels
+    def labels_grow(self):
+        """Getter for labels_grow."""
+        return self._labels_grow
 
-    @labels.setter
-    def labels(self, new_labels):
-        self._labels = new_labels
+    @labels_grow.setter
+    def labels_grow(self, new_labels):
+        self._labels_grow = new_labels
+
+    @property
+    def labels_join(self):
+        """Getter for labels_join."""
+        return self._labels_join
+
+    @labels_join.setter
+    def labels_join(self, new_labels):
+        self._labels_join = new_labels
 
     @property
     def left(self):
@@ -269,10 +296,27 @@ class Node():
         """
         if self.data.n_obs > min_size:
             if isinstance(self.data, DenseFunctionalData):
-                ufpca = UFPCA(n_components=n_components)
-                ufpca.fit(data=self.data, method='GAM')
-                scores = ufpca.transform(data=self.data, method='NumInt')
-                self.fpca = ufpca
+                if self.data.n_dim == 1:
+                    ufpca = UFPCA(n_components=n_components)
+                    ufpca.fit(data=self.data, method='GAM')
+                    scores = ufpca.transform(data=self.data, method='NumInt')
+                    self.fpca = ufpca
+                elif self.data.n_dim == 2:
+                    n_points = self.data.n_points
+                    Pv = np.diff(np.identity(n_points['input_dim_0']))
+                    Pw = np.diff(np.identity(n_points['input_dim_1']))
+                    fcptpa = FCPTPA(n_components=n_components)
+                    fcptpa.fit(self.data, penal_mat={'v': np.dot(Pv, Pv.T),
+                                                     'w': np.dot(Pw, Pw.T)},
+                               alpha_range={'v': np.array([1e-4, 1e4]),
+                                            'w': np.array([1e-4, 1e4])},
+                               tol=1e-4, max_iter=15,
+                               adapt_tol=True, verbose=True)
+                    scores = fcptpa.transform()
+                    self.fpca = fcptpa
+                else:
+                    raise ValueError("The dimension of the input data should "
+                                     "be 1 or 2.")
             elif isinstance(self.data, MultivariateFunctionalData):
                 mfpca = MFPCA(n_components=n_components)
                 mfpca.fit(data=self.data, method='NumInt')
@@ -364,6 +408,9 @@ class Node():
 
     def predict(self, new_obs):
         """Predict the label for a new observation."""
+        if self.data.n_dim > 1:
+            raise ValueError("Prediction is not available for data with "
+                             "dimension strictly greater than 1.")
         score = self.fpca.transform(new_obs, method='NumInt')
         pred = self.gaussian_model.predict(score)
         if pred == 0:
@@ -375,6 +422,9 @@ class Node():
 
     def predict_proba(self, new_obs):
         """Predict the probability for a new observation."""
+        if self.data.n_dim > 1:
+            raise ValueError("Prediction is not available for data with "
+                             "dimension strictly greater than 1.")
         score = self.fpca.transform(new_obs, method='NumInt')
         proba = self.gaussian_model.predict_proba(score)
         return proba
@@ -395,6 +445,9 @@ class Node():
             Axes object containing the graphs.
 
         """
+        if self.data.n_dim > 1:
+            raise ValueError("Prediction is not available for data with "
+                             "dimension strictly greater than 1.")
         if axes is None:
             axes = plt.gca()
 

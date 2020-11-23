@@ -46,7 +46,10 @@ def plot(data, ax=None, **plt_kwargs):
         ax = _init_ax(ax, projection='rectilinear')
         ax = _plot_1d(data, ax, **plt_kwargs)
     elif data.n_dim == 2:
-        ax = _init_ax(ax, projection='3d')
+        if data.n_obs == 1:
+            ax = _init_ax(ax, projection='rectilinear')
+        else:
+            ax = _init_ax(ax, projection='3d')
         ax = _plot_2d(data, ax, **plt_kwargs)
     else:
         raise ValueError(f"Can not plot functions of dimension {data.n_dim},"
@@ -107,11 +110,16 @@ def _plot_2d(data, ax=None, **plt_kwargs):
 
     """
     if isinstance(data, DenseFunctionalData):
-        x, y = np.meshgrid(data.argvals['input_dim_0'],
-                           data.argvals['input_dim_1'],
-                           indexing='ij')
-        for obs in data.values:
-            ax.plot_surface(x, y, obs)
+        if data.n_obs == 1:
+            ax.contourf(data.argvals['input_dim_0'],
+                        data.argvals['input_dim_1'],
+                        data.values.squeeze())
+        else:
+            x, y = np.meshgrid(data.argvals['input_dim_0'],
+                               data.argvals['input_dim_1'],
+                               indexing='ij')
+            for obs in data.values:
+                ax.plot_surface(x, y, obs)
     elif isinstance(data, IrregularFunctionalData):
         raise NotImplementedError("Currently 2d irregular functional data"
                                   " plotting is not implemented.")

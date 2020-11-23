@@ -12,6 +12,7 @@ import scipy
 from patsy import bs
 
 from .functional_data import DenseFunctionalData
+from .functional_data import tensor_product_
 
 
 #######################################################################
@@ -310,6 +311,10 @@ class Basis(DenseFunctionalData):
         Denotes the basis of functions to use.
     n_functions: int
         Number of functions in the basis.
+    dimension: str, ('1D', '2D'), default='1D'
+        Dimension of the basis to simulate. If '2D', the basis is simulated as
+        the tensor product of the one dimensional basis of functions by itself.
+        The number of functions in the 2D basis will be :math:`n_function^2`.
     argvals: dict
         The sampling points of the functional data. Each entry of the
         dictionary represents an input dimension. The shape of the :math:`j`th
@@ -328,10 +333,12 @@ class Basis(DenseFunctionalData):
 
     """
 
-    def __init__(self, name, n_functions, argvals=None, norm=False, **kwargs):
+    def __init__(self, name, n_functions, dimension='1D', argvals=None,
+                 norm=False, **kwargs):
         """Initialize Basis object."""
         self.name = name
         self.norm = norm
+        self.dimension = dimension
 
         if argvals is None:
             argvals = {'input_dim_0': np.arange(0, 1, 0.01)}
@@ -343,7 +350,15 @@ class Basis(DenseFunctionalData):
 
         values = simulate_basis(name, n_functions, argvals['input_dim_0'],
                                 norm, **kwargs)
-        super().__init__(argvals, values)
+
+        if dimension == '1D':
+            super().__init__(argvals, values)
+        elif dimension == '2D':
+            basis1d = DenseFunctionalData(argvals, values)
+            basis2d = tensor_product_(basis1d, basis1d)
+            super().__init__(basis2d.argvals, basis2d.values)
+        else:
+            raise ValueError(f"{dimension} is not a valid dimension!")
 
     @property
     def name(self):
@@ -364,3 +379,12 @@ class Basis(DenseFunctionalData):
     @norm.setter
     def norm(self, new_norm):
         self._norm = new_norm
+
+    @property
+    def dimension(self):
+        """Getter for dimension."""
+        return self._dimension
+
+    @dimension.setter
+    def dimension(self, new_dimension):
+        self._dimension = new_dimension
