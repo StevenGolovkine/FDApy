@@ -76,7 +76,7 @@ def joining_step(list_nodes, siblings, n_components=0.95, max_group=5):
                                         'w': np.array([1e-4, 1e4])},
                            tol=1e-4, max_iter=15,
                            adapt_tol=True)
-                scores = fcptpa.transform()
+                scores = fcptpa.transform(new_data)
             else:
                 raise ValueError("The dimension of the input data should "
                                  "be 1 or 2.")
@@ -313,7 +313,7 @@ class Node():
                                             'w': np.array([1e-4, 1e4])},
                                tol=1e-4, max_iter=15,
                                adapt_tol=True)
-                    scores = fcptpa.transform()
+                    scores = fcptpa.transform(self.data)
                     self.fpca = fcptpa
                 else:
                     raise ValueError("The dimension of the input data should "
@@ -409,9 +409,6 @@ class Node():
 
     def predict(self, new_obs):
         """Predict the label for a new observation."""
-        if self.data.n_dim > 1:
-            raise ValueError("Prediction is not available for data with "
-                             "dimension strictly greater than 1.")
         score = self.fpca.transform(new_obs, method='NumInt')
         pred = self.gaussian_model.predict(score)
         if pred == 0:
@@ -423,9 +420,6 @@ class Node():
 
     def predict_proba(self, new_obs):
         """Predict the probability for a new observation."""
-        if self.data.n_dim > 1:
-            raise ValueError("Prediction is not available for data with "
-                             "dimension strictly greater than 1.")
         score = self.fpca.transform(new_obs, method='NumInt')
         proba = self.gaussian_model.predict_proba(score)
         return proba

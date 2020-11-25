@@ -351,7 +351,7 @@ class MFPCA():
                                        'w': np.array([1e-4, 1e4])},
                           tol=1e-4, max_iter=15,
                           adapt_tol=True)
-                scores_uni = ufpca.transform()
+                scores_uni = ufpca.transform(function)
             ufpca_list.append(ufpca)
             scores.append(scores_uni)
 

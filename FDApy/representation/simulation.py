@@ -487,7 +487,7 @@ class Simulation(ABC):
         noisy_data = np.random.normal(0, 1, shape_simu)
 
         if inspect.isfunction(var_noise):
-            var_noise = var_noise(self.values)
+            var_noise = var_noise(self.data.values)
 
         std_noise = np.sqrt(var_noise)
         noisy_data = self.data.values + np.multiply(std_noise, noisy_data)

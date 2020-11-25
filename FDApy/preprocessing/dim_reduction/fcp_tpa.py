@@ -321,13 +321,13 @@ class FCPTPA():
         self.eigenfunctions = DenseFunctionalData(data.argvals,
                                                   eigenimages)
 
-    def transform(self, data=None, method=None):
+    def transform(self, data, method=None):
         """Apply dimension reduction to the data.
 
         Parameters
         ----------
-        data: None
-            Not used. To be compliant with other methods.
+        data: DenseFunctionalData
+            Functional data object to be transformed.
         method: None
             Not used. To be compliant with other methods.
 
@@ -338,7 +338,7 @@ class FCPTPA():
             functions defined by the eigenimages.
 
         """
-        return self.eigenvalues * self.scores
+        return np.einsum('ikl, jkl', data.values, self.eigenfunctions.values)
 
     def inverse_transform(self, scores):
         """Transform the data back to its original space.
