@@ -28,7 +28,7 @@ extensions = [
 ]
 
 setup(name='FDApy',
-      version='0.8.3',
+      version='0.8.4',
       description=DOCLINES[1],
       long_description='\n'.join(DOCLINES[3:]),
       long_description_content_type='text/x-rst',
