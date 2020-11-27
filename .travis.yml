@@ -54,6 +54,7 @@ script:
 deploy:
   skip_cleanup: true
   provider: script
+  install: $PIP install keyring==21.4.0
   script: $PIP install twine && $PYTHON -m twine upload --verbose --skip-existing wheelhouse/*
   on:
     branch: master
