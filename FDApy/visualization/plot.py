@@ -111,15 +111,17 @@ def _plot_2d(data, ax=None, **plt_kwargs):
     """
     if isinstance(data, DenseFunctionalData):
         if data.n_obs == 1:
-            ax.contourf(data.argvals['input_dim_0'],
-                        data.argvals['input_dim_1'],
-                        data.values.squeeze())
+            cs = ax.contourf(data.argvals['input_dim_0'],
+                             data.argvals['input_dim_1'],
+                             data.values.squeeze(),
+                             **plt_kwargs)
+            plt.colorbar(cs)
         else:
             x, y = np.meshgrid(data.argvals['input_dim_0'],
                                data.argvals['input_dim_1'],
                                indexing='ij')
             for obs in data.values:
-                ax.plot_surface(x, y, obs)
+                ax.plot_surface(x, y, obs, **plt.kwargs)
     elif isinstance(data, IrregularFunctionalData):
         raise NotImplementedError("Currently 2d irregular functional data"
                                   " plotting is not implemented.")
