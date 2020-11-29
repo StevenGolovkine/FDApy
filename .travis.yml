@@ -55,7 +55,6 @@ deploy:
   skip_cleanup: true
   provider: script
   script: $PIP install twine && $PYTHON -m twine upload --verbose --skip-existing wheelhouse/*
-  edge: true
   on:
     branch: master
     tags: true
