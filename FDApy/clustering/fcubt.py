@@ -507,15 +507,6 @@ class FCUBT():
         self._tree = new_tree
 
     @property
-    def labels(self):
-        """Getter for labels."""
-        return self._labels
-
-    @labels.setter
-    def labels(self, new_labels):
-        self._labels = new_labels
-
-    @property
     def n_nodes(self):
         """Get the number of nodes in the tree."""
         return len(self.tree)
