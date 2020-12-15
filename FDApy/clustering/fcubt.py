@@ -653,7 +653,7 @@ class FCUBT():
             if node.identifier[0] > row_idx:
                 row_idx += 1
                 if node.identifier[1] == 0:
-                    col_idx = 2**(fcubt.height - row_idx) // 2 - 1
+                    col_idx = 2**(self.height - row_idx) // 2 - 1
                 else:
                     col_idx = 2**(node.identifier[1] + 1) + 1
             if not row_idx == (self.height - 1):
