@@ -18,6 +18,7 @@ from sklearn.metrics import pairwise_distances
 
 from ..preprocessing.smoothing.bandwidth import Bandwidth
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
+from ..preprocessing.smoothing.smoothing_splines import SmoothingSpline
 from ..misc.utils import get_dict_dimension_, get_obs_shape_
 from ..misc.utils import integration_weights_, outer_
 from ..misc.utils import range_standardization_
@@ -541,18 +542,22 @@ class DenseFunctionalData(FunctionalData):
             if self.n_dim > 1:
                 raise ValueError('Only one dimensional data can be smoothed.')
             if smooth == 'LocalLinear':
-                lp = LocalPolynomial(
-                    kernel_name=kwargs.get('kernel_name', 'epanechnikov'),
-                    bandwidth=kwargs.get('bandwidth', 1),
-                    degree=kwargs.get('degree', 1)
-                )
-                mean_estim = lp.fit_predict(argvals, mean_estim, argvals)
+                p = self.n_points['input_dim_0']
+                points = kwargs.get('points', 0.5)
+                neigh = kwargs.get('neighborhood',
+                                   np.int(p * np.exp(-(np.log(np.log(p)))**2)))
+                data_smooth = self.smooth(points=points,
+                                          neighborhood=neigh)
+                mean_estim = data_smooth.values.mean(axis=0)
             elif smooth == 'GAM':
                 n_basis = kwargs.get('n_basis', 10)
                 argvals = self.argvals['input_dim_0']
                 mean_estim = pygam.LinearGAM(pygam.s(0, n_splines=n_basis)).\
                     fit(argvals, mean_estim).\
                     predict(argvals)
+            elif smooth == 'SmoothingSpline':
+                ss = SmoothingSpline()
+                mean_estim = ss.fit_predict(argvals, mean_estim)
             else:
                 raise NotImplementedError('Smoothing method not implemented.')
         return DenseFunctionalData(self.argvals, mean_estim[np.newaxis])
@@ -598,6 +603,7 @@ class DenseFunctionalData(FunctionalData):
             raise ValueError('Only one dimensional functional data are'
                              ' supported')
 
+        p = self.n_points['input_dim_0']
         argvals = self.argvals['input_dim_0']
         if mean is None:
             mean = self.mean(smooth)
@@ -619,13 +625,13 @@ class DenseFunctionalData(FunctionalData):
             train = train_[:, train_[0, :] != train_[1, :]]
 
             if smooth == 'LocalLinear':
-                lp = LocalPolynomial(
-                    kernel_name=kwargs.get('kernel_name', 'epanechnikov'),
-                    bandwidth=kwargs.get('bandwidth', 1),
-                    degree=kwargs.get('degree', 1)
-                )
-                cov = lp.fit_predict(train, cov, train_).\
-                    reshape((len(argvals), len(argvals)))
+                points = kwargs.get('points', 0.5)
+                neigh = kwargs.get('neighborhood',
+                                   np.int(p * np.exp(-(np.log(np.log(p)))**2)))
+                data_smooth = self.smooth(points=points,
+                                          neighborhood=neigh)
+                data = data_smooth.values - mean.values
+                cov = np.dot(data.T, data) / (self.n_obs - 1)
             elif smooth == 'GAM':
                 n_basis = kwargs.get('n_basis', 10)
 
@@ -638,6 +644,7 @@ class DenseFunctionalData(FunctionalData):
 
         # Ensure the covariance is symmetric.
         cov = (cov + cov.T) / 2
+
         # Smoothing the diagonal of the covariance (Yao, Müller and Wang, 2005)
         lp = LocalPolynomial(kernel_name=kwargs.get('kernel_name', 'gaussian'),
                              bandwidth=kwargs.get('bandwidth', 1),
@@ -1039,7 +1046,7 @@ class IrregularFunctionalData(FunctionalData):
         points_estim: np.array, default=None
             Points at which the curves are estimated. The default is None,
             meaning we use the argvals as estimation points.
-        degree: int, default=2
+        degree: int, default=0
             Degree for the local polynomial smoothing.
         kernel: str, default='epanechnikov'
             The name of the kernel to use.

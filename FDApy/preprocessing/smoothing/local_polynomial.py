@@ -3,7 +3,7 @@
 
 """Module for LocalPolynomial classes.
 
-This module is used fit local polynomial regression.
+This module is used to fit local polynomial regression.
 """
 import numpy as np
 

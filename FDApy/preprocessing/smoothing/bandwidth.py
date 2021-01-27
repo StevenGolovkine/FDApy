@@ -150,7 +150,7 @@ def estimate_hurst_(argvals, values, t0, k0, sigma=None):
         An estimation of the Hurst parameter at :math:`t_0`.
 
     """
-    first_part = 0
+    first_part = np.log(4)
     second_part = 0
     if sigma is None:
         idxs = indices_(argvals, t0, 8 * k0 - 6)
@@ -335,8 +335,8 @@ def estimate_bandwidth_(argvals, hurst, constant, sigma,
     else:
         raise NotImplementedError('Kernel not implemented.')
 
-    nume = sigma**2 * k_norm2 * np.math.factorial(np.floor(hurst))
-    deno = hurst * constant * k_phi
+    nume = sigma**2 * np.math.factorial(np.floor(hurst))**2  # * k_norm2
+    deno = 2 * hurst * constant**2  # * k_phi
     frac = nume / deno
 
     return [(frac / len(obs))**(1 / (2 * hurst + 1)) for obs in argvals]
@@ -456,8 +456,8 @@ class Bandwidth(object):
 
         Parameters
         ----------
-        data: FunctionalData
-            An element of the class FunctionalData.
+        data: IrregularFunctionalData
+            An element of the class IrregularFunctionalData.
         hurst: list of float
             An estimate of the Hurst coefficient.
         constants: list of float

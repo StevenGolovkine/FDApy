@@ -1,4 +1,5 @@
 Cython
+csaps
 matplotlib
 networkx
 numpy
