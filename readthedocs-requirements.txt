@@ -3,7 +3,7 @@ Cython
 matplotlib
 mpldatacursor
 networkx
-numpy==1.16.5
+numpy==1.19.0
 pandas
 patsy
 pillow
