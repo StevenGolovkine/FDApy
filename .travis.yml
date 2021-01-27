@@ -34,7 +34,6 @@ before_install:
 # Command to install dependencies, e.g. pip install -r requirements.txt
 install:
 - $PIP install -r requirements.txt
-- $PIP install keyring==21.4.0
 - $PIP install -U tox-travis
 - if [ "${TRAVIS_OS_NAME:-}" == "osx" ]; then
     brew update;
@@ -56,7 +55,7 @@ script:
 deploy:
   skip_cleanup: true
   provider: script
-  script: $PIP install twine && $PYTHON -m twine upload --verbose --skip-existing wheelhouse/*
+  script: $PIP install --upgrade --upgrade-strategy eager twine && $PYTHON -m twine upload --verbose --skip-existing wheelhouse/*
   on:
     branch: master
     tags: true
