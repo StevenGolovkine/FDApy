@@ -1,11 +1,11 @@
-Cython
 csaps
+Cython
 matplotlib
 networkx
-numpy
+numpy==1.16.5
 pandas
 patsy
 pygam
 scikit-learn
 scipy
-sktime
+sktime==0.3.1
