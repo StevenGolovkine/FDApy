@@ -34,6 +34,7 @@ before_install:
 # Command to install dependencies, e.g. pip install -r requirements.txt
 install:
 - $PIP install -r requirements.txt
+- $PIP install keyring==21.4.0
 - $PIP install -U tox-travis
 - if [ "${TRAVIS_OS_NAME:-}" == "osx" ]; then
     brew update;
