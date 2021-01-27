@@ -55,7 +55,7 @@ script:
 deploy:
   skip_cleanup: true
   provider: script
-  script: $PIP install --upgrade --upgrade-strategy eager twine && $PYTHON -m twine upload --verbose --skip-existing wheelhouse/*
+  script: $PIP install twine && $PYTHON -m twine upload --verbose --skip-existing wheelhouse/*
   on:
     branch: master
     tags: true
