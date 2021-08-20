@@ -8,4 +8,4 @@ patsy
 pygam
 scikit-learn
 scipy
-sktime==0.3.1
+sktime

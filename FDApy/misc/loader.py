@@ -11,7 +11,7 @@ IrregularFunctionalData or MultivariateFunctionalData.
 import numpy as np
 import pandas as pd
 
-from sktime.utils.load_data import load_from_tsfile_to_dataframe
+from sktime.utils.data_io import load_from_tsfile_to_dataframe
 
 from FDApy.representation.functional_data import (DenseFunctionalData,
                                                   IrregularFunctionalData)

@@ -10,7 +10,7 @@ pillow
 pygam
 scikit-learn
 scipy
-sktime==0.3.1
+sktime
 Sphinx
 sphinx-gallery
 sphinx_rtd_theme

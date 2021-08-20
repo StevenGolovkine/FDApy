@@ -19,8 +19,8 @@ FDApy: a Python package to analyze functional data
 		:target: https://raw.githubusercontent.com/StevenGolovkine/FDApy/master/LICENSE
 		:alt: PyPI - License
 
-.. image:: https://api.codacy.com/project/badge/Grade/4e0f847482dc40e6a3090ddc08edd350
-		:target: https://app.codacy.com/manual/StevenGolovkine/FDApy?utm_source=github.com&utm_medium=referral&utm_content=StevenGolovkine/FDApy&utm_campaign=Badge_Grade_Dashboard
+.. image:: https://app.codacy.com/project/badge/Grade/3d9062cffc304ad4bb7c76bf97cc965c    
+		:target: https://www.codacy.com/gh/StevenGolovkine/FDApy/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=StevenGolovkine/FDApy&amp;utm_campaign=Badge_Grade
 		:alt: Code Quality
 
 .. image:: https://readthedocs.org/projects/fdapy/badge/?version=latest
