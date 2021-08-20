@@ -17,7 +17,7 @@ env:
     - CIBW_BUILD="cp37-manylinux_x86_64"
     #- CIBW_SKIP="cp27-* cp33-* cp34-* cp35-* *_i686" # Skip these python versions
     - CIBW_BEFORE_TEST="pip install Cython"
-    - CIBW_TEST_REQUIRES="numpy==1.19.0 sktime==0.3.1"
+    #- CIBW_TEST_REQUIRES="numpy==1.19.0 sktime==0.3.1"
     - CIBW_TEST_COMMAND="python -VV && python -m unittest discover -f -s {project}/tests" # Test the created wheels
     - CIBW_BEFORE_BUILD="pip install Cython"
     - CC="gcc" # If Travis does not find a C compiler

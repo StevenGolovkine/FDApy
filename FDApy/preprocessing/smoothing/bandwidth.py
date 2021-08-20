@@ -1,4 +1,4 @@
-#!/usr/bin/python3.7
+#!/usr/bin/env python
 # -*-coding:utf8 -*
 
 """Module for Bandwidth class.
@@ -326,14 +326,14 @@ def estimate_bandwidth_(argvals, hurst, constant, sigma,
         An estimation of the bandwidth.
 
     """
-    if kernel == "epanechnikov":
-        k_norm2 = 0.6
-        k_phi = 3 / ((hurst + 1) * (hurst + 3))
-    elif kernel == "uniform":
-        k_norm2 = 1
-        k_phi = 1 / (hurst + 1)
-    else:
-        raise NotImplementedError('Kernel not implemented.')
+    # if kernel == "epanechnikov":
+    #     k_norm2 = 0.6
+    #     k_phi = 3 / ((hurst + 1) * (hurst + 3))
+    # elif kernel == "uniform":
+    #     k_norm2 = 1
+    #     k_phi = 1 / (hurst + 1)
+    # else:
+    #     raise NotImplementedError('Kernel not implemented.')
 
     nume = sigma**2 * np.math.factorial(np.floor(hurst))**2  # * k_norm2
     deno = 2 * hurst * constant**2  # * k_phi

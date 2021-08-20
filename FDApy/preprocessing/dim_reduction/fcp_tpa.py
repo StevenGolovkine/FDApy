@@ -1,4 +1,4 @@
-#!/usr/bin/python3.7
+#!/usr/bin/env python
 # -*-coding:utf8 -*
 
 """Mdoule for FCPTPA class.
@@ -152,7 +152,7 @@ class FCPTPA():
     def fit(self, data, penal_mat, alpha_range, tol=1e-4, max_iter=15,
             adapt_tol=True, verbose=False):
         r"""Fit the model on data.
-        
+
         This function is used to fit a model on the data.
 
         Parameters

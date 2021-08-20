@@ -1,4 +1,4 @@
-#!/usr/bin/python3.7
+#!/usr/bin/env python
 # -*-coding:utf8 -*
 
 """Module for SmoothingSplines classes.
