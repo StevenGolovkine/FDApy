@@ -1,5 +1,9 @@
 # .gitignore
 
+# Sublime text project
+FDApy.sublime-project
+FDApy.sublime-workspace
+
 # Compiled python modules
 *.pyc
 
