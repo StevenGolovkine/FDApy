@@ -5,8 +5,8 @@ jobs:
   include:
     - os: linux
       language: python
-      dist: xenial # Because python3.7
-      python: "3.7"
+      dist: bionic # Because python3.9
+      python: "3.9"
       services:
         - docker # Needed for cibuildwheel
 

@@ -29,12 +29,12 @@ extensions = [
 
 setup(name='FDApy',
       version='0.8.6',
-      python_requires='>= 3.7, <4',
+      python_requires='>= 3.9, <4',
       description=DOCLINES[1],
       long_description='\n'.join(DOCLINES[3:]),
       long_description_content_type='text/x-rst',
       classifiers=[
-          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.9',
           'Topic :: Scientific/Engineering :: Mathematics'],
       keywords='functional data analysis',
       url='https://github.com/StevenGolovkine/FDApy',

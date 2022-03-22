@@ -48,7 +48,7 @@ The documentation of the latest version can be found at `https://fdapy.readthedo
 Installation
 ============
 
-Up to now, *FDApy* is availlable in Python 3.7 on any Linux platforms. The stable version can be installed via `PyPI <https://pypi.org/project/FDApy/>`_:
+Up to now, *FDApy* is availlable in Python 3.9 on any Linux platforms. The stable version can be installed via `PyPI <https://pypi.org/project/FDApy/>`_:
 
 .. code::
 	
