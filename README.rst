@@ -13,7 +13,6 @@ FDApy: a Python package to analyze functional data
 
 .. image:: https://app.travis-ci.com/StevenGolovkine/FDApy.svg?branch=master
     	:target: https://app.travis-ci.com/StevenGolovkine/FDApy
-		:alt: Travis
 
 .. image:: https://img.shields.io/pypi/l/FDApy
 		:target: https://raw.githubusercontent.com/StevenGolovkine/FDApy/master/LICENSE
