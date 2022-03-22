@@ -1,5 +1,5 @@
 csaps==1.1.0
-Cython==0.29.24
+Cython==0.29.28
 matplotlib==3.4.3
 networkx==2.6.2
 numpy==1.21.0
