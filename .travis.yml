@@ -14,7 +14,7 @@ env:
   global:
     - TWINE_USERNAME=__token__ # Use API token to upload on Pypi
     - secure: ZzOgGykdKf8GIc8/ETLaxFLmrQDVHF9Y9KT+cMa52yKU4kK5HSJx2F4ONbkiZHYchBFbgKw+StLE6ipjOKcf2JTYujRNa6QPvqlRMoKCI62P7s+NWeWkhzXpUaKl4kqvyrJy4BEqYoWd04ETjlHKhT3Qpjo5O0WeXSbdMl6eI1K9bSnDb+PyO/TD0jyjZi85OhvhwXkjcomMvLLhJC+aCVrvGoUyNLGPI17H01/NRwKNNL7VN8p6Q8r85KFAxE+h1UklVm64JzInk65x8O44aNYDEZTEMfsnYRCaH3YyoNuOEr1PXqQ0opaT2m69TM831vdO4RSnHYcrwDEWIQTrIxqb2f/UWPlaxsE0N+n09rt3XFiyJtkePtp8UdHPmRVE7WkBODau9DWHdtbCdzj2poKgeL8rWd/yKdZOF5hTxRu/m0gSX38tfHrp0AKZAdJ/unsfk8Cljmb++dhQg1B5avKzju1cbIusYUUpnptGOGFdNjfRDBUh8J7eSdnGyFqK+3XfgDheBmPgE76ae0ZCcsXdLpsykDVC3RZ3RmEY2S4xHfsF0kACJ6Ik8I8BbI/OfI/Hsg/WjoyT3CyhUj2Ij98eFXHejoFd2JF5yBmSCGYEPob7HxGEEr5IFi7wRYjAt9hliA12a/vskYlnt4Zbheoe14YndhlJakMBMwccS+c=
-    - CIBW_BUILD="cp37-manylinux_x86_64"
+    - CIBW_BUILD="cp39-manylinux_x86_64"
     #- CIBW_SKIP="cp27-* cp33-* cp34-* cp35-* *_i686" # Skip these python versions
     - CIBW_BEFORE_TEST="pip install Cython"
     #- CIBW_TEST_REQUIRES="numpy==1.19.0 sktime==0.3.1"
