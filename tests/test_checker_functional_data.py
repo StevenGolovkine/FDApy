@@ -1,4 +1,4 @@
-#!/usr/bin/python3.7
+#!/usr/bin/python3
 # -*-cooding:utf8 -*
 
 import numpy as np
