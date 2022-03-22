@@ -401,7 +401,7 @@ class BandwidthResult(NamedTuple):
 # Class Bandwidth
 
 class Bandwidth(object):
-    """A module for the compuation of the bandwidth for the smoothing.
+    """A module for the computation of the bandwidth for the smoothing.
 
     This module is used to compute the bandwidths for a given dataset and will
     be used to perform smoothing. This cbandwidth computation is defined in the

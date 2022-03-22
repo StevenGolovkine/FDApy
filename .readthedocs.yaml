@@ -16,6 +16,7 @@ build:
     # golang: "1.17"
   apt_packages:
     - cmake
+    - gcc
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
