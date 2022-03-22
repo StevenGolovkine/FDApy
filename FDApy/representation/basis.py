@@ -18,7 +18,11 @@ from .functional_data import tensor_product_
 #######################################################################
 # Definition of the basis (eigenfunctions)
 
-def basis_legendre(n_functions=3, argvals=None, norm=False):
+def basis_legendre(
+    n_functions: int = 3,
+    argvals: np.ndarray = None,
+    norm: bool = False
+) -> np.ndarray:
     r"""Define Legendre basis of function.
 
     Build a basis of :math:`K` functions using Legendre polynomials on the
@@ -74,7 +78,11 @@ def basis_legendre(n_functions=3, argvals=None, norm=False):
     return values
 
 
-def basis_wiener(n_functions=3, argvals=None, norm=False):
+def basis_wiener(
+    n_functions: int = 3,
+    argvals: np.array = None,
+    norm: bool = False
+) -> np.ndarray:
     r"""Define Wiener basis of function.
 
     Build a basis of :math:`K` functions using the eigenfunctions of a Wiener
@@ -129,7 +137,12 @@ def basis_wiener(n_functions=3, argvals=None, norm=False):
     return values
 
 
-def basis_fourier(n_functions=3, argvals=None, period=2 * np.pi, norm=True):
+def basis_fourier(
+    n_functions: int = 3,
+    argvals: np.ndarray = None,
+    period: float = 2 * np.pi,
+    norm: bool = True
+) -> np.ndarray:
     r"""Define Fourier basis of function.
 
     Build a basis of :math:`K` functions using Fourier series on the
@@ -191,8 +204,13 @@ def basis_fourier(n_functions=3, argvals=None, period=2 * np.pi, norm=True):
     return values[:n_functions, :]
 
 
-def basis_bsplines(n_functions=5, argvals=None, degree=3, knots=None,
-                   norm=False):
+def basis_bsplines(
+    n_functions: int = 5,
+    argvals: np.ndarray = None,
+    degree: int = 3,
+    knots: np.ndarray = None,
+    norm: bool = False
+) -> np.ndarray:
     """Define B-splines basis of function.
 
     Build a basis of :math:`K` functions using B-splines basis on the
@@ -246,7 +264,13 @@ def basis_bsplines(n_functions=5, argvals=None, degree=3, knots=None,
     return values.T
 
 
-def simulate_basis(name, n_functions=3, argvals=None, norm=False, **kwargs):
+def simulate_basis(
+    name: str,
+    n_functions: int = 3,
+    argvals: np.ndarray = None,
+    norm: bool = False,
+    **kwargs
+) -> np.ndarray:
     """Redirect to the right simulation basis function.
 
     Parameters
@@ -302,7 +326,9 @@ def simulate_basis(name, n_functions=3, argvals=None, norm=False, **kwargs):
 ###############################################################################
 # Class Basis
 
-class Basis(DenseFunctionalData):
+class Basis(
+    DenseFunctionalData
+):
     r"""A functional data object representing an orthogonal basis of functions.
 
     Parameters
@@ -333,8 +359,15 @@ class Basis(DenseFunctionalData):
 
     """
 
-    def __init__(self, name, n_functions, dimension='1D', argvals=None,
-                 norm=False, **kwargs):
+    def __init__(
+        self,
+        name: str,
+        n_functions: int,
+        dimension: str = '1D',
+        argvals: dict = None,
+        norm: bool = False,
+        **kwargs
+    ) -> None:
         """Initialize Basis object."""
         self.name = name
         self.norm = norm
@@ -361,30 +394,30 @@ class Basis(DenseFunctionalData):
             raise ValueError(f"{dimension} is not a valid dimension!")
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Getter for name."""
         return self._name
 
     @name.setter
-    def name(self, new_name):
+    def name(self, new_name: str) -> None:
         if not isinstance(new_name, str):
             raise TypeError(f'{new_name!r} has to be `str`.')
         self._name = new_name
 
     @property
-    def norm(self):
+    def norm(self) -> bool:
         """Getter for norm."""
         return self._norm
 
     @norm.setter
-    def norm(self, new_norm):
+    def norm(self, new_norm: bool) -> None:
         self._norm = new_norm
 
     @property
-    def dimension(self):
+    def dimension(self) -> str:
         """Getter for dimension."""
         return self._dimension
 
     @dimension.setter
-    def dimension(self, new_dimension):
+    def dimension(self, new_dimension: str) -> None:
         self._dimension = new_dimension
