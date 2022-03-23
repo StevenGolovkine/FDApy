@@ -12,6 +12,8 @@ import inspect
 import numpy as np
 
 from abc import ABC, abstractmethod
+from collections.abc import Callable
+from typing import Tuple, Union
 
 from sklearn.datasets import make_blobs
 
@@ -22,7 +24,9 @@ from .basis import Basis
 #############################################################################
 # Definition of the different Browian motion
 
-def init_brownian(argvals=None):
+def init_brownian(
+    argvals: np.ndarray = None
+) -> Tuple[float, np.ndarray]:
     """Initialize Brownian motion.
 
     Initialize the different parameters used in the simulation of the
@@ -47,7 +51,10 @@ def init_brownian(argvals=None):
     return delta, argvals
 
 
-def standard_brownian(argvals=None, x0=0.0):
+def standard_brownian(
+    argvals: np.ndarray = None,
+    x0: float = 0.0
+) -> np.ndarray:
     """Generate standard Brownian motion.
 
     Parameters
@@ -82,7 +89,12 @@ def standard_brownian(argvals=None, x0=0.0):
     return values
 
 
-def geometric_brownian(argvals=None, x0=1.0, mu=0.0, sigma=1.0):
+def geometric_brownian(
+    argvals: np.ndarray = None,
+    x0: float = 1.0,
+    mu: float = 0.0,
+    sigma: float = 1.0
+) -> np.ndarray:
     """Generate geometric Brownian motion.
 
     Parameters
@@ -123,7 +135,10 @@ def geometric_brownian(argvals=None, x0=1.0, mu=0.0, sigma=1.0):
     return x0 * np.cumprod(np.exp(in_exp))
 
 
-def fractional_brownian(argvals=None, hurst=0.5):
+def fractional_brownian(
+    argvals: np.ndarray = None,
+    hurst: float = 0.5
+) -> np.ndarray:
     """Generate fractional Brownian motion.
 
     Parameters
@@ -168,7 +183,11 @@ def fractional_brownian(argvals=None, hurst=0.5):
     return np.power(n, -hurst) * np.cumsum(np.real(values[1:(n + 1)]))
 
 
-def simulate_brownian(name, argvals=None, **kwargs):
+def simulate_brownian(
+    name: str, 
+    argvals: np.ndarray = None,
+    **kwargs
+) -> np.ndarray:
     """Redirect to the right brownian motion function.
 
     Parameters
@@ -219,7 +238,9 @@ def simulate_brownian(name, argvals=None, **kwargs):
 #############################################################################
 # Definition of the decreasing of the eigenvalues
 
-def eigenvalues_linear(n=3):
+def eigenvalues_linear(
+    n: int = 3
+) -> np.ndarray:
     """Generate linear decreasing eigenvalues.
 
     Parameters
@@ -241,7 +262,9 @@ def eigenvalues_linear(n=3):
     return np.array([(n - m + 1) / n for m in np.linspace(1, n, n)])
 
 
-def eigenvalues_exponential(n=3):
+def eigenvalues_exponential(
+    n: int = 3
+) -> np.ndarray:
     """Generate exponential decreasing eigenvalues.
 
     Parameters
@@ -263,7 +286,9 @@ def eigenvalues_exponential(n=3):
     return [np.exp(-(m + 1) / 2) for m in np.linspace(1, n, n)]
 
 
-def eigenvalues_wiener(n=3):
+def eigenvalues_wiener(
+    n: int = 3
+) -> np.ndarray:
     """Generate eigenvalues from a Wiener process.
 
     Parameters
@@ -286,7 +311,10 @@ def eigenvalues_wiener(n=3):
                      for m in np.linspace(1, n, n)])
 
 
-def simulate_eigenvalues(name, n=3):
+def simulate_eigenvalues(
+    name: str,
+    n: int = 3
+) -> np.ndarray:
     """Redirect to the right simulation eigenvalues function.
 
     Parameters
@@ -319,7 +347,12 @@ def simulate_eigenvalues(name, n=3):
 
 #############################################################################
 # Definition of clusters
-def make_coef(n_obs, n_features, centers, cluster_std):
+def make_coef(
+    n_obs: int,
+    n_features: int,
+    centers: np.ndarray,
+    cluster_std: np.ndarray
+) -> np.ndarray:
     """Simulate a set of coefficients for the Karhunen-Loève decomposition.
 
     Parameters
@@ -367,7 +400,11 @@ def make_coef(n_obs, n_features, centers, cluster_std):
     return coef, labels
 
 
-def initialize_centers(n_features, n_clusters, centers=None):
+def initialize_centers(
+    n_features: int,
+    n_clusters: int,
+    centers: np.ndarray = None
+) -> np.ndarray:
     """Initialize the centers of the clusters.
 
     Parameters
@@ -389,7 +426,11 @@ def initialize_centers(n_features, n_clusters, centers=None):
     return np.zeros((n_features, n_clusters)) if centers is None else centers
 
 
-def initialize_cluster_std(n_features, n_clusters, cluster_std=None):
+def initialize_cluster_std(
+    n_features: int,
+    n_clusters: int,
+    cluster_std: Union[str, np.ndarray, None] = None
+) -> np.ndarray:
     """Initialize the standard deviation of the clusters.
 
     Parameters
@@ -439,32 +480,40 @@ class Simulation(ABC):
 
     """
 
-    def _check_data(self):
+    def _check_data(self) -> None:
         """Check if self has the attribut data."""
         if not hasattr(self, 'data'):
             raise ValueError('No data have been found in the simulation.'
                              ' Please run new() before add_noise().')
 
-    def __init__(self, name):
+    def __init__(self, name: str) -> None:
         """Initialize Simulation object."""
         super().__init__()
         self.name = name
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Getter for name."""
         return self._name
 
     @name.setter
-    def name(self, new_name):
+    def name(self, new_name: str) -> None:
         self._name = new_name
 
     @abstractmethod
-    def new(self, n_obs, argvals=None, **kwargs):
+    def new(
+        self,
+        n_obs: int,
+        argvals: np.ndarray = None,
+        **kwargs
+    ) -> None:
         """Simulate a new set of data."""
         pass
 
-    def add_noise(self, var_noise=1):
+    def add_noise(
+        self,
+        var_noise: Union[float, Callable[[np.ndarray], np.ndarray]] = 1
+    ) -> None:
         r"""Add noise to the data.
 
         Parameters
@@ -493,7 +542,11 @@ class Simulation(ABC):
         noisy_data = self.data.values + np.multiply(std_noise, noisy_data)
         self.noisy_data = DenseFunctionalData(self.data.argvals, noisy_data)
 
-    def sparsify(self, percentage=0.9, epsilon=0.05):
+    def sparsify(
+        self,
+        percentage: float = 0.9,
+        epsilon: float = 0.05
+    ) -> None:
         """Sparsify the simulated data.
 
         Parameters
@@ -543,11 +596,19 @@ class Brownian(Simulation):
 
     """
 
-    def __init__(self, name):
+    def __init__(
+        self,
+        name: str
+    ) -> None:
         """Initialize Brownian object."""
         super().__init__(name)
 
-    def new(self, n_obs, argvals=None, **kwargs):
+    def new(
+        self,
+        n_obs: int,
+        argvals: np.ndarray = None,
+        **kwargs
+    ) -> None:
         """Simulate ``n_obs`` realizations of a Brownian on ``argvals``.
 
         Parameters
@@ -613,8 +674,14 @@ class KarhunenLoeve(Simulation):
 
     """
 
-    def __init__(self, name, basis=None, n_functions=5, dimension='1D',
-                 **kwargs_basis):
+    def __init__(
+        self,
+        name: str,
+        basis: Union[DenseFunctionalData, None] = None,
+        n_functions: int = 5,
+        dimension: str = '1D',
+        **kwargs_basis
+    ) -> None:
         """Initialize Basis object."""
         if (name is not None) and (basis is not None):
             raise ValueError('Name or basis have to be None. Do not know'
@@ -630,7 +697,12 @@ class KarhunenLoeve(Simulation):
         super().__init__(name)
         self.basis = basis
 
-    def new(self, n_obs, argvals=None, **kwargs):
+    def new(
+        self,
+        n_obs: int,
+        argvals: np.ndarray = None,
+        **kwargs
+    ):
         """Simulate ``n_obs`` realizations from a basis of function.
 
         Parameters
