@@ -13,6 +13,7 @@ import pygam
 
 from abc import ABC, abstractmethod
 from collections import UserList
+from typing import Dict
 
 from sklearn.metrics import pairwise_distances
 
@@ -27,7 +28,10 @@ from ..misc.utils import range_standardization_
 ###############################################################################
 # Checkers for parameters
 
-def _check_dict_array(argv_dict, argv_array):
+def _check_dict_array(
+    argv_dict: Dict[str, np.ndarray],
+    argv_array: np.ndarray
+) -> None:
     """Raise an error in case of dimension conflicts between the arguments.
 
     An error is raised when `argv_dict` (a dictionary) and `argv_array`
@@ -41,7 +45,10 @@ def _check_dict_array(argv_dict, argv_array):
                          " dimension.")
 
 
-def _check_dict_dict(argv1, argv2):
+def _check_dict_dict(
+    argv1: Dict[str, Dict[int, np.ndarray]],
+    argv2: Dict[int, np.ndarray]
+) -> None:
     """Raise an error in case of dimension conflicts between the arguments.
 
     An error is raised when `argv1` (a nested dictonary) and `argv2` (a

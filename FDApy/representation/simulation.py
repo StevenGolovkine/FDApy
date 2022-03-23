@@ -184,7 +184,7 @@ def fractional_brownian(
 
 
 def simulate_brownian(
-    name: str, 
+    name: str,
     argvals: np.ndarray = None,
     **kwargs
 ) -> np.ndarray:

@@ -9,6 +9,8 @@ import itertools
 import numpy as np
 import scipy
 
+from typing import Dict, Tuple, Union
+
 from sklearn.preprocessing import StandardScaler
 
 
@@ -16,7 +18,11 @@ from sklearn.preprocessing import StandardScaler
 # Standardization functions
 #############################################################################
 
-def range_standardization_(x, max_x=None, min_x=None):
+def range_standardization_(
+    x: np.ndarray,
+    max_x: float = None,
+    min_x: float = None
+) -> np.ndarray:
     r"""Transform a vector [a, b] into a vector [0, 1].
 
     This function standardizes a vector by applying the following
@@ -49,7 +55,9 @@ def range_standardization_(x, max_x=None, min_x=None):
     return range_
 
 
-def row_mean_(x):
+def row_mean_(
+    x: np.ndarray
+) -> np.ndarray:
     """Compute the mean of an array with respect to the rows.
 
     This function computes the mean of an array with respect to the rows.
@@ -74,7 +82,9 @@ def row_mean_(x):
     return scaler.fit(x).mean_
 
 
-def row_var_(x):
+def row_var_(
+    x: np.ndarray
+) -> np.ndarray:
     """Compute the variance of an array with respect to the rows.
 
     This function computes the variance of the row of an array.
@@ -99,7 +109,9 @@ def row_var_(x):
     return scaler.fit(x).var_
 
 
-def col_mean_(x):
+def col_mean_(
+    x: np.ndarray
+) -> np.ndarray:
     """Compute the mean of an array with respect to the columns.
 
     This function computes the mean of an array with respect to the columns.
@@ -124,7 +136,9 @@ def col_mean_(x):
     return scaler.fit(x.T).mean_
 
 
-def col_var_(x):
+def col_var_(
+    x: np.ndarray
+) -> np.ndarray:
     """Compute the variance of an array with respect to the columns.
 
     This function computes the variance of the column of an array.
@@ -152,23 +166,35 @@ def col_var_(x):
 # Array manipulation functions.
 ############################################################################
 
-def get_axis_dimension_(x, axis=0):
+def get_axis_dimension_(
+    x: np.ndarray,
+    axis: int = 0
+) -> int:
     """Get the dimension of an array :math:`X` along the `axis`."""
     return x.shape[axis]
 
 
-def get_dict_dimension_(x):
+def get_dict_dimension_(
+    x: Dict[str, np.ndarray]
+) -> Tuple[int]:
     """Return the shape of `X` defined as a dict of np.ndarray."""
     return tuple(i.shape[0] for i in x.values())
 
 
-def get_obs_shape_(x, obs):
+def get_obs_shape_(
+    x: Dict[str, Dict[int, np.ndarray]],
+    obs: int
+) -> Tuple[int]:
     """Return the shape of `obs` if `X` is a nested dict."""
     shapes = tuple(dim[obs].shape for _, dim in x.items())
     return tuple(itertools.chain.from_iterable(shapes))
 
 
-def shift_(x, num, fill_value=np.nan):
+def shift_(
+    x: np.ndarray,
+    num: int,
+    fill_value: Union[float, np.nan] = np.nan
+) -> np.ndarray:
     """Shift an array.
 
     This function shifts an array :math:`X` by a number :math:`num`.
@@ -214,7 +240,10 @@ def shift_(x, num, fill_value=np.nan):
 # Array computation
 ##############################################################################
 
-def outer_(x, y):
+def outer_(
+    x: np.ndarray,
+    y: np.ndarray
+) -> np.ndarray:
     """Compute the tensor product of two vectors.
 
     This function computes the tensor product of two vectors.
@@ -241,7 +270,11 @@ def outer_(x, y):
     return np.outer(x, y)
 
 
-def integrate_(x, y, method='simpson'):
+def integrate_(
+    x: np.ndarray,
+    y: np.ndarray,
+    method: str = 'simpson'
+) -> float:
     """Compute an estimate of the integral.
 
     This function computes an esmitation of the integral of :math:`Y` over the
@@ -259,7 +292,7 @@ def integrate_(x, y, method='simpson'):
 
     Returns
     -------
-    res : int
+    res : float
         Estimation of the integration of Y over X.
 
     Example
@@ -275,7 +308,10 @@ def integrate_(x, y, method='simpson'):
     return scipy.integrate.simps(y, x)
 
 
-def integration_weights_(x, method='trapz'):
+def integration_weights_(
+    x: np.ndarray,
+    method: str = 'trapz'
+) -> np.ndarray:
     """Compute integration weights.
 
     Compute weights for numerical integration over the domain `X` given
