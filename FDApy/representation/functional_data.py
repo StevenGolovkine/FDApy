@@ -315,8 +315,8 @@ class FunctionalData(ABC):
     def is_compatible(self, fdata):
         """Check if `fdata` is compatible with `self`."""
         _check_same_type(self, fdata)
-        _check_same_nobs(self, fdata)
-        _check_same_ndim(self, fdata)
+        FunctionalData._check_same_nobs(self, fdata)
+        FunctionalData._check_same_ndim(self, fdata)
 
     @abstractmethod
     def mean(self, smooth=None, **kwargs):
@@ -569,7 +569,8 @@ class DenseFunctionalData(FunctionalData):
 
         """
         super().is_compatible(fdata)
-        _check_argvals_equality_dense(self.argvals, fdata.argvals)
+        DenseFunctionalData._check_argvals_equality_dense(
+            self.argvals, fdata.argvals)
         return True
 
     def mean(
@@ -1102,7 +1103,8 @@ class IrregularFunctionalData(FunctionalData):
 
         """
         super().is_compatible(fdata)
-        _check_argvals_equality_irregular(self.argvals, fdata.argvals)
+        IrregularFunctionalData._check_argvals_equality_irregular(
+            self.argvals, fdata.argvals)
         return True
 
     def mean(self, smooth=None, **kwargs):
