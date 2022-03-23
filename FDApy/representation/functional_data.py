@@ -118,7 +118,7 @@ class FunctionalData(ABC):
 
     @staticmethod
     def _check_same_nobs(
-        *argv: T
+        *argv: List[T]
     ) -> None:
         """Raise an arror if elements in argv have different number of obs."""
         n_obs = set(obj.n_obs for obj in argv)
@@ -1214,7 +1214,7 @@ class MultivariateFunctionalData(UserList):
         """Check the user provided `data`."""
         for obj in new_data:
             _check_type(obj, (DenseFunctionalData, IrregularFunctionalData))
-        _check_same_nobs(*new_data)
+        FunctionalData._check_same_nobs(*new_data)
 
     def __init__(self, initlist=None):
         """Initialize MultivariateFunctionalData object."""
@@ -1340,7 +1340,7 @@ class MultivariateFunctionalData(UserList):
         if len(self.data) == 0:
             self.data = [item]
         else:
-            _check_same_nobs(self, item)
+            FunctionalData._check_same_nobs(self, item)
             self.data.append(item)
 
     def extend(self, other):
@@ -1349,7 +1349,7 @@ class MultivariateFunctionalData(UserList):
 
     def insert(self, i, item):
         """Insert an item `item` at a given position `i`."""
-        _check_same_nobs(self, item)
+        FunctionalData._check_same_nobs(self, item)
         self.data.insert(i, item)
 
     def remove(self, item):
