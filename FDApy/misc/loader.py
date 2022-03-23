@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 
 from sktime.datasets import load_from_tsfile_to_dataframe
+from typing import Tuple, Union
 
 from FDApy.representation.functional_data import (DenseFunctionalData,
                                                   IrregularFunctionalData)
@@ -19,7 +20,10 @@ from FDApy.representation.functional_data import (DenseFunctionalData,
 
 ###############################################################################
 # Loader for csv
-def read_csv(filepath, **kwargs):
+def read_csv(
+    filepath: str,
+    **kwargs
+) -> Union[DenseFunctionalData, IrregularFunctionalData]:
     """Read a comma-separated values (csv) file into Functional Data.
 
     Build a DenseFunctionalData or IrregularFunctionalData object upon a csv
@@ -27,8 +31,7 @@ def read_csv(filepath, **kwargs):
 
     Notes
     -----
-    It is assumed that the data are unidimensional. And so, it will not be
-    checked.
+    We assumed that the data are unidimensional and is not checked.
 
     Parameters
     ----------
@@ -57,7 +60,10 @@ def read_csv(filepath, **kwargs):
     return obj
 
 
-def read_csv_dense(data, argvals):
+def read_csv_dense(
+    data: pd.DataFrame,
+    argvals: np.ndarray
+) -> DenseFunctionalData:
     """Load a csv file into a DenseFunctionalData object.
 
     Parameters
@@ -78,7 +84,10 @@ def read_csv_dense(data, argvals):
     return DenseFunctionalData(argvals, values)
 
 
-def read_csv_irregular(data, argvals):
+def read_csv_irregular(
+    data: pd.DataFrame,
+    argvals: np.ndarray
+) -> IrregularFunctionalData:
     """Load a csv file into an IrregularFunctionalData object.
 
     Parameters
@@ -102,7 +111,10 @@ def read_csv_irregular(data, argvals):
 
 ###############################################################################
 # Loader for ts
-def read_ts(filepath, **kwargs):
+def read_ts(
+    filepath: str,
+    **kwargs
+) -> Tuple[Union[DenseFunctionalData, IrregularFunctionalData], np.ndarray]:
     """Read a ts file into Functional Data.
 
     Build a DenseFunctionalData or IrregularFunctionalData object upon a ts
@@ -110,8 +122,7 @@ def read_ts(filepath, **kwargs):
 
     Notes
     -----
-    It is assumed that the data are unidimensional. And so, it will not be
-    checked.
+    We assumed that the data are unidimensional and is not checked.
 
     Parameters
     ----------
@@ -140,7 +151,9 @@ def read_ts(filepath, **kwargs):
     return obj, labels
 
 
-def read_ts_dense(data):
+def read_ts_dense(
+    data: pd.DataFrame
+) -> DenseFunctionalData:
     """Load a ts file into a DenseFunctionalData object.
 
     Parameters
@@ -161,7 +174,9 @@ def read_ts_dense(data):
     return DenseFunctionalData({'input_dim_0': argvals}, values)
 
 
-def read_ts_irregular(data):
+def read_ts_irregular(
+    data: pd.DataFrame
+) -> IrregularFunctionalData:
     """Load a ts file into an IrregularFunctionalData object.
 
     Parameters
