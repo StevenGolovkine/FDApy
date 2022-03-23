@@ -91,59 +91,12 @@ def _check_dict_len(
 
 
 def _check_same_type(
-    argv1: FunctionalData,
-    argv2: FunctionalData
+    argv1: Any,
+    argv2: Any
 ) -> None:
     """Raise an error if `argv1` and `argv2` have different type."""
     if not isinstance(argv2, type(argv1)):
         raise TypeError(f"{argv1} and {argv2} do not have the same type.")
-
-
-def _check_same_nobs(
-    *argv: FunctionalData
-) -> None:
-    """Raise an arror if elements in argv have different number of obs."""
-    n_obs = set(obj.n_obs for obj in argv)
-    if len(n_obs) > 1:
-        raise ValueError("Elements do not have the same number"
-                         " of observations.")
-
-
-def _check_same_ndim(
-    argv1: FunctionalData,
-    argv2: FunctionalData
-) -> None:
-    """Raise an error if `argv1` and `argv2` have different number of dim."""
-    if argv1.n_dim != argv2.n_dim:
-        raise ValueError(f"{argv1} and {argv2} do not have the same number"
-                         " of dimensions.")
-
-
-def _check_argvals_equality_dense(
-    argv1: DenseFunctionalData,
-    argv2: DenseFunctionalData
-) -> None:
-    """Raise an error if `argv1` and `argv2` are not equal."""
-    argvs_equal = all(np.array_equal(argv1[key], argv2[key]) for key in argv1)
-    if not argvs_equal:
-        raise ValueError(f"{argv1} and {argv2} do not have the same sampling"
-                         " points.")
-
-
-def _check_argvals_equality_irregular(
-    argv1: IrregularFunctionalData,
-    argv2: IrregularFunctionalData
-) -> None:
-    """Raise an error if `argv1` and `argv2` are not equal."""
-    temp = []
-    for points1, points2 in zip(argv1.values(), argv2.values()):
-        temp.append(all(np.array_equal(points1[key], points2[key])
-                        for key in points1))
-
-    argvs_equal = all(temp)
-    if not argvs_equal:
-        raise ValueError(f"{argv1} and {argv2} do not have the same sampling"
-                         " points.")
 
 
 ###############################################################################
@@ -160,6 +113,29 @@ class FunctionalData(ABC):
     category: str, {'univariate', 'irregular', 'multivariate'}
 
     """
+
+    @staticmethod
+    def _check_same_nobs(
+        *argv: FunctionalData
+    ) -> None:
+        """Raise an arror if elements in argv have different number of obs."""
+        n_obs = set(obj.n_obs for obj in argv)
+        if len(n_obs) > 1:
+            raise ValueError(
+                "Elements do not have the same number of observations."
+            )
+
+    @staticmethod
+    def _check_same_ndim(
+        argv1: FunctionalData,
+        argv2: FunctionalData
+    ) -> None:
+        """
+        Raise an error if `argv1` and `argv2` have different number of dim.
+        """
+        if argv1.n_dim != argv2.n_dim:
+            raise ValueError(f"{argv1} and {argv2} do not have the same number"
+                             " of dimensions.")
 
     @staticmethod
     @abstractmethod
@@ -392,6 +368,19 @@ class DenseFunctionalData(FunctionalData):
     >>> DenseFunctionalData(argvals, values)
 
     """
+
+    @staticmethod
+    def _check_argvals_equality_dense(
+        argv1: DenseFunctionalData,
+        argv2: DenseFunctionalData
+    ) -> None:
+        """Raise an error if `argv1` and `argv2` are not equal."""
+        argvs_equal = all(
+            np.array_equal(argv1[key], argv2[key]) for key in argv1
+        )
+        if not argvs_equal:
+            raise ValueError(f"{argv1} and {argv2} do not have the same"
+                             " sampling points.")
 
     @staticmethod
     def _check_argvals(
@@ -874,6 +863,21 @@ class IrregularFunctionalData(FunctionalData):
     >>> IrregularFunctionalData(argvals, values)
 
     """
+
+    @staticmethod
+    def _check_argvals_equality_irregular(
+        argv1: IrregularFunctionalData,
+        argv2: IrregularFunctionalData
+    ) -> None:
+        """Raise an error if `argv1` and `argv2` are not equal."""
+        temp = []
+        for points1, points2 in zip(argv1.values(), argv2.values()):
+            temp.append(all(np.array_equal(points1[key], points2[key])
+                            for key in points1))
+        argvs_equal = all(temp)
+        if not argvs_equal:
+            raise ValueError(f"{argv1} and {argv2} do not have the same"
+                             " sampling points.")
 
     @staticmethod
     def _check_argvals(argvals):
