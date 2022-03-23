@@ -1394,7 +1394,7 @@ class MultivariateFunctionalData(UserList):
         """Remove the first item from `self` where value is `item`."""
         raise NotImplementedError
 
-    def pop(self, i: int =-1) -> T:
+    def pop(self, i: int = -1) -> T:
         """Remove the item at the given position in the list, and return it."""
         return super().pop(i)
 
