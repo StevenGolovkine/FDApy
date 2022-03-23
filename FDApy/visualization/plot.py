@@ -10,18 +10,28 @@ data.
 import matplotlib.pyplot as plt
 import numpy as np
 
+from matplotlib.axes import Axes
+from typing import Optional
+
 from ..representation.functional_data import (DenseFunctionalData,
                                               IrregularFunctionalData)
 
 
-def _init_ax(ax=None, projection='rectilinear'):
+def _init_ax(
+    ax: Optional[Axes] = None,
+    projection: str = 'rectilinear'
+) -> Axes:
     """Initialize axes."""
     if ax is None:
         ax = plt.gca(projection=projection)
     return ax
 
 
-def plot(data, ax=None, **plt_kwargs):
+def plot(
+    data: Union[DenseFunctionalData, IrregularFunctionalData],
+    ax: Axes = None,
+    **plt_kwargs
+) -> Axes:
     """Plot function.
 
     Generic plot function for DenseFunctionalData and IrregularFunctionalData
@@ -57,7 +67,11 @@ def plot(data, ax=None, **plt_kwargs):
     return ax
 
 
-def _plot_1d(data, ax=None, **plt_kwargs):
+def _plot_1d(
+    data: Union[DenseFunctionalData, IrregularFunctionalData],
+    ax: Axes = None,
+    **plt_kwargs
+) -> Axes:
     """Plot one dimensional functional data.
 
     This function is used to plot an instance of functional data in 1D.
@@ -89,7 +103,11 @@ def _plot_1d(data, ax=None, **plt_kwargs):
     return ax
 
 
-def _plot_2d(data, ax=None, **plt_kwargs):
+def _plot_2d(
+    data: Union[DenseFunctionalData, IrregularFunctionalData],
+    ax: Axes = None,
+    **plt_kwargs
+) -> Axes:
     """Plot two dimensional functional data.
 
     This function is used to plot an instance of functional data in 2D.
