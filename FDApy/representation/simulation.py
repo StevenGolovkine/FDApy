@@ -12,7 +12,7 @@ import inspect
 import numpy as np
 
 from abc import ABC, abstractmethod
-from typing import Callable
+from typing import Callable, Optional, Tuple, Union
 
 from sklearn.datasets import make_blobs
 
@@ -24,8 +24,8 @@ from .basis import Basis
 # Definition of the different Browian motion
 
 def init_brownian(
-    argvals: np.ndarray | None = None
-) -> tuple[float, np.ndarray]:
+    argvals: Optional[np.ndarray] = None
+) -> Tuple[float, np.ndarray]:
     """Initialize Brownian motion.
 
     Initialize the different parameters used in the simulation of the
@@ -51,7 +51,7 @@ def init_brownian(
 
 
 def standard_brownian(
-    argvals: np.ndarray | None = None,
+    argvals: Optional[np.ndarray] = None,
     x0: float = 0.0
 ) -> np.ndarray:
     """Generate standard Brownian motion.
@@ -89,7 +89,7 @@ def standard_brownian(
 
 
 def geometric_brownian(
-    argvals: np.ndarray | None = None,
+    argvals: Optional[np.ndarray] = None,
     x0: float = 1.0,
     mu: float = 0.0,
     sigma: float = 1.0
@@ -135,7 +135,7 @@ def geometric_brownian(
 
 
 def fractional_brownian(
-    argvals: np.ndarray | None = None,
+    argvals: Optional[np.ndarray] = None,
     hurst: float = 0.5
 ) -> np.ndarray:
     """Generate fractional Brownian motion.
@@ -184,7 +184,7 @@ def fractional_brownian(
 
 def simulate_brownian(
     name: str,
-    argvals: np.ndarray | None = None,
+    argvals: Optional[np.ndarray] = None,
     **kwargs
 ) -> np.ndarray:
     """Redirect to the right brownian motion function.
@@ -402,7 +402,7 @@ def make_coef(
 def initialize_centers(
     n_features: int,
     n_clusters: int,
-    centers: np.ndarray | None = None
+    centers: Optional[np.ndarray] = None
 ) -> np.ndarray:
     """Initialize the centers of the clusters.
 
@@ -428,7 +428,7 @@ def initialize_centers(
 def initialize_cluster_std(
     n_features: int,
     n_clusters: int,
-    cluster_std: str | np.ndarray | None = None
+    cluster_std: Union[str, np.ndarray, None] = None
 ) -> np.ndarray:
     """Initialize the standard deviation of the clusters.
 
@@ -503,7 +503,7 @@ class Simulation(ABC):
     def new(
         self,
         n_obs: int,
-        argvals: np.ndarray | None = None,
+        argvals: Optional[np.ndarray] = None,
         **kwargs
     ) -> None:
         """Simulate a new set of data."""
@@ -511,7 +511,7 @@ class Simulation(ABC):
 
     def add_noise(
         self,
-        var_noise: float | Callable[[np.ndarray], np.ndarray] = 1
+        var_noise: Union[float, Callable[[np.ndarray], np.ndarray]] = 1.0
     ) -> None:
         r"""Add noise to the data.
 
@@ -605,7 +605,7 @@ class Brownian(Simulation):
     def new(
         self,
         n_obs: int,
-        argvals: np.ndarray | None = None,
+        argvals: Optional[np.ndarray] = None,
         **kwargs
     ) -> None:
         """Simulate ``n_obs`` realizations of a Brownian on ``argvals``.
@@ -676,7 +676,7 @@ class KarhunenLoeve(Simulation):
     def __init__(
         self,
         name: str,
-        basis: DenseFunctionalData | None = None,
+        basis: Optional[DenseFunctionalData] = None,
         n_functions: int = 5,
         dimension: str = '1D',
         **kwargs_basis
@@ -699,7 +699,7 @@ class KarhunenLoeve(Simulation):
     def new(
         self,
         n_obs: int,
-        argvals: np.ndarray | None = None,
+        argvals: Optional[np.ndarray] = None,
         **kwargs
     ):
         """Simulate ``n_obs`` realizations from a basis of function.

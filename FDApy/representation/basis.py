@@ -10,6 +10,7 @@ import numpy as np
 import scipy
 
 from patsy import bs
+from typing import Optional
 
 from .functional_data import DenseFunctionalData
 from .functional_data import tensor_product_
@@ -20,7 +21,7 @@ from .functional_data import tensor_product_
 
 def basis_legendre(
     n_functions: int = 3,
-    argvals: np.ndarray | None = None,
+    argvals: Optional[np.ndarray] = None,
     norm: bool = False
 ) -> np.ndarray:
     r"""Define Legendre basis of function.
@@ -80,7 +81,7 @@ def basis_legendre(
 
 def basis_wiener(
     n_functions: int = 3,
-    argvals: np.array | None = None,
+    argvals: Optional[np.ndarray] = None,
     norm: bool = False
 ) -> np.ndarray:
     r"""Define Wiener basis of function.
@@ -139,7 +140,7 @@ def basis_wiener(
 
 def basis_fourier(
     n_functions: int = 3,
-    argvals: np.ndarray | None = None,
+    argvals: Optional[np.ndarray] = None,
     period: float = 2 * np.pi,
     norm: bool = True
 ) -> np.ndarray:
@@ -206,9 +207,9 @@ def basis_fourier(
 
 def basis_bsplines(
     n_functions: int = 5,
-    argvals: np.ndarray | None = None,
+    argvals: Optional[np.ndarray] = None,
     degree: int = 3,
-    knots: np.ndarray | None = None,
+    knots: Optional[np.ndarray] = None,
     norm: bool = False
 ) -> np.ndarray:
     """Define B-splines basis of function.
@@ -267,7 +268,7 @@ def basis_bsplines(
 def simulate_basis(
     name: str,
     n_functions: int = 3,
-    argvals: np.ndarray | None = None,
+    argvals: Optional[np.ndarray] = None,
     norm: bool = False,
     **kwargs
 ) -> np.ndarray:
@@ -364,7 +365,7 @@ class Basis(
         name: str,
         n_functions: int,
         dimension: str = '1D',
-        argvals: dict | None = None,
+        argvals: Optional[dict] = None,
         norm: bool = False,
         **kwargs
     ) -> None:
