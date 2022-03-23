@@ -13,7 +13,7 @@ import pygam
 
 from abc import ABC, abstractmethod
 from collections import UserList
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, TypeVar, Union
 
 from sklearn.metrics import pairwise_distances
 
@@ -23,6 +23,8 @@ from ..preprocessing.smoothing.smoothing_splines import SmoothingSpline
 from ..misc.utils import get_dict_dimension_, get_obs_shape_
 from ..misc.utils import integration_weights_, outer_
 from ..misc.utils import range_standardization_
+
+T = TypeVar('T', bound='FunctionalData')
 
 
 ###############################################################################
@@ -116,7 +118,7 @@ class FunctionalData(ABC):
 
     @staticmethod
     def _check_same_nobs(
-        *argv: FunctionalData
+        *argv: T
     ) -> None:
         """Raise an arror if elements in argv have different number of obs."""
         n_obs = set(obj.n_obs for obj in argv)
@@ -127,8 +129,8 @@ class FunctionalData(ABC):
 
     @staticmethod
     def _check_same_ndim(
-        argv1: FunctionalData,
-        argv2: FunctionalData
+        argv1: T,
+        argv2: T
     ) -> None:
         """
         Raise an error if `argv1` and `argv2` have different number of dim.
@@ -180,27 +182,27 @@ class FunctionalData(ABC):
         """Override getitem function, called when self[index]."""
         pass
 
-    def __add__(self, obj: FunctionalData) -> FunctionalData:
+    def __add__(self, obj: T) -> T:
         """Override add function."""
         return self._perform_computation(self, obj, np.add)
 
-    def __sub__(self, obj: FunctionalData) -> FunctionalData:
+    def __sub__(self, obj: T) -> T:
         """Override sub function."""
         return self._perform_computation(self, obj, np.subtract)
 
-    def __mul__(self, obj: FunctionalData) -> FunctionalData:
+    def __mul__(self, obj: T) -> T:
         """Overrude mul function."""
         return self._perform_computation(self, obj, np.multiply)
 
-    def __rmul__(self, obj: FunctionalData) -> FunctionalData:
+    def __rmul__(self, obj: T) -> T:
         """Override rmul function."""
         return self * obj
 
-    def __truediv__(self, obj: FunctionalData) -> FunctionalData:
+    def __truediv__(self, obj: T) -> T:
         """Override truediv function."""
         return self._perform_computation(self, obj, np.divide)
 
-    def __floordiv__(self, obj: FunctionalData) -> FunctionalData:
+    def __floordiv__(self, obj: T) -> T:
         """Override floordiv function."""
         return self / obj
 
@@ -371,8 +373,8 @@ class DenseFunctionalData(FunctionalData):
 
     @staticmethod
     def _check_argvals_equality_dense(
-        argv1: DenseFunctionalData,
-        argv2: DenseFunctionalData
+        argv1: T,
+        argv2: T
     ) -> None:
         """Raise an error if `argv1` and `argv2` are not equal."""
         argvs_equal = all(
@@ -407,10 +409,10 @@ class DenseFunctionalData(FunctionalData):
 
     @staticmethod
     def _perform_computation(
-        fdata1: DenseFunctionalData,
-        fdata2: DenseFunctionalData,
+        fdata1: T,
+        fdata2: T,
         func: np.ufunc
-    ) -> DenseFunctionalData:
+    ) -> T:
         """Perform computation defined by `func`."""
         if fdata1.is_compatible(fdata2):
             new_values = func(fdata1.values, fdata2.values)
@@ -427,7 +429,7 @@ class DenseFunctionalData(FunctionalData):
     def __getitem__(
         self,
         index: int
-    ) -> DenseFunctionalData:
+    ) -> T:
         """Overrride getitem function, called when self[index].
 
         Parameters
@@ -520,7 +522,7 @@ class DenseFunctionalData(FunctionalData):
         """
         return {idx: len(dim) for idx, dim in self.argvals.items()}
 
-    def as_irregular(self) -> IrregularFunctionalData:
+    def as_irregular(self) -> T:
         """Convert `self` from Dense to Irregular functional data.
 
         Coerce a DenseFunctionalData object into an IrregularFunctionalData
@@ -547,7 +549,7 @@ class DenseFunctionalData(FunctionalData):
 
     def is_compatible(
         self,
-        fdata: DenseFunctionalData
+        fdata: T
     ) -> True:
         """Check if `fdata` is compatible with `self`.
 
@@ -574,7 +576,7 @@ class DenseFunctionalData(FunctionalData):
         self,
         smooth: Optional[str] = None,
         **kwargs
-    ) -> DenseFunctionalData:
+    ) -> T:
         """Compute an estimate of the mean.
 
         Parameters
@@ -629,10 +631,10 @@ class DenseFunctionalData(FunctionalData):
 
     def covariance(
         self,
-        mean: Optional[DenseFunctionalData] = None,
+        mean: Optional[T] = None,
         smooth: Optional[str] = None,
         **kwargs
-    ) -> DenseFunctionalData:
+    ) -> T:
         """Compute an estimate of the covariance.
 
         Parameters
@@ -739,7 +741,7 @@ class DenseFunctionalData(FunctionalData):
         degree: int = 0,
         kernel: str = "epanechnikov",
         bandwidth: Optional[Bandwidth] = None
-    ) -> DenseFunctionalData:
+    ) -> T:
         """Smooth the data.
 
         Notes
@@ -808,8 +810,8 @@ class DenseFunctionalData(FunctionalData):
 
     def concatenate(
         self,
-        data: DenseFunctionalData
-    ) -> DenseFunctionalData:
+        data: T
+    ) -> T:
         """Concatenate two DenseFunctionalData.
 
         Parameters
@@ -866,8 +868,8 @@ class IrregularFunctionalData(FunctionalData):
 
     @staticmethod
     def _check_argvals_equality_irregular(
-        argv1: IrregularFunctionalData,
-        argv2: IrregularFunctionalData
+        argv1: T,
+        argv2: T
     ) -> None:
         """Raise an error if `argv1` and `argv2` are not equal."""
         temp = []
