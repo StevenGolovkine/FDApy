@@ -13,7 +13,7 @@ import pygam
 
 from abc import ABC, abstractmethod
 from collections import UserList
-from typing import Any, Dict, Optional, Tuple, TypeVar, Union
+from typing import Any, Dict, Optional, List, Tuple, TypeVar, Union
 
 from sklearn.metrics import pairwise_distances
 
