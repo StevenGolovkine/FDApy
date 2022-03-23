@@ -7,7 +7,7 @@ This module is used to perform smoothing spline. It is a wrapper around the
 package csaps (https://csaps.readthedocs.io/en/latest/index.html).
 """
 from csaps import csaps
-from typing import Optional
+from typing import Optional, TypeVar
 
 T = TypeVar('T', bound='SmoothingSpline')
 

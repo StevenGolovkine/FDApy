@@ -7,13 +7,17 @@ This module is used to fit local polynomial regression.
 """
 import numpy as np
 
+from typing import TypeVar
+
 from sklearn.preprocessing import PolynomialFeatures
+
+T = TypeVar('T', bound='LocalPolynomial')
 
 
 ##############################################################################
 # Inner functions for the LocalPolynomial class.
 
-def _gaussian(t):
+def _gaussian(t: np.ndarray) -> np.ndarray:
     """Compute the gaussian density with mean 0 and standard deviation 1.
 
     Parameters
@@ -29,7 +33,7 @@ def _gaussian(t):
     return np.exp(- t**2 / 2) / np.sqrt(2 * np.pi)
 
 
-def _epanechnikov(t):
+def _epanechnikov(t: np.ndarray) -> np.ndarray:
     """Compute the Epanechnikov kernel.
 
     Parameters
@@ -53,7 +57,7 @@ def _epanechnikov(t):
     return kernel
 
 
-def _tri_cube(t):
+def _tri_cube(t: np.ndarray) -> np.ndarray:
     """Compute the tri-cube kernel.
 
     Parameters
@@ -77,7 +81,7 @@ def _tri_cube(t):
     return kernel
 
 
-def _bi_square(t):
+def _bi_square(t: np.ndarray) -> np.ndarray:
     """Compute the bi-square kernel.
 
     Parameters
@@ -101,7 +105,12 @@ def _bi_square(t):
     return kernel
 
 
-def _compute_kernel(x, x0, h, kernel_name='gaussian'):
+def _compute_kernel(
+    x: np.ndarray,
+    x0: np.ndarray,
+    h: Union[float, np.ndarray],
+    kernel_name: str = 'gaussian'
+) -> np.ndarray:
     """Compute kernel at point norm(x - x0) / h.
 
     Parameters
@@ -146,8 +155,15 @@ def _compute_kernel(x, x0, h, kernel_name='gaussian'):
     return kernel
 
 
-def _loc_poly(x, y, x0, design_matrix, design_matrix_x0,
-              kernel_name='epanechnikov', h=0.05):
+def _loc_poly(
+    x: np.ndarray,
+    y: np.ndarray,
+    x0: np.ndarray,
+    design_matrix: np.ndarray,
+    design_matrix_x0: np.ndarray,
+    kernel_name: str = 'epanechnikov',
+    h: float = 0.05
+) -> float:
     r"""Local polynomial regression for one point.
 
     Let :math:`(x_1, Y_1), ..., (x_n, Y_n)` be a random sample of bivariate
@@ -226,7 +242,12 @@ class LocalPolynomial():
 
     """
 
-    def __init__(self, kernel_name="gaussian", bandwidth=0.05, degree=2):
+    def __init__(
+        self,
+        kernel_name: str = "gaussian",
+        bandwidth: float = 0.05,
+        degree: int = 2
+    ) -> None:
         """Initialize LocalPolynomial object."""
         # TODO: Add test on parameters.
         self.kernel_name = kernel_name
@@ -235,34 +256,38 @@ class LocalPolynomial():
         self.poly_features = PolynomialFeatures(degree=degree)
 
     @property
-    def kernel_name(self):
+    def kernel_name(self) -> str:
         """Getter for `kernel_name`."""
         return self._kernel_name
 
     @kernel_name.setter
-    def kernel_name(self, new_kernel_name):
+    def kernel_name(self, new_kernel_name: str) -> None:
         self._kernel_name = new_kernel_name
 
     @property
-    def bandwidth(self):
+    def bandwidth(self) -> float:
         """Getter for `bandwidth`."""
         return self._bandwidth
 
     @bandwidth.setter
-    def bandwidth(self, new_bandwidth):
+    def bandwidth(self, new_bandwidth: float) -> None:
         self._bandwidth = new_bandwidth
 
     @property
-    def degree(self):
+    def degree(self) -> float:
         """Getter for `degree`."""
         return self._degree
 
     @degree.setter
-    def degree(self, new_degree):
+    def degree(self, new_degree: int) -> None:
         self._degree = new_degree
         self._poly_features = PolynomialFeatures(degree=new_degree)
 
-    def fit(self, x, y):
+    def fit(
+        self,
+        x: np.ndarray,
+        y: np.ndarray
+    ) -> T:
         """Fit local polynomial regression.
 
         Parameters
@@ -297,7 +322,7 @@ class LocalPolynomial():
                                                      bandwidth)])
         return self
 
-    def predict(self, x):
+    def predict(self, x: np.ndarray) -> np.ndarray:
         """Predict using local polynomial regression.
 
         Parameters
@@ -330,7 +355,12 @@ class LocalPolynomial():
 
         return y_pred
 
-    def fit_predict(self, x, y, x_pred=None):
+    def fit_predict(
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+        x_pred: np.ndarray = None
+    ) -> np.ndarray:
         """Fit the model using `x` and predict on `x_pred`.
 
         Parameters
