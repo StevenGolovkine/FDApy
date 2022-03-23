@@ -8,7 +8,7 @@ the case of kernel regression.
 """
 import numpy as np
 
-from typing import Dict, NamedTuple, List, Union
+from typing import Dict, NamedTuple, List, TypeVar, Union
 
 from ...src.sigma import estimate_sigma
 
