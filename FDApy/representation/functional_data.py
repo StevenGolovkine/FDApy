@@ -13,7 +13,7 @@ import pygam
 
 from abc import ABC, abstractmethod
 from collections import UserList
-from typing import Dict
+from typing import Any, Dict
 
 from sklearn.metrics import pairwise_distances
 
@@ -61,21 +61,28 @@ def _check_dict_dict(
                          " have coherent dimension.")
 
 
-def _check_type(argv, category):
+def _check_type(
+    argv: Any,
+    category: type
+) -> None:
     """Raise an error if `argv` is not of type category."""
     if not isinstance(argv, category):
-        raise TypeError(f"Argument must be FunctionalData, not"
-                        f" {type(argv).__name__}")
+        raise TypeError(f"Argument must be {category.__name__}")
 
 
-def _check_dict_type(argv, category):
+def _check_dict_type(
+    argv: Dict[Union[str, int], np.ndarray],
+    category: type
+) -> None:
     """Raise an error if all elements of `argv` are not of type `category`."""
     is_cat = [isinstance(obj, category) for obj in argv.values()]
     if not np.all(is_cat):
         raise TypeError(f"Argument values must be {category.__name__}")
 
 
-def _check_dict_len(argv):
+def _check_dict_len(
+    argv: Dict[str, Dict[int, np.ndarray]]
+) -> None:
     """Raise an error if all elements of `argv` do not have equal length."""
     lengths = [len(obj) for obj in argv.values()]
     if len(set(lengths)) > 1:
@@ -83,13 +90,18 @@ def _check_dict_len(argv):
                          " dimensions.""")
 
 
-def _check_same_type(argv1, argv2):
+def _check_same_type(
+    argv1: FunctionalData,
+    argv2: FunctionalData
+) -> None:
     """Raise an error if `argv1` and `argv2` have different type."""
     if not isinstance(argv2, type(argv1)):
         raise TypeError(f"{argv1} and {argv2} do not have the same type.")
 
 
-def _check_same_nobs(*argv):
+def _check_same_nobs(
+    *argv: FunctionalData
+) -> None:
     """Raise an arror if elements in argv have different number of obs."""
     n_obs = set(obj.n_obs for obj in argv)
     if len(n_obs) > 1:
@@ -97,14 +109,20 @@ def _check_same_nobs(*argv):
                          " of observations.")
 
 
-def _check_same_ndim(argv1, argv2):
+def _check_same_ndim(
+    argv1: FunctionalData,
+    argv2: FunctionalData
+) -> None:
     """Raise an error if `argv1` and `argv2` have different number of dim."""
     if argv1.n_dim != argv2.n_dim:
         raise ValueError(f"{argv1} and {argv2} do not have the same number"
                          " of dimensions.")
 
 
-def _check_argvals_equality_dense(argv1, argv2):
+def _check_argvals_equality_dense(
+    argv1: DenseFunctionalData,
+    argv2: DenseFunctionalData
+) -> None:
     """Raise an error if `argv1` and `argv2` are not equal."""
     argvs_equal = all(np.array_equal(argv1[key], argv2[key]) for key in argv1)
     if not argvs_equal:
@@ -112,7 +130,10 @@ def _check_argvals_equality_dense(argv1, argv2):
                          " points.")
 
 
-def _check_argvals_equality_irregular(argv1, argv2):
+def _check_argvals_equality_irregular(
+    argv1: IrregularFunctionalData,
+    argv2: IrregularFunctionalData
+) -> None:
     """Raise an error if `argv1` and `argv2` are not equal."""
     temp = []
     for points1, points2 in zip(argv1.values(), argv2.values()):
