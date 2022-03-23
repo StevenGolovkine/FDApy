@@ -7,7 +7,7 @@ This module is used to fit local polynomial regression.
 """
 import numpy as np
 
-from typing import TypeVar
+from typing import TypeVar, Union
 
 from sklearn.preprocessing import PolynomialFeatures
 

@@ -8,14 +8,20 @@ the case of kernel regression.
 """
 import numpy as np
 
-from typing import NamedTuple
+from typing import Dict, NamedTuple, List, Union
 
 from ...src.sigma import estimate_sigma
+
+T = TypeVar('T', bound='FunctionalData')
 
 
 ##############################################################################
 # Misc functions
-def theta_(v, k, idx):
+def theta_(
+    v: np.ndarray,
+    k: int,
+    idx: int
+) -> float:
     """Estimate theta.
 
     Parameters
@@ -35,7 +41,12 @@ def theta_(v, k, idx):
     return (v[idx + 2 * k - 1] - v[idx + k])**2
 
 
-def eta_(v, k, idx, hurst):
+def eta_(
+    v: np.ndarray,
+    k: int,
+    idx: int,
+    hurst: float
+) -> float:
     """Estimate eta.
 
     Parameters
@@ -57,7 +68,11 @@ def eta_(v, k, idx, hurst):
     return (v[idx + 2 * k - 1] - v[idx + k])**(2 * hurst)
 
 
-def indices_(data, t0, ranges):
+def indices_(
+    data: Dict[str, Dict[int, np.ndarray]],
+    t0: float,
+    ranges: int
+) -> List[int]:
     """Get indices.
 
     Parameters
@@ -78,7 +93,11 @@ def indices_(data, t0, ranges):
             for argval in data]
 
 
-def mean_theta_(data, idxs, ranges):
+def mean_theta_(
+    data: Dict[str, Dict[int, np.ndarray]],
+    idxs: List[int],
+    ranges: int
+) -> float:
     """Compute mean theta.
 
     Parameters
@@ -98,7 +117,12 @@ def mean_theta_(data, idxs, ranges):
     return np.mean([theta_(obs, ranges, idx) for obs, idx in zip(data, idxs)])
 
 
-def mean_eta_(data, idxs, ranges, hurst):
+def mean_eta_(
+    data: Dict[str, Dict[int, np.ndarray]],
+    idxs: List[int],
+    ranges: int,
+    hurst: float
+) -> float:
     """Compute mean eta.
 
     Parameters
@@ -123,7 +147,13 @@ def mean_eta_(data, idxs, ranges, hurst):
 
 ##############################################################################
 # Estimation of Hurst parameters
-def estimate_hurst_(argvals, values, t0, k0, sigma=None):
+def estimate_hurst_(
+    argvals: Dict[str, Dict[int, np.ndarray]],
+    values: Dict[int, np.ndarray],
+    t0: float,
+    k0: int,
+    sigma: float = None
+) -> float:
     """Perform an estimation of the Hurst parameter.
 
     This function performs an estimation of the Hurst coefficients, which is
@@ -170,7 +200,13 @@ def estimate_hurst_(argvals, values, t0, k0, sigma=None):
     return (first_part - second_part) / np.log(4)
 
 
-def estimate_hurst_list_(argvals, values, t0, k0, sigma=None):
+def estimate_hurst_list_(
+    argvals: Dict[str, Dict[int, np.ndarray]],
+    values: Dict[int, np.ndarray],
+    t0: List[float],
+    k0: List[int],
+    sigma: float = None
+) -> List[float]:
     """Perform an estimation of the Hurst coefficient along a list.
 
     This function performs an estimation of the Hurst coefficient :math:`H_0`
@@ -206,7 +242,14 @@ def estimate_hurst_list_(argvals, values, t0, k0, sigma=None):
 
 ##############################################################################
 # Estimation of L0
-def estimate_constant_(argvals, values, t0, k0, hurst, sigma=None):
+def estimate_constant_(
+    argvals: Dict[str, Dict[int, np.ndarray]],
+    values: Dict[int, np.ndarray],
+    t0: float,
+    k0: int,
+    hurst: float,
+    sigma: float = None
+) -> float:
     """Perform an estimation of the Lipschitz constant.
 
     This function performs an estimation of the Lipschitz constant, which is
@@ -256,7 +299,14 @@ def estimate_constant_(argvals, values, t0, k0, hurst, sigma=None):
     return np.power(nume / deno, 0.5)
 
 
-def estimate_constant_list_(argvals, values, t0, k0, hurst, sigma=None):
+def estimate_constant_list_(
+    argvals: Dict[str, Dict[int, np.ndarray]],
+    values: Dict[int, np.ndarray],
+    t0: List[float],
+    k0: List[int],
+    hurst: List[float],
+    sigma: float = None
+):
     """Perform an estimation of the Lipschitz constant along a list.
 
     This function performs an estimation of the Lipschitz constant :math:`L_0`
@@ -298,8 +348,13 @@ def estimate_constant_list_(argvals, values, t0, k0, hurst, sigma=None):
 
 ##############################################################################
 # Estimation of the bandwidth
-def estimate_bandwidth_(argvals, hurst, constant, sigma,
-                        kernel="epanechnikov"):
+def estimate_bandwidth_(
+    argvals: Dict[str, Dict[int, np.ndarray]],
+    hurst: float,
+    constant: float,
+    sigma: float,
+    kernel: str = "epanechnikov"
+) -> List[float]:
     """Perform an estimation of the bandwidth.
 
     This function performs an estimation of the bandwidth, which is
@@ -342,8 +397,13 @@ def estimate_bandwidth_(argvals, hurst, constant, sigma,
     return [(frac / len(obs))**(1 / (2 * hurst + 1)) for obs in argvals]
 
 
-def estimate_bandwidth_list_(argvals, hurst, constant, sigma,
-                             kernel="epanechnikov"):
+def estimate_bandwidth_list_(
+    argvals: Dict[str, Dict[int, np.ndarray]],
+    hurst: List[float],
+    constant: List[float],
+    sigma: float,
+    kernel: str = "epanechnikov"
+) -> List[float]:
     r"""Perform an estimation of the bandwidth along a list.
 
     Perform an estimation of the bandwidth in case :math:`H_0`, :math:`L_0`
@@ -436,18 +496,18 @@ class Bandwidth(object):
         self.neighborhood = neighborhood
         self.kernel = kernel
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Override __str__ functions."""
         return (f'Bandwidth(points={self.points}, neighborhood='
                 f'{self.neighborhood})')
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Override print function."""
         return self.__str__()
 
     def __call__(
         self,
-        data,
+        data: T,
         hurst: list = None,
         constants: list = None,
         sigma: float = None
@@ -490,7 +550,12 @@ class Bandwidth(object):
         return BandwidthResult(self.points, self.neighborhood,
                                hurst, constants, sigma, bandwidth)
 
-    def estimate_hurst(self, argvals, values, sigma=None):
+    def estimate_hurst(
+        self,
+        argvals: Dict[str, Dict[int, np.ndarray]],
+        values: Dict[int, np.ndarray],
+        sigma: float = None
+    ) -> Union[float, List[float]]:
         """Perform an estimation of the Hurst coeffifient.
 
         Parameters
@@ -518,7 +583,13 @@ class Bandwidth(object):
             return estimate_hurst_(argvals, values, self.points,
                                    self.neighborhood, sigma)
 
-    def estimate_constant(self, argvals, values, hurst, sigma=None):
+    def estimate_constant(
+        self,
+        argvals: Dict[str, Dict[int, np.ndarray]],
+        values: Dict[int, np.ndarray],
+        hurst: List[float],
+        sigma: float = None
+    ) -> Union[float, List[float]]:
         """Perform an estimation of the Lipschitz constant.
 
         Parameters
@@ -548,8 +619,14 @@ class Bandwidth(object):
             return estimate_constant_(argvals, values, self.points,
                                       self.neighborhood, hurst, sigma)
 
-    def estimate_bandwidth(self, argvals, hurst, constants, sigma,
-                           kernel="epanechnikov"):
+    def estimate_bandwidth(
+        self,
+        argvals: Dict[str, Dict[int, np.ndarray]],
+        hurst: List[float],
+        constants: List[float],
+        sigma: float,
+        kernel: str = "epanechnikov"
+    ) -> List[float]:
         """Perform an estimation of the bandwidth.
 
         Parameters
