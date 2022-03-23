@@ -9,7 +9,7 @@ import itertools
 import numpy as np
 import scipy
 
-from typing import Dict, Tuple, Union
+from typing import Dict
 
 from sklearn.preprocessing import StandardScaler
 
@@ -20,8 +20,8 @@ from sklearn.preprocessing import StandardScaler
 
 def range_standardization_(
     x: np.ndarray,
-    max_x: float = None,
-    min_x: float = None
+    max_x: float | None = None,
+    min_x: float | None = None
 ) -> np.ndarray:
     r"""Transform a vector [a, b] into a vector [0, 1].
 
@@ -176,7 +176,7 @@ def get_axis_dimension_(
 
 def get_dict_dimension_(
     x: Dict[str, np.ndarray]
-) -> Tuple[int]:
+) -> tuple[int]:
     """Return the shape of `X` defined as a dict of np.ndarray."""
     return tuple(i.shape[0] for i in x.values())
 
@@ -184,7 +184,7 @@ def get_dict_dimension_(
 def get_obs_shape_(
     x: Dict[str, Dict[int, np.ndarray]],
     obs: int
-) -> Tuple[int]:
+) -> tuple[int]:
     """Return the shape of `obs` if `X` is a nested dict."""
     shapes = tuple(dim[obs].shape for _, dim in x.items())
     return tuple(itertools.chain.from_iterable(shapes))
@@ -193,7 +193,7 @@ def get_obs_shape_(
 def shift_(
     x: np.ndarray,
     num: int,
-    fill_value: Union[float, np.nan] = np.nan
+    fill_value: float = np.nan
 ) -> np.ndarray:
     """Shift an array.
 
@@ -224,7 +224,7 @@ def shift_(
     questions/30399534/shift-elements-in-a-numpy-array/42642326
 
     """
-    res = np.empty_like(x)
+    res = np.empty_like(x, dtype=float)
     if num > 0:
         res[:num] = fill_value
         res[num:] = x[:-num]
