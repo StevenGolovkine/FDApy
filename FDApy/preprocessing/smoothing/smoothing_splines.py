@@ -7,6 +7,9 @@ This module is used to perform smoothing spline. It is a wrapper around the
 package csaps (https://csaps.readthedocs.io/en/latest/index.html).
 """
 from csaps import csaps
+from typing import Optional
+
+T = TypeVar('T', bound='SmoothingSpline')
 
 
 ###############################################################################
@@ -41,19 +44,29 @@ class SmoothingSpline():
 
     """
 
-    def __init__(self, smooth=None):
+    def __init__(
+        self,
+        smooth: Optional[float] = None
+    ) -> None:
         """Initialize SmoothingSpline object."""
         self.smooth = smooth
 
     @property
-    def smooth(self):
+    def smooth(self) -> float:
         return self._smooth
 
     @smooth.setter
-    def smooth(self, new_smooth):
+    def smooth(
+        self,
+        new_smooth: float
+    ) -> None:
         self._smooth = new_smooth
 
-    def fit(self, x, y):
+    def fit(
+        self,
+        x: np.ndarray,
+        y: np.ndarray
+    ) -> T:
         """Fit smoothing spline.
 
         Parameters
@@ -73,7 +86,10 @@ class SmoothingSpline():
         self.model = csaps(x, y, smooth=self.smooth)
         return self
 
-    def predict(self, x):
+    def predict(
+        self,
+        x: np.ndarray
+    ) -> np.ndarray:
         """Predict using smoothing splines.
 
         Parameters
@@ -89,7 +105,12 @@ class SmoothingSpline():
         """
         return self.model(x)
 
-    def fit_predict(self, x, y, x_pred=None):
+    def fit_predict(
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+        x_pred: Optional[np.ndarray] = None
+    ) -> np.ndarray:
         """Fit the model using `x` and predict on `x_pred`.
 
         Parameters
