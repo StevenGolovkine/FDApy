@@ -24,6 +24,7 @@ import warnings
 
 from numpy.linalg import norm
 from scipy.optimize import minimize
+from typing import Dict, Optional, Tuple
 
 from ...representation.functional_data import DenseFunctionalData
 
@@ -31,7 +32,13 @@ from ...representation.functional_data import DenseFunctionalData
 ##############################################################################
 # Utility functions
 
-def gcv(alpha, n, z, eta, lamb):
+def gcv(
+    alpha: float,
+    n: int,
+    z: np.ndarray,
+    eta: float,
+    lamb: np.ndarray
+) -> float:
     r"""Generalized cross-validation for the FCP-TPA algortihm.
 
     This function calculates the generalized cross-validation criterion for the
@@ -69,7 +76,16 @@ def gcv(alpha, n, z, eta, lamb):
     return res / (1 - eta / n * np.sum(eig))**2
 
 
-def find_opt_alpha(alpha_range, data, u, v, alpha, penal_mat, eival, dim):
+def find_opt_alpha(
+    alpha_range: np.ndarray,
+    data: np.ndarray,
+    u: np.ndarray,
+    v: np.ndarray,
+    alpha: float,
+    penal_mat: np.ndarray,
+    eival: Tuple[nd.ndarray, np.ndarray],
+    dim: int
+) -> float:
     r"""Find the optimal smoothing parameters in FCP-TPA using GCV.
 
     Parameters
@@ -145,12 +161,23 @@ class FCPTPA():
 
     """
 
-    def __init__(self, n_components=None):
+    def __init__(
+        self,
+        n_components: Optional[int] = None
+    ) -> None:
         """Initialize FCPTPA object."""
         self.n_components = n_components
 
-    def fit(self, data, penal_mat, alpha_range, tol=1e-4, max_iter=15,
-            adapt_tol=True, verbose=False):
+    def fit(
+        self,
+        data: DenseFunctionalData,
+        penal_mat: Dict[str, np.ndarray],
+        alpha_range: Dict[str, np.ndarray],
+        tol: float = 1e-4,
+        max_iter: int =15,
+        adapt_tol: bool = True,
+        verbose: bool = False
+    ) -> None:
         r"""Fit the model on data.
 
         This function is used to fit a model on the data.
@@ -190,7 +217,6 @@ class FCPTPA():
                                w = np.array([1e-4, 1e4]))
 
         """
-
         # Get the values and dimension
         values = data.values
         dim = values.shape
@@ -321,7 +347,11 @@ class FCPTPA():
         self.eigenfunctions = DenseFunctionalData(data.argvals,
                                                   eigenimages)
 
-    def transform(self, data, method=None):
+    def transform(
+        self,
+        data: DenseFunctionalData,
+        method: None = None
+    ) -> np.ndarray:
         """Apply dimension reduction to the data.
 
         Parameters
@@ -340,7 +370,10 @@ class FCPTPA():
         """
         return np.einsum('ikl, jkl', data.values, self.eigenfunctions.values)
 
-    def inverse_transform(self, scores):
+    def inverse_transform(
+        self,
+        scores: np.ndarray
+    ) -> DenseFunctionalData:
         """Transform the data back to its original space.
 
         Return a DenseFunctionalData whose transform would be `scores`.

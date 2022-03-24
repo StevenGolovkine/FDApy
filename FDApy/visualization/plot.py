@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from matplotlib.axes import Axes
-from typing import Optional
+from typing import Optional, Union
 
 from ..representation.functional_data import (DenseFunctionalData,
                                               IrregularFunctionalData)
