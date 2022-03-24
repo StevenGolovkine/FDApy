@@ -80,11 +80,11 @@ def joining_step(
                 scores = ufpca.transform(data=new_data, method='NumInt')
             elif new_data.n_dim == 2:
                 n_points = new_data.n_points
-                Pv = np.diff(np.identity(n_points['input_dim_0']))
-                Pw = np.diff(np.identity(n_points['input_dim_1']))
+                pv = np.diff(np.identity(n_points['input_dim_0']))
+                pw = np.diff(np.identity(n_points['input_dim_1']))
                 fcptpa = FCPTPA(n_components=n_components)
-                fcptpa.fit(new_data, penal_mat={'v': np.dot(Pv, Pv.T),
-                                                'w': np.dot(Pw, Pw.T)},
+                fcptpa.fit(new_data, penal_mat={'v': np.dot(pv, pv.T),
+                                                'w': np.dot(pw, pw.T)},
                            alpha_range={'v': np.array([1e-4, 1e4]),
                                         'w': np.array([1e-4, 1e4])},
                            tol=1e-4, max_iter=15,

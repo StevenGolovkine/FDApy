@@ -104,12 +104,12 @@ class BIC():
         self.n_jobs = n_jobs if 1 <= n_jobs <= cpu_count() else cpu_count()
         self.n_jobs = 1 if self.parallel_backend is None else self.n_jobs
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Override __str__ function."""
         return (f"BIC(n_jobs={self.n_jobs}, parallel_backend="
                 f"{self.parallel_backend})")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Override __repr__ function."""
         return self.__str__()
 
@@ -160,7 +160,7 @@ class BIC():
         self,
         data: np.array,
         cluster_array: Iterable[int]
-    ):
+    ) -> BICResult:
         """Compute BIC stat with multiprocessing parallelization."""
         with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
             jobs = [executor.submit(
@@ -174,8 +174,10 @@ class BIC():
         self,
         data: np.array,
         cluster_array: Iterable[int]
-    ):
+    ) -> BICResult:
         """Compute BIC stat without parallelization."""
+        if self.parallel_backend is not None:
+            raise ValueError('Parallel backend have to be None.')
         for gap_results in [
             _compute_bic(data, n_clusters)
             for n_clusters in cluster_array

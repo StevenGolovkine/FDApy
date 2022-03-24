@@ -23,7 +23,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from multiprocessing import cpu_count
