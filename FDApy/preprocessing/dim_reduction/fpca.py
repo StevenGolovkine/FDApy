@@ -9,6 +9,8 @@ concerned with UFPCA, whereas multivariate functional data with MFPCA.
 """
 import numpy as np
 
+from typing import Optional, List, Union
+
 from ...representation.functional_data import (DenseFunctionalData,
                                                MultivariateFunctionalData)
 from ...misc.utils import integration_weights_
@@ -52,11 +54,20 @@ class UFPCA():
 
     """
 
-    def __init__(self, n_components=None):
+    def __init__(
+        self,
+        n_components: Union[int, float, None] = None
+    ) -> None:
         """Initaliaze UFPCA object."""
         self.n_components = n_components
 
-    def fit(self, data, mean=None, covariance=None, **kwargs):
+    def fit(
+        self,
+        data: DenseFunctionalData,
+        mean: Optional[DenseFunctionalData] = None,
+        covariance: Optional[DenseFunctionalData] = None,
+        **kwargs
+    ) -> None:
         """Fit the model on data.
 
         Parameters
@@ -91,7 +102,12 @@ class UFPCA():
         }
         self._fit(data)
 
-    def _fit(self, data, mean=None, covariance=None):
+    def _fit(
+        self,
+        data: DenseFunctionalData,
+        mean: Optional[DenseFunctionalData] = None,
+        covariance: Optional[DenseFunctionalData] = None
+    ) -> None:
         """Dispatch to the right submethod depending on the input."""
         if isinstance(data, DenseFunctionalData):
             self._fit_uni(data, mean, covariance)
@@ -99,7 +115,12 @@ class UFPCA():
             raise TypeError('UFPCA only support DenseFunctionalData'
                             ' object!')
 
-    def _fit_uni(self, data, mean=None, covariance=None):
+    def _fit_uni(
+        self,
+        data: DenseFunctionalData,
+        mean: Optional[DenseFunctionalData] = None,
+        covariance: Optional[DenseFunctionalData] = None
+    ) -> None:
         """Univariate Functional PCA.
 
         Parameters
@@ -168,7 +189,11 @@ class UFPCA():
         self.mean = mean
         self.covariance = DenseFunctionalData(new_argvals_2, cov[np.newaxis])
 
-    def transform(self, data, method='PACE'):
+    def transform(
+        self,
+        data: DenseFunctionalData,
+        method: str = 'PACE'
+    ) -> np.ndarray:
         """Apply dimensionality reduction to data.
 
         The functional principal components scores are given by:
@@ -219,7 +244,10 @@ class UFPCA():
 
         return scores
 
-    def inverse_transform(self, scores):
+    def inverse_transform(
+        self,
+        scores: np.ndarray
+    ) -> DenseFunctionalData:
         """Transform the data back to its original space.
 
         Return a DenseFunctionalData data_original whose transform would
@@ -290,11 +318,18 @@ class MFPCA():
 
     """
 
-    def __init__(self, n_components=None):
+    def __init__(
+        self,
+        n_components: List[Union[int, float, None]] = None
+    ) -> None:
         """Initialize MFPCA object."""
         self.n_components = n_components
 
-    def fit(self, data, method='NumInt'):
+    def fit(
+        self,
+        data: MultivariateFunctionalData,
+        method: str = 'NumInt'
+    ) -> None:
         """Fit the model with X.
 
         Parameters
@@ -307,7 +342,11 @@ class MFPCA():
         """
         self._fit(data, method)
 
-    def _fit(self, data, method='NumInt'):
+    def _fit(
+        self,
+        data: MultivariateFunctionalData,
+        method: str = 'NumInt'
+    ) -> None:
         """Dispatch to the right submethod depending on the input."""
         # TODO: Different possiblity for n_components
         if isinstance(data, MultivariateFunctionalData):
@@ -316,7 +355,11 @@ class MFPCA():
             raise TypeError('MFPCA only support MultivariateFunctionalData'
                             ' object!')
 
-    def _fit_multi(self, data, method='NumInt'):
+    def _fit_multi(
+        self,
+        data: MultivariateFunctionalData,
+        method: str = 'NumInt'
+    ) -> None:
         """Multivariate Functional PCA.
 
         Parameters
@@ -394,7 +437,11 @@ class MFPCA():
         self.eigenvectors = eigenvectors
         self.basis = MultivariateFunctionalData(basis_multi)
 
-    def transform(self, data, method='NumInt'):
+    def transform(
+        self,
+        data: MultivariateFunctionalData,
+        method: str = 'NumInt'
+    ) -> np.ndarray:
         """Apply dimensionality reduction to data.
 
         Parameters
@@ -416,7 +463,10 @@ class MFPCA():
         scores_uni = np.concatenate(scores_uni, axis=1)
         return np.dot(scores_uni, self.eigenvectors)
 
-    def inverse_transform(self, scores):
+    def inverse_transform(
+        self,
+        scores: np.ndarray
+    ) -> MultivariateFunctionalData:
         """Transform the data back to its original space.
 
         Return a MultivariateFunctionalData data_original whose transform would
