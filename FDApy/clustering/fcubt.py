@@ -848,7 +848,7 @@ class FCUBT():
     def _predict_proba(
         self,
         new_data: Union[T, M],
-        step: str ='join'
+        step: str = 'join'
     ) -> Dict[N, float]:
         """Predict the probability for each class for a new observation.
 

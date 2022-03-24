@@ -9,7 +9,7 @@ import itertools
 import numpy as np
 import scipy
 
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple
 
 from sklearn.preprocessing import StandardScaler
 

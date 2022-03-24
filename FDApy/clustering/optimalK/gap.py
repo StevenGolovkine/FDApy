@@ -22,13 +22,16 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from multiprocessing import cpu_count
 
 from sklearn.cluster import KMeans
 from sklearn.metrics import pairwise_distances
 
-from typing import Callable, Iterable, NamedTuple
+from typing import Callable, Dict, Optional, Iterable, NamedTuple
 
 
 ###############################################################################
@@ -192,12 +195,12 @@ class Gap():
                              " have to be 'uniform' or 'pca'.")
         self.metric = metric if metric is not None else 'euclidean'
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Override __str__ function."""
         return (f'Gap(n_jobs={self.n_jobs}, parallel'
                 f' backend={self.parallel_backend})')
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Override __repr__ function."""
         return self.__str__()
 
@@ -268,7 +271,12 @@ class Gap():
         )
         return self.n_clusters
 
-    def plot(self, axes=None, scatter_args=None, **plt_kwargs):
+    def plot(
+        self,
+        axes: Optional[Axes] = None,
+        scatter_args: Dict = None,
+        **plt_kwargs
+    ) -> Axes:
         """Plot the results of the Gap computation.
 
         Parameters
@@ -387,7 +395,7 @@ class Gap():
         data: np.ndarray,
         n_refs,
         cluster_array: Iterable[int]
-    ):
+    ) -> GapResult:
         """Compute Gap stat with multiprocessing parallelization."""
         with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
             jobs = [executor.submit(
@@ -402,7 +410,7 @@ class Gap():
         data: np.ndarray,
         n_refs: int,
         cluster_array: Iterable[int]
-    ):
+    ) -> GapResult:
         """Compute Gap stat without parallelization."""
         for gap_results in [
             self._compute_gap(data, n_clusters, n_refs, self.metric)

@@ -133,9 +133,7 @@ class FunctionalData(ABC):
         argv1: T,
         argv2: T
     ) -> None:
-        """
-        Raise an error if `argv1` and `argv2` have different number of dim.
-        """
+        """Raise an error if `argv1` and `argv2` have different dim."""
         if argv1.n_dim != argv2.n_dim:
             raise ValueError(f"{argv1} and {argv2} do not have the same number"
                              " of dimensions.")

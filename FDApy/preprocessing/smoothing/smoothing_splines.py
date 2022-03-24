@@ -55,6 +55,7 @@ class SmoothingSpline():
 
     @property
     def smooth(self) -> float:
+        """Getter for smooth."""
         return self._smooth
 
     @smooth.setter
@@ -62,6 +63,7 @@ class SmoothingSpline():
         self,
         new_smooth: float
     ) -> None:
+        """Setter for smooth."""
         self._smooth = new_smooth
 
     def fit(
