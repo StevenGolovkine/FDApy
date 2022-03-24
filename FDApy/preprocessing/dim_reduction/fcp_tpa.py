@@ -83,7 +83,7 @@ def find_opt_alpha(
     v: np.ndarray,
     alpha: float,
     penal_mat: np.ndarray,
-    eival: Tuple[nd.ndarray, np.ndarray],
+    eival: Tuple[np.ndarray, np.ndarray],
     dim: int
 ) -> float:
     r"""Find the optimal smoothing parameters in FCP-TPA using GCV.
@@ -174,7 +174,7 @@ class FCPTPA():
         penal_mat: Dict[str, np.ndarray],
         alpha_range: Dict[str, np.ndarray],
         tol: float = 1e-4,
-        max_iter: int =15,
+        max_iter: int = 15,
         adapt_tol: bool = True,
         verbose: bool = False
     ) -> None:

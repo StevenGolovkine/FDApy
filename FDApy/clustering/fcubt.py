@@ -12,6 +12,10 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+from typing import Dict, List, Optional, Set, Tuple, TypeVar, Union
+
 from ..representation.functional_data import (DenseFunctionalData,
                                               MultivariateFunctionalData)
 from ..preprocessing.dim_reduction.fpca import UFPCA, MFPCA
@@ -25,11 +29,20 @@ COLORS = ['#377eb8', '#ff7f00', '#4daf4a',
           '#f781bf', '#a65628', '#984ea3',
           '#999999', '#e41a1c', '#dede00']
 
+N = Type('N', bound='Node')
+T = TypeVar('T', bound='DenseFunctionalData')
+M = TypeVar('M', bound='MultivariateFunctionalData')
+
 
 ###############################################################################
 # Utility functions
 
-def joining_step(list_nodes, siblings, n_components=0.95, max_group=5):
+def joining_step(
+    list_nodes: List[N],
+    siblings: Set[Tuple[N, N]],
+    n_components: Union[int, float] = 0.95,
+    max_group: int = 5
+) -> List[N]:
     """Perform a joining step.
 
     Parameters
@@ -109,7 +122,9 @@ def joining_step(list_nodes, siblings, n_components=0.95, max_group=5):
     return list(graph.nodes)
 
 
-def format_label(list_nodes):
+def format_label(
+    list_nodes: List[N]
+) -> Tuple[Dict[N, int], np.ndarray]:
     """Format the labels.
 
     Parameters
@@ -173,14 +188,22 @@ class Node():
     """
 
     @staticmethod
-    def _check_data(new_data):
+    def _check_data(
+        new_data: Union[T, M]
+    ) -> None:
         """Check the user provided `data`."""
         if not isinstance(new_data, (DenseFunctionalData,
                                      MultivariateFunctionalData)):
             raise TypeError("Provided data do not have the right type.")
 
-    def __init__(self, data, identifier=(0, 0), idx_obs=None,
-                 is_root=False, is_leaf=False):
+    def __init__(
+        self,
+        data: Union[T, M],
+        identifier: Tuple[int, int] = (0, 0),
+        idx_obs: Optional[int] = None,
+        is_root: bool = False,
+        is_leaf: bool = False
+    ) -> None:
         """Initialiaze Node object."""
         self.identifier = (0, 0) if is_root else identifier
         self.data = data
@@ -191,90 +214,95 @@ class Node():
         self.is_root = is_root
         self.is_leaf = is_leaf
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Override __str__ function."""
         return (f"Node(id={self.identifier}, is_root={self.is_root}"
                 f", is_leaf={self.is_leaf})")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Override __repr__ function."""
         return self.__str__()
 
     @property
-    def data(self):
+    def data(self) -> Union[T, M]:
         """Getter for data."""
         return self._data
 
     @data.setter
-    def data(self, new_data):
+    def data(self, new_data: Union[T, M]) -> None:
         self._check_data(new_data)
         self._data = new_data
 
     @property
-    def identifier(self):
+    def identifier(self) -> Tuple[int, int]:
         """Getter for identifier."""
         return self._identifier
 
     @identifier.setter
-    def identifier(self, new_identifier):
+    def identifier(self, new_identifier: Tuple[int, int]) -> None:
         self._identifier = new_identifier
 
     @property
-    def labels_grow(self):
+    def labels_grow(self) -> np.ndarray:
         """Getter for labels_grow."""
         return self._labels_grow
 
     @labels_grow.setter
-    def labels_grow(self, new_labels):
+    def labels_grow(self, new_labels: np.ndarray) -> None:
         self._labels_grow = new_labels
 
     @property
-    def labels_join(self):
+    def labels_join(self) -> np.ndarray:
         """Getter for labels_join."""
         return self._labels_join
 
     @labels_join.setter
-    def labels_join(self, new_labels):
+    def labels_join(self, new_labels: np.ndarray):
         self._labels_join = new_labels
 
     @property
-    def left(self):
+    def left(self) -> N:
         """Getter for left."""
         return self._left
 
     @left.setter
-    def left(self, new_left):
+    def left(self, new_left: N) -> None:
         self._left = new_left
 
     @property
-    def right(self):
+    def right(self) -> N:
         """Getter for right."""
         return self._right
 
     @right.setter
-    def right(self, new_right):
+    def right(self, new_right: N) -> None:
         self._right = new_right
 
     @property
-    def is_root(self):
+    def is_root(self) -> bool:
         """Getter for is_root."""
         return self._is_root
 
     @is_root.setter
-    def is_root(self, new_is_root):
+    def is_root(self, new_is_root: bool) -> None:
         self._is_root = new_is_root
 
     @property
-    def is_leaf(self):
+    def is_leaf(self) -> bool:
         """Getter for is_left."""
         return self._is_leaf
 
     @is_leaf.setter
-    def is_leaf(self, new_is_leaf):
+    def is_leaf(self, new_is_leaf: bool) -> None:
         self._is_leaf = new_is_leaf
 
-    def split(self, splitting_criteria='bic', n_components=1, min_size=10,
-              max_group=5):
+    def split(
+        self,
+        splitting_criteria: str = 'bic',
+        n_components: Union[float, int, None] = 1,
+        min_size: int = 10,
+        max_group: int = 5
+    ) -> None:
         """Split a node into two groups.
 
         Parameters
@@ -365,7 +393,10 @@ class Node():
         else:
             self.is_leaf = True
 
-    def unite(self, node):
+    def unite(
+        self,
+        node: N
+    ) -> N:
         """Unite two nodes into one.
 
         Parameters
@@ -403,11 +434,17 @@ class Node():
                     is_root=(self.is_root & node.is_root),
                     is_leaf=(self.is_leaf & node.is_leaf))
 
-    def isin(self, node):
+    def isin(
+        self,
+        node: N
+    ) -> Tuple[int, int]:
         """Test whether self is include in node."""
         return self.identifier in node.identifier
 
-    def predict(self, new_obs):
+    def predict(
+        self,
+        new_obs: Union[T, M]
+    ) -> N:
         """Predict the label for a new observation."""
         score = self.fpca.transform(new_obs, method='NumInt')
         pred = self.gaussian_model.predict(score)
@@ -418,13 +455,20 @@ class Node():
         else:
             raise ValueError(f"Error in the prediction for {self}.")
 
-    def predict_proba(self, new_obs):
+    def predict_proba(
+        self,
+        new_obs: Union[T, M]
+    ) -> float:
         """Predict the probability for a new observation."""
         score = self.fpca.transform(new_obs, method='NumInt')
         proba = self.gaussian_model.predict_proba(score)
         return proba
 
-    def plot(self, axes=None, **plt_kwargs):
+    def plot(
+        self,
+        axes: Optional[Axes] = None,
+        **plt_kwargs
+    ) -> Axes:
         """Plot of a Node object.
 
         Parameters
@@ -483,41 +527,44 @@ class FCUBT():
 
     """
 
-    def __init__(self, root_node=None):
+    def __init__(
+        self,
+        root_node: Optional[N] = None
+    ) -> None:
         """Initialize fCUBT object."""
         self.root_node = root_node
         self.tree = [root_node]
 
     @property
-    def root_node(self):
+    def root_node(self) -> N:
         """Getter for root_node."""
         return self._root_node
 
     @root_node.setter
-    def root_node(self, new_root_node):
+    def root_node(self, new_root_node: N) -> None:
         self._root_node = new_root_node
 
     @property
-    def tree(self):
+    def tree(self) -> List[N]:
         """Getter for tree."""
         return self._tree
 
     @tree.setter
-    def tree(self, new_tree):
+    def tree(self, new_tree: List[N]) -> None:
         self._tree = new_tree
 
     @property
-    def n_nodes(self):
+    def n_nodes(self) -> int:
         """Get the number of nodes in the tree."""
         return len(self.tree)
 
     @property
-    def n_leaf(self):
+    def n_leaf(self) -> int:
         """Get the number of leaves in the tree."""
         return len([True for node in self.tree if node.is_leaf])
 
     @property
-    def height(self):
+    def height(self) -> int:
         """Get the height of the tree.
 
         The height of the tree is defined starting at 1. So, a tree with only
@@ -531,7 +578,12 @@ class FCUBT():
         """
         return self.tree[-1].identifier[0] + 1
 
-    def grow(self, n_components=0.95, min_size=10, max_group=5):
+    def grow(
+        self,
+        n_components: Union[float, int, None] = 0.95,
+        min_size: int = 10,
+        max_group: int = 5
+    ) -> None:
         """Grow a complete tree."""
         tree = self._recursive_clustering(self.tree, n_components=n_components,
                                           min_size=min_size,
@@ -539,7 +591,11 @@ class FCUBT():
         self.tree = sorted(tree, key=lambda node: node.identifier)
         self.mapping_grow, self.labels_grow = format_label(self.get_leaves())
 
-    def join(self, n_components=0.95, max_group=5):
+    def join(
+        self,
+        n_components: Union[float, int, None] = 0.95,
+        max_group: int = 5
+    ) -> None:
         """Join elements of the tree."""
         leaves = self.get_leaves()
         siblings = self.get_siblings()
@@ -547,7 +603,11 @@ class FCUBT():
                                                 n_components, max_group)
         self.mapping_join, self.labels_join = format_label(final_cluster)
 
-    def predict(self, new_data, step="join"):
+    def predict(
+        self,
+        new_data: Union[T, M],
+        step: str = "join"
+    ) -> np.ndarray:
         """Predict labels for a set of new observation."""
         if isinstance(new_data, DenseFunctionalData):
             return np.array([self._predict(obs, step) for obs in new_data])
@@ -557,7 +617,11 @@ class FCUBT():
         else:
             raise TypeError("Wrong data type.")
 
-    def predict_proba(self, new_data, step="join"):
+    def predict_proba(
+        self,
+        new_data: Union[T, M],
+        step: str = "join"
+    ) -> np.ndarray:
         """Predict the probability for new obs to be in each classes."""
         if isinstance(new_data, DenseFunctionalData):
             return [self._predict_proba(obs, step) for obs in new_data]
@@ -567,7 +631,10 @@ class FCUBT():
         else:
             raise TypeError("Wrong data type.")
 
-    def get_node(self, idx):
+    def get_node(
+        self,
+        idx: Tuple[int, int]
+    ) -> N:
         """Get a particular node in the tree.
 
         Parameters
@@ -585,7 +652,10 @@ class FCUBT():
             if node.identifier == idx:
                 return node
 
-    def get_parent(self, node):
+    def get_parent(
+        self,
+        node: N
+    ) -> N:
         """Get the parent of the node.
 
         Parameters
@@ -603,7 +673,9 @@ class FCUBT():
         node_index = int(node.identifier[1] / 2)
         return self.get_node((depth_index, node_index))
 
-    def get_leaves(self):
+    def get_leaves(
+        self
+    ) -> List[N]:
         """Get the leaves of the tree.
 
         Returns
@@ -614,7 +686,9 @@ class FCUBT():
         """
         return [node for node in self.tree if node.is_leaf]
 
-    def get_siblings(self):
+    def get_siblings(
+        self
+    ) -> List[Tuple[int, int]]:
         """Get the siblings in the tree.
 
         A siblings couple is defined as a pair of nodes that are leaf node and
@@ -632,7 +706,11 @@ class FCUBT():
                     for node in self.tree
                     if node.is_leaf and node.identifier[1] % 2 == 0])
 
-    def plot(self, fig=None, **plt_kwargs):
+    def plot(
+        self,
+        fig: Figure = None,
+        **plt_kwargs
+    ) -> None:
         """Plot the tree.
 
         Parameters
@@ -664,8 +742,13 @@ class FCUBT():
                 ax = fig.add_subplot(gs[row_idx, col_idx:(col_idx + 2)])
             node.plot(axes=ax)
 
-    def _recursive_clustering(self, list_nodes, n_components=0.95,
-                              min_size=10, max_group=5):
+    def _recursive_clustering(
+        self,
+        list_nodes: List[N],
+        n_components: Union[int, float, None] = 0.95,
+        min_size: int = 10,
+        max_group: int = 5
+    ) -> List[N]:
         """Perform the binary clustering recursively."""
         tree = []
         for node in list_nodes:
@@ -680,8 +763,13 @@ class FCUBT():
                     max_group=max_group))
         return tree
 
-    def _recursive_joining(self, list_nodes, siblings, n_components=0.95,
-                           max_group=5):
+    def _recursive_joining(
+        self,
+        list_nodes: List[N],
+        siblings: Set[Tuple[int, int]],
+        n_components: Union[int, float, None] = 0.95,
+        max_group: int = 5
+    ) -> List[N]:
         """Perform the joining recursively.
 
         Parameters
@@ -709,7 +797,7 @@ class FCUBT():
             return self._recursive_joining(new_list_nodes, siblings,
                                            n_components, max_group)
 
-    def _map_grow_join(self):
+    def _map_grow_join(self) -> Dict[N, N]:
         """Map results from grow to join step."""
         mapping = {}
         for node1 in self.mapping_grow.keys():
@@ -724,7 +812,11 @@ class FCUBT():
                     raise TypeError("Wrong identifier type.")
         return mapping
 
-    def _predict(self, new_data, step="join"):
+    def _predict(
+        self,
+        new_data: Union[T, M],
+        step: str = "join"
+    ) -> int:
         """Predict the label for a new observation.
 
         Parameters
@@ -753,7 +845,11 @@ class FCUBT():
         else:
             raise ValueError("Wrong step value.")
 
-    def _predict_proba(self, new_data, step='join'):
+    def _predict_proba(
+        self,
+        new_data: Union[T, M],
+        step: str ='join'
+    ) -> Dict[N, float]:
         """Predict the probability for each class for a new observation.
 
         Parameters
