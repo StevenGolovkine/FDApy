@@ -21,7 +21,7 @@ T = TypeVar('T', bound='SmoothingSpline')
 class SmoothingSpline():
     r"""Smoothing Spline.
 
-    This class implements cubic smoothing splines algortihm proposed by Carl
+    This class implements cubic smoothing splines algorithm proposed by Carl
     de Boor in his book "A Practical Guide to Splines". It is a wrapper around
     the python package `csaps`.
 

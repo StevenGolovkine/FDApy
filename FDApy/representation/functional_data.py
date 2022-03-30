@@ -685,7 +685,7 @@ class DenseFunctionalData(FunctionalData):
 
         if smooth is not None:
             # Remove covariance diagonale because of measurement errors.
-            np.fill_diagonal(cov, None)
+            np.fill_diagonal(cov, np.nan)
             cov = cov[~np.isnan(cov)]
 
             # Define train vector

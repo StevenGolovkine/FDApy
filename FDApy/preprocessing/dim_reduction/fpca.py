@@ -81,7 +81,7 @@ class UFPCA():
 
         Keyword Args
         ------------
-        method: str, default='LocalLinear'
+        method: str, default=None
             Smoothing method.
         kernel: str, default='gaussian'
             Kernel used for the smoothing.
