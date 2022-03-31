@@ -8,6 +8,7 @@ API References
 
 	modules/representation
 	modules/preprocessing
+	modules/regression
 	modules/clustering
 	modules/visualization
 	modules/misc
