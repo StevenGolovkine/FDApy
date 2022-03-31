@@ -6,6 +6,13 @@
 Welcome to FDApy's documentation!
 =================================
 
+Examples
+--------
+.. toctree::
+
+	auto_examples/index
+
+
 API References
 --------------
 
@@ -13,12 +20,6 @@ API References
 	
 	modules
 
-
-Examples
---------
-.. toctree::
-
-	auto_examples/index
 
 An exhaustive list of all the contents of the package can be found in the
 :ref:`genindex`.
