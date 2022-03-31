@@ -30,6 +30,9 @@ from ..misc.utils import integration_weights_
 class FLMM():
     """A class defining Functional Linear Mixed Model.
 
+    Estimation of functional linear mixed models (FLMMs) for functional data
+    based on functional principal components analysis (FPCA).
+
     Parameters
     ----------
     n_components: list of {int, float, None}, default=None
@@ -70,6 +73,7 @@ class FLMM():
         functional linear mixed models.
     * JonaCRC. (2017). JonaCRC/denseFLMM: First release (v0.1.0). Zenodo.
         https://doi.org/10.5281/zenodo.322651
+
     """
 
     def __init__(
@@ -161,13 +165,11 @@ class FLMM():
         # Step 0: Get different parameters.
         argvals = data.argvals["input_dim_0"]
         n_points = data.n_points['input_dim_0']
-        n_obs = data.n_obs
         n_groups = len(group_list)
         rho = [len(effect) for effect in group_list.values()]
         sq2 = np.sum(np.power(rho, 2))
         crho2 = np.cumsum(np.power(rho, 2))
         rowvec = np.repeat(argvals, n_points)
-        colvec = np.tile(argvals, n_points)
         interv = argvals[1] - argvals[0]
         norm = 1 / np.sqrt(interv)
 
@@ -180,7 +182,7 @@ class FLMM():
         pcyc = np.concatenate([np.tile(np.arange(x), x) for x in rho])
 
         xtx = [
-            xtx_entry(
+            xtx_entry_(
                 group_list[gcyc[i]][pcyc[i]],
                 group_list[gcyc[j]][pcyc[j]],
                 group_list[gcyc[i]][qcyc[i]],
@@ -193,7 +195,7 @@ class FLMM():
         xtx_mat = xtx_mat + xtx_mat.T - np.diag(np.diag(xtx_mat))
 
         xty = [
-            xty_entry(
+            xty_entry_(
                 group_list[gcyc[i]][pcyc[i]],
                 group_list[gcyc[i]][qcyc[i]],
                 data.values
@@ -240,21 +242,23 @@ class FLMM():
 
         if isinstance(self.n_components, float):
             explained_var = var_noise / total_variance
-            NPC = np.zeros(n_groups, dtype='int')
+            n_comp = np.zeros(n_groups, dtype='int')
             while explained_var < self.n_components:
-                maxg = np.argmax([nu[NPC[idx]] for idx, nu in nu_hat.items()])
-                NPC[maxg] = NPC[maxg] + 1
-                idx = np.int32(NPC[maxg] - 1)
+                maxg = np.argmax(
+                    [nu[n_comp[idx]] for idx, nu in nu_hat.items()]
+                )
+                n_comp[maxg] = n_comp[maxg] + 1
+                idx = np.int32(n_comp[maxg] - 1)
                 explained_var = (
                     explained_var + (nu_hat[maxg][idx] / total_variance)
                 )
 
         phis_estim = {
-            idx: vec[:, np.arange(NPC[idx], dtype='int')] * norm
+            idx: vec[:, np.arange(n_comp[idx], dtype='int')] * norm
             for idx, (val, vec) in eig_dict.items()
         }
         nu_hat = {
-            idx: nu[np.arange(NPC[idx], dtype='int')]
+            idx: nu[np.arange(n_comp[idx], dtype='int')]
             for idx, nu in nu_hat.items()
         }
 
@@ -277,13 +281,13 @@ class FLMM():
 
         # Step 7: Predict basis weights
         zty = np.concatenate([
-            zty_entry(data.values, Z[0], phi.T)
-            for (idx, Z), (_, phi) in zip(group_list.items(),
+            zty_entry_(data.values, z[0], phi.T)
+            for (idx, z), (_, phi) in zip(group_list.items(),
                                           phis_estim.items())
         ])
 
         ztz_dict = {
-            (i, j): ztz_entry(
+            (i, j): ztz_entry_(
                 group_list[i][0], group_list[j][0],
                 phis_estim[i].T, phis_estim[j].T
             ) for (i, j) in itertools.product(np.arange(n_groups), repeat=2)
@@ -295,20 +299,20 @@ class FLMM():
             ]
         )
 
-        n_eff = n_levels * NPC
+        n_eff = n_levels * n_comp
         cin = np.hstack([0, np.cumsum(n_eff)])
-        Dinv = np.diag(
+        d_inv = np.diag(
             np.repeat(
                 np.hstack([1 / nu for nu in nu_hat.values()]),
-                repeats=np.repeat(n_levels, repeats=NPC)
+                repeats=np.repeat(n_levels, repeats=n_comp)
             )
         )
-        b_hat = np.linalg.solve(ztz + sigma2_hat * Dinv, zty)
+        b_hat = np.linalg.solve(ztz + sigma2_hat * d_inv, zty)
         xi_hat = [
             b_hat[cin[g] + np.arange(n_eff[g])] for g in np.arange(n_groups)
         ]
         xi_hat = [
-            xi_hat[g].reshape((n_levels[g], NPC[g]), order='F')
+            xi_hat[g].reshape((n_levels[g], n_comp[g]), order='F')
             for g in np.arange(n_groups)
         ]
 
@@ -320,7 +324,7 @@ class FLMM():
 
         self.sigma2 = sigma2_hat
         self.total_var = total_variance
-        self.explained_var = explained_var
+        self.explained_var = explained_variance
         self.error_var = var_noise
         self.nu = nu_hat
         self.xi = xi_hat
@@ -353,23 +357,23 @@ class FLMM():
         pass
 
 
-def xtx_entry(X1, X2, Z1, Z2):
-    A = X1.T.dot(X2)
-    B = Z1.T.dot(Z2)
-    return np.einsum('ij,ji->', A, B.T)
+def xtx_entry_(x1, x2, z1, z2):
+    mat_a = x1.T.dot(x2)
+    mat_b = z1.T.dot(z2)
+    return np.einsum('ij,ji->', mat_a, mat_b.T)
 
 
-def xty_entry(X1, X2, Y):
-    A = X1.T.dot(Y)
-    B = X2.T.dot(Y)
-    return A.T.dot(B).flatten()
+def xty_entry_(x1, x2, y):
+    mat_a = x1.T.dot(y)
+    mat_b = x2.T.dot(y)
+    return mat_a.T.dot(mat_b).flatten()
 
 
-def zty_entry(Y, Z, phi):
-    return np.matmul(phi, np.matmul(Y.T, Z)).flatten()
+def zty_entry_(y, z, phi):
+    return np.matmul(phi, np.matmul(y.T, z)).flatten()
 
 
-def ztz_entry(Z1, Z2, phi1, phi2):
+def ztz_entry_(z1, z2, phi1, phi2):
     phitphi = np.matmul(phi1, phi2.T)
-    ZtZ = np.matmul(Z1.T, Z2)
-    return np.kron(phitphi, ZtZ)
+    ztz = np.matmul(z1.T, z2)
+    return np.kron(phitphi, ztz)

@@ -29,7 +29,7 @@ COLORS = ['#377eb8', '#ff7f00', '#4daf4a',
           '#f781bf', '#a65628', '#984ea3',
           '#999999', '#e41a1c', '#dede00']
 
-N = Type('N', bound='Node')
+N = TypeVar('N', bound='Node')
 T = TypeVar('T', bound='DenseFunctionalData')
 M = TypeVar('M', bound='MultivariateFunctionalData')
 
