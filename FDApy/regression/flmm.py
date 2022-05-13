@@ -169,12 +169,12 @@ class FLMM():
         rho = [len(effect) for effect in group_list.values()]
         sq2 = np.sum(np.power(rho, 2))
         crho2 = np.cumsum(np.power(rho, 2))
-        rowvec = np.repeat(argvals, n_points)
+        # rowvec = np.repeat(argvals, n_points)
         interv = argvals[1] - argvals[0]
         norm = 1 / np.sqrt(interv)
 
         # Step 1:  Center the data.
-        values = data.values
+        # values = data.values
 
         # Step 2: Estimate the covariance surfaces.
         gcyc = np.repeat(np.arange(n_groups), np.power(rho, 2))
