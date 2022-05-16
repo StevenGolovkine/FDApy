@@ -7,9 +7,10 @@ designed to standardize, manipulate and do computation on array.
 """
 import itertools
 import numpy as np
+import numpy.typing as npt
 import scipy
 
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from sklearn.preprocessing import StandardScaler
 
@@ -19,10 +20,10 @@ from sklearn.preprocessing import StandardScaler
 #############################################################################
 
 def range_standardization_(
-    x: np.ndarray,
-    max_x: Optional[float] = None,
-    min_x: Optional[float] = None
-) -> np.ndarray:
+    x: npt.NDArray[np.float64],
+    max_x: float = np.nan,
+    min_x: float = np.nan
+) -> npt.NDArray[np.float64]:
     r"""Transform a vector [a, b] into a vector [0, 1].
 
     This function standardizes a vector by applying the following
@@ -48,16 +49,16 @@ def range_standardization_(
     array([0., 0.5, 1.])
 
     """
-    if (max_x is None) and (min_x is None):
-        max_x = np.max(x)
-        min_x = np.min(x)
+    if (np.isnan(max_x)) and (np.isnan(min_x)):
+        max_x = np.amax(x)
+        min_x = np.amin(x)
     range_ = (x - min_x) / (max_x - min_x)
     return range_
 
 
 def row_mean_(
-    x: np.ndarray
-) -> np.ndarray:
+    x: npt.NDArray[np.float64]
+) -> npt.NDArray[np.float64]:
     """Compute the mean of an array with respect to the rows.
 
     This function computes the mean of an array with respect to the rows.
@@ -79,12 +80,12 @@ def row_mean_(
 
     """
     scaler = StandardScaler()
-    return scaler.fit(x).mean_
+    return scaler.fit(x).mean_  # type: ignore
 
 
 def row_var_(
-    x: np.ndarray
-) -> np.ndarray:
+    x: npt.NDArray[np.float64]
+) -> npt.NDArray[np.float64]:
     """Compute the variance of an array with respect to the rows.
 
     This function computes the variance of the row of an array.
@@ -106,12 +107,12 @@ def row_var_(
 
     """
     scaler = StandardScaler()
-    return scaler.fit(x).var_
+    return scaler.fit(x).var_  # type: ignore
 
 
 def col_mean_(
-    x: np.ndarray
-) -> np.ndarray:
+    x: npt.NDArray[np.float64]
+) -> npt.NDArray[np.float64]:
     """Compute the mean of an array with respect to the columns.
 
     This function computes the mean of an array with respect to the columns.
@@ -133,12 +134,12 @@ def col_mean_(
 
     """
     scaler = StandardScaler()
-    return scaler.fit(x.T).mean_
+    return scaler.fit(x.T).mean_  # type: ignore
 
 
 def col_var_(
-    x: np.ndarray
-) -> np.ndarray:
+    x: npt.NDArray[np.float64]
+) -> npt.NDArray[np.float64]:
     """Compute the variance of an array with respect to the columns.
 
     This function computes the variance of the column of an array.
@@ -159,7 +160,7 @@ def col_var_(
 
     """
     scaler = StandardScaler()
-    return scaler.fit(x.T).var_
+    return scaler.fit(x.T).var_  # type: ignore
 
 
 ############################################################################
@@ -167,7 +168,7 @@ def col_var_(
 ############################################################################
 
 def get_axis_dimension_(
-    x: np.ndarray,
+    x: npt.NDArray[np.float64],
     axis: int = 0
 ) -> int:
     """Get the dimension of an array :math:`X` along the `axis`."""
@@ -175,26 +176,26 @@ def get_axis_dimension_(
 
 
 def get_dict_dimension_(
-    x: Dict[str, np.ndarray]
-) -> Tuple[int]:
+    x: Dict[str, npt.NDArray[np.float64]]
+) -> Tuple[int, ...]:
     """Return the shape of `X` defined as a dict of np.ndarray."""
     return tuple(i.shape[0] for i in x.values())
 
 
 def get_obs_shape_(
-    x: Dict[str, Dict[int, np.ndarray]],
+    x: Dict[str, Dict[int, npt.NDArray[np.float64]]],
     obs: int
-) -> Tuple[int]:
+) -> Tuple[int, ...]:
     """Return the shape of `obs` if `X` is a nested dict."""
     shapes = tuple(dim[obs].shape for _, dim in x.items())
     return tuple(itertools.chain.from_iterable(shapes))
 
 
 def shift_(
-    x: np.ndarray,
+    x: npt.NDArray[np.float64],
     num: int,
     fill_value: float = np.nan
-) -> np.ndarray:
+) -> npt.NDArray[np.float64]:
     """Shift an array.
 
     This function shifts an array :math:`X` by a number :math:`num`.
@@ -241,9 +242,9 @@ def shift_(
 ##############################################################################
 
 def outer_(
-    x: np.ndarray,
-    y: np.ndarray
-) -> np.ndarray:
+    x: npt.NDArray[np.float64],
+    y: npt.NDArray[np.float64]
+) -> npt.NDArray[np.float64]:
     """Compute the tensor product of two vectors.
 
     This function computes the tensor product of two vectors.
@@ -271,13 +272,13 @@ def outer_(
 
 
 def integrate_(
-    x: np.ndarray,
-    y: np.ndarray,
+    x: npt.NDArray[np.float64],
+    y: npt.NDArray[np.float64],
     method: str = 'simpson'
 ) -> float:
     """Compute an estimate of the integral.
 
-    This function computes an esmitation of the integral of :math:`Y` over the
+    This function computes an estimation of the integral of :math:`Y` over the
     domain :math:`X`.
 
     Parameters
@@ -305,13 +306,13 @@ def integrate_(
     """
     if method != 'simpson':
         raise ValueError('Only the Simpsons method is implemented!')
-    return scipy.integrate.simps(y, x)
+    return scipy.integrate.simps(y, x)  # type: ignore
 
 
 def integration_weights_(
-    x: np.ndarray,
+    x: npt.NDArray[np.float64],
     method: str = 'trapz'
-) -> np.ndarray:
+) -> npt.NDArray[np.float64]:
     """Compute integration weights.
 
     Compute weights for numerical integration over the domain `X` given
@@ -345,13 +346,16 @@ def integration_weights_(
     * https://en.wikipedia.org/wiki/Trapezoidal_rule
 
     """
-    length = len(x)
     if method == 'trapz':
-        w = 0.5 * np.concatenate([[x[1] - x[0]],
-                                  x[2:] - x[:(length - 2)],
-                                  [x[length - 1] - x[length - 2]]])
+        w = 0.5 * np.concatenate(
+            (
+                np.array([x[1] - x[0]]),
+                x[2:] - x[:(len(x) - 2)],
+                np.array([x[len(x) - 1] - x[len(x) - 2]])
+            ), axis=None
+        )
     elif callable(method):
         w = method(x)
     else:
         raise NotImplementedError("Method not implemented!")
-    return w
+    return w  # type: ignore
