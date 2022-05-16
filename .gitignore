@@ -44,3 +44,8 @@ docs/backreferences/*
 
 # Coverage files
 htmlcov/*
+.coverage
+
+# Mac files
+.DS_Store
+
