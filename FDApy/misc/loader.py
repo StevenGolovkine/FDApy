@@ -11,7 +11,6 @@ IrregularFunctionalData or MultivariateFunctionalData.
 import numpy as np
 import pandas as pd
 
-from sktime.datasets import load_from_tsfile_to_dataframe
 from typing import Tuple, Union
 
 from FDApy.representation.functional_data import (DenseFunctionalData,
@@ -107,91 +106,3 @@ def read_csv_irregular(
                                for idx, row in enumerate(data.values)}}
     values = {idx: row[~np.isnan(row)] for idx, row in enumerate(data.values)}
     return IrregularFunctionalData(argvals, values)
-
-
-###############################################################################
-# Loader for ts
-def read_ts(
-    filepath: str,
-    **kwargs
-) -> Tuple[Union[DenseFunctionalData, IrregularFunctionalData], np.ndarray]:
-    """Read a ts file into Functional Data.
-
-    Build a DenseFunctionalData or IrregularFunctionalData object upon a ts
-    file passed as parameter.
-
-    Notes
-    -----
-    We assumed that the data are unidimensional and is not checked.
-
-    Parameters
-    ----------
-    filepath: str
-        Any valid string path is acceptable.
-    **kwargs:
-        Keywords arguments to passed to the load_from_tsfile_to_dataframe
-        function.
-
-    Returns
-    -------
-    obj: DenseFunctionalData or IrregularFunctionalData
-        The loaded csv file.
-    labels: np.ndarray
-        Labels
-
-    """
-    data, labels = load_from_tsfile_to_dataframe(filepath, **kwargs)
-
-    len_argavals = data.applymap(len)['dim_0'].unique()
-
-    if len(len_argavals) == 1:
-        obj = read_ts_dense(data)
-    else:
-        obj = read_ts_irregular(data)
-    return obj, labels
-
-
-def read_ts_dense(
-    data: pd.DataFrame
-) -> DenseFunctionalData:
-    """Load a ts file into a DenseFunctionalData object.
-
-    Parameters
-    ----------
-    data: pd.DataFrame
-        Input dataframe.
-
-    Returns
-    -------
-    obj: DenseFunctionalData
-        The loaded ts file.
-
-    """
-    argvals = data.loc[0, 'dim_0'].index.values
-    values = np.zeros((len(data), len(argvals)))
-    for idx, row in data.iterrows():
-        values[idx, :] = row['dim_0'].values
-    return DenseFunctionalData({'input_dim_0': argvals}, values)
-
-
-def read_ts_irregular(
-    data: pd.DataFrame
-) -> IrregularFunctionalData:
-    """Load a ts file into an IrregularFunctionalData object.
-
-    Parameters
-    ----------
-    data: pd.DataFrame
-        Input dataframe
-
-    Returns
-    -------
-    obj: IrregularFunctionalData
-        The loaded ts file.
-
-    """
-    argvals, values = {}, {}
-    for idx, row in data.iterrows():
-        argvals[idx] = row['dim_0'].index.values
-        values[idx] = row['dim_0'].values
-    return IrregularFunctionalData({'input_dim_0': argvals}, values)
