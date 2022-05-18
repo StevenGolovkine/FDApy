@@ -139,7 +139,7 @@ def _plot_2d(
                                data.argvals['input_dim_1'],
                                indexing='ij')
             for obs in data.values:
-                ax.plot_surface(x, y, obs, **plt.kwargs)
+                ax.plot_surface(x, y, obs, **plt_kwargs)
     elif isinstance(data, IrregularFunctionalData):
         raise NotImplementedError("Currently 2d irregular functional data"
                                   " plotting is not implemented.")

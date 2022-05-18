@@ -8,7 +8,10 @@ This modules is used to defined different types of functional data. The
 different types are: Univariate Functional Data, Irregular Functional data and
 Multivariate Functional Data.
 """
+from __future__ import annotations
+
 import numpy as np
+import numpy.typing as npt
 import pygam
 
 from abc import ABC, abstractmethod
@@ -24,7 +27,6 @@ from ..misc.utils import get_dict_dimension_, get_obs_shape_
 from ..misc.utils import integration_weights_, outer_
 from ..misc.utils import range_standardization_
 
-T = TypeVar('T', bound='FunctionalData')
 M = TypeVar('M', bound='MultivariateFunctionalData')
 
 
@@ -32,8 +34,8 @@ M = TypeVar('M', bound='MultivariateFunctionalData')
 # Checkers for parameters
 
 def _check_dict_array(
-    argv_dict: Dict[str, np.ndarray],
-    argv_array: np.ndarray
+    argv_dict: Dict[str, npt.NDArray[np.float64]],
+    argv_array: npt.NDArray[np.float64]
 ) -> None:
     """Raise an error in case of dimension conflicts between the arguments.
 
@@ -49,8 +51,8 @@ def _check_dict_array(
 
 
 def _check_dict_dict(
-    argv1: Dict[str, Dict[int, np.ndarray]],
-    argv2: Dict[int, np.ndarray]
+    argv1: Dict[str, Dict[int, npt.NDArray[np.float64]]],
+    argv2: Dict[int, npt.NDArray[np.float64]]
 ) -> None:
     """Raise an error in case of dimension conflicts between the arguments.
 
@@ -74,7 +76,7 @@ def _check_type(
 
 
 def _check_dict_type(
-    argv: Dict[Union[str, int], np.ndarray],
+    argv: Dict[Union[str, int], npt.NDArray[np.float64]],
     category: type
 ) -> None:
     """Raise an error if all elements of `argv` are not of type `category`."""
@@ -84,7 +86,7 @@ def _check_dict_type(
 
 
 def _check_dict_len(
-    argv: Dict[str, Dict[int, np.ndarray]]
+    argv: Dict[str, Dict[int, npt.NDArray[np.float64]]]
 ) -> None:
     """Raise an error if all elements of `argv` do not have equal length."""
     lengths = [len(obj) for obj in argv.values()]
@@ -119,7 +121,7 @@ class FunctionalData(ABC):
 
     @staticmethod
     def _check_same_nobs(
-        *argv: List[T]
+        *argv: List[FunctionalData]
     ) -> None:
         """Raise an arror if elements in argv have different number of obs."""
         n_obs = set(obj.n_obs for obj in argv)
@@ -130,8 +132,8 @@ class FunctionalData(ABC):
 
     @staticmethod
     def _check_same_ndim(
-        argv1: T,
-        argv2: T
+        argv1: FunctionalData,
+        argv2: FunctionalData
     ) -> None:
         """Raise an error if `argv1` and `argv2` have different dim."""
         if argv1.n_dim != argv2.n_dim:
@@ -160,8 +162,8 @@ class FunctionalData(ABC):
 
     def __init__(
         self,
-        argvals: Dict[str, Union[Dict[int, np.ndarray], np.ndarray]],
-        values: Union[np.ndarray, Dict[int, np.ndarray]],
+        argvals: Dict[str, Union[Dict[int, npt.NDArray[np.float64]], npt.NDArray[np.float64]]],
+        values: Union[npt.NDArray[np.float64], Dict[int, npt.NDArray[np.float64]]],
         category: str
     ) -> None:
         """Initialize FunctionalData object."""
@@ -208,14 +210,14 @@ class FunctionalData(ABC):
     @property
     def argvals(
         self
-    ) -> Dict[str, Union[Dict[int, np.ndarray], np.ndarray]]:
+    ) -> Dict[str, Union[Dict[int, npt.NDArray[np.float64]], npt.NDArray[np.float64]]]:
         """Getter for argvals."""
         return self._argvals
 
     @argvals.setter
     def argvals(
         self,
-        new_argvals: Dict[str, Union[Dict[int, np.ndarray], np.ndarray]]
+        new_argvals: Dict[str, Union[Dict[int, npt.NDArray[np.float64]], npt.NDArray[np.float64]]]
     ) -> None:
         self._check_argvals(new_argvals)
         if hasattr(self, 'values'):
@@ -225,7 +227,7 @@ class FunctionalData(ABC):
     @property
     def argvals_stand(
         self
-    ) -> Dict[str, Union[Dict[int, np.ndarray], np.ndarray]]:
+    ) -> Dict[str, Union[Dict[int, npt.NDArray[np.float64]], npt.NDArray[np.float64]]]:
         """Getter for argvals_stand."""
         return self._argvals_stand
 
@@ -233,21 +235,21 @@ class FunctionalData(ABC):
     def argvals_stand(
         self,
         new_argvals_stand
-    ) -> Dict[str, Union[Dict[int, np.ndarray], np.ndarray]]:
+    ) -> Dict[str, Union[Dict[int, npt.NDArray[np.float64]], npt.NDArray[np.float64]]]:
         self._argvals_stand = new_argvals_stand
 
     @property
     def values(
         self
-    ) -> Union[np.ndarray, Dict[int, np.ndarray]]:
+    ) -> Union[npt.NDArray[np.float64], Dict[int, npt.NDArray[np.float64]]]:
         """Getter for values."""
         return self._values
 
     @values.setter
     def values(
         self,
-        new_values: Union[np.ndarray, Dict[int, np.ndarray]]
-    ) -> Union[np.ndarray, Dict[int, np.ndarray]]:
+        new_values: Union[npt.NDArray[np.float64], Dict[int, npt.NDArray[np.float64]]]
+    ) -> Union[npt.NDArray[np.float64], Dict[int, npt.NDArray[np.float64]]]:
         self._check_values(new_values)
         if hasattr(self, 'argvals'):
             self._check_argvals_values(self.argvals, new_values)
@@ -385,7 +387,7 @@ class DenseFunctionalData(FunctionalData):
 
     @staticmethod
     def _check_argvals(
-        argvals: Dict[str, np.ndarray]
+        argvals: Dict[str, npt.NDArray[np.float64]]
     ) -> None:
         """Check the user provided `argvals`."""
         FunctionalData._check_argvals(argvals)
@@ -393,15 +395,15 @@ class DenseFunctionalData(FunctionalData):
 
     @staticmethod
     def _check_values(
-        values: np.ndarray
+        values: npt.NDArray[np.float64]
     ) -> None:
         """Check the use provided `values`."""
         _check_type(values, np.ndarray)
 
     @staticmethod
     def _check_argvals_values(
-        argvals: Dict[str, np.ndarray],
-        values: np.ndarray
+        argvals: Dict[str, npt.NDArray[np.float64]],
+        values: npt.NDArray[np.float64]
     ) -> None:
         """Check the compatibility of argvals and values."""
         _check_dict_array(argvals, values)
@@ -419,8 +421,8 @@ class DenseFunctionalData(FunctionalData):
 
     def __init__(
         self,
-        argvals: Dict[str, np.ndarray],
-        values: np.ndarray
+        argvals: Dict[str, npt.NDArray[np.float64]],
+        values: npt.NDArray[np.float64]
     ) -> None:
         """Initialize UnivariateFunctionalData object."""
         super().__init__(argvals, values, 'univariate')
@@ -450,14 +452,14 @@ class DenseFunctionalData(FunctionalData):
         return DenseFunctionalData(argvals, values)
 
     @property
-    def argvals(self) -> Dict[str, np.ndarray]:
+    def argvals(self) -> Dict[str, npt.NDArray[np.float64]]:
         """Getter for argvals."""
         return super().argvals
 
     @argvals.setter
     def argvals(
         self,
-        new_argvals: Dict[str, np.ndarray]
+        new_argvals: Dict[str, npt.NDArray[np.float64]]
     ) -> None:
         super(DenseFunctionalData, self.__class__).\
             argvals.fset(self, new_argvals)
@@ -735,9 +737,9 @@ class DenseFunctionalData(FunctionalData):
 
     def smooth(
         self,
-        points: np.ndarray,
-        neighborhood: np.ndarray,
-        points_estim: Optional[np.ndarray] = None,
+        points: npt.NDArray[np.float64],
+        neighborhood: npt.NDArray[np.float64],
+        points_estim: Optional[npt.NDArray[np.float64]] = None,
         degree: int = 0,
         kernel: str = "epanechnikov",
         bandwidth: Optional[Bandwidth] = None
@@ -883,7 +885,7 @@ class IrregularFunctionalData(FunctionalData):
 
     @staticmethod
     def _check_argvals(
-        argvals: Dict[str, Dict[int, np.ndarray]]
+        argvals: Dict[str, Dict[int, npt.NDArray[np.float64]]]
     ) -> None:
         """Check the user provided `argvals`."""
         FunctionalData._check_argvals(argvals)
@@ -894,7 +896,7 @@ class IrregularFunctionalData(FunctionalData):
 
     @staticmethod
     def _check_values(
-        values: Dict[int, np.ndarray]
+        values: Dict[int, npt.NDArray[np.float64]]
     ) -> None:
         """Check the user provided `values`."""
         _check_type(values, dict)
@@ -925,8 +927,8 @@ class IrregularFunctionalData(FunctionalData):
 
     def __init__(
         self,
-        argvals: Dict[str, Dict[int, np.ndarray]],
-        values: Dict[int, np.ndarray]
+        argvals: Dict[str, Dict[int, npt.NDArray[np.float64]]],
+        values: Dict[int, npt.NDArray[np.float64]]
     ) -> None:
         """Initialize IrregularFunctionalData object."""
         super().__init__(argvals, values, 'irregular')
@@ -962,14 +964,14 @@ class IrregularFunctionalData(FunctionalData):
         return IrregularFunctionalData(argvals, values)
 
     @property
-    def argvals(self) -> Dict[str, Dict[int, np.ndarray]]:
+    def argvals(self) -> Dict[str, Dict[int, npt.NDArray[np.float64]]]:
         """Getter for argvals."""
         return super().argvals
 
     @argvals.setter
     def argvals(
         self,
-        new_argvals: Dict[str, Dict[int, np.ndarray]]
+        new_argvals: Dict[str, Dict[int, npt.NDArray[np.float64]]]
     ) -> None:
         super(IrregularFunctionalData, self.__class__).\
             argvals.fset(self, new_argvals)
@@ -1045,7 +1047,7 @@ class IrregularFunctionalData(FunctionalData):
         """
         return {idx: len(dim) for idx, dim in self.gather_points().items()}
 
-    def gather_points(self) -> Dict[int, np.ndarray]:
+    def gather_points(self) -> Dict[int, npt.NDArray[np.float64]]:
         """Gather all the `argvals` for each of the dimensions separetely.
 
         Returns
@@ -1161,9 +1163,9 @@ class IrregularFunctionalData(FunctionalData):
 
     def smooth(
         self,
-        points: np.ndarray,
-        neighborhood: np.ndarray,
-        points_estim: Optional[np.ndarray] = None,
+        points: npt.NDArray[np.float64],
+        neighborhood: npt.NDArray[np.float64],
+        points_estim: Optional[npt.NDArray[np.float64]] = None,
         degree: int = 0,
         kernel: str = "epanechnikov",
         bandwidth: Optional[Bandwidth] = None

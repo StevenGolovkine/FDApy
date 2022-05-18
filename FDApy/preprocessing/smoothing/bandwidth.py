@@ -120,7 +120,7 @@ def mean_theta_(
 
 
 def mean_eta_(
-    data: Dict[str, Dict[int, npt.NDArray[np.float64]]],
+    data: Dict[int, npt.NDArray[np.float64]],
     idxs: List[int],
     ranges: int,
     hurst: float
@@ -143,8 +143,9 @@ def mean_eta_(
     res: float
 
     """
-    return np.mean([eta_(obs, ranges, idx, hurst)
-                    for obs, idx in zip(data, idxs)])
+    eta = np.mean([eta_(obs, ranges, idx, hurst) 
+                   for obs, idx in zip(data, idxs)])
+    return cast(float, eta)
 
 
 ##############################################################################
