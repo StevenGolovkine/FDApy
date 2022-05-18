@@ -6,19 +6,20 @@
 This module is used to estimate the bandwidth parameter that is necessary in
 the case of kernel regression.
 """
+from __future__ import annotations
+
 import numpy as np
+import numpy.typing as npt
 
-from typing import Dict, NamedTuple, List, TypeVar, Union
+from typing import Dict, NamedTuple, List, Union, cast
 
-from ...src.sigma import estimate_sigma
-
-T = TypeVar('T', bound='FunctionalData')
+from ...src.sigma import estimate_sigma  # type: ignore
 
 
 ##############################################################################
 # Misc functions
 def theta_(
-    v: np.ndarray,
+    v: npt.NDArray[np.float64],
     k: int,
     idx: int
 ) -> float:
@@ -26,7 +27,7 @@ def theta_(
 
     Parameters
     ----------
-    v: np.ndarray or list
+    v: np.ndarray
         A vector
     k: int
         An integer
@@ -38,11 +39,11 @@ def theta_(
     res: float
 
     """
-    return (v[idx + 2 * k - 1] - v[idx + k])**2
+    return cast(float, (v[idx + 2 * k - 1] - v[idx + k])**2)
 
 
 def eta_(
-    v: np.ndarray,
+    v: npt.NDArray[np.float64],
     k: int,
     idx: int,
     hurst: float
@@ -51,7 +52,7 @@ def eta_(
 
     Parameters
     ----------
-    v: np.ndarray or list
+    v: np.ndarray
         A vector
     k: int
         An integer
@@ -65,11 +66,11 @@ def eta_(
     res: float
 
     """
-    return (v[idx + 2 * k - 1] - v[idx + k])**(2 * hurst)
+    return cast(float, (v[idx + 2 * k - 1] - v[idx + k])**(2 * hurst))
 
 
 def indices_(
-    data: Dict[str, Dict[int, np.ndarray]],
+    data: Dict[int, npt.NDArray[np.float64]],
     t0: float,
     ranges: int
 ) -> List[int]:
@@ -94,7 +95,7 @@ def indices_(
 
 
 def mean_theta_(
-    data: Dict[str, Dict[int, np.ndarray]],
+    data: Dict[int, npt.NDArray[np.float64]],
     idxs: List[int],
     ranges: int
 ) -> float:
@@ -114,11 +115,12 @@ def mean_theta_(
     res: float
 
     """
-    return np.mean([theta_(obs, ranges, idx) for obs, idx in zip(data, idxs)])
+    theta = np.mean([theta_(obs, ranges, idx) for obs, idx in zip(data, idxs)])
+    return cast(float, theta)
 
 
 def mean_eta_(
-    data: Dict[str, Dict[int, np.ndarray]],
+    data: Dict[str, Dict[int, npt.NDArray[np.float64]]],
     idxs: List[int],
     ranges: int,
     hurst: float
@@ -148,8 +150,8 @@ def mean_eta_(
 ##############################################################################
 # Estimation of Hurst parameters
 def estimate_hurst_(
-    argvals: Dict[str, Dict[int, np.ndarray]],
-    values: Dict[int, np.ndarray],
+    argvals: Dict[str, Dict[int, npt.NDArray[np.float64]]],
+    values: Dict[int, npt.NDArray[np.float64]],
     t0: float,
     k0: int,
     sigma: float = None
@@ -201,8 +203,8 @@ def estimate_hurst_(
 
 
 def estimate_hurst_list_(
-    argvals: Dict[str, Dict[int, np.ndarray]],
-    values: Dict[int, np.ndarray],
+    argvals: Dict[str, Dict[int, npt.NDArray[np.float64]]],
+    values: Dict[int, npt.NDArray[np.float64]],
     t0: List[float],
     k0: List[int],
     sigma: float = None
@@ -243,8 +245,8 @@ def estimate_hurst_list_(
 ##############################################################################
 # Estimation of L0
 def estimate_constant_(
-    argvals: Dict[str, Dict[int, np.ndarray]],
-    values: Dict[int, np.ndarray],
+    argvals: Dict[str, Dict[int, npt.NDArray[np.float64]]],
+    values: Dict[int, npt.NDArray[np.float64]],
     t0: float,
     k0: int,
     hurst: float,
@@ -300,8 +302,8 @@ def estimate_constant_(
 
 
 def estimate_constant_list_(
-    argvals: Dict[str, Dict[int, np.ndarray]],
-    values: Dict[int, np.ndarray],
+    argvals: Dict[str, Dict[int, npt.NDArray[np.float64]]],
+    values: Dict[int, npt.NDArray[np.float64]],
     t0: List[float],
     k0: List[int],
     hurst: List[float],
@@ -349,7 +351,7 @@ def estimate_constant_list_(
 ##############################################################################
 # Estimation of the bandwidth
 def estimate_bandwidth_(
-    argvals: Dict[str, Dict[int, np.ndarray]],
+    argvals: Dict[str, Dict[int, npt.NDArray[np.float64]]],
     hurst: float,
     constant: float,
     sigma: float,
@@ -398,7 +400,7 @@ def estimate_bandwidth_(
 
 
 def estimate_bandwidth_list_(
-    argvals: Dict[str, Dict[int, np.ndarray]],
+    argvals: Dict[str, Dict[int, npt.NDArray[np.float64]]],
     hurst: List[float],
     constant: List[float],
     sigma: float,
@@ -507,7 +509,7 @@ class Bandwidth(object):
 
     def __call__(
         self,
-        data: T,
+        data: FunctionalData,
         hurst: list = None,
         constants: list = None,
         sigma: float = None
@@ -552,8 +554,8 @@ class Bandwidth(object):
 
     def estimate_hurst(
         self,
-        argvals: Dict[str, Dict[int, np.ndarray]],
-        values: Dict[int, np.ndarray],
+        argvals: Dict[str, Dict[int, npt.NDArray[np.float64]]],
+        values: Dict[int, npt.NDArray[np.float64]],
         sigma: float = None
     ) -> Union[float, List[float]]:
         """Perform an estimation of the Hurst coeffifient.
@@ -585,8 +587,8 @@ class Bandwidth(object):
 
     def estimate_constant(
         self,
-        argvals: Dict[str, Dict[int, np.ndarray]],
-        values: Dict[int, np.ndarray],
+        argvals: Dict[str, Dict[int, npt.NDArray[np.float64]]],
+        values: Dict[int, npt.NDArray[np.float64]],
         hurst: List[float],
         sigma: float = None
     ) -> Union[float, List[float]]:
@@ -621,7 +623,7 @@ class Bandwidth(object):
 
     def estimate_bandwidth(
         self,
-        argvals: Dict[str, Dict[int, np.ndarray]],
+        argvals: Dict[str, Dict[int, npt.NDArray[np.float64]]],
         hurst: List[float],
         constants: List[float],
         sigma: float,

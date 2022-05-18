@@ -5,19 +5,22 @@
 
 This module is used to fit local polynomial regression.
 """
-import numpy as np
+from __future__ import annotations
 
-from typing import TypeVar, Union
+import numpy as np
+import numpy.typing as npt
+
+from typing import Union
 
 from sklearn.preprocessing import PolynomialFeatures
-
-T = TypeVar('T', bound='LocalPolynomial')
 
 
 ##############################################################################
 # Inner functions for the LocalPolynomial class.
 
-def _gaussian(t: np.ndarray) -> np.ndarray:
+def _gaussian(
+    t: npt.NDArray[np.float64]
+) -> npt.NDArray[np.float64]:
     """Compute the gaussian density with mean 0 and standard deviation 1.
 
     Parameters
@@ -30,10 +33,12 @@ def _gaussian(t: np.ndarray) -> np.ndarray:
     kernel: array-like, shape = (n_samples,)
 
     """
-    return np.exp(- t**2 / 2) / np.sqrt(2 * np.pi)
+    return np.exp(- t**2 / 2) / np.sqrt(2 * np.pi)  # type: ignore
 
 
-def _epanechnikov(t: np.ndarray) -> np.ndarray:
+def _epanechnikov(
+    t: npt.NDArray[np.float64]
+) -> npt.NDArray[np.float64]:
     """Compute the Epanechnikov kernel.
 
     Parameters
@@ -57,7 +62,9 @@ def _epanechnikov(t: np.ndarray) -> np.ndarray:
     return kernel
 
 
-def _tri_cube(t: np.ndarray) -> np.ndarray:
+def _tri_cube(
+    t: npt.NDArray[np.float64]
+) -> npt.NDArray[np.float64]:
     """Compute the tri-cube kernel.
 
     Parameters
@@ -81,7 +88,9 @@ def _tri_cube(t: np.ndarray) -> np.ndarray:
     return kernel
 
 
-def _bi_square(t: np.ndarray) -> np.ndarray:
+def _bi_square(
+    t: npt.NDArray[np.float64]
+) -> npt.NDArray[np.float64]:
     """Compute the bi-square kernel.
 
     Parameters
@@ -106,11 +115,11 @@ def _bi_square(t: np.ndarray) -> np.ndarray:
 
 
 def _compute_kernel(
-    x: np.ndarray,
-    x0: np.ndarray,
-    h: Union[float, np.ndarray],
+    x: npt.NDArray[np.float64],
+    x0: npt.NDArray[np.float64],
+    h: Union[float, npt.NDArray[np.float64]],
     kernel_name: str = 'gaussian'
-) -> np.ndarray:
+) -> npt.NDArray[np.float64]:
     """Compute kernel at point norm(x - x0) / h.
 
     Parameters
@@ -156,11 +165,11 @@ def _compute_kernel(
 
 
 def _loc_poly(
-    x: np.ndarray,
-    y: np.ndarray,
-    x0: np.ndarray,
-    design_matrix: np.ndarray,
-    design_matrix_x0: np.ndarray,
+    x: npt.NDArray[np.float64],
+    y: npt.NDArray[np.float64],
+    x0: npt.NDArray[np.float64],
+    design_matrix: npt.NDArray[np.float64],
+    design_matrix_x0: npt.NDArray[np.float64],
     kernel_name: str = 'epanechnikov',
     h: float = 0.05
 ) -> float:
@@ -207,7 +216,7 @@ def _loc_poly(
     temp = np.dot(design_matrix.T, np.diag(kernel))
     beta = np.dot(np.linalg.pinv(np.dot(temp, design_matrix)), np.dot(temp, y))
 
-    return np.dot(design_matrix_x0, beta)
+    return np.dot(design_matrix_x0, beta)  # type: ignore
 
 #############################################################################
 # Class LocalPolynomial
@@ -285,9 +294,9 @@ class LocalPolynomial():
 
     def fit(
         self,
-        x: np.ndarray,
-        y: np.ndarray
-    ) -> T:
+        x: npt.NDArray[np.float64],
+        y: npt.NDArray[np.float64]
+    ) -> LocalPolynomial:
         """Fit local polynomial regression.
 
         Parameters
@@ -308,7 +317,7 @@ class LocalPolynomial():
 
         x0 = np.unique(self.x, axis=0)
         if not np.iterable(self.bandwidth):
-            bandwidth = np.repeat(self.bandwidth, np.size(x0) / np.ndim(x0))
+            bandwidth = np.repeat(self.bandwidth, np.size(x0) // np.ndim(x0))
 
         design_matrix = self.poly_features.\
             fit_transform(np.array(self.x, ndmin=2).T)
@@ -322,7 +331,10 @@ class LocalPolynomial():
                                                      bandwidth)])
         return self
 
-    def predict(self, x: np.ndarray) -> np.ndarray:
+    def predict(
+        self,
+        x: npt.NDArray[np.float64]
+    ) -> npt.NDArray[np.float64]:
         """Predict using local polynomial regression.
 
         Parameters
@@ -340,7 +352,7 @@ class LocalPolynomial():
             x = [x]
 
         if not np.iterable(self.bandwidth):
-            bandwidth = np.repeat(self.bandwidth, np.size(x) / np.ndim(x))
+            bandwidth = np.repeat(self.bandwidth, np.size(x) // np.ndim(x))
 
         design_matrix = self.poly_features.\
             fit_transform(np.array(self.x, ndmin=2).T)
@@ -357,10 +369,10 @@ class LocalPolynomial():
 
     def fit_predict(
         self,
-        x: np.ndarray,
-        y: np.ndarray,
-        x_pred: np.ndarray = None
-    ) -> np.ndarray:
+        x: npt.NDArray[np.float64],
+        y: npt.NDArray[np.float64],
+        x_pred: npt.NDArray[np.float64]
+    ) -> npt.NDArray[np.float64]:
         """Fit the model using `x` and predict on `x_pred`.
 
         Parameters
@@ -386,7 +398,7 @@ class LocalPolynomial():
 
         if not np.iterable(self.bandwidth):
             bandwidth = np.repeat(self.bandwidth,
-                                  np.size(x_pred) / np.ndim(x_pred))
+                                  np.size(x_pred) // np.ndim(x_pred))
 
         design_matrix = self.poly_features.\
             fit_transform(np.array(self.x, ndmin=2).T)

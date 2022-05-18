@@ -6,7 +6,10 @@
 This module is used to perform smoothing spline. It is a wrapper around the
 package csaps (https://csaps.readthedocs.io/en/latest/index.html).
 """
+from __future__ import annotations
+
 import numpy as np
+import numpy.typing as npt
 
 from csaps import csaps
 from typing import Optional, TypeVar
@@ -48,7 +51,7 @@ class SmoothingSpline():
 
     def __init__(
         self,
-        smooth: Optional[float] = None
+        smooth: float = np.nan
     ) -> None:
         """Initialize SmoothingSpline object."""
         self.smooth = smooth
@@ -68,9 +71,9 @@ class SmoothingSpline():
 
     def fit(
         self,
-        x: np.ndarray,
-        y: np.ndarray
-    ) -> T:
+        x: npt.NDArray[np.float64],
+        y: npt.NDArray[np.float64]
+    ) -> SmoothingSpline:
         """Fit smoothing spline.
 
         Parameters
@@ -92,8 +95,8 @@ class SmoothingSpline():
 
     def predict(
         self,
-        x: np.ndarray
-    ) -> np.ndarray:
+        x: npt.NDArray[np.float64]
+    ) -> npt.NDArray[np.float64]:
         """Predict using smoothing splines.
 
         Parameters
@@ -111,10 +114,10 @@ class SmoothingSpline():
 
     def fit_predict(
         self,
-        x: np.ndarray,
-        y: np.ndarray,
-        x_pred: Optional[np.ndarray] = None
-    ) -> np.ndarray:
+        x: npt.NDArray[np.float64],
+        y: npt.NDArray[np.float64],
+        x_pred: Optional[npt.NDArray[np.float64]] = None
+    ) -> npt.NDArray[np.float64]:
         """Fit the model using `x` and predict on `x_pred`.
 
         Parameters
