@@ -142,7 +142,3 @@ class TestIrregularFunctionalData2D(unittest.TestCase):
                                           [N, N, N, N, N, N, 8., 9.]]]),
                                equal_nan=True)
         self.assertTrue(is_equal)
-
-
-if __name__ == '__main__':
-    unittest.main()

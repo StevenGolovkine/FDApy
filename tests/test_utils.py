@@ -137,8 +137,3 @@ class TestUtilsFails(unittest.TestCase):
         with self.assertRaises(NotImplementedError) as cm:
             integration_weights_(X, method='failed')
         self.assertTrue('implemented' in str(cm.exception))
-
-
-if __name__ == '__main__':
-    #unittest.main()
-    print('COucou')

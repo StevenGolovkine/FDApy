@@ -9,9 +9,10 @@ This modules is used to defined different loaders to load common data files
 IrregularFunctionalData or MultivariateFunctionalData.
 """
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
-from typing import Tuple, Union
+from typing import Any, Tuple, Union
 
 from FDApy.representation.functional_data import (DenseFunctionalData,
                                                   IrregularFunctionalData)
@@ -21,7 +22,7 @@ from FDApy.representation.functional_data import (DenseFunctionalData,
 # Loader for csv
 def read_csv(
     filepath: str,
-    **kwargs
+    **kwargs: Any
 ) -> Union[DenseFunctionalData, IrregularFunctionalData]:
     """Read a comma-separated values (csv) file into Functional Data.
 
@@ -48,20 +49,19 @@ def read_csv(
     data = pd.read_csv(filepath, **kwargs)
 
     try:
-        all_argvals = data.columns.astype(np.int64)
+        all_argvals = data.columns.astype(np.int64).to_numpy()
     except TypeError:
         all_argvals = np.arange(0, len(data.columns))
 
     if not data.isna().values.any():
-        obj = read_csv_dense(data, all_argvals)
+        return read_csv_dense(data, all_argvals)
     else:
-        obj = read_csv_irregular(data, all_argvals)
-    return obj
+        return read_csv_irregular(data, all_argvals)
 
 
 def read_csv_dense(
     data: pd.DataFrame,
-    argvals: np.ndarray
+    argvals: npt.NDArray[np.float64]
 ) -> DenseFunctionalData:
     """Load a csv file into a DenseFunctionalData object.
 
@@ -78,14 +78,14 @@ def read_csv_dense(
         The loaded csv file
 
     """
-    argvals = {'input_dim_0': argvals}
+    argvals_ = {'input_dim_0': argvals}
     values = np.array(data)
-    return DenseFunctionalData(argvals, values)
+    return DenseFunctionalData(argvals_, values)
 
 
 def read_csv_irregular(
     data: pd.DataFrame,
-    argvals: np.ndarray
+    argvals: npt.NDArray[np.float64]
 ) -> IrregularFunctionalData:
     """Load a csv file into an IrregularFunctionalData object.
 
@@ -102,7 +102,7 @@ def read_csv_irregular(
         The loaded csv file.
 
     """
-    argvals = {'input_dim_0': {idx: np.array(argvals[~np.isnan(row)])
-                               for idx, row in enumerate(data.values)}}
+    tt = {idx : argvals[~np.isnan(row)] for idx, row in enumerate(data.values)}
+    argvals_ = {'input_dim_0': tt}
     values = {idx: row[~np.isnan(row)] for idx, row in enumerate(data.values)}
-    return IrregularFunctionalData(argvals, values)
+    return IrregularFunctionalData(argvals_, values)

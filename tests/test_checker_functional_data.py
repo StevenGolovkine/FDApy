@@ -60,7 +60,3 @@ class TestCheckerFunctionalData(unittest.TestCase):
                   2: np.array([8, 9, 7])}
         irregu_fd = IrregularFunctionalData(argvals, values)
         self.assertRaises(TypeError, _check_same_type, dense_fd, irregu_fd)
-
-
-if __name__ == '__main__':
-    unittest.main()

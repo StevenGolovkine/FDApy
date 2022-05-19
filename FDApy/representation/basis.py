@@ -7,10 +7,11 @@ This module is used to define a Basis class and diverse classes derived from
 it. These are used to define basis of functions as DenseFunctionalData object.
 """
 import numpy as np
+import numpy.typing as npt
 import scipy
 
 from patsy import bs
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from .functional_data import DenseFunctionalData
 from .functional_data import tensor_product_
@@ -20,10 +21,9 @@ from .functional_data import tensor_product_
 # Definition of the basis (eigenfunctions)
 
 def basis_legendre(
+    argvals: npt.NDArray[np.float64],
     n_functions: int = 3,
-    argvals: Optional[np.ndarray] = None,
-    norm: bool = False
-) -> np.ndarray:
+) -> npt.NDArray[np.float64]:
     r"""Define Legendre basis of function.
 
     Build a basis of :math:`K` functions using Legendre polynomials on the
@@ -31,13 +31,10 @@ def basis_legendre(
 
     Parameters
     ----------
+    argvals: numpy.ndarray
+        The values on which evaluated the Legendre polynomials.
     n_functions: int, default=3
         Maximum degree of the Legendre polynomials.
-    argvals: numpy.ndarray, default=None
-        The values on which evaluated the Legendre polynomials. If ``None``,
-        the polynomials are evaluated on the interval :math:`[-1, 1]`.
-    norm: boolean, default=True
-        Should we normalize the functions?
 
     Returns
     -------
@@ -57,33 +54,20 @@ def basis_legendre(
 
     Examples
     --------
-    >>> basis_legendre(n_functions=3, argvals=np.arange(-1, 1, 0.1), norm=True)
+    >>> basis_legendre(argvals=np.arange(-1, 1, 0.1), n_functions=3)
 
     """
-    if argvals is None:
-        argvals = np.arange(-1, 1, 0.1)
-
-    if isinstance(argvals, list):
-        raise ValueError('argvals has to be a numpy array!')
-
     values = np.empty((n_functions, len(argvals)))
-
     for degree in np.arange(0, n_functions):
         legendre = scipy.special.eval_legendre(degree, argvals)
-
-        if norm:
-            norm2 = np.sqrt(scipy.integrate.simps(
-                legendre * legendre, argvals))
-            legendre = legendre / norm2
         values[degree, :] = legendre
     return values
 
 
 def basis_wiener(
-    n_functions: int = 3,
-    argvals: Optional[np.ndarray] = None,
-    norm: bool = False
-) -> np.ndarray:
+    argvals: npt.NDArray[np.float64],
+    n_functions: int = 3
+) -> npt.NDArray[np.float64]:
     r"""Define Wiener basis of function.
 
     Build a basis of :math:`K` functions using the eigenfunctions of a Wiener
@@ -91,14 +75,11 @@ def basis_wiener(
 
     Parameters
     ----------
+    argvals: numpy.ndarray
+        The values on which the eigenfunctions of a Wiener process are
+        evaluated.
     n_functions: int, default=3
         Number of functions to consider.
-    argvals: numpy.ndarray, default=None
-        The values on which the eigenfunctions of a Wiener process are
-        evaluated. If ``None``, the functions are evaluated on the interval
-        :math:`[0, 1]`.
-    norm: boolean, default=True
-        Should we normalize the functions?
 
     Returns
     -------
@@ -114,36 +95,23 @@ def basis_wiener(
         \phi_k(t) = \sqrt{2}\sin\left(\left(k - \frac{1}{2}\right)\pi t\right),
         \quad 1 \leq k \leq K
 
-
     Example
     -------
-    >>> basis_wiener(n_functions=3, argvals=np.arange(0, 1, 0.05), norm=True)
+    >>> basis_wiener(argvals=np.arange(0, 1, 0.05), n_functions=3)
 
     """
-    if argvals is None:
-        argvals = np.arange(0, 1, 0.05)
-
-    if isinstance(argvals, list):
-        raise ValueError('argvals has to be a numpy array!')
-
     values = np.empty((n_functions, len(argvals)))
-
     for degree in np.arange(1, n_functions + 1):
         wiener = np.sqrt(2) * np.sin((degree - 0.5) * np.pi * argvals)
-
-        if norm:
-            wiener = wiener / np.sqrt(scipy.integrate.simps(
-                wiener * wiener, argvals))
         values[(degree - 1), :] = wiener
     return values
 
 
 def basis_fourier(
+    argvals: npt.NDArray[np.float64],
     n_functions: int = 3,
-    argvals: Optional[np.ndarray] = None,
     period: float = 2 * np.pi,
-    norm: bool = True
-) -> np.ndarray:
+) -> npt.NDArray[np.float64]:
     r"""Define Fourier basis of function.
 
     Build a basis of :math:`K` functions using Fourier series on the
@@ -151,15 +119,12 @@ def basis_fourier(
 
     Parameters
     ----------
+    argvals: numpy.ndarray
+        The values on which evaluated the Fourier series.
     n_functions: int, default=3
         Number of considered Fourier series. Should be odd.
-    argvals: numpy.ndarray, default = None
-        The values on which evaluated the Fourier series. If ``None``,
-        the polynomials are evaluated on the interval :math:`[0, period]`.
     period: float, default=2*numpy.pi
         The period of the circular functions.
-    norm: boolean, default=True
-        Should we normalize the functions?
 
     Returns
     -------
@@ -178,60 +143,42 @@ def basis_fourier(
 
     Examples
     --------
-    >>> basis_fourier(n_functions=3, argvals=np.arange(0, 2*np.pi, 0.1))
+    >>> basis_fourier(argvals=np.arange(0, 2*np.pi, 0.1), n_functions=3)
 
     """
     n_functions = n_functions + 1 if n_functions % 2 == 0 else n_functions
-    if argvals is None:
-        argvals = np.arange(0, period, 0.1)
-    if isinstance(argvals, list):
-        raise ValueError('argvals has to be a numpy array!')
-
-    values = np.empty((n_functions, len(argvals)))
-    values[0, :] = 1
+    values = np.ones((n_functions, len(argvals)))
     for k in np.arange(1, (n_functions + 1) // 2):
         sin = np.sin(2 * np.pi * k * argvals / period)
         cos = np.cos(2 * np.pi * k * argvals / period)
-
-        if norm:
-            sin_norm2 = np.sqrt(scipy.integrate.simps(
-                sin * sin, argvals))
-            cos_norm2 = np.sqrt(scipy.integrate.simps(
-                cos * cos, argvals))
-            sin = sin / sin_norm2
-            cos = cos / cos_norm2
         values[(2 * k - 1), :] = sin
         values[(2 * k), :] = cos
     return values[:n_functions, :]
 
 
 def basis_bsplines(
+    argvals: npt.NDArray[np.float64],
     n_functions: int = 5,
-    argvals: Optional[np.ndarray] = None,
     degree: int = 3,
-    knots: Optional[np.ndarray] = None,
-    norm: bool = False
-) -> np.ndarray:
+    knots: Optional[npt.NDArray[np.float64]] = None,
+) -> npt.NDArray[np.float64]:
     """Define B-splines basis of function.
 
-    Build a basis of :math:`K` functions using B-splines basis on the
+    Build a basis of :math:`n_functions` functions using B-splines basis on the
     interval defined by ``argvals``.
 
     Parameters
     ----------
+    argvals: numpy.ndarray
+        The values on which evaluated the B-splines.
     n_functions: int, default=5
         Number of considered B-splines.
-    argvals: numpy.ndarray, default = None
-        The values on which evaluated the B-splines. If ``None``,
-        the polynomials are evaluated on the interval :math:`[0, 1]`.
     degree: int, default=3
         Degree of the B-splines. The default gives cubic splines.
     knots: numpy.ndarray, (n_knots,)
         Specify the break points defining the B-splines. If ``knots``
-        are provided, the provided value of ``K`` is ignored. And the
+        are provided, the provided value of ``n_functions`` is ignored. And the
         number of basis functions is ``n_knots + degree - 1``.
-    norm: boolean, default=True
-        Should we normalize the functions?
 
     Returns
     -------
@@ -241,14 +188,9 @@ def basis_bsplines(
 
     Examples
     --------
-    >>> basis_bsplines(n_functions=5, argvals=np.arange(0, 1, 0.01))
+    >>> basis_bsplines(argvals=np.arange(0, 1, 0.01), n_functions=5)
 
     """
-    if argvals is None:
-        argvals = np.arange(0, 1, 0.01)
-    if isinstance(argvals, list):
-        raise ValueError('argvals has to be a numpy array!')
-
     if knots is not None:
         n_knots = len(knots)
         n_functions = n_knots + degree - 1
@@ -256,34 +198,30 @@ def basis_bsplines(
         n_knots = n_functions - degree + 1
         knots = np.linspace(argvals[0], argvals[-1], n_knots)
 
-    values = bs(argvals, df=n_functions, knots=knots[1:-1], degree=degree,
-                include_intercept=True)
-    if norm:
-        norm2 = np.sqrt(scipy.integrate.simps(values * values, argvals,
-                                              axis=0))
-        values = values / norm2
-    return values.T
+    values = bs(
+        argvals, df=n_functions, knots=knots[1:-1], 
+        degree=degree, include_intercept=True
+    )
+    return values.T  # type: ignore
 
 
 def simulate_basis(
     name: str,
+    argvals: npt.NDArray[np.float64],
     n_functions: int = 3,
-    argvals: Optional[np.ndarray] = None,
     norm: bool = False,
-    **kwargs
-) -> np.ndarray:
+    **kwargs: Any
+) -> npt.NDArray[np.float64]:
     """Redirect to the right simulation basis function.
 
     Parameters
     ----------
     name: str, {'legendre', 'wiener', 'fourier', 'bsplines'}
         Name of the basis to use.
+    argvals: numpy.ndarray
+        The values on which the basis functions are evaluated.
     n_functions: int, default=3
         Number of functions to compute.
-    argvals: numpy.ndarray, default=None
-        The values on which the basis functions are evaluated. If ``None``,
-        the functions are evaluated on the diverse interval depending on the
-        basis.
     norm: boolean
         Should we normalize the functions?
 
@@ -309,18 +247,24 @@ def simulate_basis(
 
     """
     if name == 'legendre':
-        values = basis_legendre(n_functions, argvals, norm)
+        values = basis_legendre(argvals, n_functions)
     elif name == 'wiener':
-        values = basis_wiener(n_functions, argvals, norm)
+        values = basis_wiener(argvals, n_functions)
     elif name == 'fourier':
-        values = basis_fourier(n_functions, argvals,
-                               kwargs.get('period', 2 * np.pi), norm)
+        values = basis_fourier(
+            argvals, n_functions, kwargs.get('period', 2 * np.pi)
+        )
     elif name == 'bsplines':
-        values = basis_bsplines(n_functions, argvals,
-                                kwargs.get('degree', 3),
-                                kwargs.get('knots', None), norm)
+        values = basis_bsplines(
+            argvals, n_functions,
+            kwargs.get('degree', 3), kwargs.get('knots', None)
+        )
     else:
         raise NotImplementedError(f'Basis {name!r} not implemented!')
+
+    if norm:
+        norm2 = np.sqrt(scipy.integrate.simpson(values * values, argvals))
+        values = np.divide(values, norm2[:, np.newaxis])
     return values
 
 
@@ -365,9 +309,9 @@ class Basis(
         name: str,
         n_functions: int,
         dimension: str = '1D',
-        argvals: Optional[dict] = None,
+        argvals: Optional[Dict[str, npt.NDArray[np.float64]]] = None,
         norm: bool = False,
-        **kwargs
+        **kwargs: Any
     ) -> None:
         """Initialize Basis object."""
         self.name = name
@@ -382,8 +326,9 @@ class Basis(
             raise NotImplementedError('Only one dimensional basis are'
                                       ' implemented.')
 
-        values = simulate_basis(name, n_functions, argvals['input_dim_0'],
-                                norm, **kwargs)
+        values = simulate_basis(
+            name, argvals['input_dim_0'], n_functions, norm, **kwargs
+        )
 
         if dimension == '1D':
             super().__init__(argvals, values)

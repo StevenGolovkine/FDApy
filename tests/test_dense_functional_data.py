@@ -125,7 +125,3 @@ class TestDenseFunctionalData2D(unittest.TestCase):
                                           [3., 4., 5.],
                                           [3., 4., 5.]]]))
         self.assertTrue(is_equal)
-
-
-if __name__ == '__main__':
-    unittest.main()
