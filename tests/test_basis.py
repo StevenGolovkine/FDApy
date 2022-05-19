@@ -49,7 +49,7 @@ class TestBasis(unittest.TestCase):
             )
         )
 
-    def test_basis_legendre(self):
+    def test_basis_legendre_norm(self):
         X = Basis(
             name='legendre', n_functions=2, argvals=self.argvals, norm=True
         )

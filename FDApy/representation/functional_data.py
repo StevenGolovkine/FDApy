@@ -16,7 +16,10 @@ import pygam
 
 from abc import ABC, abstractmethod
 from collections import UserList
-from typing import Any, Dict, Iterable, Optional, List, Tuple, TypeVar, Union
+from typing import (
+    cast, Any, Dict, Iterable, Iterator, Optional, List, Literal,
+    Tuple, TypeVar, Union
+)
 
 from sklearn.metrics import pairwise_distances
 
@@ -27,15 +30,18 @@ from ..misc.utils import get_dict_dimension_, get_obs_shape_
 from ..misc.utils import integration_weights_, outer_
 from ..misc.utils import range_standardization_
 
-M = TypeVar('M', bound='MultivariateFunctionalData')
 
+DenseArgvals = Dict[str, npt.NDArray[np.float64]]
+DenseValues = npt.NDArray[np.float64]
+IrregArgvals = Dict[str, Dict[int, npt.NDArray[np.float64]]]
+IrregValues = Dict[int, npt.NDArray[np.float64]]
 
 ###############################################################################
 # Checkers for parameters
 
 def _check_dict_array(
-    argv_dict: Dict[str, npt.NDArray[np.float64]],
-    argv_array: npt.NDArray[np.float64]
+    argv_dict: DenseArgvals,
+    argv_array: DenseValues
 ) -> None:
     """Raise an error in case of dimension conflicts between the arguments.
 
@@ -46,13 +52,14 @@ def _check_dict_array(
     dim_dict = get_dict_dimension_(argv_dict)
     dim_array = argv_array.shape[1:]
     if dim_dict != dim_array:
-        raise ValueError(f"{argv_dict} and {argv_array} do not have coherent"
-                         " dimension.")
+        raise ValueError(
+            f"{argv_dict} and {argv_array} do not have coherent dimension."
+        )
 
 
 def _check_dict_dict(
-    argv1: Dict[str, Dict[int, npt.NDArray[np.float64]]],
-    argv2: Dict[int, npt.NDArray[np.float64]]
+    argv1: IrregArgvals,
+    argv2: IrregValues
 ) -> None:
     """Raise an error in case of dimension conflicts between the arguments.
 
@@ -62,37 +69,20 @@ def _check_dict_dict(
     has_obs_shape = [obs.shape == get_obs_shape_(argv1, idx)
                      for idx, obs in argv2.items()]
     if not np.all(has_obs_shape):
-        raise ValueError(f"{argv1} and {argv2} do not"
-                         " have coherent dimension.")
-
-
-def _check_type(
-    argv: Any,
-    category: type
-) -> None:
-    """Raise an error if `argv` is not of type category."""
-    if not isinstance(argv, category):
-        raise TypeError(f"Argument must be {category.__name__}")
-
-
-def _check_dict_type(
-    argv: Dict[Union[str, int], npt.NDArray[np.float64]],
-    category: type
-) -> None:
-    """Raise an error if all elements of `argv` are not of type `category`."""
-    is_cat = [isinstance(obj, category) for obj in argv.values()]
-    if not np.all(is_cat):
-        raise TypeError(f"Argument values must be {category.__name__}")
+        raise ValueError(
+            f"{argv1} and {argv2} do not have coherent dimension."
+        )
 
 
 def _check_dict_len(
-    argv: Dict[str, Dict[int, npt.NDArray[np.float64]]]
+    argv: IrregArgvals
 ) -> None:
     """Raise an error if all elements of `argv` do not have equal length."""
     lengths = [len(obj) for obj in argv.values()]
     if len(set(lengths)) > 1:
-        raise ValueError("The number of observations is different across the"
-                         " dimensions.""")
+        raise ValueError(
+            "The number of observations is different across the dimensions."
+        )
 
 
 def _check_same_type(
@@ -121,7 +111,7 @@ class FunctionalData(ABC):
 
     @staticmethod
     def _check_same_nobs(
-        *argv: List[FunctionalData]
+        *argv: FunctionalData
     ) -> None:
         """Raise an arror if elements in argv have different number of obs."""
         n_obs = set(obj.n_obs for obj in argv)
@@ -137,33 +127,46 @@ class FunctionalData(ABC):
     ) -> None:
         """Raise an error if `argv1` and `argv2` have different dim."""
         if argv1.n_dim != argv2.n_dim:
-            raise ValueError(f"{argv1} and {argv2} do not have the same number"
-                             " of dimensions.")
+            raise ValueError(
+                f"{argv1} and {argv2} do not have the same number"
+                 " of dimensions."
+            )
 
     @staticmethod
     @abstractmethod
-    def _check_argvals(argvals):
-        _check_type(argvals, dict)
-
-    @staticmethod
-    @abstractmethod
-    def _check_values(values):
+    def _check_argvals(
+        argvals: Any
+    ) -> None:
         pass
 
     @staticmethod
     @abstractmethod
-    def _check_argvals_values(argvals, values):
+    def _check_values(
+        values: Any
+    ) -> None:
         pass
 
     @staticmethod
     @abstractmethod
-    def _perform_computation(fdata1, fdata2, func):
+    def _check_argvals_values(
+        argvals: Any,
+        values: Any
+    ) -> None:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def _perform_computation(
+        fdata1: Any,
+        fdata2: Any,
+        func: np.ufunc
+    ) -> FunctionalData:
         pass
 
     def __init__(
         self,
-        argvals: Dict[str, Union[Dict[int, npt.NDArray[np.float64]], npt.NDArray[np.float64]]],
-        values: Union[npt.NDArray[np.float64], Dict[int, npt.NDArray[np.float64]]],
+        argvals: Union[DenseArgvals, IrregArgvals],
+        values: Union[DenseValues, IrregValues],
         category: str
     ) -> None:
         """Initialize FunctionalData object."""
@@ -174,50 +177,73 @@ class FunctionalData(ABC):
 
     def __repr__(self) -> str:
         """Override print function."""
-        return (f"{self.category.capitalize()} functional data object with"
-                f" {self.n_obs} observations on a {self.n_dim}-dimensional"
-                " support.")
+        return (
+            f"{self.category.capitalize()} functional data object with"
+            f" {self.n_obs} observations on a {self.n_dim}-dimensional"
+             " support."
+        )
 
     @abstractmethod
-    def __getitem__(self, index):
+    def __getitem__(
+        self,
+        index: int
+    ) -> FunctionalData:
         """Override getitem function, called when self[index]."""
         pass
 
-    def __add__(self, obj: T) -> T:
+    def __add__(
+        self,
+        obj: FunctionalData
+    ) -> FunctionalData:
         """Override add function."""
         return self._perform_computation(self, obj, np.add)
 
-    def __sub__(self, obj: T) -> T:
+    def __sub__(
+        self,
+        obj: FunctionalData
+    ) -> FunctionalData:
         """Override sub function."""
         return self._perform_computation(self, obj, np.subtract)
 
-    def __mul__(self, obj: T) -> T:
+    def __mul__(
+        self,
+        obj: FunctionalData
+    ) -> FunctionalData:
         """Overrude mul function."""
         return self._perform_computation(self, obj, np.multiply)
 
-    def __rmul__(self, obj: T) -> T:
+    def __rmul__(
+        self,
+        obj: FunctionalData
+    ) -> FunctionalData:
         """Override rmul function."""
         return self * obj
 
-    def __truediv__(self, obj: T) -> T:
+    def __truediv__(
+        self,
+        obj: FunctionalData
+    ) -> FunctionalData:
         """Override truediv function."""
         return self._perform_computation(self, obj, np.divide)
 
-    def __floordiv__(self, obj: T) -> T:
+    def __floordiv__(
+        self,
+        obj: FunctionalData
+    ) -> FunctionalData:
         """Override floordiv function."""
         return self / obj
 
     @property
     def argvals(
         self
-    ) -> Dict[str, Union[Dict[int, npt.NDArray[np.float64]], npt.NDArray[np.float64]]]:
+    ) -> Any:
         """Getter for argvals."""
-        return self._argvals
+        return self._argvals  # type: ignore
 
     @argvals.setter
     def argvals(
         self,
-        new_argvals: Dict[str, Union[Dict[int, npt.NDArray[np.float64]], npt.NDArray[np.float64]]]
+        new_argvals: Union[DenseArgvals, IrregArgvals]
     ) -> None:
         self._check_argvals(new_argvals)
         if hasattr(self, 'values'):
@@ -227,29 +253,29 @@ class FunctionalData(ABC):
     @property
     def argvals_stand(
         self
-    ) -> Dict[str, Union[Dict[int, npt.NDArray[np.float64]], npt.NDArray[np.float64]]]:
+    ) -> Union[DenseArgvals, IrregArgvals]:
         """Getter for argvals_stand."""
         return self._argvals_stand
 
     @argvals_stand.setter
     def argvals_stand(
         self,
-        new_argvals_stand
-    ) -> Dict[str, Union[Dict[int, npt.NDArray[np.float64]], npt.NDArray[np.float64]]]:
+        new_argvals_stand: Union[DenseArgvals, IrregArgvals]
+    ) -> None:
         self._argvals_stand = new_argvals_stand
 
     @property
     def values(
         self
-    ) -> Union[npt.NDArray[np.float64], Dict[int, npt.NDArray[np.float64]]]:
+    ) -> Any:
         """Getter for values."""
         return self._values
 
     @values.setter
     def values(
         self,
-        new_values: Union[npt.NDArray[np.float64], Dict[int, npt.NDArray[np.float64]]]
-    ) -> Union[npt.NDArray[np.float64], Dict[int, npt.NDArray[np.float64]]]:
+        new_values: Union[DenseValues, IrregValues]
+    ) -> None:
         self._check_values(new_values)
         if hasattr(self, 'argvals'):
             self._check_argvals_values(self.argvals, new_values)
@@ -261,7 +287,7 @@ class FunctionalData(ABC):
         return self._category
 
     @category.setter
-    def category(self, new_category: str) -> str:
+    def category(self, new_category: str) -> None:
         self._category = new_category
 
     @property
@@ -278,7 +304,7 @@ class FunctionalData(ABC):
 
     @property
     @abstractmethod
-    def range_obs(self):
+    def range_obs(self) -> Tuple[float, float]:
         """Get the range of the observations of the object."""
         pass
 
@@ -296,42 +322,61 @@ class FunctionalData(ABC):
 
     @property
     @abstractmethod
-    def n_points(self):
+    def n_points(self) -> Dict[int, int]:
         """Get the mean number of sampling points."""
         pass
 
     @property
     @abstractmethod
-    def range_dim(self):
+    def range_dim(self) -> Dict[int, Tuple[float, float]]:
         """Range of the `argvals` for each of the dimension."""
         pass
 
     @property
     @abstractmethod
-    def shape(self):
+    def shape(self) -> Dict[int, int]:
         """Shape of the data for each dimension."""
         pass
 
     @abstractmethod
-    def is_compatible(self, fdata):
+    def is_compatible(
+        self,
+        fdata: FunctionalData
+    ) -> None:
         """Check if `fdata` is compatible with `self`."""
         _check_same_type(self, fdata)
         FunctionalData._check_same_nobs(self, fdata)
         FunctionalData._check_same_ndim(self, fdata)
 
     @abstractmethod
-    def mean(self, smooth=None, **kwargs):
+    def mean(
+        self,
+        smooth: Optional[str] = None, 
+        **kwargs: Any
+    ) -> None:
         """Compute an estimate of the mean."""
         pass
 
     @abstractmethod
-    def covariance(self, mean=None, smooth=None, **kwargs):
+    def covariance(
+        self,
+        mean: Optional[FunctionalData] = None,
+        smooth: Optional[str] = None,
+        **kwargs: Any
+    ) -> None:
         """Compute an estimate of the covariance."""
         pass
 
     @abstractmethod
-    def smooth(self, points, neighborhood, points_estim=None, degree=0,
-               kernel="epanechnikov", bandwidth=None):
+    def smooth(
+        self,
+        points: npt.NDArray[np.float64],
+        neighborhood: npt.NDArray[np.float64],
+        points_estim: Optional[npt.NDArray[np.float64]] = None,
+        degree: int = 0,
+        kernel: str = "epanechnikov",
+        bandwidth: Optional[Bandwidth] = None
+    ) -> None:
         """Smooth the data."""
         pass
 
@@ -374,46 +419,46 @@ class DenseFunctionalData(FunctionalData):
 
     @staticmethod
     def _check_argvals_equality_dense(
-        argv1: T,
-        argv2: T
+        argv1: DenseArgvals,
+        argv2: DenseArgvals
     ) -> None:
         """Raise an error if `argv1` and `argv2` are not equal."""
         argvs_equal = all(
             np.array_equal(argv1[key], argv2[key]) for key in argv1
         )
         if not argvs_equal:
-            raise ValueError(f"{argv1} and {argv2} do not have the same"
-                             " sampling points.")
+            raise ValueError(
+                f"{argv1} and {argv2} do not have the same sampling points."
+            )
 
     @staticmethod
     def _check_argvals(
-        argvals: Dict[str, npt.NDArray[np.float64]]
+        argvals: DenseArgvals
     ) -> None:
         """Check the user provided `argvals`."""
         FunctionalData._check_argvals(argvals)
-        _check_dict_type(argvals, np.ndarray)
 
     @staticmethod
     def _check_values(
-        values: npt.NDArray[np.float64]
+        values: DenseValues
     ) -> None:
         """Check the use provided `values`."""
-        _check_type(values, np.ndarray)
+        pass
 
     @staticmethod
     def _check_argvals_values(
-        argvals: Dict[str, npt.NDArray[np.float64]],
-        values: npt.NDArray[np.float64]
+        argvals: DenseArgvals,
+        values: DenseValues
     ) -> None:
         """Check the compatibility of argvals and values."""
         _check_dict_array(argvals, values)
 
     @staticmethod
     def _perform_computation(
-        fdata1: T,
-        fdata2: T,
+        fdata1: DenseFunctionalData,
+        fdata2: DenseFunctionalData,
         func: np.ufunc
-    ) -> T:
+    ) -> DenseFunctionalData:
         """Perform computation defined by `func`."""
         if fdata1.is_compatible(fdata2):
             new_values = func(fdata1.values, fdata2.values)
@@ -421,8 +466,8 @@ class DenseFunctionalData(FunctionalData):
 
     def __init__(
         self,
-        argvals: Dict[str, npt.NDArray[np.float64]],
-        values: npt.NDArray[np.float64]
+        argvals: DenseArgvals,
+        values: DenseValues
     ) -> None:
         """Initialize UnivariateFunctionalData object."""
         super().__init__(argvals, values, 'univariate')
@@ -430,7 +475,7 @@ class DenseFunctionalData(FunctionalData):
     def __getitem__(
         self,
         index: int
-    ) -> T:
+    ) -> DenseFunctionalData:
         """Overrride getitem function, called when self[index].
 
         Parameters
@@ -452,9 +497,9 @@ class DenseFunctionalData(FunctionalData):
         return DenseFunctionalData(argvals, values)
 
     @property
-    def argvals(self) -> Dict[str, npt.NDArray[np.float64]]:
+    def argvals(self) -> DenseArgvals:
         """Getter for argvals."""
-        return super().argvals
+        return cast(DenseArgvals, super().argvals)
 
     @argvals.setter
     def argvals(
@@ -468,6 +513,23 @@ class DenseFunctionalData(FunctionalData):
         for dim, points in new_argvals.items():
             argvals_stand[dim] = range_standardization_(points)
         self.argvals_stand = argvals_stand
+
+    @property
+    def values(
+        self
+    ) -> DenseValues:
+        """Getter for values."""
+        return self._values
+
+    @values.setter
+    def values(
+        self,
+        new_values: DenseValues
+    ) -> None:
+        self._check_values(new_values)
+        if hasattr(self, 'argvals'):
+            self._check_argvals_values(self.argvals, new_values)
+        self._values = new_values
 
     @property
     def range_obs(self) -> Tuple[float, float]:
@@ -523,7 +585,7 @@ class DenseFunctionalData(FunctionalData):
         """
         return {idx: len(dim) for idx, dim in self.argvals.items()}
 
-    def as_irregular(self) -> T:
+    def as_irregular(self) -> IrregularFunctionalData:
         """Convert `self` from Dense to Irregular functional data.
 
         Coerce a DenseFunctionalData object into an IrregularFunctionalData
@@ -550,8 +612,8 @@ class DenseFunctionalData(FunctionalData):
 
     def is_compatible(
         self,
-        fdata: T
-    ) -> True:
+        fdata: DenseFunctionalData
+    ) -> None:
         """Check if `fdata` is compatible with `self`.
 
         Two DenseFunctionalData object are said to be compatible if they
@@ -572,13 +634,12 @@ class DenseFunctionalData(FunctionalData):
         super().is_compatible(fdata)
         DenseFunctionalData._check_argvals_equality_dense(
             self.argvals, fdata.argvals)
-        return True
 
     def mean(
         self,
         smooth: Optional[str] = None,
-        **kwargs
-    ) -> T:
+        **kwargs: Any
+    ) -> DenseFunctionalData:
         """Compute an estimate of the mean.
 
         Parameters
@@ -633,10 +694,10 @@ class DenseFunctionalData(FunctionalData):
 
     def covariance(
         self,
-        mean: Optional[T] = None,
+        mean: Optional[DenseFunctionalData] = None,
         smooth: Optional[str] = None,
-        **kwargs
-    ) -> T:
+        **kwargs: Any
+    ) -> DenseFunctionalData:
         """Compute an estimate of the covariance.
 
         Parameters
@@ -743,7 +804,7 @@ class DenseFunctionalData(FunctionalData):
         degree: int = 0,
         kernel: str = "epanechnikov",
         bandwidth: Optional[Bandwidth] = None
-    ) -> T:
+    ) -> DenseFunctionalData:
         """Smooth the data.
 
         Notes
@@ -812,8 +873,8 @@ class DenseFunctionalData(FunctionalData):
 
     def concatenate(
         self,
-        data: T
-    ) -> T:
+        data: DenseFunctionalData
+    ) -> DenseFunctionalData:
         """Concatenate two DenseFunctionalData.
 
         Parameters
@@ -870,8 +931,8 @@ class IrregularFunctionalData(FunctionalData):
 
     @staticmethod
     def _check_argvals_equality_irregular(
-        argv1: T,
-        argv2: T
+        argv1: IrregularFunctionalData,
+        argv2: IrregularFunctionalData
     ) -> None:
         """Raise an error if `argv1` and `argv2` are not equal."""
         temp = []
@@ -885,38 +946,34 @@ class IrregularFunctionalData(FunctionalData):
 
     @staticmethod
     def _check_argvals(
-        argvals: Dict[str, Dict[int, npt.NDArray[np.float64]]]
+        argvals: IrregArgvals
     ) -> None:
         """Check the user provided `argvals`."""
         FunctionalData._check_argvals(argvals)
-        for obj in argvals.values():
-            _check_type(obj, dict)
-            _check_dict_type(obj, np.ndarray)
         _check_dict_len(argvals)
 
     @staticmethod
     def _check_values(
-        values: Dict[int, npt.NDArray[np.float64]]
+        values: IrregValues
     ) -> None:
         """Check the user provided `values`."""
-        _check_type(values, dict)
         for obj in values.values():
-            _check_type(obj, np.ndarray)
+            pass
 
     @staticmethod
     def _check_argvals_values(
-        argvals: Dict[str, Dict[int, np.ndarray]],
-        values: Dict[int, np.ndarray]
+        argvals: IrregArgvals,
+        values: IrregValues
     ) -> None:
         """Check the compatibility of argvals and values."""
         _check_dict_dict(argvals, values)
 
     @staticmethod
     def _perform_computation(
-        fdata1: T,
-        fdata2: T,
+        fdata1: IrregularFunctionalData,
+        fdata2: IrregularFunctionalData,
         func: np.ufunc
-    ) -> T:
+    ) -> IrregularFunctionalData:
         """Perform computation defined by `func`."""
         if fdata1.is_compatible(fdata2):
             new_values = {}
@@ -927,8 +984,8 @@ class IrregularFunctionalData(FunctionalData):
 
     def __init__(
         self,
-        argvals: Dict[str, Dict[int, npt.NDArray[np.float64]]],
-        values: Dict[int, npt.NDArray[np.float64]]
+        argvals: IrregArgvals,
+        values: IrregValues
     ) -> None:
         """Initialize IrregularFunctionalData object."""
         super().__init__(argvals, values, 'irregular')
@@ -936,7 +993,7 @@ class IrregularFunctionalData(FunctionalData):
     def __getitem__(
         self,
         index: int
-    ) -> T:
+    ) -> IrregularFunctionalData:
         """Overrride getitem function, called when self[index].
 
         Parameters
@@ -964,14 +1021,14 @@ class IrregularFunctionalData(FunctionalData):
         return IrregularFunctionalData(argvals, values)
 
     @property
-    def argvals(self) -> Dict[str, Dict[int, npt.NDArray[np.float64]]]:
+    def argvals(self) -> IrregArgvals:
         """Getter for argvals."""
         return super().argvals
 
     @argvals.setter
     def argvals(
         self,
-        new_argvals: Dict[str, Dict[int, npt.NDArray[np.float64]]]
+        new_argvals: IrregArgvals
     ) -> None:
         super(IrregularFunctionalData, self.__class__).\
             argvals.fset(self, new_argvals)
@@ -1047,7 +1104,7 @@ class IrregularFunctionalData(FunctionalData):
         """
         return {idx: len(dim) for idx, dim in self.gather_points().items()}
 
-    def gather_points(self) -> Dict[int, npt.NDArray[np.float64]]:
+    def gather_points(self) -> DenseArgvals:
         """Gather all the `argvals` for each of the dimensions separetely.
 
         Returns
@@ -1060,7 +1117,7 @@ class IrregularFunctionalData(FunctionalData):
         return {idx: np.unique(np.hstack(list(dim.values())))
                 for idx, dim in self.argvals.items()}
 
-    def as_dense(self) -> T:
+    def as_dense(self) -> DenseFunctionalData:
         """Convert `self` from Irregular to Dense functional data.
 
         Coerce an IrregularFunctionalData object into a DenseFunctionalData
@@ -1106,7 +1163,7 @@ class IrregularFunctionalData(FunctionalData):
 
         return DenseFunctionalData(new_argvals, new_values)
 
-    def is_compatible(self, fdata: T) -> bool:
+    def is_compatible(self, fdata: IrregularFunctionalData) -> bool:
         """Check if `fdata` is compatible with `self`.
 
         Two IrregularFunctionalData object are said to be compatible if they
@@ -1133,7 +1190,7 @@ class IrregularFunctionalData(FunctionalData):
         self,
         smooth: Optional[str] = None,
         **kwargs
-    ) -> T:
+    ) -> DenseFunctionalData:
         """Compute an estimate of the mean.
 
         Parameters
@@ -1154,8 +1211,8 @@ class IrregularFunctionalData(FunctionalData):
 
     def covariance(
         self,
-        mean: Optional[T] = None,
-        smooth: Optional[T] = None,
+        mean: Optional[IrregularFunctionalData] = None,
+        smooth: Optional[IrregularFunctionalData] = None,
         **kwargs
     ) -> None:
         """Compute an estimate of the covariance."""
@@ -1169,7 +1226,7 @@ class IrregularFunctionalData(FunctionalData):
         degree: int = 0,
         kernel: str = "epanechnikov",
         bandwidth: Optional[Bandwidth] = None
-    ) -> T:
+    ) -> IrregularFunctionalData:
         """Smooth the data.
 
         Notes
@@ -1248,13 +1305,14 @@ class MultivariateFunctionalData(UserList):
     """
 
     @staticmethod
-    def _check_data(new_data: List[T]) -> None:
+    def _check_data(new_data: List[FunctionalData]) -> None:
         """Check the user provided `data`."""
-        for obj in new_data:
-            _check_type(obj, (DenseFunctionalData, IrregularFunctionalData))
         FunctionalData._check_same_nobs(*new_data)
 
-    def __init__(self, initlist: List[T] = None) -> None:
+    def __init__(
+        self,
+        initlist: Optional[List[FunctionalData]] = None
+    ) -> None:
         """Initialize MultivariateFunctionalData object."""
         self.data = initlist
 
@@ -1264,12 +1322,12 @@ class MultivariateFunctionalData(UserList):
                 f" functions of {self.n_obs} observations.")
 
     @property
-    def data(self) -> List[T]:
+    def data(self) -> List[FunctionalData]:
         """Getter for data."""
         return self._data
 
     @data.setter
-    def data(self, new_data: List[T]) -> None:
+    def data(self, new_data: List[FunctionalData]) -> None:
         if new_data is not None:
             self._check_data(new_data)
             self._data = new_data
@@ -1366,7 +1424,7 @@ class MultivariateFunctionalData(UserList):
         """
         return [i.shape for i in self]
 
-    def append(self, item: T) -> None:
+    def append(self, item: FunctionalData) -> None:
         """Add an item to `self`.
 
         Parameters
@@ -1381,11 +1439,11 @@ class MultivariateFunctionalData(UserList):
             FunctionalData._check_same_nobs(self, item)
             self.data.append(item)
 
-    def extend(self, other: T) -> None:
+    def extend(self, other: FunctionalData) -> None:
         """Extend the list of FunctionalData by appending from iterable."""
         super().extend(other)
 
-    def insert(self, i: int, item: T) -> None:
+    def insert(self, i: int, item: FunctionalData) -> None:
         """Insert an item `item` at a given position `i`."""
         FunctionalData._check_same_nobs(self, item)
         self.data.insert(i, item)
@@ -1394,7 +1452,7 @@ class MultivariateFunctionalData(UserList):
         """Remove the first item from `self` where value is `item`."""
         raise NotImplementedError
 
-    def pop(self, i: int = -1) -> T:
+    def pop(self, i: int = -1) -> FunctionalData:
         """Remove the item at the given position in the list, and return it."""
         return super().pop(i)
 
@@ -1402,15 +1460,15 @@ class MultivariateFunctionalData(UserList):
         """Remove all items from the list."""
         super().clear()
 
-    def index(self, item, *args) -> None:
+    def index(self, item: Any) -> int:
         """Return first item of the list equald to x."""
         raise NotImplementedError
 
-    def count(self, item) -> None:
+    def count(self, item: Any) -> int:
         """Return the number of times `item` appears in the list."""
         raise NotImplementedError
 
-    def sort(self, *args, **kwds) -> None:
+    def sort(self, *args: Any, **kwds: Any) -> None:
         """Sort the items of the list in place."""
         raise NotImplementedError
 
@@ -1418,11 +1476,11 @@ class MultivariateFunctionalData(UserList):
         """Reserve the elements of the list in place."""
         super().reverse()
 
-    def copy(self) -> None:
+    def copy(self) -> MultivariateFunctionalData:
         """Return a shallow copy of the list."""
         return super().copy()
 
-    def get_obs(self) -> M:
+    def get_obs(self) -> Iterator[MultivariateFunctionalData]:
         """Return a generator over the observation."""
         for idx in range(self.n_obs):
             yield MultivariateFunctionalData([obs[idx] for obs in self])
@@ -1430,8 +1488,8 @@ class MultivariateFunctionalData(UserList):
     def mean(
         self,
         smooth: Optional[str] = None,
-        **kwargs
-    ) -> M:
+        **kwargs: Any
+    ) -> MultivariateFunctionalData:
         """Compute an estimate of the mean.
 
         Parameters
@@ -1452,10 +1510,10 @@ class MultivariateFunctionalData(UserList):
 
     def covariance(
         self,
-        mean: Optional[M] = None,
+        mean: Optional[MultivariateFunctionalData] = None,
         smooth: Optional[str] = None,
-        **kwargs
-    ) -> M:
+        **kwargs: Any
+    ) -> MultivariateFunctionalData:
         """Compute an estimate of the covariance.
 
         Parameters
@@ -1480,7 +1538,10 @@ class MultivariateFunctionalData(UserList):
             return MultivariateFunctionalData(
                 [i.covariance(None, smooth, **kwargs) for i in self])
 
-    def concatenate(self, data: M) -> M:
+    def concatenate(
+        self,
+        data: MultivariateFunctionalData
+    ) -> MultivariateFunctionalData:
         """Concatenate two MultivariateFunctionalData.
 
         Parameters
@@ -1501,7 +1562,9 @@ class MultivariateFunctionalData(UserList):
 ##############################################################################
 # Functional data manipulation
 
-def concatenate_(*data: Iterable[T]) -> T:
+def concatenate_(
+    data: List[DenseFunctionalData]
+) -> DenseFunctionalData:
     """Concatenate functional data.
 
     Compute multiple DenseFunctionalData into one. It works with higher
@@ -1509,7 +1572,7 @@ def concatenate_(*data: Iterable[T]) -> T:
 
     Parameters
     ----------
-    *data: DenseFunctionalData
+    data: DenseFunctionalData
         DenseFunctionalData to concatenate.
 
     Returns
@@ -1528,7 +1591,10 @@ def concatenate_(*data: Iterable[T]) -> T:
     return DenseFunctionalData(new_argvals, new_values)
 
 
-def tensor_product_(data1: T, data2: T) -> T:
+def tensor_product_(
+    data1: DenseFunctionalData,
+    data2: DenseFunctionalData
+) -> DenseFunctionalData:
     """Compute the tensor product between functional data.
 
     Compute the tensor product between all the observation of data1 with all
