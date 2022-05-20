@@ -17,7 +17,7 @@ import pygam
 from abc import ABC, abstractmethod
 from collections import UserList
 from typing import (
-    cast, Any, Dict, Iterator, Optional, List, Literal,
+    cast, Any, Dict, Iterable, Iterator, Optional, List, Literal,
     Tuple, TypeVar, Union
 )
 
@@ -135,20 +135,6 @@ class FunctionalData(ABC):
 
     @staticmethod
     @abstractmethod
-    def _check_argvals(
-        argvals: Any
-    ) -> None:
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def _check_values(
-        values: Any
-    ) -> None:
-        pass
-
-    @staticmethod
-    @abstractmethod
     def _check_argvals_values(
         argvals: Any,
         values: Any
@@ -246,7 +232,6 @@ class FunctionalData(ABC):
         self,
         new_argvals: Union[DenseArgvals, IrregArgvals]
     ) -> None:
-        self._check_argvals(new_argvals)
         if hasattr(self, 'values'):
             self._check_argvals_values(new_argvals, self.values)
         self._argvals = new_argvals
@@ -277,7 +262,6 @@ class FunctionalData(ABC):
         self,
         new_values: Union[DenseValues, IrregValues]
     ) -> None:
-        self._check_values(new_values)
         if hasattr(self, 'argvals'):
             self._check_argvals_values(self.argvals, new_values)
         self._values = new_values
@@ -434,20 +418,6 @@ class DenseFunctionalData(FunctionalData):
             )
 
     @staticmethod
-    def _check_argvals(
-        argvals: DenseArgvals
-    ) -> None:
-        """Check the user provided `argvals`."""
-        FunctionalData._check_argvals(argvals)
-
-    @staticmethod
-    def _check_values(
-        values: DenseValues
-    ) -> None:
-        """Check the use provided `values`."""
-        pass
-
-    @staticmethod
     def _check_argvals_values(
         argvals: DenseArgvals,
         values: DenseValues
@@ -528,7 +498,6 @@ class DenseFunctionalData(FunctionalData):
         new_values: DenseValues
     ) -> None:
         """Setter for values."""
-        self._check_values(new_values)
         if hasattr(self, 'argvals'):
             self._check_argvals_values(self.argvals, new_values)
         self._values = new_values
@@ -955,22 +924,6 @@ class IrregularFunctionalData(FunctionalData):
                              " sampling points.")
 
     @staticmethod
-    def _check_argvals(
-        argvals: IrregArgvals
-    ) -> None:
-        """Check the user provided `argvals`."""
-        FunctionalData._check_argvals(argvals)
-        _check_dict_len(argvals)
-
-    @staticmethod
-    def _check_values(
-        values: IrregValues
-    ) -> None:
-        """Check the user provided `values`."""
-        for obj in values.values():
-            pass
-
-    @staticmethod
     def _check_argvals_values(
         argvals: IrregArgvals,
         values: IrregValues
@@ -1041,6 +994,7 @@ class IrregularFunctionalData(FunctionalData):
         self,
         new_argvals: IrregArgvals
     ) -> None:
+        _check_dict_len(new_argvals)
         self._argvals = new_argvals
         points = self.gather_points()
         argvals_stand: IrregArgvals = {}
