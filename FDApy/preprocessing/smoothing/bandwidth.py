@@ -143,7 +143,7 @@ def mean_eta_(
     res: float
 
     """
-    eta = np.mean([eta_(obs, ranges, idx, hurst) 
+    eta = np.mean([eta_(obs, ranges, idx, hurst)
                    for obs, idx in zip(data, idxs)])
     return cast(float, eta)
 

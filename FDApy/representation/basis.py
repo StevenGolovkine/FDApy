@@ -199,7 +199,7 @@ def basis_bsplines(
         knots = np.linspace(argvals[0], argvals[-1], n_knots)
 
     values = bs(
-        argvals, df=n_functions, knots=knots[1:-1], 
+        argvals, df=n_functions, knots=knots[1:-1],
         degree=degree, include_intercept=True
     )
     return values.T  # type: ignore

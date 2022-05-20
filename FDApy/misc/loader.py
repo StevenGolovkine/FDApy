@@ -12,7 +12,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from typing import Any, Tuple, Union
+from typing import Any, Union
 
 from FDApy.representation.functional_data import (DenseFunctionalData,
                                                   IrregularFunctionalData)
@@ -102,7 +102,7 @@ def read_csv_irregular(
         The loaded csv file.
 
     """
-    tt = {idx : argvals[~np.isnan(row)] for idx, row in enumerate(data.values)}
+    tt = {idx: argvals[~np.isnan(row)] for idx, row in enumerate(data.values)}
     argvals_ = {'input_dim_0': tt}
     values = {idx: row[~np.isnan(row)] for idx, row in enumerate(data.values)}
     return IrregularFunctionalData(argvals_, values)

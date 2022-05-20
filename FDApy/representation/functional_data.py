@@ -17,7 +17,7 @@ import pygam
 from abc import ABC, abstractmethod
 from collections import UserList
 from typing import (
-    cast, Any, Dict, Iterable, Iterator, Optional, List, Literal,
+    cast, Any, Dict, Iterator, Optional, List, Literal,
     Tuple, TypeVar, Union
 )
 
@@ -35,6 +35,7 @@ DenseArgvals = Dict[str, npt.NDArray[np.float64]]
 DenseValues = npt.NDArray[np.float64]
 IrregArgvals = Dict[str, Dict[int, npt.NDArray[np.float64]]]
 IrregValues = Dict[int, npt.NDArray[np.float64]]
+
 
 ###############################################################################
 # Checkers for parameters
@@ -129,7 +130,7 @@ class FunctionalData(ABC):
         if argv1.n_dim != argv2.n_dim:
             raise ValueError(
                 f"{argv1} and {argv2} do not have the same number"
-                 " of dimensions."
+                " of dimensions."
             )
 
     @staticmethod
@@ -180,7 +181,7 @@ class FunctionalData(ABC):
         return (
             f"{self.category.capitalize()} functional data object with"
             f" {self.n_obs} observations on a {self.n_dim}-dimensional"
-             " support."
+            " support."
         )
 
     @abstractmethod
@@ -352,7 +353,7 @@ class FunctionalData(ABC):
     @abstractmethod
     def mean(
         self,
-        smooth: Optional[str] = None, 
+        smooth: Optional[str] = None,
         **kwargs: Any
     ) -> FunctionalData:
         """Compute an estimate of the mean."""
@@ -507,6 +508,7 @@ class DenseFunctionalData(FunctionalData):
         self,
         new_argvals: DenseArgvals
     ) -> None:
+        """Setter for argvals."""
         self._argvals = new_argvals
         argvals_stand = {}
         for dim, points in new_argvals.items():
@@ -525,6 +527,7 @@ class DenseFunctionalData(FunctionalData):
         self,
         new_values: DenseValues
     ) -> None:
+        """Setter for values."""
         self._check_values(new_values)
         if hasattr(self, 'argvals'):
             self._check_argvals_values(self.argvals, new_values)
@@ -1021,9 +1024,9 @@ class IrregularFunctionalData(FunctionalData):
                 argvals[idx] = {i: dim.get(i) for i in range(*indices)}
             values = {i: self.values.get(i) for i in range(*indices)}
         else:
-            argvals = {idx: 
-                {index: cast(npt.NDArray[np.float64], points.get(index))}
-                    for idx, points in self.argvals.items()
+            argvals = {idx: {index: cast(npt.NDArray[np.float64],
+                                         points.get(index))
+                            } for idx, points in self.argvals.items()
             }
             values = {index: self.values.get(index)}
         return IrregularFunctionalData(argvals, values)
@@ -1093,11 +1096,9 @@ class IrregularFunctionalData(FunctionalData):
         """
         ranges = {idx: list(argval.values())
                   for idx, argval in self.argvals.items()}
-        return {idx: (
-                cast(int, min(map(min, dim))),
-                cast(int, max(map(max, dim)))
-            ) for idx, dim in ranges.items()
-        }
+        return {idx: (cast(int, min(map(min, dim))),
+                      cast(int, max(map(max, dim)))
+                     ) for idx, dim in ranges.items()}
 
     @property
     def shape(self) -> Dict[str, int]:
