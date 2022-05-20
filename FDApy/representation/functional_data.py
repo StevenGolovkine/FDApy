@@ -322,19 +322,19 @@ class FunctionalData(ABC):
 
     @property
     @abstractmethod
-    def n_points(self) -> Dict[int, int]:
+    def n_points(self) -> Dict[str, int]:
         """Get the mean number of sampling points."""
         pass
 
     @property
     @abstractmethod
-    def range_dim(self) -> Dict[int, Tuple[float, float]]:
+    def range_dim(self) -> Dict[str, Tuple[int, int]]:
         """Range of the `argvals` for each of the dimension."""
         pass
 
     @property
     @abstractmethod
-    def shape(self) -> Dict[int, int]:
+    def shape(self) -> Dict[str, int]:
         """Shape of the data for each dimension."""
         pass
 
@@ -342,18 +342,19 @@ class FunctionalData(ABC):
     def is_compatible(
         self,
         fdata: FunctionalData
-    ) -> None:
+    ) -> bool:
         """Check if `fdata` is compatible with `self`."""
         _check_same_type(self, fdata)
         FunctionalData._check_same_nobs(self, fdata)
         FunctionalData._check_same_ndim(self, fdata)
+        return True
 
     @abstractmethod
     def mean(
         self,
         smooth: Optional[str] = None, 
         **kwargs: Any
-    ) -> None:
+    ) -> FunctionalData:
         """Compute an estimate of the mean."""
         pass
 
@@ -363,7 +364,7 @@ class FunctionalData(ABC):
         mean: Optional[FunctionalData] = None,
         smooth: Optional[str] = None,
         **kwargs: Any
-    ) -> None:
+    ) -> FunctionalData:
         """Compute an estimate of the covariance."""
         pass
 
@@ -375,8 +376,8 @@ class FunctionalData(ABC):
         points_estim: Optional[npt.NDArray[np.float64]] = None,
         degree: int = 0,
         kernel: str = "epanechnikov",
-        bandwidth: Optional[Bandwidth] = None
-    ) -> None:
+        bandwidth: Optional[List[float]] = None
+    ) -> FunctionalData:
         """Smooth the data."""
         pass
 
@@ -501,25 +502,23 @@ class DenseFunctionalData(FunctionalData):
         """Getter for argvals."""
         return cast(DenseArgvals, super().argvals)
 
-    @argvals.setter
+    @FunctionalData.argvals.setter
     def argvals(
         self,
-        new_argvals: Dict[str, npt.NDArray[np.float64]]
+        new_argvals: DenseArgvals
     ) -> None:
-        super(DenseFunctionalData, self.__class__).\
-            argvals.fset(self, new_argvals)
-
+        self._argvals = new_argvals
         argvals_stand = {}
         for dim, points in new_argvals.items():
             argvals_stand[dim] = range_standardization_(points)
-        self.argvals_stand = argvals_stand
+        self._argvals_stand = argvals_stand
 
     @property
     def values(
         self
     ) -> DenseValues:
         """Getter for values."""
-        return self._values
+        return cast(DenseValues, self._values)
 
     @values.setter
     def values(
@@ -545,7 +544,7 @@ class DenseFunctionalData(FunctionalData):
         return np.min(self.values), np.max(self.values)
 
     @property
-    def n_points(self) -> Dict[int, int]:
+    def n_points(self) -> Dict[str, int]:
         """Get the mean number of sampling points.
 
         Returns
@@ -558,7 +557,7 @@ class DenseFunctionalData(FunctionalData):
         return {i: len(points) for i, points in self.argvals.items()}
 
     @property
-    def range_dim(self) -> Dict[int, Tuple[float, float]]:
+    def range_dim(self) -> Dict[str, Tuple[int, int]]:
         """Get the range of the `argvals` for each of the dimension.
 
         Returns
@@ -572,7 +571,7 @@ class DenseFunctionalData(FunctionalData):
                 for idx, argval in self.argvals.items()}
 
     @property
-    def shape(self) -> Dict[int, int]:
+    def shape(self) -> Dict[str, int]:
         r"""Get the shape of the data for each dimension.
 
         Returns
@@ -597,7 +596,7 @@ class DenseFunctionalData(FunctionalData):
             An object of the class IrregularFunctionalData
 
         """
-        new_argvals = dict.fromkeys(self.argvals.keys(), {})
+        new_argvals: IrregArgvals = dict.fromkeys(self.argvals.keys(), {})
         for dim in new_argvals.keys():
             temp = {}
             for idx in range(self.n_obs):
@@ -612,8 +611,8 @@ class DenseFunctionalData(FunctionalData):
 
     def is_compatible(
         self,
-        fdata: DenseFunctionalData
-    ) -> None:
+        fdata: FunctionalData
+    ) -> bool:
         """Check if `fdata` is compatible with `self`.
 
         Two DenseFunctionalData object are said to be compatible if they
@@ -634,6 +633,7 @@ class DenseFunctionalData(FunctionalData):
         super().is_compatible(fdata)
         DenseFunctionalData._check_argvals_equality_dense(
             self.argvals, fdata.argvals)
+        return True
 
     def mean(
         self,
@@ -674,8 +674,10 @@ class DenseFunctionalData(FunctionalData):
             if smooth == 'LocalLinear':
                 p = self.n_points['input_dim_0']
                 points = kwargs.get('points', 0.5)
-                neigh = kwargs.get('neighborhood',
-                                   np.int(p * np.exp(-(np.log(np.log(p)))**2)))
+                neigh = kwargs.get(
+                    'neighborhood',
+                    np.int32(p * np.exp(-(np.log(np.log(p)))**2))
+                )
                 data_smooth = self.smooth(points=points,
                                           neighborhood=neigh)
                 mean_estim = data_smooth.values.mean(axis=0)
@@ -694,7 +696,7 @@ class DenseFunctionalData(FunctionalData):
 
     def covariance(
         self,
-        mean: Optional[DenseFunctionalData] = None,
+        mean: Optional[FunctionalData] = None,
         smooth: Optional[str] = None,
         **kwargs: Any
     ) -> DenseFunctionalData:
@@ -761,8 +763,10 @@ class DenseFunctionalData(FunctionalData):
 
             if smooth == 'LocalLinear':
                 points = kwargs.get('points', 0.5)
-                neigh = kwargs.get('neighborhood',
-                                   np.int(p * np.exp(-(np.log(np.log(p)))**2)))
+                neigh = kwargs.get(
+                    'neighborhood',
+                    np.int32(p * np.exp(-(np.log(np.log(p)))**2))
+                )
                 data_smooth = self.smooth(points=points,
                                           neighborhood=neigh)
                 data = data_smooth.values - mean.values
@@ -803,7 +807,7 @@ class DenseFunctionalData(FunctionalData):
         points_estim: Optional[npt.NDArray[np.float64]] = None,
         degree: int = 0,
         kernel: str = "epanechnikov",
-        bandwidth: Optional[Bandwidth] = None
+        bandwidth: Optional[List[float]] = None
     ) -> DenseFunctionalData:
         """Smooth the data.
 
@@ -849,7 +853,7 @@ class DenseFunctionalData(FunctionalData):
     def pairwise_distance(
         self,
         metric: str = 'euclidean'
-    ) -> np.ndarray:
+    ) -> npt.NDArray[np.float64]:
         """Compute the pairwise distance between the data.
 
         Parameters
@@ -869,7 +873,10 @@ class DenseFunctionalData(FunctionalData):
             raise NotImplementedError('The distance computation is not'
                                       ' implemented for data with dimension'
                                       ' greater than 1.')
-        return pairwise_distances(self.values, metric=metric)
+        return cast(
+            npt.NDArray[np.float64],
+            pairwise_distances(self.values, metric=metric)
+        )
 
     def concatenate(
         self,
@@ -888,7 +895,7 @@ class DenseFunctionalData(FunctionalData):
             The concatenation of self and data.
 
         """
-        return concatenate_(self, data)
+        return cast(DenseFunctionalData, concatenate_([self, data]))
 
 
 ###############################################################################
@@ -931,8 +938,8 @@ class IrregularFunctionalData(FunctionalData):
 
     @staticmethod
     def _check_argvals_equality_irregular(
-        argv1: IrregularFunctionalData,
-        argv2: IrregularFunctionalData
+        argv1: IrregArgvals,
+        argv2: IrregArgvals
     ) -> None:
         """Raise an error if `argv1` and `argv2` are not equal."""
         temp = []
@@ -1007,34 +1014,33 @@ class IrregularFunctionalData(FunctionalData):
             The selected observation(s) as IrregularFunctionalData object.
 
         """
+        argvals: IrregArgvals = {}
         if isinstance(index, slice):
             indices = index.indices(self.n_obs)
-
-            argvals = {}
             for idx, dim in self.argvals.items():
                 argvals[idx] = {i: dim.get(i) for i in range(*indices)}
             values = {i: self.values.get(i) for i in range(*indices)}
         else:
-            argvals = {idx: {index: points.get(index)}
-                       for idx, points in self.argvals.items()}
+            argvals = {idx: 
+                {index: cast(npt.NDArray[np.float64], points.get(index))}
+                    for idx, points in self.argvals.items()
+            }
             values = {index: self.values.get(index)}
         return IrregularFunctionalData(argvals, values)
 
     @property
     def argvals(self) -> IrregArgvals:
         """Getter for argvals."""
-        return super().argvals
+        return cast(IrregArgvals, super().argvals)
 
-    @argvals.setter
+    @FunctionalData.argvals.setter
     def argvals(
         self,
         new_argvals: IrregArgvals
     ) -> None:
-        super(IrregularFunctionalData, self.__class__).\
-            argvals.fset(self, new_argvals)
-
+        self._argvals = new_argvals
         points = self.gather_points()
-        argvals_stand = {}
+        argvals_stand: IrregArgvals = {}
         for dim, obss in new_argvals.items():
             max_x, min_x = np.max(points[dim]), np.min(points[dim])
 
@@ -1059,7 +1065,7 @@ class IrregularFunctionalData(FunctionalData):
         return min(min(ranges)), max(max(ranges))
 
     @property
-    def n_points(self) -> Dict[int, float]:
+    def n_points(self) -> Dict[str, int]:
         """Get the mean number of sampling points.
 
         Returns
@@ -1075,7 +1081,7 @@ class IrregularFunctionalData(FunctionalData):
         return n_points
 
     @property
-    def range_dim(self) -> Dict[int, Tuple[float, float]]:
+    def range_dim(self) -> Dict[str, Tuple[int, int]]:
         """Get the range of the `argvals` for each of the dimension.
 
         Returns
@@ -1087,11 +1093,14 @@ class IrregularFunctionalData(FunctionalData):
         """
         ranges = {idx: list(argval.values())
                   for idx, argval in self.argvals.items()}
-        return {idx: (min(map(min, dim)), max(map(max, dim)))
-                for idx, dim in ranges.items()}
+        return {idx: (
+                cast(int, min(map(min, dim))),
+                cast(int, max(map(max, dim)))
+            ) for idx, dim in ranges.items()
+        }
 
     @property
-    def shape(self) -> Dict[int, int]:
+    def shape(self) -> Dict[str, int]:
         r"""Get the shape of the data for each dimension.
 
         Returns
@@ -1163,7 +1172,7 @@ class IrregularFunctionalData(FunctionalData):
 
         return DenseFunctionalData(new_argvals, new_values)
 
-    def is_compatible(self, fdata: IrregularFunctionalData) -> bool:
+    def is_compatible(self, fdata: FunctionalData) -> bool:
         """Check if `fdata` is compatible with `self`.
 
         Two IrregularFunctionalData object are said to be compatible if they
@@ -1189,7 +1198,7 @@ class IrregularFunctionalData(FunctionalData):
     def mean(
         self,
         smooth: Optional[str] = None,
-        **kwargs
+        **kwargs: Any
     ) -> DenseFunctionalData:
         """Compute an estimate of the mean.
 
@@ -1211,10 +1220,10 @@ class IrregularFunctionalData(FunctionalData):
 
     def covariance(
         self,
-        mean: Optional[IrregularFunctionalData] = None,
-        smooth: Optional[IrregularFunctionalData] = None,
-        **kwargs
-    ) -> None:
+        mean: Optional[FunctionalData] = None,
+        smooth: Optional[str] = None,
+        **kwargs: Any
+    ) -> FunctionalData:
         """Compute an estimate of the covariance."""
         pass
 
@@ -1225,7 +1234,7 @@ class IrregularFunctionalData(FunctionalData):
         points_estim: Optional[npt.NDArray[np.float64]] = None,
         degree: int = 0,
         kernel: str = "epanechnikov",
-        bandwidth: Optional[Bandwidth] = None
+        bandwidth: Optional[List[float]] = None
     ) -> IrregularFunctionalData:
         """Smooth the data.
 
@@ -1277,14 +1286,15 @@ class IrregularFunctionalData(FunctionalData):
             pred = lp.fit_predict(arg, val, points_estim)
             smooth_argvals[i] = points_estim
             smooth_values[i] = pred
-        return IrregularFunctionalData({'input_dim_0': smooth_argvals},
-                                       smooth_values)
+        return IrregularFunctionalData(
+            {'input_dim_0': smooth_argvals}, smooth_values
+        )
 
 
 ###############################################################################
 # Class MultivariateFunctionalData
 
-class MultivariateFunctionalData(UserList):
+class MultivariateFunctionalData(UserList[FunctionalData]):
     r"""A class for defining Multivariate Functional Data.
 
     An instance of MultivariateFunctionalData is a list containing objects of
@@ -1304,14 +1314,9 @@ class MultivariateFunctionalData(UserList):
 
     """
 
-    @staticmethod
-    def _check_data(new_data: List[FunctionalData]) -> None:
-        """Check the user provided `data`."""
-        FunctionalData._check_same_nobs(*new_data)
-
     def __init__(
         self,
-        initlist: Optional[List[FunctionalData]] = None
+        initlist: List[FunctionalData]
     ) -> None:
         """Initialize MultivariateFunctionalData object."""
         self.data = initlist
@@ -1320,19 +1325,6 @@ class MultivariateFunctionalData(UserList):
         """Override print function."""
         return (f"Multivariate functional data object with {self.n_functional}"
                 f" functions of {self.n_obs} observations.")
-
-    @property
-    def data(self) -> List[FunctionalData]:
-        """Getter for data."""
-        return self._data
-
-    @data.setter
-    def data(self, new_data: List[FunctionalData]) -> None:
-        if new_data is not None:
-            self._check_data(new_data)
-            self._data = new_data
-        else:
-            self._data = []
 
     @property
     def n_obs(self) -> int:
@@ -1372,7 +1364,7 @@ class MultivariateFunctionalData(UserList):
         return [i.n_dim for i in self]
 
     @property
-    def range_obs(self) -> List[int]:
+    def range_obs(self) -> List[Tuple[float, float]]:
         """Get the range of the observations of the object.
 
         Returns
@@ -1385,7 +1377,7 @@ class MultivariateFunctionalData(UserList):
         return [i.range_obs for i in self]
 
     @property
-    def n_points(self) -> List[int]:
+    def n_points(self) -> List[Dict[str, int]]:
         """Get the mean number of sampling points.
 
         Returns
@@ -1398,7 +1390,7 @@ class MultivariateFunctionalData(UserList):
         return [i.n_points for i in self]
 
     @property
-    def range_points(self) -> List[int]:
+    def range_points(self) -> List[Dict[str, Tuple[int, int]]]:
         """Get the range of the `argvals` for each of the dimension.
 
         Returns
@@ -1411,7 +1403,7 @@ class MultivariateFunctionalData(UserList):
         return [i.range_dim for i in self]
 
     @property
-    def shape(self) -> List[int]:
+    def shape(self) -> List[Dict[str, int]]:
         r"""Get the shape of the data for each dimension.
 
         Returns
@@ -1436,19 +1428,19 @@ class MultivariateFunctionalData(UserList):
         if len(self.data) == 0:
             self.data = [item]
         else:
-            FunctionalData._check_same_nobs(self, item)
+            FunctionalData._check_same_nobs(*self, item)
             self.data.append(item)
 
-    def extend(self, other: FunctionalData) -> None:
+    def extend(self, other: Iterable[FunctionalData]) -> None:
         """Extend the list of FunctionalData by appending from iterable."""
         super().extend(other)
 
     def insert(self, i: int, item: FunctionalData) -> None:
         """Insert an item `item` at a given position `i`."""
-        FunctionalData._check_same_nobs(self, item)
+        FunctionalData._check_same_nobs(*self, item)
         self.data.insert(i, item)
 
-    def remove(self, item: int) -> None:
+    def remove(self, item: FunctionalData) -> None:
         """Remove the first item from `self` where value is `item`."""
         raise NotImplementedError
 
@@ -1460,15 +1452,7 @@ class MultivariateFunctionalData(UserList):
         """Remove all items from the list."""
         super().clear()
 
-    def index(self, item: Any) -> int:
-        """Return first item of the list equald to x."""
-        raise NotImplementedError
-
-    def count(self, item: Any) -> int:
-        """Return the number of times `item` appears in the list."""
-        raise NotImplementedError
-
-    def sort(self, *args: Any, **kwds: Any) -> None:
+    def sort(self, *args: Any, **kwargs: Any) -> None:
         """Sort the items of the list in place."""
         raise NotImplementedError
 
@@ -1505,8 +1489,9 @@ class MultivariateFunctionalData(UserList):
             observation.
 
         """
-        return MultivariateFunctionalData([i.mean(smooth, **kwargs)
-                                           for i in self])
+        return MultivariateFunctionalData(
+            [i.mean(smooth, **kwargs) for i in self]
+        )
 
     def covariance(
         self,
@@ -1532,11 +1517,12 @@ class MultivariateFunctionalData(UserList):
         """
         if mean is not None:
             return MultivariateFunctionalData(
-                [i.covariance(m, smooth, **kwargs)
-                    for i, m in zip(self, mean)])
+                [i.covariance(m, smooth, **kwargs) for i, m in zip(self, mean)]
+            )
         else:
             return MultivariateFunctionalData(
-                [i.covariance(None, smooth, **kwargs) for i in self])
+                [i.covariance(None, smooth, **kwargs) for i in self]
+            )
 
     def concatenate(
         self,
@@ -1555,7 +1541,7 @@ class MultivariateFunctionalData(UserList):
             The concatenation of self and data.
 
         """
-        new = [data1.concatenate(data2) for data1, data2 in zip(self, data)]
+        new = [concatenate_([data1, data2]) for data1, data2 in zip(self, data)]
         return MultivariateFunctionalData(new)
 
 
@@ -1563,8 +1549,8 @@ class MultivariateFunctionalData(UserList):
 # Functional data manipulation
 
 def concatenate_(
-    data: List[DenseFunctionalData]
-) -> DenseFunctionalData:
+    data: List[FunctionalData]
+) -> FunctionalData:
     """Concatenate functional data.
 
     Compute multiple DenseFunctionalData into one. It works with higher

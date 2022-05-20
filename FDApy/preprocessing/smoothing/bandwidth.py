@@ -479,8 +479,8 @@ class Bandwidth(object):
 
     def __init__(
         self,
-        points: list = 0.5,
-        neighborhood: list = 2,
+        points: npt.NDArray[np.float64] = 0.5,
+        neighborhood: npt.NDArray[np.float64] = 2,
         kernel: str = "epanechnikov"
     ) -> None:
         """Initialize Bandwidth object.
