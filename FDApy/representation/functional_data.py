@@ -27,7 +27,7 @@ from ..preprocessing.smoothing.bandwidth import Bandwidth
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..preprocessing.smoothing.smoothing_splines import SmoothingSpline
 from ..misc.utils import get_dict_dimension_, get_obs_shape_
-from ..misc.utils import integration_weights_, outer_
+from ..misc.utils import integrate_, integration_weights_, outer_
 from ..misc.utils import range_standardization_
 
 
@@ -869,6 +869,45 @@ class DenseFunctionalData(FunctionalData):
         """
         return cast(DenseFunctionalData, concatenate_([self, data]))
 
+    def normalize(
+        self,
+        use_argvals_stand: bool = False
+    ) -> Tuple[DenseFunctionalData, float]:
+        r"""Normalize the data.
+
+        The normalization is performed by divising each functional datum by :math:`w_j = \int_{T} Var(X(t))dt`.
+
+        Parameters
+        ----------
+        use_argvals_stand: bool, default=False
+            Use standardized argvals to compute the normalization of the data.
+        Returns
+        -------
+        res: DenseFunctionalData
+            The normalized data.
+        
+        Todo
+        ----
+        - Add other normalization schames
+        - Add the possibility to normalize multidemsional data
+
+        References
+        ----------
+        Happ and Greven, Multivariate Functional Principal Component Analysis
+        for Data Observed on Different (Dimensional Domains), Journal of the 
+        American Statistical Association.
+        """
+        if self.n_dim > 1:
+            raise ValueError(
+                "Normalization can only be performed on one dimensional data"
+            )
+
+        if use_argvals_stand:
+            argvals = self.argvals_stand['input_dim_0']
+        else:
+            argvals = self.argvals['input_dim_0']
+        weights = integrate_(argvals, np.var(self.values, axis=0))
+        return DenseFunctionalData(self.argvals, self.values / weights), weights
 
 ###############################################################################
 # Class IrregularFunctionalData

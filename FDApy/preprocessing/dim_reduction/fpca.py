@@ -8,6 +8,7 @@ functional data. Univariate functional data and irregular functional data are
 concerned with UFPCA, whereas multivariate functional data with MFPCA.
 """
 import numpy as np
+import warnings
 
 from typing import Optional, List, Union
 
@@ -30,7 +31,7 @@ class UFPCA():
 
     Parameters
     ----------
-    n_components : int, float, None, default=None
+    n_components: int, float, None, default=None
         Number of components to keep.
         if n_components if None, all components are kept::
             n_components == min(n_samples, n_features)
@@ -38,6 +39,8 @@ class UFPCA():
         if 0 < n_components < 1, select the number of components such that
         the amount of variance that needs to be explained is greater than
         the percentage specified by n_components.
+    normalize: bool, default=False
+        Perform a normalization of the data.
 
     Attributes
     ----------
@@ -56,10 +59,13 @@ class UFPCA():
 
     def __init__(
         self,
-        n_components: Union[int, float, None] = None
+        n_components: Union[int, float, None] = None,
+        normalize: bool = False
     ) -> None:
         """Initaliaze UFPCA object."""
         self.n_components = n_components
+        self.normalize = normalize
+        self.weights = 1
 
     def fit(
         self,
@@ -142,6 +148,10 @@ class UFPCA():
         TODO : Add possibility to smooth the eigenfunctions.
 
         """
+        if self.normalize:
+            data, weights = data.normalize(use_argvals_stand=True)
+            self.weights = weights
+
         smoothing_method = self.smoothing_parameters['method']
         if mean is None:
             mean = data.mean(smooth=smoothing_method,
@@ -226,9 +236,17 @@ class UFPCA():
 
         """
         # TODO: Add checkers
+        if self.normalize:
+            values = data.values / self.weights
+            data = DenseFunctionalData(data.argvals, values)
+
         data_unmean = data.values - self.mean.values
 
         if method == 'PACE':
+            warnings.warn((
+                "The implementation of PACE is not sure, prefer to use "
+                "`method=NumInt`."
+            ))
             sigma_inv = np.linalg.inv(
                 self.covariance.values[0] + data.var_noise * np.diagflat(
                     np.ones(shape=self.covariance.values[0].shape[0]))
@@ -290,6 +308,8 @@ class MFPCA():
         if 0 < n_components < 1, select the number of components such that
         the amount of variance that needs to be explained is greater than
         the percentage specified by n_components.
+    normalize: bool, default=False
+        Perform a normalization of the data.
 
     Attributes
     ----------
@@ -320,10 +340,12 @@ class MFPCA():
 
     def __init__(
         self,
-        n_components: List[Union[int, float, None]] = None
+        n_components: List[Union[int, float, None]] = None,
+        normalize: bool = False
     ) -> None:
         """Initialize MFPCA object."""
         self.n_components = n_components
+        self.normalize = normalize
 
     def fit(
         self,
@@ -380,7 +402,7 @@ class MFPCA():
         ufpca_list, scores = [], []
         for function, n in zip(data, self.n_components):
             if function.n_dim == 1:
-                ufpca = UFPCA(n_components=n)
+                ufpca = UFPCA(n_components=n, normalize=self.normalize)
                 ufpca.fit(data=function, method='GAM')
                 scores_uni = ufpca.transform(data=function, method='NumInt')
             elif function.n_dim == 2:
