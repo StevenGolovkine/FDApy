@@ -41,7 +41,8 @@ def joining_step(
     list_nodes: List[N],
     siblings: Set[Tuple[N, N]],
     n_components: Union[int, float] = 0.95,
-    max_group: int = 5
+    max_group: int = 5,
+    normalize: bool = False
 ) -> List[N]:
     """Perform a joining step.
 
@@ -55,6 +56,8 @@ def joining_step(
         Number of components to keep for the aggregation of the nodes.
     max_group: int, default=5
         Number of models to try to split the data.
+    normalize: bool, default=False
+        Perform a normalization of the data.
 
     Returns
     -------
@@ -75,7 +78,7 @@ def joining_step(
 
         if isinstance(new_data, DenseFunctionalData):
             if new_data.n_dim == 1:
-                ufpca = UFPCA(n_components=n_components)
+                ufpca = UFPCA(n_components=n_components, normalize=normalize)
                 ufpca.fit(data=new_data, method='GAM')
                 scores = ufpca.transform(data=new_data, method='NumInt')
             elif new_data.n_dim == 2:
@@ -94,7 +97,7 @@ def joining_step(
                 raise ValueError("The dimension of the input data should "
                                  "be 1 or 2.")
         elif isinstance(new_data, MultivariateFunctionalData):
-            mfpca = MFPCA(n_components=n_components)
+            mfpca = MFPCA(n_components=n_components, normalize=normalize)
             mfpca.fit(data=new_data, method='NumInt')
             scores = mfpca.transform(new_data)
         else:
@@ -175,6 +178,8 @@ class Node():
         Is the node a root node?
     is_leaf: boolean
         Is the node a leaf node?
+    normalize: bool, default=False
+        Perform a normalization of the data.
 
     Attributes
     ----------
@@ -202,7 +207,8 @@ class Node():
         identifier: Tuple[int, int] = (0, 0),
         idx_obs: Optional[int] = None,
         is_root: bool = False,
-        is_leaf: bool = False
+        is_leaf: bool = False,
+        normalize: bool = False
     ) -> None:
         """Initialiaze Node object."""
         self.identifier = (0, 0) if is_root else identifier
@@ -213,6 +219,7 @@ class Node():
         self.right = None
         self.is_root = is_root
         self.is_leaf = is_leaf
+        self.normalize = normalize
 
     def __str__(self) -> str:
         """Override __str__ function."""
@@ -325,7 +332,10 @@ class Node():
         if self.data.n_obs > min_size:
             if isinstance(self.data, DenseFunctionalData):
                 if self.data.n_dim == 1:
-                    ufpca = UFPCA(n_components=n_components)
+                    ufpca = UFPCA(
+                        n_components=n_components,
+                        normalize=self.normalize
+                    )
                     ufpca.fit(data=self.data, method='GAM')
                     scores = ufpca.transform(data=self.data, method='NumInt')
                     self.fpca = ufpca
@@ -347,7 +357,10 @@ class Node():
                     raise ValueError("The dimension of the input data should "
                                      "be 1 or 2.")
             elif isinstance(self.data, MultivariateFunctionalData):
-                mfpca = MFPCA(n_components=n_components)
+                mfpca = MFPCA(
+                    n_components=n_components,
+                    normalize=self.normalize
+                )
                 mfpca.fit(data=self.data, method='NumInt')
                 scores = mfpca.transform(self.data, method='NumInt')
                 self.fpca = mfpca
@@ -383,11 +396,13 @@ class Node():
                 self.left = Node(left_data,
                                  identifier=(self.identifier[0] + 1,
                                              2 * self.identifier[1]),
-                                 idx_obs=self.idx_obs[prediction == 0])
+                                 idx_obs=self.idx_obs[prediction == 0],
+                                 normalize=self.normalize)
                 self.right = Node(right_data,
                                   identifier=(self.identifier[0] + 1,
                                               2 * self.identifier[1] + 1),
-                                  idx_obs=self.idx_obs[prediction == 1])
+                                  idx_obs=self.idx_obs[prediction == 1],
+                                  normalize=self.normalize)
             else:
                 self.is_leaf = True
         else:
@@ -432,7 +447,8 @@ class Node():
                     identifier=new_id,
                     idx_obs=np.hstack([self.idx_obs, node.idx_obs]),
                     is_root=(self.is_root & node.is_root),
-                    is_leaf=(self.is_leaf & node.is_leaf))
+                    is_leaf=(self.is_leaf & node.is_leaf),
+                    normalize=self.normalize)
 
     def isin(
         self,
@@ -507,6 +523,8 @@ class FCUBT():
     ----------
     root_node: Node, default=Node
         The root node of the tree.
+    normalize: bool, default=False
+        Perform a normalization of the data.
 
     Attributes
     ----------
@@ -529,11 +547,13 @@ class FCUBT():
 
     def __init__(
         self,
-        root_node: Optional[N] = None
+        root_node: Optional[N] = None,
+        normalize: bool = False
     ) -> None:
         """Initialize fCUBT object."""
         self.root_node = root_node
         self.tree = [root_node]
+        self.normalize = normalize
 
     @property
     def root_node(self) -> N:
@@ -790,7 +810,7 @@ class FCUBT():
 
         """
         new_list_nodes = joining_step(list_nodes, siblings, n_components,
-                                      max_group)
+                                      max_group, normalize=self.normalize)
         if len(new_list_nodes) == len(list_nodes):
             return new_list_nodes
         else:
