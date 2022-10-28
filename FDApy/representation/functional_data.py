@@ -9,6 +9,7 @@ different types are: Univariate Functional Data, Irregular Functional data and
 Multivariate Functional Data.
 """
 from __future__ import annotations
+from hashlib import new
 
 import numpy as np
 import numpy.typing as npt
@@ -17,8 +18,8 @@ import pygam
 from abc import ABC, abstractmethod
 from collections import UserList
 from typing import (
-    cast, Any, Dict, Iterable, Iterator, Optional, List, Literal,
-    Tuple, TypeVar, Union
+    cast, Any, Dict, Iterable, Iterator, Optional, List,
+    Tuple, Union
 )
 
 from sklearn.metrics import pairwise_distances
@@ -875,7 +876,8 @@ class DenseFunctionalData(FunctionalData):
     ) -> Tuple[DenseFunctionalData, float]:
         r"""Normalize the data.
 
-        The normalization is performed by divising each functional datum by :math:`w_j = \int_{T} Var(X(t))dt`.
+        The normalization is performed by divising each functional datum by 
+        :math:`w_j = \int_{T} Var(X(t))dt`.
 
         Parameters
         ----------
@@ -885,7 +887,7 @@ class DenseFunctionalData(FunctionalData):
         -------
         res: DenseFunctionalData
             The normalized data.
-        
+
         Todo
         ----
         - Add other normalization schames
@@ -906,8 +908,10 @@ class DenseFunctionalData(FunctionalData):
             argvals = self.argvals_stand['input_dim_0']
         else:
             argvals = self.argvals['input_dim_0']
-        weights = integrate_(argvals, np.var(self.values, axis=0))
-        return DenseFunctionalData(self.argvals, self.values / weights), weights
+            weights = integrate_(argvals, np.var(self.values, axis=0))
+        new_values = self.values / weights
+        return DenseFunctionalData(self.argvals, new_values), weights
+
 
 ###############################################################################
 # Class IrregularFunctionalData
@@ -1016,9 +1020,9 @@ class IrregularFunctionalData(FunctionalData):
                 argvals[idx] = {i: dim.get(i) for i in range(*indices)}
             values = {i: self.values.get(i) for i in range(*indices)}
         else:
-            argvals = {idx: {index: cast(npt.NDArray[np.float64],
-                                         points.get(index))
-                            } for idx, points in self.argvals.items()
+            argvals = {
+                idx: {index: cast(npt.NDArray[np.float64], points.get(index))}
+                        for idx, points in self.argvals.items()
             }
             values = {index: self.values.get(index)}
         return IrregularFunctionalData(argvals, values)

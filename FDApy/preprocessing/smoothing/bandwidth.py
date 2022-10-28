@@ -13,8 +13,6 @@ import numpy.typing as npt
 
 from typing import Dict, NamedTuple, List, Union, cast
 
-from ...src.sigma import estimate_sigma  # type: ignore
-
 
 ##############################################################################
 # Misc functions
@@ -546,7 +544,7 @@ class Bandwidth(object):
         if constants is None:
             constants = self.estimate_constant(argvals, values, hurst)
         if sigma is None:
-            sigma = estimate_sigma(values)
+            sigma = 0
 
         bandwidth = self.estimate_bandwidth(argvals, hurst, constants, sigma,
                                             self.kernel)

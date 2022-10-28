@@ -14,18 +14,10 @@ It might be used to simulate different clusters of functional data.
 Check out the `documentation <https://fdapy.readthedocs.io/en/stable/>`_ for
 more complete information on the available features within the package.
 """
-import Cython.Build
-
-from setuptools import Extension, find_packages, setup
+from setuptools import find_packages, setup
 
 
 DOCLINES = (__doc__ or '').split('\n')
-
-extensions = [
-    Extension('FDApy.src.sigma',
-              sources=['FDApy/src/sigma.pyx'],
-              language='c++')
-]
 
 setup(name='FDApy',
       version='0.8.6',
@@ -41,22 +33,17 @@ setup(name='FDApy',
       author='Steven Golovkine',
       author_email='steven_golovkine@icloud.com',
       license='MIT',
-      cmdclass={'build_ext': Cython.Build.build_ext},
       package_dir={'FDApy': 'FDApy'},
       packages=find_packages(),
       install_requires=[
           'csaps >= 1.1.0',
-          'Cython >= 0.29.4',
           'ggplot >= 0.11.0',
-          'numpy >= 1.20.0, < 1.23.0',
+          'numpy == 1.22.3',
           'pandas >= 1.3.0',
           'patsy >= 0.5.0',
           'pygam >= 0.8.0',
           'scikit-learn >= 0.23.0'],
       test_suite='nose.collector',
       tests_require=['nose'],
-      # extra_requires={'tests': ['cython']},
       include_package_data=True,
-      ext_modules=extensions,
-      setup_requires=['cython'],
       zip_safe=False)

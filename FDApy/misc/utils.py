@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import scipy
 
-from typing import Dict, Optional, Tuple
+from typing import Dict, Tuple
 
 from sklearn.preprocessing import StandardScaler
 
