@@ -6,12 +6,13 @@
 This module is used to estimate the bandwidth parameter that is necessary in
 the case of kernel regression.
 """
-from __future__ import annotations
-
 import numpy as np
 import numpy.typing as npt
 
-from typing import Dict, NamedTuple, List, Union, cast
+from typing import Dict, NamedTuple, List, Union, cast, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ...representation.functional_data import FunctionalData
 
 
 ##############################################################################
@@ -508,7 +509,7 @@ class Bandwidth(object):
 
     def __call__(
         self,
-        data: FunctionalData,
+        data: 'FunctionalData',
         hurst: list = None,
         constants: list = None,
         sigma: float = None

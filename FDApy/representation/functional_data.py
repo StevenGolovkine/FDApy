@@ -473,7 +473,7 @@ class DenseFunctionalData(FunctionalData):
         """Getter for argvals."""
         return cast(DenseArgvals, super().argvals)
 
-    @FunctionalData.argvals.setter
+    @argvals.setter
     def argvals(
         self,
         new_argvals: DenseArgvals
@@ -1032,7 +1032,7 @@ class IrregularFunctionalData(FunctionalData):
         """Getter for argvals."""
         return cast(IrregArgvals, super().argvals)
 
-    @FunctionalData.argvals.setter
+    @argvals.setter
     def argvals(
         self,
         new_argvals: IrregArgvals
