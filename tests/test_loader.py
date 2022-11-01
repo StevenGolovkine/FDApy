@@ -23,7 +23,7 @@ class TestLoaderCSV(unittest.TestCase):
         )
         self.assertTrue(
             np.allclose(
-                data.values, 
+                data.values,
                 np.array(
                     [
                         [4.6, 4.7, 4.2, 3.6],

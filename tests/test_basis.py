@@ -59,7 +59,7 @@ class TestBasis(unittest.TestCase):
                 np.array(
                     [
                         [1., 1., 1.],
-                        [0., 0.8660254 , 1.73205081]
+                        [0., 0.8660254, 1.73205081]
                     ]
                 )
             )
@@ -96,7 +96,7 @@ class TestBasis(unittest.TestCase):
 
     def test_basis_bsplines(self):
         X = Basis(
-            name='bsplines', n_functions=2, 
+            name='bsplines', n_functions=2,
             argvals=self.argvals, degree=0
         )
         self.assertTrue(
@@ -113,7 +113,7 @@ class TestBasis(unittest.TestCase):
 
     def test_basis_bsplines_with_knots(self):
         X = Basis(
-            name='bsplines', n_functions=2, 
+            name='bsplines', n_functions=2,
             argvals=self.argvals, degree=0, knots=np.array([0.25, 0.5, 0.75])
         )
         self.assertTrue(
@@ -130,24 +130,25 @@ class TestBasis(unittest.TestCase):
 
     def test_multibasis(self):
         X = Basis(
-            name='legendre', n_functions=2, dimension='2D', argvals=self.argvals
+            name='legendre', n_functions=2,
+            dimension='2D', argvals=self.argvals
         )
         self.assertTrue(
             np.allclose(
                 X.values,
                 np.array(
-                    [[[1.  , 1.  , 1.  ],
-                      [1.  , 1.  , 1.  ],
-                      [1.  , 1.  , 1.  ]],
-                     [[0.  , 0.5 , 1.  ],
-                      [0.  , 0.5 , 1.  ],
-                      [0.  , 0.5 , 1.  ]],
-                     [[0.  , 0.  , 0.  ],
-                      [0.5 , 0.5 , 0.5 ],
-                      [1.  , 1.  , 1.  ]],
-                     [[0.  , 0.  , 0.  ],
-                      [0.  , 0.25, 0.5 ],
-                      [0.  , 0.5 , 1.  ]]]
+                    [[[1., 1., 1.],
+                      [1., 1., 1.],
+                      [1., 1., 1.]],
+                     [[0., 0.5, 1.],
+                      [0., 0.5, 1.],
+                      [0., 0.5, 1.]],
+                     [[0., 0., 0.],
+                      [0.5, 0.5, 0.5],
+                      [1., 1., 1.]],
+                     [[0., 0., 0.],
+                      [0., 0.25, 0.5],
+                      [0., 0.5, 1.]]]
                 )
             )
         )

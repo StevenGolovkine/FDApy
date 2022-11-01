@@ -9,7 +9,6 @@ different types are: Univariate Functional Data, Irregular Functional data and
 Multivariate Functional Data.
 """
 from __future__ import annotations
-from hashlib import new
 
 import numpy as np
 import numpy.typing as npt
@@ -876,7 +875,7 @@ class DenseFunctionalData(FunctionalData):
     ) -> Tuple[DenseFunctionalData, float]:
         r"""Normalize the data.
 
-        The normalization is performed by divising each functional datum by 
+        The normalization is performed by divising each functional datum by
         :math:`w_j = \int_{T} Var(X(t))dt`.
 
         Parameters
@@ -896,7 +895,7 @@ class DenseFunctionalData(FunctionalData):
         References
         ----------
         Happ and Greven, Multivariate Functional Principal Component Analysis
-        for Data Observed on Different (Dimensional Domains), Journal of the 
+        for Data Observed on Different (Dimensional Domains), Journal of the
         American Statistical Association.
         """
         if self.n_dim > 1:
@@ -1021,8 +1020,9 @@ class IrregularFunctionalData(FunctionalData):
             values = {i: self.values.get(i) for i in range(*indices)}
         else:
             argvals = {
-                idx: {index: cast(npt.NDArray[np.float64], points.get(index))}
-                        for idx, points in self.argvals.items()
+                idx: {
+                    index: cast(npt.NDArray[np.float64], points.get(index))
+                } for idx, points in self.argvals.items()
             }
             values = {index: self.values.get(index)}
         return IrregularFunctionalData(argvals, values)
@@ -1093,9 +1093,10 @@ class IrregularFunctionalData(FunctionalData):
         """
         ranges = {idx: list(argval.values())
                   for idx, argval in self.argvals.items()}
-        return {idx: (cast(int, min(map(min, dim))),
-                      cast(int, max(map(max, dim)))
-                     ) for idx, dim in ranges.items()}
+        return {idx: (
+            cast(int, min(map(min, dim))),
+            cast(int, max(map(max, dim)))
+        ) for idx, dim in ranges.items()}
 
     @property
     def shape(self) -> Dict[str, int]:
@@ -1539,7 +1540,7 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
             The concatenation of self and data.
 
         """
-        new = [concatenate_([data1, data2]) for data1, data2 in zip(self, data)]
+        new = [concatenate_([d1, d2]) for d1, d2 in zip(self, data)]
         return MultivariateFunctionalData(new)
 
 
