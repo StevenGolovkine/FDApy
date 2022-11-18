@@ -33,8 +33,7 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.napoleon',
     'sphinx.ext.mathjax',
-    'sphinx_gallery.gen_gallery',
-    'sphinx_rtd_theme'
+    'sphinx_gallery.gen_gallery'
 ]
 
 master_doc = 'index'
@@ -53,7 +52,7 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'pydata_sphinx_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -67,11 +66,11 @@ html_static_path = ['_static']
 # refs: http://alabaster.readthedocs.io/en/latest/installation.html#sidebars
 html_sidebars = {
     '**': [
-        'about.html',
-        'navigation.html',
-        'relations.html',  # needs 'show_related': True theme option to display
-        'searchbox.html',
-        'donate.html',
+        #'about.html',
+        #'navigation.html',
+        #'relations.html',  # needs 'show_related': True theme option to display
+        #'searchbox.html',
+        #'donate.html',
     ]
 }
 

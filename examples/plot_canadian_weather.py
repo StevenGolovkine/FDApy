@@ -116,15 +116,3 @@ temperature_covariance = temperature.covariance(smooth='GAM')
 
 # Plot the smooth covariance function of the daily temperature
 _ = plot(temperature_covariance)
-
-###############################################################################
-# Instead of directly computing an estimation of the mean and covariance by
-# smoothing, we can smooth all the curve in an individual way.
-
-# Smooth the data
-temperature_smooth = temperature.smooth(points=200,
-                                        neighborhood=14,
-                                        kernel='gaussian')
-
-# Plot the smooth data
-_ = plot(temperature_smooth)
