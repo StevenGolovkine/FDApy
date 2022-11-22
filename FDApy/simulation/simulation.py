@@ -16,8 +16,11 @@ from typing import Callable, Optional, Tuple, Union
 
 from sklearn.datasets import make_blobs
 
-from .functional_data import DenseFunctionalData, IrregularFunctionalData
-from .basis import Basis
+from ..representation.functional_data import (
+    DenseFunctionalData,
+    IrregularFunctionalData
+)
+from ..representation.basis import Basis
 
 
 #############################################################################

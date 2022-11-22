@@ -11,4 +11,5 @@ API References
 	modules/regression
 	modules/clustering
 	modules/visualization
+	modules/simulation
 	modules/misc

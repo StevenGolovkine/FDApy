@@ -24,7 +24,6 @@ from typing import (
 
 from sklearn.metrics import pairwise_distances
 
-from ..preprocessing.smoothing.bandwidth import Bandwidth
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..preprocessing.smoothing.smoothing_splines import SmoothingSpline
 from ..misc.utils import get_dict_dimension_, get_obs_shape_
@@ -1302,19 +1301,18 @@ class IrregularFunctionalData(FunctionalData):
             raise NotImplementedError('Currently, only one dimensional data'
                                       ' can be smoothed.')
 
-        if bandwidth is None:
-            band_obj = Bandwidth(points=points, neighborhood=neighborhood)
-            bandwidth = band_obj(self).bandwidths
+        # TODO: Provide an estimator for the bandwidth
+        bandwidth = 0.5
 
         argvals = self.argvals['input_dim_0'].values()
         values = self.values.values()
         smooth_argvals, smooth_values = {}, {}
-        for i, (arg, val, b) in enumerate(zip(argvals, values, bandwidth)):
+        for i, (arg, val) in enumerate(zip(argvals, values)):
             if points_estim is None:
                 points_estim = arg
 
             lp = LocalPolynomial(kernel_name=kernel,
-                                 bandwidth=b,
+                                 bandwidth=bandwidth,
                                  degree=degree)
             pred = lp.fit_predict(arg, val, points_estim)
             smooth_argvals[i] = points_estim

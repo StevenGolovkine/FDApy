@@ -13,7 +13,7 @@ basis.
 
 import numpy as np
 
-from FDApy.representation.simulation import Brownian, KarhunenLoeve
+from FDApy.simulation.simulation import Brownian, KarhunenLoeve
 from FDApy.visualization.plot import plot
 
 
