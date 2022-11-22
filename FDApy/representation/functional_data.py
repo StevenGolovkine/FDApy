@@ -13,12 +13,13 @@ from __future__ import annotations
 import numpy as np
 import numpy.typing as npt
 import pygam
+import warnings
 
 from abc import ABC, abstractmethod
 from collections import UserList
 from typing import (
     cast, Any, Dict, Iterable, Iterator, Optional, List,
-    Tuple, Union
+    Tuple, TYPE_CHECKING, Union
 )
 
 from sklearn.metrics import pairwise_distances
@@ -30,6 +31,8 @@ from ..misc.utils import get_dict_dimension_, get_obs_shape_
 from ..misc.utils import integrate_, integration_weights_, outer_
 from ..misc.utils import range_standardization_
 
+if TYPE_CHECKING:
+    from ..representation.basis import Basis
 
 DenseArgvals = Dict[str, npt.NDArray[np.float64]]
 DenseValues = npt.NDArray[np.float64]
@@ -335,6 +338,14 @@ class FunctionalData(ABC):
         return True
 
     @abstractmethod
+    def to_basis(
+        self,
+        basis: 'Basis'
+    ) -> None:
+        """Expand the FunctionalData into a basis."""
+        pass
+
+    @abstractmethod
     def mean(
         self,
         smooth: Optional[str] = None,
@@ -606,6 +617,17 @@ class DenseFunctionalData(FunctionalData):
         DenseFunctionalData._check_argvals_equality_dense(
             self.argvals, fdata.argvals)
         return True
+
+    def to_basis(
+        self,
+        basis: Basis
+    ) -> None:
+        """Convert to basis"""
+
+        xtx = np.linalg.inv(np.matmul(basis.values, basis.values.T))
+        xty = np.matmul(basis.values, self.values.T)
+        self.basis = basis
+        self.coefs = np.matmul(xtx, xty).T
 
     def mean(
         self,
@@ -1194,6 +1216,13 @@ class IrregularFunctionalData(FunctionalData):
             self.argvals, fdata.argvals)
         return True
 
+    def to_basis(
+        self,
+        basis: Basis
+    ) -> None:
+        """Convert to basis"""
+        raise NotImplementedError()
+
     def mean(
         self,
         smooth: Optional[str] = None,
@@ -1214,7 +1243,11 @@ class IrregularFunctionalData(FunctionalData):
 
         """
         dense_self = self.as_dense()
-        mean_estim = np.nanmean(dense_self.values, axis=0, keepdims=True)
+
+        # Catch this warning as 2D data might have empty slice
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            mean_estim = np.nanmean(dense_self.values, axis=0, keepdims=True)
         return DenseFunctionalData(dense_self.argvals, mean_estim)
 
     def covariance(
