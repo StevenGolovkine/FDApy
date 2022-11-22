@@ -6,6 +6,8 @@
 This module is used to estimate the bandwidth parameter that is necessary in
 the case of kernel regression.
 """
+from __future__ import annotations
+
 import numpy as np
 import numpy.typing as npt
 
@@ -509,7 +511,7 @@ class Bandwidth(object):
 
     def __call__(
         self,
-        data: 'FunctionalData',
+        data: FunctionalData,
         hurst: list = None,
         constants: list = None,
         sigma: float = None

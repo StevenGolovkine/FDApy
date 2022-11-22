@@ -567,7 +567,7 @@ class DenseFunctionalData(FunctionalData):
         """
         return {idx: len(dim) for idx, dim in self.argvals.items()}
 
-    def as_irregular(self) -> IrregularFunctionalData:
+    def as_irregular(self) -> IrregularFunctionalData:  # noqa: E0601
         """Convert `self` from Dense to Irregular functional data.
 
         Coerce a DenseFunctionalData object into an IrregularFunctionalData
@@ -904,6 +904,7 @@ class DenseFunctionalData(FunctionalData):
         ----------
         use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
+
         Returns
         -------
         res: DenseFunctionalData

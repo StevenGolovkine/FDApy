@@ -358,22 +358,26 @@ class FLMM():
 
 
 def xtx_entry_(x1, x2, z1, z2):
+    """Compute xtx entry."""
     mat_a = x1.T.dot(x2)
     mat_b = z1.T.dot(z2)
     return np.einsum('ij,ji->', mat_a, mat_b.T)
 
 
 def xty_entry_(x1, x2, y):
+    """Compute xty entry."""
     mat_a = x1.T.dot(y)
     mat_b = x2.T.dot(y)
     return mat_a.T.dot(mat_b).flatten()
 
 
 def zty_entry_(y, z, phi):
+    """Compute zty entry."""
     return np.matmul(phi, np.matmul(y.T, z)).flatten()
 
 
 def ztz_entry_(z1, z2, phi1, phi2):
+    """Compute ztz entry."""
     phitphi = np.matmul(phi1, phi2.T)
     ztz = np.matmul(z1.T, z2)
     return np.kron(phitphi, ztz)
