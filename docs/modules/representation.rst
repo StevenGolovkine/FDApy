@@ -6,6 +6,3 @@ Representation
 
 .. automodule:: FDApy.representation.basis
 	:members:
-
-.. automodule:: FDApy.representation.simulation
-	:members:

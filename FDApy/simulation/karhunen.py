@@ -7,19 +7,15 @@ This module is used to define an abstract Simulation class. We may simulate
 different data from a linear combination of basis functions or multiple
 realizations of diverse Brownian motion.
 """
-import inspect
-
 import numpy as np
 
-from abc import ABC, abstractmethod
-from typing import Callable, Optional, Union
+from typing import Optional, Union
 
 from sklearn.datasets import make_blobs
 
-from ..representation.functional_data import (
-    DenseFunctionalData,
-    IrregularFunctionalData
-)
+from ..representation.functional_data import DenseFunctionalData
+from ..representation.basis import Basis
+from .simulation import Simulation
 
 
 #############################################################################
@@ -247,14 +243,22 @@ def initialize_cluster_std(
 
 
 #############################################################################
-# Metaclass Simulation
-class Simulation(ABC):
-    """Metaclass for the simulation of functional data.
+# Definition of the KarhunenLoeve
+
+class KarhunenLoeve(Simulation):
+    r"""Class for the simulation of data using a basis of function.
 
     Parameters
     ----------
-    name: str
-        Name of the simulation
+    name: str, {'legendre', 'wiener', 'fourier', 'bsplines'}
+        Type of basis to use.
+    basis: DenseFunctionalData or None
+        A basis of functions as a DenseFunctionalData object. Used to have a
+        user-defined basis of function.
+    n_functions: int, default=5
+        Number of functions to use to generate the basis.
+    dimension: str, ('1D', '2D'), default='1D'
+        Dimension of the basis to generate.
 
     Arguments
     ---------
@@ -264,101 +268,85 @@ class Simulation(ABC):
         An object that represents a noisy version of the simulated data.
     sparse_data: IrregularFunctionalData
         An object that represents a sparse version of the simulated data.
+    labels: np.ndarray, shape=(n_obs,)
+        Data labels
+
+    Notes
+    -----
+    The function are simulated using the Karhunen-Loève decomposition:
+
+    .. math::
+        X_i(t) = \mu(t) + \sum_{j = 1}^M c_{i, j}\phi_{i, j}(t),
+        i = 1, \dots, N
 
     """
 
-    def _check_data(self) -> None:
-        """Check if self has the attribut data."""
-        if not hasattr(self, 'data'):
-            raise ValueError('No data have been found in the simulation.'
-                             ' Please run new() before add_noise().')
+    def __init__(
+        self,
+        name: str,
+        basis: Optional[DenseFunctionalData] = None,
+        n_functions: int = 5,
+        dimension: str = '1D',
+        **kwargs_basis
+    ) -> None:
+        """Initialize Basis object."""
+        if (name is not None) and (basis is not None):
+            raise ValueError('Name or basis have to be None. Do not know'
+                             ' which basis to use.')
+        if not isinstance(basis, DenseFunctionalData) and (basis is not None):
+            raise ValueError('Basis have to be an instance of'
+                             ' DenseFunctionalData')
+        if (name is None) and isinstance(basis, DenseFunctionalData):
+            name = 'user-defined'
+        if isinstance(name, str) and (basis is None):
+            basis = Basis(name, n_functions, dimension, **kwargs_basis)
 
-    def __init__(self, name: str) -> None:
-        """Initialize Simulation object."""
-        super().__init__()
-        self.name = name
+        super().__init__(name)
+        self.basis = basis
 
-    @property
-    def name(self) -> str:
-        """Getter for name."""
-        return self._name
-
-    @name.setter
-    def name(self, new_name: str) -> None:
-        self._name = new_name
-
-    @abstractmethod
     def new(
         self,
         n_obs: int,
         argvals: Optional[np.ndarray] = None,
         **kwargs
-    ) -> None:
-        """Simulate a new set of data."""
-        pass
-
-    def add_noise(
-        self,
-        var_noise: Union[float, Callable[[np.ndarray], np.ndarray]] = 1.0
-    ) -> None:
-        r"""Add noise to the data.
+    ):
+        """Simulate ``n_obs`` realizations from a basis of function.
 
         Parameters
         ----------
-        var_noise: float or Callable, default=1
-            Variance of the noise to add. May be a callable for heteroscedastic
-            noise.
+        n_obs: int
+            Number of observations to simulate.
+        argvals: None
+            Not used in this context. We will use the `argvals` from the Basis
+            object as `argvals` of the simulation.
 
-        Notes
-        -----
-        Model used to generate the data:
-
-        .. math::
-            Z(t) = f(t) + \sigma(f(t))\epsilon
-
-        """
-        self._check_data()
-
-        shape_simu = self.data.n_obs, *tuple(self.data.n_points.values())
-        noisy_data = np.random.normal(0, 1, shape_simu)
-
-        if inspect.isfunction(var_noise):
-            var_noise = var_noise(self.data.values)
-
-        std_noise = np.sqrt(var_noise)
-        noisy_data = self.data.values + np.multiply(std_noise, noisy_data)
-        self.noisy_data = DenseFunctionalData(self.data.argvals, noisy_data)
-
-    def sparsify(
-        self,
-        percentage: float = 0.9,
-        epsilon: float = 0.05
-    ) -> None:
-        """Sparsify the simulated data.
-
-        Parameters
-        ----------
-        percentage: float, default = 0.9
-            Percentage of data to keep.
-        epsilon: float, default = 0.05
-            Uncertainty on the percentage to keep.
+        Keyword Args
+        ------------
+        n_clusters: int, default=1
+            Number of clusters to generate
+        centers: numpy.ndarray, shape=(n_features, n_clusters)
+            The centers of the clusters to generate. The ``n_features``
+            correspond to the number of functions within the basis.
+        cluster_std: np.ndarray, shape=(n_features, n_clusters)
+            The standard deviation of the clusters to generate. The
+            ``n_features`` correspond to the number of functions within the
+            basis.
 
         """
-        if self.data.n_dim > 1:
-            raise ValueError("The sparsification is not implemented for data"
-                             "with dimension larger than 1.")
-        self._check_data()
+        n_features = self.basis.n_obs
+        n_clusters = kwargs.get('n_clusters', 1)
+        centers = initialize_centers(n_features, n_clusters,
+                                     kwargs.get('centers', None))
+        cluster_std = initialize_cluster_std(n_features, n_clusters,
+                                             kwargs.get('cluster_std', None))
+        coef, labels = make_coef(n_obs, n_features, centers, cluster_std)
 
-        argvals = {}
-        values = {}
-        for idx, obs in enumerate(self.data):
-            s = obs.values.size
-            p = np.random.uniform(max(0, percentage - epsilon),
-                                  min(1, percentage + epsilon))
-            indices = np.sort(np.random.choice(np.arange(0, s),
-                                               size=int(p * s),
-                                               replace=False))
-            argvals[idx] = obs.argvals['input_dim_0'][indices]
-            values[idx] = obs.values[0][indices]
-        self.sparse_data = IrregularFunctionalData({'input_dim_0': argvals},
-                                                   values)
+        if self.basis.dimension == '1D':
+            values = np.matmul(coef, self.basis.values)
+        elif self.basis.dimension == '2D':
+            values = np.tensordot(coef, self.basis.values, axes=1)
+        else:
+            raise ValueError("Something went wrong with the basis dimension.")
+
+        self.labels = labels
+        self.data = DenseFunctionalData(self.basis.argvals, values)

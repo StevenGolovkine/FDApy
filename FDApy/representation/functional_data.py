@@ -566,7 +566,7 @@ class DenseFunctionalData(FunctionalData):
         """
         return {idx: len(dim) for idx, dim in self.argvals.items()}
 
-    def as_irregular(self) -> IrregularFunctionalData:  # noqa: E0601
+    def as_irregular(self) -> IrregularFunctionalData:
         """Convert `self` from Dense to Irregular functional data.
 
         Coerce a DenseFunctionalData object into an IrregularFunctionalData
@@ -622,7 +622,6 @@ class DenseFunctionalData(FunctionalData):
         basis: Basis
     ) -> None:
         """Convert to basis"""
-
         xtx = np.linalg.inv(np.matmul(basis.values, basis.values.T))
         xty = np.matmul(basis.values, self.values.T)
         self.basis = basis
