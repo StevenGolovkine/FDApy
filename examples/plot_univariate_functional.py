@@ -13,7 +13,7 @@ This notebook shows how to smooth univariate functional data.
 import numpy as np
 import matplotlib.pyplot as plt
 
-from FDApy.simulation.simulation import Brownian
+from FDApy.simulation.brownian import Brownian
 from FDApy.visualization.plot import plot
 
 

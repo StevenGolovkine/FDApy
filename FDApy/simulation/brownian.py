@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 # -*-coding:utf8 -*
 
-"""Simulation functions.
+"""Brownian motions.
 
-This module is used to define an abstract Simulation class. We may simulate
-different data from a linear combination of basis functions or multiple
-realizations of diverse Brownian motion.
 """
 import numpy as np
 
@@ -180,6 +177,7 @@ def fractional_brownian(
 def simulate_brownian(
     name: str,
     argvals: Optional[np.ndarray] = None,
+    random_state: Optional[int] = None,
     **kwargs
 ) -> np.ndarray:
     """Redirect to the right brownian motion function.
@@ -253,10 +251,11 @@ class Brownian(Simulation):
 
     def __init__(
         self,
-        name: str
+        name: str,
+        random_state: Optional[int] = None,
     ) -> None:
         """Initialize Brownian object."""
-        super().__init__(name)
+        super().__init__(name, random_state)
 
     def new(
         self,

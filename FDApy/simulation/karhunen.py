@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 # -*-coding:utf8 -*
 
-"""Simulation functions.
+"""Karhunen-Loève decomposition.
 
-This module is used to define an abstract Simulation class. We may simulate
-different data from a linear combination of basis functions or multiple
-realizations of diverse Brownian motion.
 """
 import numpy as np
 
@@ -287,6 +284,7 @@ class KarhunenLoeve(Simulation):
         basis: Optional[DenseFunctionalData] = None,
         n_functions: int = 5,
         dimension: str = '1D',
+        random_state: Optional[int] = None,
         **kwargs_basis
     ) -> None:
         """Initialize Basis object."""
@@ -301,7 +299,7 @@ class KarhunenLoeve(Simulation):
         if isinstance(name, str) and (basis is None):
             basis = Basis(name, n_functions, dimension, **kwargs_basis)
 
-        super().__init__(name)
+        super().__init__(name, random_state)
         self.basis = basis
 
     def new(
