@@ -76,7 +76,7 @@ class Simulation(ABC):
         argvals: Optional[np.ndarray] = None,
         **kwargs
     ) -> None:
-        """Simulate a new set of data."""
+        """Simulate a new set of curves."""
         pass
 
     def add_noise(
@@ -126,7 +126,10 @@ class Simulation(ABC):
         This function generates an artificially sparsified version of a
         functional data object of class :mod:`DenseFunctionalData`. The
         percentage (and the uncertainty around it) of the number of observation
-        points retained can be supplied by the user. Let :math:`p` be the defined percentage and :math:`\epsilon` be the uncertainty value. The retained number of observations will be different for each curve and be between :math:`p - \epsilon` and :math:`p + \epsilon`. 
+        points retained can be supplied by the user. Let :math:`p` be the
+        defined percentage and :math:`\epsilon` be the uncertainty value. The
+        retained number of observations will be different for each curve and be
+        between :math:`p - \epsilon` and :math:`p + \epsilon`. 
 
         Parameters
         ----------
