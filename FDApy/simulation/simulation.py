@@ -91,15 +91,15 @@ class Simulation(ABC):
         :math:`\epsilon \sim \mathcal{N}(0, \sigma^2)` to the observations. The
         variance :math:`\sigma^2` can be supplied by the user. The generated
         data are given by
-        
+
         .. math::
             Y(t) = X(t) + \epsilon.
 
         Parameters
         ----------
         noise_variance: float, default=1.0
-            The variance :math:`\sigma^2` of the Gaussian noise that is added to
-            the data.
+            The variance :math:`\sigma^2` of the Gaussian noise that is added
+            to the data.
 
         """
         self._check_data()
@@ -121,7 +121,7 @@ class Simulation(ABC):
         percentage: float = 0.9,
         epsilon: float = 0.05
     ) -> None:
-        """Generate a sparse version of functional data objects.
+        r"""Generate a sparse version of functional data objects.
 
         This function generates an artificially sparsified version of a
         functional data object of class :mod:`DenseFunctionalData`. The
@@ -129,7 +129,7 @@ class Simulation(ABC):
         points retained can be supplied by the user. Let :math:`p` be the
         defined percentage and :math:`\epsilon` be the uncertainty value. The
         retained number of observations will be different for each curve and be
-        between :math:`p - \epsilon` and :math:`p + \epsilon`. 
+        between :math:`p - \epsilon` and :math:`p + \epsilon`.
 
         Parameters
         ----------
@@ -161,13 +161,13 @@ class Simulation(ABC):
 
         perc = n_obs * runif(
             max(0, percentage - epsilon),
-            min(1, percentage + epsilon), 
+            min(1, percentage + epsilon),
             n_obs
         )
 
         argvals, values = {}, {}
-        for idx, (obs, n_points) in enumerate(zip(self.data, perc.astype(int))):
-            indices = np.sort(rchoice(points, size=n_points, replace=False))
+        for idx, (obs, n_pts) in enumerate(zip(self.data, perc.astype(int))):
+            indices = np.sort(rchoice(points, size=n_pts, replace=False))
             argvals[idx] = obs.argvals['input_dim_0'][indices]
             values[idx] = obs.values[0][indices]
 

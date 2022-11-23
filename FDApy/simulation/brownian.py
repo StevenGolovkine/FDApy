@@ -3,7 +3,6 @@
 
 """Brownian motions
 -------------------
-
 """
 import numpy as np
 import numpy.typing as npt
@@ -121,7 +120,7 @@ def _geometric_brownian(
     -----
     The sampling points have to be regularly spaced. Otherwise, the covariance
     of the generated data will not be the good one.
-    
+
     References
     ----------
     .. [1] https://github.com/cran/somebm/blob/master/R/bm.R
@@ -132,7 +131,9 @@ def _geometric_brownian(
 
     """
     if not init_point > 0:
-        raise ValueError('The parameter `init_point` must be stricly positive.')
+        raise ValueError(
+            'The parameter `init_point` must be stricly positive.'
+        )
 
     delta, argvals = _init_brownian(argvals)
     const = mu - sigma**2 / 2
@@ -169,7 +170,7 @@ def _fractional_brownian(
     -----
     The sampling points have to be regularly spaced. Otherwise, the covariance
     of the generated data will not be the good one.
-    
+
     References
     ----------
     .. [1] https://github.com/cran/somebm/blob/master/R/bm.R

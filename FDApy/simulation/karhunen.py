@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*-coding:utf8 -*
 
-"""Karhunen-Loève decomposition.
-
+"""Karhunen-Loève decomposition
+-------------------------------
 """
 import numpy as np
 
