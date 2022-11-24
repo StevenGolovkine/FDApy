@@ -3,6 +3,7 @@
 
 """Simulation class
 -------------------
+
 """
 import numpy as np
 
@@ -104,8 +105,10 @@ class Simulation(ABC):
         """
         self._check_data()
 
+        # Get parameter of the data
         shape_simu = self.data.n_obs, *tuple(self.data.n_points.values())
 
+        # Define function for reproducibility
         if self.random_state is None:
             rnorm = np.random.normal
         else:

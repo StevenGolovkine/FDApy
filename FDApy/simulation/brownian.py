@@ -3,6 +3,7 @@
 
 """Brownian motions
 -------------------
+
 """
 import numpy as np
 import numpy.typing as npt
@@ -291,6 +292,8 @@ class Brownian(Simulation):
     -----
     The sampling points have to be regularly spaced. Otherwise, the covariance
     of the generated data will not be the good one.
+
+    The implementation is adapted from [1]_.
 
     References
     ----------
