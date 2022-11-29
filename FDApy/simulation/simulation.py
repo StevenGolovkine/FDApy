@@ -162,11 +162,11 @@ class Simulation(ABC):
             runif = self.random_state.uniform
             rchoice = self.random_state.choice
 
-        perc = n_obs * runif(
+        perc = np.around(100 * runif(
             max(0, percentage - epsilon),
             min(1, percentage + epsilon),
             n_obs
-        )
+        )).astype(int)
 
         argvals, values = {}, {}
         for idx, (obs, n_pts) in enumerate(zip(self.data, perc.astype(int))):

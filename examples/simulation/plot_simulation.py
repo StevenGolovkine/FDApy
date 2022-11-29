@@ -1,28 +1,39 @@
 """
-Functional data simulation
+Simulation of functional data
 ==========================
 
-This notebook shows how to simulate functional data according with different
-basis.
+Examples of simulation of functional data and the effect of adding noise and sparsification.
 """
 
 # Author: Steven Golovkine <steven_golovkine@icloud.com>
 # License: MIT
 
-# shinx_gallery_thumbnail_number = 2
-
+# Load packages
 import numpy as np
 
-from FDApy.simulation.brownian import Brownian
 from FDApy.simulation.karhunen import KarhunenLoeve
 from FDApy.visualization.plot import plot
 
+# Set general parameters
+rng = 42
+n_obs = 10
+
+# Parameters of the basis
+name = 'bsplines'
+n_functions = 25
 
 ###############################################################################
-# Now, we will simulate some curves data using the Karhunen-Loève expansion.
+# Simulation of functional data
+# -----------------------------
 #
-kl = KarhunenLoeve(name='bsplines', n_functions=5)
-kl.new(n_obs=100, argvals=np.linspace(0, 1, 301))
+# We simulate :math:`N = 10` curves on the one-dimensional observation grid
+# :math:`\{0, 0.01, 0.02, \cdots, 1\}`, based on the first
+# :math:`K = 25` B-splines basis functions on :math:`[0, 1]` and the variance of
+# the scores random variables equal to :math:`1`.
+kl = KarhunenLoeve(
+    name=name, n_functions=n_functions, random_state=rng
+)
+kl.new(n_obs=n_obs)
 
 _ = plot(kl.data)
 
@@ -40,32 +51,12 @@ kl.add_noise(0.05)
 # Plot the noisy simulations
 _ = plot(kl.noisy_data)
 
-
 ###############################################################################
-# We can also simulate Brownian motion and some of processes derived from it,
-# such as Geometric Brownian motion and Fractional Brownian motion.
+# Sparsification
+# --------------
 #
 
-###############################################################################
-# Simulate some standard brownian motions.
-brownian = Brownian(name='standard')
-brownian.new(n_obs=100, argvals=np.linspace(0, 1, 301))
+# Sparsify the data
+kl.sparsify(percentage=0.9, epsilon=0.05)
 
-# Plot some simulations
-_ = plot(brownian.data)
-
-###############################################################################
-# Simulate some geometric brownian motions.
-brownian_geo = Brownian(name='geometric')
-brownian_geo.new(n_obs=100, argvals=np.linspace(0, 1, 301))
-
-# Plot some simulations
-_ = plot(brownian_geo.data)
-
-###############################################################################
-# Simulate some fractional brownian motions.
-brownian_frac = Brownian(name='fractional')
-brownian_frac.new(n_obs=100, argvals=np.linspace(0, 1, 301), hurst=0.7)
-
-# Plot some simulations
-_ = plot(brownian_frac.data)
+_ = plot(kl.sparse_data)

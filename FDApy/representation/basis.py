@@ -319,7 +319,7 @@ class Basis(
         self.dimension = dimension
 
         if argvals is None:
-            argvals = {'input_dim_0': np.arange(0, 1, 0.01)}
+            argvals = {'input_dim_0': np.arange(0, 1.01, 0.01)}
 
         if len(argvals) > 1:
             raise NotImplementedError(
