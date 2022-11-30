@@ -150,10 +150,6 @@ class Simulation(ABC):
             )
         self._check_data()
 
-        # Get parameters of the data
-        n_obs = self.data.n_obs
-        points = np.arange(0, n_obs)
-
         # Define functions for reproducibility
         if self.random_state is None:
             runif = np.random.uniform
@@ -162,17 +158,25 @@ class Simulation(ABC):
             runif = self.random_state.uniform
             rchoice = self.random_state.choice
 
-        perc = np.around(100 * runif(
+        # Get parameters of the data
+        n_obs = self.data.n_obs
+        n_points = self.data.n_points['input_dim_0']
+        points = np.arange(n_points)
+
+        perc = runif(
             max(0, percentage - epsilon),
             min(1, percentage + epsilon),
             n_obs
-        )).astype(int)
+        )
 
         argvals, values = {}, {}
-        for idx, (obs, n_pts) in enumerate(zip(self.data, perc.astype(int))):
-            indices = np.sort(rchoice(points, size=n_pts, replace=False))
-            argvals[idx] = obs.argvals['input_dim_0'][indices]
-            values[idx] = obs.values[0][indices]
+        for idx, (obs, perc_obs) in enumerate(zip(self.data, perc)):
+            size = np.around(n_points * perc_obs).astype(int)
+            indices = np.sort(
+                rchoice(n_points, size=size, replace=False)
+            )
+            argvals[idx] = obs.argvals['input_dim_0'][points[indices]]
+            values[idx] = obs.values[0][points[indices]]
 
         self.sparse_data = IrregularFunctionalData(
             {'input_dim_0': argvals}, values

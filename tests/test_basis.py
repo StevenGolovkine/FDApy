@@ -29,7 +29,7 @@ class TestBasis(unittest.TestCase):
         self.assertTrue(
             np.allclose(
                 X.argvals['input_dim_0'],
-                np.arange(0, 1, 0.01)
+                np.arange(0, 1.01, 0.01)
             )
         )
 

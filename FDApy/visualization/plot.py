@@ -13,8 +13,9 @@ import numpy as np
 from matplotlib.axes import Axes
 from typing import Optional, Union
 
-from ..representation.functional_data import (DenseFunctionalData,
-                                              IrregularFunctionalData)
+from ..representation.functional_data import (
+    DenseFunctionalData, IrregularFunctionalData
+)
 
 
 def _init_ax(
