@@ -24,7 +24,7 @@ def _init_ax(
 ) -> Axes:
     """Initialize axes."""
     if ax is None:
-        ax = plt.gca(projection=projection)
+        ax = plt.axes(projection=projection)
     return ax
 
 
