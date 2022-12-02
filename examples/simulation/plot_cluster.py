@@ -49,4 +49,4 @@ kl.new(
     cluster_std='exponential'
 )
 
-_ = plot(kl.data)
+_ = plot(kl.data, kl.labels)
