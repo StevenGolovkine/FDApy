@@ -8,9 +8,12 @@
 import numpy as np
 import numpy.typing as npt
 
-from typing import Any, Callable, Dict, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
-from ..representation.functional_data import DenseFunctionalData
+from ..representation.functional_data import (
+    DenseFunctionalData,
+    MultivariateFunctionalData
+)
 from ..representation.basis import Basis
 from .simulation import Simulation
 
@@ -135,8 +138,7 @@ def _make_coef(
     n_features: int,
     centers: npt.NDArray,
     cluster_std: npt.NDArray,
-    rnorm: Callable = np.random.multivariate_normal,
-    rshuffle: Callable = np.random.shuffle
+    rnorm: Callable = np.random.multivariate_normal
 ) -> Tuple[npt.NDArray, npt.NDArray]:
     """Simulate a set of coefficients for the Karhunen-Loève decomposition.
 
@@ -197,10 +199,7 @@ def _make_coef(
             size=n_obs
         )
         labels[start_idx:end_idx] = idx
-
-    randomize = np.arange(len(labels))
-    rshuffle(randomize)
-    return coefs[randomize], labels[randomize]
+    return coefs, labels
 
 
 def _initialize_centers(
@@ -266,12 +265,17 @@ def _initialize_cluster_std(
 
 
 #############################################################################
-# Definition of the KarhunenLoeve
-
-class KarhunenLoeve(Simulation):
-    r"""Class that defines simulation based on Karhunen-Loève decomposition.
-
-    This class is used to simulate univariate functional data
+# Generation of univariate functional data
+def _generate_univariate_data(
+    basis: DenseFunctionalData,
+    n_obs: int,
+    n_clusters: int = 1,
+    rnorm: Callable = np.random.multivariate_normal,
+    **kwargs
+):
+    r"""Generate univariate functional data.
+    
+    This function can be used to simulate univariate functional data
     :math:`X_1, \dots, X_N` based on a truncated Karhunen-Loève decomposition:
 
     .. math::
@@ -286,12 +290,81 @@ class KarhunenLoeve(Simulation):
 
     Parameters
     ----------
-    name: str, {'legendre', 'wiener', 'fourier', 'bsplines'}
+    basis: DenseFunctionalData
+        Basis of functions to use for the generation of the data. 
+    n_obs: int
+        Number of observations to simulate.
+    n_clusters: int, default=1
+        Number of clusters to generate.
+    rnorm: Callable, default=np.random.multivariata_normal
+        Random generator.
+
+    Keyword Args
+    ------------
+    centers: numpy.ndarray, shape=(n_features, n_clusters)
+        The centers of the clusters to generate. The ``n_features``
+        correspond to the number of functions within the basis.
+    cluster_std: numpy.ndarray, shape=(n_features, n_clusters)
+        The standard deviation of the clusters to generate. The
+        ``n_features`` correspond to the number of functions within the
+        basis.
+    """
+    # Initialize parameters
+    n_features = basis.n_obs
+    
+    centers = _initialize_centers(
+        n_features, n_clusters,
+        kwargs.get('centers', None)
+    )
+    cluster_std = _initialize_cluster_std(
+        n_features, n_clusters,
+        kwargs.get('cluster_std', None)
+    )
+
+    # Generate data
+    coef, labels = _make_coef(
+        n_obs, n_features, centers, cluster_std, rnorm
+    )
+        
+    if basis.dimension == '1D':
+        values = np.matmul(coef, basis.values)
+    elif basis.dimension == '2D':
+        values = np.tensordot(coef, basis.values, axes=1)
+    else:
+        raise ValueError("Something went wrong with the basis dimension.")
+    return labels, cluster_std[:, 0], DenseFunctionalData(basis.argvals, values)
+
+#############################################################################
+# Definition of the KarhunenLoeve simulation
+
+class KarhunenLoeve(Simulation):
+    r"""Class that defines simulation based on Karhunen-Loève decomposition.
+
+    This class is used to simulate functional data
+    :math:`X_1, \dots, X_N` based on a truncated Karhunen-Loève decomposition:
+
+    .. math::
+        X_i(t) = \sum_{K = 1}^K c_{i, k}\phi_{k}(t), i = 1, \dots, N,
+
+    on one- or higher-dimensional domains. The eigenfunctions
+    :math:`\phi_{k}(t)` could be generated using different basis functions or
+    be user-defined. The scores :math:`c_{i, k}` are simulated independently
+    from a normal distribution with zero mean and decreasing variance. For
+    higher-dimensional domains, the eigenfunctions are constructed as tensors
+    of marginal orthonormal function systems.
+
+    Parameters
+    ----------
+    name: str or list of str, {'legendre', 'wiener', 'fourier', 'bsplines'}
         Type of basis to use.
-    n_functions: int, default=5
+    n_functions: int or list of int, default=5
         Number of functions to use to generate the basis.
-    dimension: str, {'1D', '2D'}, default='1D'
+    dimension: str or list of str, {'1D', '2D'}, default='1D'
         Dimension of the basis to generate.
+    argvals: dict
+        The sampling points of the functional data. Each entry of the
+        dictionary represents an input dimension. The shape of the :math:`j`th
+        dimension is :math:`(m_j,)` for :math:`0 \leq j \leq p`.
     basis: DenseFunctionalData, default=None
         Basis of functions as a DenseFunctionalData object. Used to have a
         user-defined basis of function.
@@ -300,15 +373,15 @@ class KarhunenLoeve(Simulation):
 
     Attributes
     ----------
-    data: DenseFunctionalData
+    data: DenseFunctionalData or MultivariateFunctionalData
         An object that represents the simulated data.
-    noisy_data: DenseFunctionalData
+    noisy_data: DenseFunctionalData or MultivariateFunctionalData
         An object that represents a noisy version of the simulated data.
-    sparse_data: IrregularFunctionalData
+    sparse_data: IrregularFunctionalData or MultivariateFunctionalData
         An object that represents a sparse version of the simulated data.
     labels: numpy.ndarray, shape=(n_obs,)
         The integer labels for cluster membership of each sample.
-    basis: DenseFunctionalData
+    basis: DenseFunctionalData of list of DenseFunctionalData
         The eigenfunctions used to simulate the data.
     eigenvalues: numpy.ndarray, shape=(n_functions,)
         The eigenvalues used to simulate the data.
@@ -317,11 +390,13 @@ class KarhunenLoeve(Simulation):
 
     def __init__(
         self,
-        name: str,
-        n_functions: int = 5,
-        dimension: str = '1D',
+        name: Union[str, Sequence[str]],
+        n_functions: Union[int, Sequence[int]] = 5,
+        dimension: Union[str, Sequence[str]] = '1D',
         argvals: Optional[Dict[str, npt.NDArray]] = None,
-        basis: Optional[DenseFunctionalData] = None,
+        basis: Optional[
+            Union[DenseFunctionalData, Sequence[DenseFunctionalData]]
+        ] = None,
         random_state: Optional[int] = None,
         **kwargs_basis: Any
     ) -> None:
@@ -331,20 +406,39 @@ class KarhunenLoeve(Simulation):
                 'Name or basis have to be None. Do not know'
                 ' which basis to use.'
             )
-        if not isinstance(basis, DenseFunctionalData) and (basis is not None):
+        if (
+            not isinstance(basis, (DenseFunctionalData, list)) and 
+            (basis is not None)
+        ):
             raise ValueError(
-                'Basis have to be an instance of DenseFunctionalData'
+                'Basis have to be an instance of DenseFunctionalData or a list'
+                ' of DenseFunctionalData'
             )
         if (name is None) and isinstance(basis, DenseFunctionalData):
-            name = 'user-defined'
-        if isinstance(name, str) and (basis is None):
-            basis = Basis(
-                name=name,
-                n_functions=n_functions,
-                dimension=dimension,
-                argvals=argvals,
-                **kwargs_basis
-            )
+            name = ['user-defined']
+            basis = [basis]
+        if (name is None) and isinstance(basis, list):
+            name = len(basis) * ['user_defined']
+
+        if isinstance(name, str):
+            name = [name]
+            n_functions = [n_functions]
+            dimension = [dimension]
+        if isinstance(name, list) and isinstance(n_functions, int):
+            n_functions = len(name) * [n_functions]
+        if isinstance(name, list) and isinstance(dimension, str):
+            dimension = len(name) * [dimension]
+
+        if basis is None:
+            basis = [
+                Basis(
+                    name=n,
+                    n_functions=n_func,
+                    dimension=dim,
+                    argvals=argvals,
+                    **kwargs_basis
+                ) for n, n_func, dim in zip(name, n_functions, dimension)
+            ]
 
         super().__init__(name, random_state)
         self.basis = basis
@@ -352,6 +446,7 @@ class KarhunenLoeve(Simulation):
     def new(
         self,
         n_obs: int,
+        n_clusters: int = 1,
         argvals: Optional[Dict[str, npt.NDArray]] = None,
         **kwargs
     ):
@@ -364,14 +459,14 @@ class KarhunenLoeve(Simulation):
         ----------
         n_obs: int
             Number of observations to simulate.
+        n_clusters: int, default=1
+            Number of clusters to generate.
         argvals: None
             Not used in this context. We will use the ``argvals`` from the
             :mod:`Basis` object as ``argvals`` of the simulation.
 
         Keyword Args
         ------------
-        n_clusters: int, default=1
-            Number of clusters to generate.
         centers: numpy.ndarray, shape=(n_features, n_clusters)
             The centers of the clusters to generate. The ``n_features``
             correspond to the number of functions within the basis.
@@ -381,38 +476,26 @@ class KarhunenLoeve(Simulation):
             basis.
 
         """
-        # Get parameters
-        n_features = self.basis.n_obs
-        n_clusters = kwargs.get('n_clusters', 1)
-
-        # Initialize other parameters
-        centers = _initialize_centers(
-            n_features, n_clusters,
-            kwargs.get('centers', None)
-        )
-        cluster_std = _initialize_cluster_std(
-            n_features, n_clusters,
-            kwargs.get('cluster_std', None)
-        )
-
         if self.random_state is None:
             rnorm = np.random.multivariate_normal
-            rshuffle = np.random.shuffle
         else:
             rnorm = self.random_state.multivariate_normal
-            rshuffle = self.random_state.shuffle
 
         # Generate data
-        coef, labels = _make_coef(
-            n_obs, n_features, centers, cluster_std, rnorm, rshuffle
-        )
-        if self.basis.dimension == '1D':
-            values = np.matmul(coef, self.basis.values)
-        elif self.basis.dimension == '2D':
-            values = np.tensordot(coef, self.basis.values, axes=1)
+        simus_univariate = [
+            _generate_univariate_data(
+                basis=basis,
+                n_obs=n_obs, 
+                n_clusters=n_clusters, 
+                rnorm=rnorm,
+                **kwargs
+            ) for basis in self.basis
+        ]
+        
+        data_univariate = [d[2] for d in simus_univariate]
+        if len(data_univariate) > 1:
+            self.data = MultivariateFunctionalData(data_univariate)
         else:
-            raise ValueError("Something went wrong with the basis dimension.")
-
-        self.labels = labels
-        self.eigenvalues = cluster_std[:, 0]
-        self.data = DenseFunctionalData(self.basis.argvals, values)
+            self.data = data_univariate[0]
+        self.labels = simus_univariate[0][0]
+        self.eigenvalues = [d[1] for d in simus_univariate]
