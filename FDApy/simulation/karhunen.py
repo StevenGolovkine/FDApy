@@ -308,6 +308,10 @@ def _generate_univariate_data(
         The standard deviation of the clusters to generate. The
         ``n_features`` correspond to the number of functions within the
         basis.
+
+    Returns
+    -------
+    
     """
     # Initialize parameters
     n_features = basis.n_obs
@@ -332,7 +336,11 @@ def _generate_univariate_data(
         values = np.tensordot(coef, basis.values, axes=1)
     else:
         raise ValueError("Something went wrong with the basis dimension.")
-    return labels, cluster_std[:, 0], DenseFunctionalData(basis.argvals, values)
+    return {
+        'labels': labels,
+        'eigenvalues': cluster_std[:, 0],
+        'data': DenseFunctionalData(basis.argvals, values)
+    }
 
 #############################################################################
 # Definition of the KarhunenLoeve simulation
@@ -400,7 +408,7 @@ class KarhunenLoeve(Simulation):
         random_state: Optional[int] = None,
         **kwargs_basis: Any
     ) -> None:
-        """Initialize Basis object."""
+        """Initialize KarhunenLoeve object."""
         if (name is not None) and (basis is not None):
             raise ValueError(
                 'Name or basis have to be None. Do not know'
