@@ -11,9 +11,7 @@ from abc import ABC, abstractmethod
 from typing import Callable, Optional
 
 from ..representation.functional_data import (
-    DenseFunctionalData,
-    IrregularFunctionalData,
-    MultivariateFunctionalData
+    DenseFunctionalData, IrregularFunctionalData, MultivariateFunctionalData
 )
 
 

@@ -12,8 +12,7 @@ from collections import namedtuple
 from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
 from ..representation.functional_data import (
-    DenseFunctionalData,
-    MultivariateFunctionalData
+    DenseFunctionalData, MultivariateFunctionalData
 )
 from ..representation.basis import Basis
 from .simulation import Simulation

@@ -16,10 +16,12 @@ from matplotlib.axes import Axes
 from typing import Optional, Union
 
 from ..representation.functional_data import (
-    DenseFunctionalData, IrregularFunctionalData
+    DenseFunctionalData, IrregularFunctionalData, MultivariateFunctionalData
 )
 
 
+#############################################################################
+# Utility functions
 def _init_ax(
     ax: Optional[Axes] = None,
     projection: str = 'rectilinear'
@@ -30,53 +32,8 @@ def _init_ax(
     return ax
 
 
-def plot(
-    data: Union[DenseFunctionalData, IrregularFunctionalData],
-    labels: Optional[npt.NDArray] = None,
-    ax: Axes = None,
-    **plt_kwargs
-) -> Axes:
-    """Plot function.
-
-    Generic plot function for DenseFunctionalData and IrregularFunctionalData
-    objects.
-
-    Parameters
-    ----------
-    data: UnivariateFunctionalData, IrregularFunctionalData
-        The object to plot.
-    labels: np.array, default=None
-        The labels of each curve.
-    ax: matplotlib.axes._subplots.AxesSubplot
-        Axes object onto which the objects are plotted.
-    **plt_kwargs:
-        Keywords plotting arguments
-
-    Returns
-    -------
-    ax: matplotlib.axes._subplots.AxesSubplot
-        Axes objects onto the plot is done.
-
-    """
-    if labels is None:
-        labels = np.arange(data.n_obs)
-    if data.n_dim == 1:
-        ax = _init_ax(ax, projection='rectilinear')
-        ax = _plot_1d(data, labels, ax, **plt_kwargs)
-    elif data.n_dim == 2:
-        if data.n_obs == 1:
-            ax = _init_ax(ax, projection='rectilinear')
-        else:
-            ax = _init_ax(ax, projection='3d')
-        ax = _plot_2d(data, labels, ax, **plt_kwargs)
-    else:
-        raise ValueError(
-            f"Can not plot functions of dimension {data.n_dim},"
-            " limited to dimension 2."
-        )
-    return ax
-
-
+#############################################################################
+# Utility functions
 def _plot_1d(
     data: Union[DenseFunctionalData, IrregularFunctionalData],
     labels: npt.NDArray,
@@ -178,3 +135,53 @@ def _plot_2d(
     else:
         raise TypeError("Data type not recognized!")
     return ax
+
+
+#############################################################################
+# Utility functions
+def plot(
+    data: Union[DenseFunctionalData, IrregularFunctionalData],
+    labels: Optional[npt.NDArray] = None,
+    ax: Axes = None,
+    **plt_kwargs
+) -> Axes:
+    """Plot function.
+
+    Generic plot function for DenseFunctionalData and IrregularFunctionalData
+    objects.
+
+    Parameters
+    ----------
+    data: UnivariateFunctionalData, IrregularFunctionalData
+        The object to plot.
+    labels: np.array, default=None
+        The labels of each curve.
+    ax: matplotlib.axes._subplots.AxesSubplot
+        Axes object onto which the objects are plotted.
+    **plt_kwargs:
+        Keywords plotting arguments
+
+    Returns
+    -------
+    ax: matplotlib.axes._subplots.AxesSubplot
+        Axes objects onto the plot is done.
+
+    """
+    if labels is None:
+        labels = np.arange(data.n_obs)
+    if data.n_dim == 1:
+        ax = _init_ax(ax, projection='rectilinear')
+        ax = _plot_1d(data, labels, ax, **plt_kwargs)
+    elif data.n_dim == 2:
+        if data.n_obs == 1:
+            ax = _init_ax(ax, projection='rectilinear')
+        else:
+            ax = _init_ax(ax, projection='3d')
+        ax = _plot_2d(data, labels, ax, **plt_kwargs)
+    else:
+        raise ValueError(
+            f"Can not plot functions of dimension {data.n_dim},"
+            " limited to dimension 2."
+        )
+    return ax
+
