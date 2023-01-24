@@ -8,6 +8,7 @@
 import numpy as np
 import numpy.typing as npt
 
+from collections import namedtuple
 from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
 from ..representation.functional_data import (
@@ -17,9 +18,12 @@ from ..representation.functional_data import (
 from ..representation.basis import Basis
 from .simulation import Simulation
 
+#############################################################################
+# Class Data
+Data = namedtuple('Data', ['labels', 'eigenvalues', 'data'])
 
 #############################################################################
-# Definition of the decreasing of xwthe eigenvalues
+# Definition of the decreasing of the eigenvalues
 
 def _eigenvalues_linear(
     n: int = 3
@@ -272,7 +276,7 @@ def _generate_univariate_data(
     n_clusters: int = 1,
     rnorm: Callable = np.random.multivariate_normal,
     **kwargs
-):
+) -> Data:
     r"""Generate univariate functional data.
     
     This function can be used to simulate univariate functional data
@@ -297,7 +301,7 @@ def _generate_univariate_data(
     n_clusters: int, default=1
         Number of clusters to generate.
     rnorm: Callable, default=np.random.multivariata_normal
-        Random generator.
+        Random data generator.
 
     Keyword Args
     ------------
@@ -311,7 +315,10 @@ def _generate_univariate_data(
 
     Returns
     -------
-    
+    simu: Data
+        An element of the class Data with the labels, eigenvalues and simulated
+        data.
+
     """
     # Initialize parameters
     n_features = basis.n_obs
@@ -336,11 +343,11 @@ def _generate_univariate_data(
         values = np.tensordot(coef, basis.values, axes=1)
     else:
         raise ValueError("Something went wrong with the basis dimension.")
-    return {
-        'labels': labels,
-        'eigenvalues': cluster_std[:, 0],
-        'data': DenseFunctionalData(basis.argvals, values)
-    }
+    return Data(
+        labels=labels,
+        eigenvalues=cluster_std[:, 0],
+        data=DenseFunctionalData(basis.argvals, values)
+    )
 
 #############################################################################
 # Definition of the KarhunenLoeve simulation
@@ -398,7 +405,7 @@ class KarhunenLoeve(Simulation):
 
     def __init__(
         self,
-        name: Union[str, Sequence[str]],
+        basis_name: Union[str, Sequence[str]],
         n_functions: Union[int, Sequence[int]] = 5,
         dimension: Union[str, Sequence[str]] = '1D',
         argvals: Optional[Dict[str, npt.NDArray]] = None,
@@ -409,7 +416,7 @@ class KarhunenLoeve(Simulation):
         **kwargs_basis: Any
     ) -> None:
         """Initialize KarhunenLoeve object."""
-        if (name is not None) and (basis is not None):
+        if (basis_name is not None) and (basis is not None):
             raise ValueError(
                 'Name or basis have to be None. Do not know'
                 ' which basis to use.'
@@ -422,33 +429,35 @@ class KarhunenLoeve(Simulation):
                 'Basis have to be an instance of DenseFunctionalData or a list'
                 ' of DenseFunctionalData'
             )
-        if (name is None) and isinstance(basis, DenseFunctionalData):
-            name = ['user-defined']
+        if (basis_name is None) and isinstance(basis, DenseFunctionalData):
+            basis_name = ['user-defined']
             basis = [basis]
-        if (name is None) and isinstance(basis, list):
-            name = len(basis) * ['user_defined']
+        if (basis_name is None) and isinstance(basis, list):
+            basis_name = len(basis) * ['user_defined']
 
-        if isinstance(name, str):
-            name = [name]
+        if isinstance(basis_name, str):
+            basis_name = [basis_name]
             n_functions = [n_functions]
             dimension = [dimension]
-        if isinstance(name, list) and isinstance(n_functions, int):
-            n_functions = len(name) * [n_functions]
-        if isinstance(name, list) and isinstance(dimension, str):
-            dimension = len(name) * [dimension]
+        if isinstance(basis_name, list) and isinstance(n_functions, int):
+            n_functions = len(basis_name) * [n_functions]
+        if isinstance(basis_name, list) and isinstance(dimension, str):
+            dimension = len(basis_name) * [dimension]
 
         if basis is None:
             basis = [
                 Basis(
-                    name=n,
+                    name=name,
                     n_functions=n_func,
                     dimension=dim,
                     argvals=argvals,
                     **kwargs_basis
-                ) for n, n_func, dim in zip(name, n_functions, dimension)
+                ) for name, n_func, dim in zip(
+                    basis_name, n_functions, dimension
+                )
             ]
 
-        super().__init__(name, random_state)
+        super().__init__(basis_name, random_state)
         self.basis = basis
 
     def new(
@@ -500,10 +509,10 @@ class KarhunenLoeve(Simulation):
             ) for basis in self.basis
         ]
         
-        data_univariate = [d[2] for d in simus_univariate]
+        data_univariate = [simu.data for simu in simus_univariate]
         if len(data_univariate) > 1:
             self.data = MultivariateFunctionalData(data_univariate)
         else:
             self.data = data_univariate[0]
-        self.labels = simus_univariate[0][0]
-        self.eigenvalues = [d[1] for d in simus_univariate]
+        self.labels = simus_univariate[0].labels
+        self.eigenvalues = [simu.eigenvalues for simu in simus_univariate]
