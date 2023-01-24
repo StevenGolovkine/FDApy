@@ -16,6 +16,7 @@ from ..representation.functional_data import (
     MultivariateFunctionalData
 )
 
+
 #############################################################################
 # Noise for univariate functional data
 def _add_noise_univariate_data(
@@ -23,8 +24,8 @@ def _add_noise_univariate_data(
     noise_variance: float = 1.0,
     rnorm: Callable = np.random.normal
 ) -> DenseFunctionalData:
-    """Add noise to univariate functional data.
-    
+    r"""Add noise to univariate functional data.
+
     This function generates an artificial noisy version of a functional
     data object of class :mod:`DenseFunctionalData` by adding realizations
     of Gaussian random variables :math:`\epsilon \sim \mathcal{N}(0, \sigma^2)`
@@ -33,7 +34,7 @@ def _add_noise_univariate_data(
 
     .. math::
         Y(t) = X(t) + \epsilon.
-    
+
     Parameters
     ----------
     data: DenseFunctionalData
@@ -48,7 +49,7 @@ def _add_noise_univariate_data(
     -------
     noisy_data: DenseFunctionalData
         Noisy version of the functional data.
-    
+
     """
     # Get parameter of the data
     shape_simu = data.n_obs, *tuple(data.n_points.values())
@@ -57,6 +58,7 @@ def _add_noise_univariate_data(
     std_noise = np.sqrt(noise_variance)
     noisy_data = data.values + np.multiply(std_noise, noisy_data)
     return DenseFunctionalData(data.argvals, noisy_data)
+
 
 #############################################################################
 # Sparsify univariate functional data
@@ -67,7 +69,7 @@ def _sparsify_univariate_data(
     runif: Callable = np.random.uniform,
     rchoice: Callable = np.random.choice
 ) -> IrregularFunctionalData:
-    """Sparsify univariate functional data.
+    r"""Sparsify univariate functional data.
 
     This function generates an artificially sparsified version of a
     functional data object of class :mod:`DenseFunctionalData`. The
@@ -115,6 +117,7 @@ def _sparsify_univariate_data(
         values[idx] = obs.values[0][points[indices]]
     return IrregularFunctionalData({'input_dim_0': argvals}, values)
 
+
 #############################################################################
 # Class Simulation
 class Simulation(ABC):
@@ -150,10 +153,10 @@ class Simulation(ABC):
         """Check if self.data has the right dimension."""
         if (
             (
-                isinstance(self.data, DenseFunctionalData) and 
+                isinstance(self.data, DenseFunctionalData) and
                 self.data.n_dim > 1
             ) or (
-                isinstance(self.data, MultivariateFunctionalData) and  
+                isinstance(self.data, MultivariateFunctionalData) and
                 all(n_dim > 1 for n_dim in self.data.n_dim)
             )
         ):

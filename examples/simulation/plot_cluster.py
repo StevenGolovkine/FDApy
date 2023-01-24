@@ -40,7 +40,7 @@ centers = random_state.multivariate_normal(mean, covariance, size=n_functions)
 # parameters defined by `mean` and `covariance`. We also consider an
 # exponential decreasing of the eigenvalues.
 kl = KarhunenLoeve(
-    name=name, n_functions=n_functions, random_state=rng
+    basis_name=name, n_functions=n_functions, random_state=rng
 )
 kl.new(
     n_obs=n_obs,

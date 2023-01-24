@@ -29,7 +29,7 @@ n_functions = 25
 # :math:`K = 25` B-splines basis functions on :math:`[0, 1]` and the variance of
 # the scores random variables equal to :math:`1`.
 kl = KarhunenLoeve(
-    name=name, n_functions=n_functions, random_state=rng
+    basis_name=name, n_functions=n_functions, random_state=rng
 )
 kl.new(n_obs=n_obs)
 
@@ -75,7 +75,7 @@ _ = plot(kl.sparse_data)
 # the scores random variables equal to :math:`1`.
 
 kl = KarhunenLoeve(
-    name=name, dimension='2D', n_functions=n_functions, random_state=rng
+    basis_name=name, dimension='2D', n_functions=n_functions, random_state=rng
 )
 kl.new(n_obs=1)
 

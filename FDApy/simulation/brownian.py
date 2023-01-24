@@ -354,7 +354,7 @@ class Brownian(Simulation):
         values = np.zeros(shape=(n_obs, len(argvals)))
         for idx in range(n_obs):
             values[idx, :] = _simulate_brownian(
-                name=self.name,
+                name=self.basis_name,
                 argvals=argvals,
                 rnorm=rnorm,
                 **kwargs

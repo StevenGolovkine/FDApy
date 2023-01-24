@@ -19,6 +19,7 @@ from ..representation.functional_data import (
     DenseFunctionalData, IrregularFunctionalData
 )
 
+
 def _init_ax(
     ax: Optional[Axes] = None,
     projection: str = 'rectilinear'
@@ -107,7 +108,7 @@ def _plot_1d(
     if isinstance(data, DenseFunctionalData):
         for obs, l in zip(data.values, labels):
             ax.plot(
-                data.argvals['input_dim_0'], obs, c = COLORS[l], **plt_kwargs
+                data.argvals['input_dim_0'], obs, c=COLORS[l], **plt_kwargs
             )
     elif isinstance(data, IrregularFunctionalData):
         for argval, value, l in zip(
@@ -116,9 +117,9 @@ def _plot_1d(
             labels
         ):
             ax.plot(
-                argval, value, c = COLORS[l], **plt_kwargs
+                argval, value, c=COLORS[l], **plt_kwargs
             )
-            ax.scatter(argval, value, c = [COLORS[l]], **plt_kwargs)
+            ax.scatter(argval, value, c=[COLORS[l]], **plt_kwargs)
     else:
         raise TypeError('Data type not recognized!')
     return ax
@@ -168,7 +169,7 @@ def _plot_2d(
                 indexing='ij'
             )
             for obs, l in zip(data.values, labels):
-                ax.plot_surface(x, y, obs, c = COLORS[l], **plt_kwargs)
+                ax.plot_surface(x, y, obs, c=COLORS[l], **plt_kwargs)
     elif isinstance(data, IrregularFunctionalData):
         raise NotImplementedError(
             "Currently 2d irregular functional data"

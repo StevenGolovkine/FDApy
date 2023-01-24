@@ -22,6 +22,7 @@ from .simulation import Simulation
 # Class Data
 Data = namedtuple('Data', ['labels', 'eigenvalues', 'data'])
 
+
 #############################################################################
 # Definition of the decreasing of the eigenvalues
 
@@ -278,7 +279,7 @@ def _generate_univariate_data(
     **kwargs
 ) -> Data:
     r"""Generate univariate functional data.
-    
+
     This function can be used to simulate univariate functional data
     :math:`X_1, \dots, X_N` based on a truncated Karhunen-Loève decomposition:
 
@@ -295,7 +296,7 @@ def _generate_univariate_data(
     Parameters
     ----------
     basis: DenseFunctionalData
-        Basis of functions to use for the generation of the data. 
+        Basis of functions to use for the generation of the data.
     n_obs: int
         Number of observations to simulate.
     n_clusters: int, default=1
@@ -322,7 +323,7 @@ def _generate_univariate_data(
     """
     # Initialize parameters
     n_features = basis.n_obs
-    
+
     centers = _initialize_centers(
         n_features, n_clusters,
         kwargs.get('centers', None)
@@ -336,7 +337,7 @@ def _generate_univariate_data(
     coef, labels = _make_coef(
         n_obs, n_features, centers, cluster_std, rnorm
     )
-        
+
     if basis.dimension == '1D':
         values = np.matmul(coef, basis.values)
     elif basis.dimension == '2D':
@@ -348,6 +349,7 @@ def _generate_univariate_data(
         eigenvalues=cluster_std[:, 0],
         data=DenseFunctionalData(basis.argvals, values)
     )
+
 
 #############################################################################
 # Definition of the KarhunenLoeve simulation
@@ -422,7 +424,7 @@ class KarhunenLoeve(Simulation):
                 ' which basis to use.'
             )
         if (
-            not isinstance(basis, (DenseFunctionalData, list)) and 
+            not isinstance(basis, (DenseFunctionalData, list)) and
             (basis is not None)
         ):
             raise ValueError(
@@ -502,13 +504,13 @@ class KarhunenLoeve(Simulation):
         simus_univariate = [
             _generate_univariate_data(
                 basis=basis,
-                n_obs=n_obs, 
-                n_clusters=n_clusters, 
+                n_obs=n_obs,
+                n_clusters=n_clusters,
                 rnorm=rnorm,
                 **kwargs
             ) for basis in self.basis
         ]
-        
+
         data_univariate = [simu.data for simu in simus_univariate]
         if len(data_univariate) > 1:
             self.data = MultivariateFunctionalData(data_univariate)
