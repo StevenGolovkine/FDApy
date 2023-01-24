@@ -2,7 +2,7 @@
 Simulation using Karhunen-Loève decomposition
 =============================================
 
-Examples of simulation using the decomposition of Karhunen-Loève decomposition.
+Examples of simulation using the Karhunen-Loève decomposition.
 """
 
 ###############################################################################
