@@ -138,14 +138,14 @@ def _plot_2d(
 
 
 #############################################################################
-# Utility functions
+# Plotting functions
 def plot(
     data: Union[DenseFunctionalData, IrregularFunctionalData],
     labels: Optional[npt.NDArray] = None,
     ax: Axes = None,
     **plt_kwargs
 ) -> Axes:
-    """Plot function.
+    """Plot function for univariate functional data.
 
     Generic plot function for DenseFunctionalData and IrregularFunctionalData
     objects.
@@ -185,3 +185,51 @@ def plot(
         )
     return ax
 
+
+def plot_multivariate(
+    data: MultivariateFunctionalData,
+    labels: Optional[npt.NDArray] = None,
+    ax: Axes = None,
+    **plt_kwargs
+):
+    """Plot function for multivariate functional data.
+
+    Generic plot function for MultivariateFunctionalData objects.
+
+    Parameters
+    ----------
+    data: MultivariateFunctional
+        The object to plot.
+    labels: np.array, default=None
+        The labels of each curve.
+    ax: matplotlib.axes._subplots.AxesSubplot
+        Axes object onto which the objects are plotted.
+    **plt_kwargs:
+        Keywords plotting arguments
+
+    Returns
+    -------
+    axes: list of matplotlib.axes._subplots.AxesSubplot
+        Axes objects onto the plot is done.
+
+    """
+    # Get parameters
+    ncols = plt_kwargs.get("ncols", 2)
+    nrows = data.n_functional // ncols + (data.n_functional % ncols > 0)
+    
+    # Set spacing of the plots
+    plt.subplots_adjust(wspace=0.7, hspace=0.2)
+
+    axes = []
+    for n, data in enumerate(data):
+        ax = plt.subplot(nrows, ncols, n + 1)
+        if data.n_dim == 1:
+            axes.append(plot(data, labels=labels, ax=ax))
+        elif data.n_dim == 2:
+            axes.append(plot(data[0], labels=labels, ax=ax))
+        else:
+            raise ValueError(
+                f"Can not plot functions of dimension {data.n_dim},"
+                " limited to dimension 2."
+            )
+    return axes
