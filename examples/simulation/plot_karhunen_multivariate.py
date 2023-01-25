@@ -1,6 +1,6 @@
 """
 Simulation using multivariate Karhunen-Loève decomposition
-=============================================
+==========================================================
 
 Examples of simulation using the multivariate Karhunen-Loève decomposition.
 """
@@ -39,7 +39,7 @@ Examples of simulation using the multivariate Karhunen-Loève decomposition.
 import numpy as np
 
 from FDApy.simulation.karhunen import KarhunenLoeve
-from FDApy.visualization.plot import plot
+from FDApy.visualization.plot import plot_multivariate
 
 # Set general parameters
 rng = 42
@@ -47,8 +47,9 @@ n_obs = 10
 
 
 # Parameters of the basis
-name = ['fourier', 'legendre']
+name = ['fourier', 'bsplines']
 n_functions = [25, 10]
+dimensions = ['2D', '1D']
 argvals = {'input_dim_0': np.arange(0, 10.01, 0.01)}
 
 ###############################################################################
@@ -57,46 +58,109 @@ argvals = {'input_dim_0': np.arange(0, 10.01, 0.01)}
 #
 # **First example**
 # ---
-# We simulate :math:`N = 10` curves of a dimensional process. The first
+# We simulate :math:`N = 10` curves of a 2-dimensional process. The first
 # component of the process is defined on the one-dimensional observation grid
 # :math:`\{0, 0.01, 0.02, \cdots, 1\}` (default), based on the first
 # :math:`K = 25` Fourier basis functions on :math:`[0, 1]` and the variance of
 # the scores random variables equal to :math:`1` (default). The second
 # component of the process is defined on the one-dimensional observation grid
 # :math:`\{0, 0.01, 0.02, \cdots, 1\}` (default), based on the first
-# :math:`K = 10` Legendre basis functions on :math:`[0, 1]` and the variance of
+# :math:`K = 10` B-splines basis functions on :math:`[0, 1]` and the variance of
 # the scores random variables equal to :math:`1` (default).
 kl = KarhunenLoeve(
     basis_name=name, n_functions=n_functions, random_state=rng
 )
 kl.new(n_obs=n_obs)
 
-_ = plot(kl.data)
+_ = plot_multivariate(kl.data)
 
 ###############################################################################
 # **Second example**
 # ---
-# We simulate :math:`N = 10` curves on the one-dimensional observation grid
-# :math:`\{0, 0.01, 0.02, \cdots, 10\}`, based on the first
-# :math:`K = 25` Fourier basis functions on :math:`[0, 10]` and the variance of
+# We simulate :math:`N = 10` curves of a 2-dimensional process. The first
+# component of the process is defined on the one-dimensional observation grid
+# :math:`\{0, 0.01, 0.02, \cdots, 10\}`, based on the first :math:`K = 25`
+# Fourier basis functions on :math:`[0, 10]` and the variance of
+# the scores random variables equal to :math:`1` (default). The second
+# component of the process is defined on the one-dimensional observation grid
+# :math:`\{0, 0.01, 0.02, \cdots, 10\}`, based on the first :math:`K = 10`
+# B-splines basis functions on :math:`[0, 10]` and the variance of
 # the scores random variables equal to :math:`1` (default).
 kl = KarhunenLoeve(
     basis_name=name, n_functions=n_functions, argvals=argvals, random_state=rng
 )
 kl.new(n_obs=n_obs)
 
-_ = plot(kl.data)
+_ = plot_multivariate(kl.data)
 
 ###############################################################################
 # **Third example**
 # ---
-# We simulate :math:`N = 10` curves on the one-dimensional observation grid
+# We simulate :math:`N = 10` curves of a 2-dimensional process. The first
+# component of the process is defined on the one-dimensional observation grid
 # :math:`\{0, 0.01, 0.02, \cdots, 1\}` (default), based on the first
 # :math:`K = 25` Fourier basis functions on :math:`[0, 1]` and the decreasing
+# of the variance of the scores is exponential. The second component of the
+# process is defined on the one-dimensional observation grid
+# :math:`\{0, 0.01, 0.02, \cdots, 1\}` (default), based on the first
+# :math:`K = 10` B-splines basis functions on :math:`[0, 1]` and the decreasing
 # of the variance of the scores is exponential.
 kl = KarhunenLoeve(
     basis_name=name, n_functions=n_functions, random_state=rng
 )
 kl.new(n_obs=n_obs, cluster_std='exponential')
 
-_ = plot(kl.data)
+_ = plot_multivariate(kl.data)
+
+###############################################################################
+# Simulation for two-dimensional curve (image)
+# --------------------------------------------
+#
+# We simulation a 2-dimensional process where the first component is a surface
+# and the second component is a curve. For the simulation on a two-dimensional
+# domain, we construct an two-dimensional eigenbasis based on tensor products
+# of univariate eigenbasis.
+#
+# **First example**
+# ---
+# We simulate :math:`N = 1` curves of a 2-dimensional process. The first
+# component of the process is defined on the two-dimensional observation grid
+# :math:`\{0, 0.01, 0.02, \cdots, 1\} \times \{0, 0.01, 0.02, \cdots, 1\}`,
+# based on the tensor product of the first :math:`K = 25` Fourier basis
+# functions on :math:`[0, 1]` and the variance of the scores random variables
+# equal to :math:`1` (default). The second component of the process is defined
+# on the one-dimensional observation grid :math:`\{0, 0.01, 0.02, \cdots, 1\}`
+# (default), based on the first :math:`K = 10` B-splines basis functions on
+# :math:`[0, 1]` and the variance of the scores random variables equal to
+# :math:`1` (default).
+kl = KarhunenLoeve(
+    basis_name=name,
+    dimension=dimensions,
+    n_functions=n_functions,
+    random_state=rng
+)
+kl.new(n_obs=1)
+
+_ = plot_multivariate(kl.data)
+
+###############################################################################
+# **Second example**
+# ---
+# We simulate :math:`N = 1` curves of a 2-dimensional process. The first
+# component of the process is defined on the two-dimensional observation grid
+# :math:`\{0, 0.01, 0.02, \cdots, 1\} \times \{0, 0.01, 0.02, \cdots, 1\}`,
+# based on the tensor product of the first :math:`K = 25` Fourier basis
+# functions on :math:`[0, 1]` and the decreasing of the variance of the scores
+# is linear. The second component of the process is defined on the
+# one-dimensional observation grid :math:`\{0, 0.01, 0.02, \cdots, 1\}`
+# (default), based on the first :math:`K = 10` B-splines basis functions on
+# :math:`[0, 1]` and the decreasing of the variance of the scores is linear.
+kl = KarhunenLoeve(
+    basis_name=name,
+    dimension=dimensions,
+    n_functions=n_functions,
+    random_state=rng
+)
+kl.new(n_obs=1, cluster_std='linear')
+
+_ = plot_multivariate(kl.data)
