@@ -216,7 +216,7 @@ def plot_multivariate(
     # Get parameters
     ncols = plt_kwargs.get("ncols", 2)
     nrows = data.n_functional // ncols + (data.n_functional % ncols > 0)
-    
+
     # Set spacing of the plots
     plt.subplots_adjust(wspace=0.7, hspace=0.2)
 

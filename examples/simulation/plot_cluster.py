@@ -1,8 +1,8 @@
 """
-Simulation of clusters
-======================
+Simulation of clusters of univariate functional data
+====================================================
 
-Examples of simulation of clusters of functional data.
+Examples of simulation of clusters of univariate functional data.
 """
 
 # Author: Steven Golovkine <steven_golovkine@icloud.com>

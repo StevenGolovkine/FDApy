@@ -274,8 +274,9 @@ def _generate_univariate_data(
     basis: DenseFunctionalData,
     n_obs: int,
     n_clusters: int = 1,
+    centers: Optional[npt.NDArray] = None,
+    cluster_std: Union[str, npt.NDArray, None] = None,
     rnorm: Callable = np.random.multivariate_normal,
-    **kwargs
 ) -> Data:
     r"""Generate univariate functional data.
 
@@ -300,11 +301,6 @@ def _generate_univariate_data(
         Number of observations to simulate.
     n_clusters: int, default=1
         Number of clusters to generate.
-    rnorm: Callable, default=np.random.multivariata_normal
-        Random data generator.
-
-    Keyword Args
-    ------------
     centers: numpy.ndarray, shape=(n_features, n_clusters)
         The centers of the clusters to generate. The ``n_features``
         correspond to the number of functions within the basis.
@@ -312,6 +308,8 @@ def _generate_univariate_data(
         The standard deviation of the clusters to generate. The
         ``n_features`` correspond to the number of functions within the
         basis.
+    rnorm: Callable, default=np.random.multivariate_normal
+        Random data generator.
 
     Returns
     -------
@@ -323,14 +321,8 @@ def _generate_univariate_data(
     # Initialize parameters
     n_features = basis.n_obs
 
-    centers = _initialize_centers(
-        n_features, n_clusters,
-        kwargs.get('centers', None)
-    )
-    cluster_std = _initialize_cluster_std(
-        n_features, n_clusters,
-        kwargs.get('cluster_std', None)
-    )
+    centers = _initialize_centers(n_features, n_clusters, centers)
+    cluster_std = _initialize_cluster_std(n_features, n_clusters, cluster_std)
 
     # Generate data
     coef, labels = _make_coef(
@@ -499,6 +491,15 @@ class KarhunenLoeve(Simulation):
         else:
             rnorm = self.random_state.multivariate_normal
 
+        # Get parameters
+        centers = kwargs.get('centers', len(self.basis) * [None])
+        clusters_std = kwargs.get('cluster_std', len(self.basis) * [None])
+
+        if isinstance(centers, np.ndarray) and len(self.basis) == 1:
+            centers = [centers]
+        if isinstance(clusters_std, str):
+            clusters_std = len(self.basis) * [clusters_std]
+
         # Generate data
         simus_univariate = [
             _generate_univariate_data(
@@ -506,8 +507,11 @@ class KarhunenLoeve(Simulation):
                 n_obs=n_obs,
                 n_clusters=n_clusters,
                 rnorm=rnorm,
-                **kwargs
-            ) for basis in self.basis
+                centers=center,
+                cluster_std=cluster_std
+            ) for basis, center, cluster_std in zip(
+                self.basis, centers, clusters_std
+            )
         ]
 
         data_univariate = [simu.data for simu in simus_univariate]
