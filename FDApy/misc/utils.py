@@ -10,30 +10,28 @@ import numpy as np
 import numpy.typing as npt
 import scipy
 
-from typing import Dict, Tuple
-
-from sklearn.preprocessing import StandardScaler
+from typing import Dict, Optional, Tuple
 
 
 #############################################################################
 # Standardization functions
 #############################################################################
-
-def range_standardization_(
+def _normalization(
     x: npt.NDArray[np.float64],
     max_x: float = np.nan,
     min_x: float = np.nan
 ) -> npt.NDArray[np.float64]:
-    r"""Transform a vector [a, b] into a vector [0, 1].
+    r"""Normalize a vector :math:`[a, b]` into a vector :math:`[0, 1]`.
 
     This function standardizes a vector by applying the following
     transformation to the vector :math:`X`:
-    ..math:: X_{norm} = \frac{X - \min{X}}{\max{X} - \min{X}}
+
+    ..math:: X_{norm} = \frac{X - \min{X}}{\max{X} - \min{X}}.
 
     Parameters
     ----------
-    x: array-like, shape = (n_features, )
-        Data
+    x: np.array, shape=(n_obs,)
+        Vector of data
     max_x: float, default=None
         Maximum value
     min_x: float, default=None
@@ -41,22 +39,57 @@ def range_standardization_(
 
     Returns
     -------
-    range_: array_like, shape = (n_features)
+    np.array, shape = (n_obs,)
+        Vector of standardized data.
 
     Example
     -------
-    >>> range_standardization_(np.array([0, 5, 10]))
-    array([0., 0.5, 1.])
+    _normalization(np.array([0, 5, 10]))
+    > array([0., 0.5, 1.])
 
     """
     if (np.isnan(max_x)) and (np.isnan(min_x)):
         max_x = np.amax(x)
         min_x = np.amin(x)
-    range_ = (x - min_x) / (max_x - min_x)
-    return range_
+    if max_x == min_x:
+        return np.zeros_like(x)
+    else:
+        return (x - min_x) / (max_x - min_x)
 
 
-def row_mean_(
+def _standardization(
+    x: npt.NDArray[np.float64],
+) -> npt.NDArray[np.float64]:
+    r"""Standardize a vector :math:`[a, b]`.
+
+    This function standardizes a vector by applying the following
+    transformation to the vector :math:`X`:
+
+    ..math:: X_{norm} = \frac{X - mean(X)}{sd(X)}.
+
+    Parameters
+    ----------
+    x: np.array, shape=(n_obs,)
+        Vector of data
+
+    Returns
+    -------
+    np.array, shape = (n_obs,)
+        Vector of standardized data.
+
+    Example
+    -------
+    _standardization(np.array([0, 5, 10]))
+    > array([-1.22474487, 0., 1.22474487])
+
+    """
+    if np.std(x) == 0:
+        return np.zeros_like(x)
+    else:
+        return (x - np.mean(x)) / np.std(x)
+
+
+def _row_mean(
     x: npt.NDArray[np.float64]
 ) -> npt.NDArray[np.float64]:
     """Compute the mean of an array with respect to the rows.
@@ -65,52 +98,68 @@ def row_mean_(
 
     Parameters
     ----------
-    x: array-like, shape = (n_obs, n_features)
-        Data
+    x: np.array, shape = (n_obs, n_features)
+        Matrix of data
 
     Returns
     -------
-    mean_: array-like, shape = (n_features,)
+    np.array, shape = (n_features,)
+        Vector of means
 
     Example
     -------
-    >>> row_mean_(
-        np.array([[1., 2., 3.], [1., 2., 3.], [1., 2., 3.], [1., 2., 3.]]))
-    array([1., 2., 3.])
+    _row_mean(
+        np.array(
+            [
+                [1., 2., 3.],
+                [1., 2., 3.],
+                [1., 2., 3.],
+                [1., 2., 3.]
+            ]
+        )
+    )
+    > array([1., 2., 3.])
 
     """
-    scaler = StandardScaler()
-    return scaler.fit(x).mean_  # type: ignore
+    return np.mean(x, axis=0)
 
 
-def row_var_(
+def _row_var(
     x: npt.NDArray[np.float64]
 ) -> npt.NDArray[np.float64]:
     """Compute the variance of an array with respect to the rows.
 
-    This function computes the variance of the row of an array.
+    This function computes the variance of the rows of an array.
 
     Parameters
     ----------
-    x: array-like, shape = (n_obs, n_features)
-        Data
+    x: np.array, shape = (n_obs, n_features)
+        Matrix of data
 
     Returns
     -------
-    var_: array-like, shape = (n_features,)
+    np.array, shape = (n_features,)
+        Vector of variances
 
     Example
     -------
-    >>>row_var_(
-        np.array([[1., 2., 3.], [1., 2., 3.], [1., 2., 3.], [1., 2., 3.]]))
-    array([0., 0., 0.])
+    _row_var(
+        np.array(
+            [
+                [1., 2., 3.],
+                [1., 2., 3.],
+                [1., 2., 3.],
+                [1., 2., 3.]
+            ]
+        )
+    )
+    > array([0., 0., 0.])
 
     """
-    scaler = StandardScaler()
-    return scaler.fit(x).var_  # type: ignore
+    return x.var(axis=0)
 
 
-def col_mean_(
+def _col_mean(
     x: npt.NDArray[np.float64]
 ) -> npt.NDArray[np.float64]:
     """Compute the mean of an array with respect to the columns.
@@ -119,28 +168,33 @@ def col_mean_(
 
     Parameters
     ----------
-    x: array-like, shape = (n_obs, n_features)
-        Data
+    x: np.array, shape = (n_obs, n_features)
+        Matrix of data
 
     Returns
     -------
-    mean_: array-like, shape = (n_obs,)
+    np.array, shape = (n_obs,)
+        Vector of means
 
     Example
     -------
-    >>> col_mean_(np.array([
-        [1., 2., 3.],
-        [1., 2., 3.],
-        [1., 2., 3.],
-        [1., 2., 3.]]))
-    array([2., 2., 2., 2.])
+    _col_mean(
+        np.array(
+            [
+                [1., 2., 3.],
+                [1., 2., 3.],
+                [1., 2., 3.],
+                [1., 2., 3.]
+            ]
+        )
+    )
+    > array([2., 2., 2., 2.])
 
     """
-    scaler = StandardScaler()
-    return scaler.fit(x.T).mean_  # type: ignore
+    return x.mean(axis=1)
 
 
-def col_var_(
+def _col_var(
     x: npt.NDArray[np.float64]
 ) -> npt.NDArray[np.float64]:
     """Compute the variance of an array with respect to the columns.
@@ -149,54 +203,129 @@ def col_var_(
 
     Parameters
     ----------
-    x: array-like, shape = (n_obs, n_features)
-        Data
+    x: np.array, shape = (n_obs, n_features)
+        Matrix of data
 
     Returns
     -------
-    var_: array-like, shape = (n_obs,)
+    np.array, shape = (n_obs,)
+        Vector of variances
 
     Example:
-    >>> col_var_(
-        np.array([[1., 2., 3.], [1., 2., 3.], [1., 2., 3.], [1., 2., 3.]]))
-    array([0.66666667, 0.66666667, 0.66666667, 0.66666667])
+    _col_var(
+        np.array(
+            [
+                [1., 2., 3.],
+                [1., 2., 3.],
+                [1., 2., 3.],
+                [1., 2., 3.]
+            ]
+        )
+    )
+    > array([0.66666667, 0.66666667, 0.66666667, 0.66666667])
 
     """
-    scaler = StandardScaler()
-    return scaler.fit(x.T).var_  # type: ignore
+    return x.var(axis=1)
 
 
 ############################################################################
 # Array manipulation functions.
 ############################################################################
 
-def get_axis_dimension_(
+def _get_axis_dimension(
     x: npt.NDArray[np.float64],
     axis: int = 0
 ) -> int:
-    """Get the dimension of an array :math:`X` along the `axis`."""
+    """Get the dimension of an array :math:`X` along the `axis`.
+
+    Parameters
+    ----------
+    x: np.array[np.float64], shape=(n_obs, n_features)
+        Matrix of data
+    axis: int, default=0
+        Integer value that represents the axis along which the dimension of the
+        array is to be computed. The default value is 0.
+
+    Returns
+    -------
+    int
+        Dimension of the array along the specified axis.
+
+    Example
+    -------
+    x = np.array([[1, 2], [4, 5], [7, 8]])
+    _get_axis_dimension(x, 0)
+    > 3
+    _get_axis_dimension(x, 1)
+    > 2
+
+    """
     return x.shape[axis]
 
 
-def get_dict_dimension_(
+def _get_dict_dimension(
     x: Dict[str, npt.NDArray[np.float64]]
 ) -> Tuple[int, ...]:
-    """Return the shape of `X` defined as a dict of np.ndarray."""
-    return tuple(i.shape[0] for i in x.values())
+    """Return the shape of an object defined as a dict of np.ndarray.
+
+    Parameters
+    ----------
+    x: dict
+        Dictionary containing keys as string and values as numpy array.
+
+    Returns
+    -------
+    tuple
+        Tuple containing the shape of the arrays defined in the dictionary.
+
+    Example
+    -------
+    x = {'a': np.array([1, 2, 3]), 'b': np.array([4, 5])}
+    _get_dict_dimension(x)
+    > (3, 2)
+
+    """
+    return tuple(el.shape[0] for el in x.values())
 
 
-def get_obs_shape_(
+def _get_obs_shape(
     x: Dict[str, Dict[int, npt.NDArray[np.float64]]],
     obs: int
 ) -> Tuple[int, ...]:
-    """Return the shape of `obs` if `X` is a nested dict."""
-    shapes = tuple(dim[obs].shape for _, dim in x.items())
+    """Return the shape of `obs` if `X` is a nested dict.
+
+    Parameters
+    ----------
+    x: dict
+        Nested dictionary containing the data, where the first level of keys
+        are strings and the second level of keys are integers representing the
+        observation number.
+    obs: int
+        Observation number for which to get the shape.
+
+    Returns
+    -------
+    tuple
+        Tuple containing the shape of the `obs`-th observation.
+
+    Example
+    -------
+    x = {
+        'a': {0: np.array([1, 2, 3]), 1: np.array([4, 5])},
+        'b': {0: np.array([1, 2]), 1: np.array([3, 4])}
+    }
+    _get_obs_shape(x, 0)
+    > (3, 2)
+    _get_obs_shape(x, 1)
+    > (2, 2)
+    """
+    shapes = tuple(el[obs].shape for el in x.values())
     return tuple(itertools.chain.from_iterable(shapes))
 
 
-def shift_(
+def _shift(
     x: npt.NDArray[np.float64],
-    num: int,
+    num: int = 0,
     fill_value: float = np.nan
 ) -> npt.NDArray[np.float64]:
     """Shift an array.
@@ -205,22 +334,22 @@ def shift_(
 
     Parameters
     ----------
-    x: array-like ,shape = (n_obs, n_features)
-        Input array
-    num: int
+    x: np.array, shape=(n_obs, n_features)
+        Matrix of data
+    num: int, default=0
         The number of columns to shift.
     fill_value: float or np.nan
         The value with one fill the array.
 
     Returns
     -------
-    res: array-like, shape = (n_obs, n_features)
+    np.array, shape = (n_obs, n_features)
         The shift array.
 
     Example
     -------
-    >>> shift_(np.array([1, 2, 3, 4, 5]), num=2, fill_value=np.nan)
-    array([nan, nan, 1, 2, 3])
+    _shift(np.array([1, 2, 3, 4, 5]), num=2, fill_value=np.nan)
+    > array([nan, nan, 1., 2., 3.])
 
     References
     ----------
@@ -244,7 +373,50 @@ def shift_(
 # Array computation
 ##############################################################################
 
-def outer_(
+def _inner_product(
+    x: npt.NDArray[np.float64],
+    y: npt.NDArray[np.float64],
+    t: Optional[npt.NDArray[np.float64]] = None
+) -> float:
+    r"""Compute the inner product between two curves.
+
+    This function computes the inner product between two curves. The inner
+    product is defined as
+
+    .. math::
+        \langle x, y \rangle = \int_{\mathcal{T}} x(t)y(t)dt, t \in \mathcal{T}
+
+    where :math:`\mathcal{T}` is a one- or higher-dimensional domains.
+
+    Parameters
+    ----------
+    x: np.array
+        First curve considered.
+    y: np.array
+        Second curve considered.
+    t: np.ndarray, default=None
+        Domain of integration. If ``t`` is ``None``, the domain is set to be a
+        regular grid on :math:`[0, 1]` with ``len(x)`` number of points.
+
+    Returns
+    -------
+    float
+        The inner product between ``x`` and ``y``.
+
+    Example
+    -------
+    _inner_product(np.array([1, 2, 3]), np.array([4, 5, 6]))
+    > 10.5
+
+    """
+    if x.shape != y.shape:
+        raise ValueError("Arguments x and y do not have the same shape.")
+    if t is None:
+        t = np.linspace(0, 1, x.shape[0])
+    return np.trapz(x=t, y=x*y)
+
+
+def _outer(
     x: npt.NDArray[np.float64],
     y: npt.NDArray[np.float64]
 ) -> npt.NDArray[np.float64]:
@@ -254,27 +426,28 @@ def outer_(
 
     Parameters
     ----------
-    x: array-like, shape = (n_obs1,)
+    x: np.array, shape=(n_obs1,)
         First input vector
-    y: array-like, shape = (n_obs2,)
+    y: np.array, shape=(n_obs2,)
         Second input vector
 
     Returns
     -------
-    res : ndarray, shape = (n_obs1, n_obs2)
+    np.array, shape=(n_obs1, n_obs2)
+        Tensor product between ``x`` and ``y``.
 
     Example
     -------
-    >>> X = np.array([1, 2, 3])
-    >>> Y = np.array([-1, 2])
-    >>> tensorProduct_(X, Y)
-    array([[-1, 2], [-2, 4], [-3, 6]])
+    X = np.array([1, 2, 3])
+    Y = np.array([-1, 2])
+    _outer(X, Y)
+    > array([[-1, 2], [-2, 4], [-3, 6]])
 
     """
     return np.outer(x, y)
 
 
-def integrate_(
+def _integrate(
     x: npt.NDArray[np.float64],
     y: npt.NDArray[np.float64],
     method: str = 'simpson'
@@ -290,9 +463,8 @@ def integrate_(
         Domain for the integration, it has to be ordered.
     y: array-like, shape = (n_features,)
         Observations
-    method : str, default = 'simpson'
-        The method used to integrated. Currently, only the Simpsons method
-        is implemented.
+    method : str, {'simpson', 'trapz'}, default = 'simpson'
+        The method used to integrated.
 
     Returns
     -------
@@ -303,16 +475,19 @@ def integrate_(
     -------
     >>> X = np.array([1, 2, 4])
     >>> Y = np.array([1, 4, 16])
-    >>> integrate_(X, Y)
+    >>> _integrate(X, Y)
     21.0
 
     """
-    if method != 'simpson':
-        raise ValueError('Only the Simpsons method is implemented!')
-    return scipy.integrate.simps(y, x)  # type: ignore
+    if method == 'simpson':
+        return scipy.integrate.simps(x=x, y=y)  # type: ignore
+    elif method == 'trapz':
+        return np.trapz(x=x, y=y)
+    else:
+        raise ValueError(f'{method} not implemented!')
 
 
-def integration_weights_(
+def _integration_weights(
     x: npt.NDArray[np.float64],
     method: str = 'trapz'
 ) -> npt.NDArray[np.float64]:
@@ -323,42 +498,52 @@ def integration_weights_(
 
     Parameters
     ----------
-    x: array-like, shape = (n_points,)
+    x: np.array, shape = (n_points,)
         Domain on which compute the weights.
     method: str or callable, default = 'trapz'
-            The method to compute the weights.
+        The method to compute the weights.
 
     Returns
     -------
-    w: array-like, shape = (n_points,)
-        The weights
+    np.array, shape = (n_points,)
+        The integration weights
 
     Example
     -------
-    >>> integrationWeights_(np.array([1, 2, 3, 4, 5]), method='trapz')
-    array([0.5, 1., 1., 1., 0.5])
-
-    Notes
-    -----
-    TODO :
-    * Add other methods: Simpson, midpoints, ...
-    * Add tests
+    _integration_weights(np.array([1, 2, 3, 4, 5]), method='trapz')
+    > array([0.5, 1., 1., 1., 0.5])
+    _integration_weights(np.array([1, 2, 3, 4, 5]), method='simpson')
+    > array([0.33333333, 1.33333333, 0.66666667, 1.33333333, 0.33333333])
 
     References
     ----------
     * https://en.wikipedia.org/wiki/Trapezoidal_rule
+    * https://en.wikipedia.org/wiki/Simpson%27s_rule
 
     """
     if method == 'trapz':
-        w = 0.5 * np.concatenate(
+        weights = 0.5 * np.concatenate(
             (
                 np.array([x[1] - x[0]]),
-                x[2:] - x[:(len(x) - 2)],
+                2 * (x[1:(len(x) - 1)] - x[:(len(x) - 2)]),
                 np.array([x[len(x) - 1] - x[len(x) - 2]])
             ), axis=None
         )
+    elif method == 'simpson':
+        weights = np.concatenate(
+            (
+                np.array([x[1] - x[0]]),
+                [
+                    4 * h if idx % 2 == 0 else 2 * h
+                    for idx, h in enumerate(
+                        x[1:(len(x) - 1)] - x[:(len(x) - 2)]
+                    )
+                ],
+                np.array([x[len(x) - 1] - x[len(x) - 2]])
+            ), axis=None
+        ) / 3
     elif callable(method):
-        w = method(x)
+        weights = method(x)
     else:
-        raise NotImplementedError("Method not implemented!")
-    return w  # type: ignore
+        raise NotImplementedError(f"{method} not implemented!")
+    return weights  # type: ignore

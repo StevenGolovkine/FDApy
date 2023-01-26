@@ -5,7 +5,7 @@
 Module for the definition of FunctionalData types.
 
 This modules is used to defined different types of functional data. The
-different types are: Univariate Functional Data, Irregular Functional data and
+different types are: Univariate Functional Data, Irregular Functional Data and
 Multivariate Functional Data.
 """
 from __future__ import annotations
@@ -26,9 +26,9 @@ from sklearn.metrics import pairwise_distances
 
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..preprocessing.smoothing.smoothing_splines import SmoothingSpline
-from ..misc.utils import get_dict_dimension_, get_obs_shape_
-from ..misc.utils import integrate_, integration_weights_, outer_
-from ..misc.utils import range_standardization_
+from ..misc.utils import _get_dict_dimension, _get_obs_shape
+from ..misc.utils import _integrate, _integration_weights, _outer
+from ..misc.utils import _normalization
 
 if TYPE_CHECKING:
     from ..representation.basis import Basis
@@ -52,7 +52,7 @@ def _check_dict_array(
     (a np.ndarray) do not have coherent common dimensions. The first dimension
     of `arg_array` is assumed to represented the number of observation.
     """
-    dim_dict = get_dict_dimension_(argv_dict)
+    dim_dict = _get_dict_dimension(argv_dict)
     dim_array = argv_array.shape[1:]
     if dim_dict != dim_array:
         raise ValueError(
@@ -69,8 +69,9 @@ def _check_dict_dict(
     An error is raised when `argv1` (a nested dictonary) and `argv2` (a
     dictionary) do not have coherent common dimensions.
     """
-    has_obs_shape = [obs.shape == get_obs_shape_(argv1, idx)
-                     for idx, obs in argv2.items()]
+    has_obs_shape = [
+        obs.shape == _get_obs_shape(argv1, idx) for idx, obs in argv2.items()
+    ]
     if not np.all(has_obs_shape):
         raise ValueError(
             f"{argv1} and {argv2} do not have coherent dimension."
@@ -364,6 +365,13 @@ class FunctionalData(ABC):
         pass
 
     @abstractmethod
+    def inner_product(
+        self
+    ) -> npt.NDArray:
+        """Compute an estimate of the inner product matrix."""
+        pass
+
+    @abstractmethod
     def smooth(
         self,
         points: npt.NDArray[np.float64],
@@ -492,7 +500,7 @@ class DenseFunctionalData(FunctionalData):
         self._argvals = new_argvals
         argvals_stand = {}
         for dim, points in new_argvals.items():
-            argvals_stand[dim] = range_standardization_(points)
+            argvals_stand[dim] = _normalization(points)
         self._argvals_stand = argvals_stand
 
     @property
@@ -725,7 +733,7 @@ class DenseFunctionalData(FunctionalData):
         Journal of the American Statistical Association, Vol. 100, No. 470
         * Staniswalis, J. G., and Lee, J. J. (1998), “Nonparametric Regression
         Analysis of Longitudinal Data,” Journal of the American Statistical
-        Association, 93, 1403–1418.
+        Association, 93, 1403-1418.
 
         """
         if self.n_dim > 1:
@@ -785,12 +793,15 @@ class DenseFunctionalData(FunctionalData):
         ll = argvals[len(argvals) - 1] - argvals[0]
         lower = np.sum(~(argvals >= (argvals[0] + 0.25 * ll)))
         upper = np.sum((argvals <= (argvals[len(argvals) - 1] - 0.25 * ll)))
-        weights = integration_weights_(argvals[lower:upper], method='trapz')
+        weights = _integration_weights(argvals[lower:upper], method='trapz')
         nume = np.dot(weights, (var_hat - cov_diag)[lower:upper])
         self.var_noise = np.maximum(nume / argvals[upper] - argvals[lower], 0)
 
         new_argvals = {'input_dim_0': argvals, 'input_dim_1': argvals}
         return DenseFunctionalData(new_argvals, cov[np.newaxis])
+
+    def inner_product(self) -> npt.NDArray:
+        return super().inner_product()
 
     def smooth(
         self,
@@ -887,7 +898,7 @@ class DenseFunctionalData(FunctionalData):
             The concatenation of self and data.
 
         """
-        return cast(DenseFunctionalData, concatenate_([self, data]))
+        return cast(DenseFunctionalData, _concatenate([self, data]))
 
     def normalize(
         self,
@@ -928,7 +939,7 @@ class DenseFunctionalData(FunctionalData):
             argvals = self.argvals_stand['input_dim_0']
         else:
             argvals = self.argvals['input_dim_0']
-            weights = integrate_(argvals, np.var(self.values, axis=0))
+            weights = _integrate(argvals, np.var(self.values, axis=0))
         new_values = self.values / weights
         return DenseFunctionalData(self.argvals, new_values), weights
 
@@ -1067,8 +1078,9 @@ class IrregularFunctionalData(FunctionalData):
 
             argvals_stand[dim] = {}
             for obs, point in obss.items():
-                argvals_stand[dim][obs] = range_standardization_(point,
-                                                                 max_x, min_x)
+                argvals_stand[dim][obs] = _normalization(
+                    point, max_x, min_x
+                )
         self.argvals_stand = argvals_stand
 
     @property
@@ -1257,6 +1269,9 @@ class IrregularFunctionalData(FunctionalData):
     ) -> FunctionalData:
         """Compute an estimate of the covariance."""
         pass
+
+    def inner_product(self) -> npt.NDArray:
+        return super().inner_product()
 
     def smooth(
         self,
@@ -1554,6 +1569,9 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
                 [i.covariance(None, smooth, **kwargs) for i in self]
             )
 
+    def inner_product(self) -> npt.NDArray:
+        pass
+
     def concatenate(
         self,
         data: MultivariateFunctionalData
@@ -1571,14 +1589,14 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
             The concatenation of self and data.
 
         """
-        new = [concatenate_([d1, d2]) for d1, d2 in zip(self, data)]
+        new = [_concatenate([d1, d2]) for d1, d2 in zip(self, data)]
         return MultivariateFunctionalData(new)
 
 
 ##############################################################################
 # Functional data manipulation
 
-def concatenate_(
+def _concatenate(
     data: List[FunctionalData]
 ) -> FunctionalData:
     """Concatenate functional data.
@@ -1607,7 +1625,7 @@ def concatenate_(
     return DenseFunctionalData(new_argvals, new_values)
 
 
-def tensor_product_(
+def _tensor_product(
     data1: DenseFunctionalData,
     data2: DenseFunctionalData
 ) -> DenseFunctionalData:
@@ -1637,5 +1655,5 @@ def tensor_product_(
     """
     arg = {'input_dim_0': data1.argvals['input_dim_0'],
            'input_dim_1': data2.argvals['input_dim_0']}
-    val = [outer_(i, j) for i in data1.values for j in data2.values]
+    val = [_outer(i, j) for i in data1.values for j in data2.values]
     return DenseFunctionalData(arg, np.array(val))

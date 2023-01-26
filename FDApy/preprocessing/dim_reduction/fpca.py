@@ -12,8 +12,9 @@ import warnings
 
 from typing import Optional, List, Union
 
-from ...representation.functional_data import (DenseFunctionalData,
-                                               MultivariateFunctionalData)
+from ...representation.functional_data import (
+    DenseFunctionalData, MultivariateFunctionalData
+)
 from ...misc.utils import integration_weights_
 
 from .fcp_tpa import FCPTPA

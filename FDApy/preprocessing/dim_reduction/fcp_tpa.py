@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*-coding:utf8 -*
 
-"""Mdoule for FCPTPA class.
+"""Module for FCPTPA class.
 
 This module is used to implement the Functional CP-TPA algorithm [1]. This
 method computes an eigendecomposition of image observations, which can be

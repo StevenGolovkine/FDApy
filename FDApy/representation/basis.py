@@ -14,7 +14,7 @@ from patsy import bs
 from typing import Any, Dict, Optional
 
 from .functional_data import DenseFunctionalData
-from .functional_data import tensor_product_
+from .functional_data import _tensor_product
 
 
 #######################################################################
@@ -334,7 +334,7 @@ class Basis(
             super().__init__(argvals, values)
         elif dimension == '2D':
             basis1d = DenseFunctionalData(argvals, values)
-            basis2d = tensor_product_(basis1d, basis1d)
+            basis2d = _tensor_product(basis1d, basis1d)
             super().__init__(basis2d.argvals, basis2d.values)
         else:
             raise ValueError(f"{dimension} is not a valid dimension!")
