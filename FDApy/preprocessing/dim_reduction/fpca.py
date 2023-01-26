@@ -15,7 +15,7 @@ from typing import Optional, List, Union
 from ...representation.functional_data import (
     DenseFunctionalData, MultivariateFunctionalData
 )
-from ...misc.utils import integration_weights_
+from ...misc.utils import _integration_weights
 
 from .fcp_tpa import FCPTPA
 
@@ -164,7 +164,7 @@ class UFPCA():
 
         # Choose the W_j's and the S_j's (Ramsey and Silverman, 2005)
         argvals = data.argvals['input_dim_0']
-        weight = integration_weights_(argvals, method='trapz')
+        weight = _integration_weights(argvals, method='trapz')
 
         # Compute the eigenvalues and eigenvectors of W^{1/2}VW^{1/2}
         weight_sqrt = np.diag(np.sqrt(weight))

@@ -27,8 +27,8 @@ from sklearn.metrics import pairwise_distances
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..preprocessing.smoothing.smoothing_splines import SmoothingSpline
 from ..misc.utils import _get_dict_dimension, _get_obs_shape
-from ..misc.utils import _integrate, _integration_weights, _outer
-from ..misc.utils import _normalization
+from ..misc.utils import _inner_product, _integrate, _integration_weights
+from ..misc.utils import _normalization, _outer
 
 if TYPE_CHECKING:
     from ..representation.basis import Basis
@@ -51,6 +51,21 @@ def _check_dict_array(
     An error is raised when `argv_dict` (a dictionary) and `argv_array`
     (a np.ndarray) do not have coherent common dimensions. The first dimension
     of `arg_array` is assumed to represented the number of observation.
+
+    Parameters
+    ----------
+    argv_dict: DenseArgvals
+        A dictionary with key as string and value as numpy ndarray
+    argv_array: DenseValues
+        A numpy ndarray
+
+    Raises
+    ------
+    ValueError
+        When `argv_dict` and `argv_array` do not have coherent common
+        dimensions. The first dimension of `arg_array` is assumed to
+        represented the number of observations.
+
     """
     dim_dict = _get_dict_dimension(argv_dict)
     dim_array = argv_array.shape[1:]
@@ -801,7 +816,30 @@ class DenseFunctionalData(FunctionalData):
         return DenseFunctionalData(new_argvals, cov[np.newaxis])
 
     def inner_product(self) -> npt.NDArray:
-        return super().inner_product()
+        r"""Compute the inner product matrix of the data.
+
+        The inner product matrix is a ``n_obs`` by ``n_obs`` matrix where each
+        entry is defined as
+
+        .. math::
+            \langle x, y \rangle = \int_{\mathcal{T}} x(t)y(t)dt,
+            t \in \mathcal{T}.
+
+        Returns
+        -------
+        np.array, shape=(n_obs, n_obs)
+            Inner product matrix of the data.
+
+        """
+        # Get parameters
+        argvals = self.argvals['input_dim_0']
+
+        inner_mat = np.zeros((self.n_obs, self.n_obs))
+        for idx in np.arange(self.n_obs):
+            inner_mat[idx, :] = np.apply_along_axis(
+                _inner_product, 1, self.values, self.values[idx], argvals
+            ).squeeze()
+        return inner_mat
 
     def smooth(
         self,
@@ -1570,7 +1608,33 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
             )
 
     def inner_product(self) -> npt.NDArray:
-        pass
+        r"""Compute the inner product matrix of the data.
+
+        The inner product matrix is a ``n_obs`` by ``n_obs`` matrix where each
+        entry is defined as
+
+        .. math::
+            \langle\langle x, y \rangle\rangle = 
+            \sum_{p = 1}^P \int_{\mathcal{T}_k} x^{(p)}(t)y^{(p)}(t)dt,
+            t \in \mathcal{T}.
+
+        Returns
+        -------
+        np.array, shape=(n_obs, n_obs)
+            Inner product matrix of the data.
+
+        """
+        inner_mat = np.zeros((self.n_obs, self.n_obs))
+        for component in np.arange(self.n_functional):
+            argvals = self[component].argvals['input_dim_0']
+            for idx in np.arange(self.n_obs):
+                inner_mat[idx, :] += np.apply_along_axis(
+                    _inner_product, 1,
+                    self[component].values,
+                    self[component].values[idx],
+                    argvals
+                ).squeeze()
+        return inner_mat
 
     def concatenate(
         self,
