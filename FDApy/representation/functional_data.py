@@ -81,8 +81,19 @@ def _check_dict_dict(
 ) -> None:
     """Raise an error in case of dimension conflicts between the arguments.
 
-    An error is raised when `argv1` (a nested dictonary) and `argv2` (a
-    dictionary) do not have coherent common dimensions.
+    Parameters
+    ----------
+    argv1: IrregArgvals
+        A nested dictionary with key as string and value as dictionary with
+        key as integer and value as numpy array.
+    argv2: IrregValues
+        A dictionary with key as integer and value as numpy array.
+
+    Raises
+    ------
+    ValueError
+        When `argv1` and `argv2` do not have coherent common dimensions.
+
     """
     has_obs_shape = [
         obs.shape == _get_obs_shape(argv1, idx) for idx, obs in argv2.items()
@@ -1614,7 +1625,7 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
         entry is defined as
 
         .. math::
-            \langle\langle x, y \rangle\rangle = 
+            \langle\langle x, y \rangle\rangle =
             \sum_{p = 1}^P \int_{\mathcal{T}_k} x^{(p)}(t)y^{(p)}(t)dt,
             t \in \mathcal{T}.
 

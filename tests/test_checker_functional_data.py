@@ -47,6 +47,19 @@ class TestCheckDictArray(unittest.TestCase):
             _check_dict_array(argv_dict, argv_array)
 
 
+class TestCheckDictDict(unittest.TestCase):
+    def test_coherent_dimensions(self):
+        argv1 = {'a': {1: np.ones((5, 2)), 2: np.ones((5, 2))}}
+        argv2 = {1: np.ones((5, 2)), 2: np.ones((5, 2))}
+        _check_dict_dict(argv1, argv2)
+
+    def test_incoherent_dimensions(self):
+        argv1 = {'a': {1: np.ones((5, 2)), 2: np.ones((5, 2))}}
+        argv2 = {1: np.ones((5, 3)), 2: np.ones((5, 2))}
+        with self.assertRaises(ValueError):
+            _check_dict_dict(argv1, argv2)
+
+
 class TestCheckerFunctionalData(unittest.TestCase):
     """Test class for the checkers in the class FunctionalData."""
 
