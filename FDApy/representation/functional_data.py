@@ -55,9 +55,9 @@ def _check_dict_array(
     Parameters
     ----------
     argv_dict: DenseArgvals
-        A dictionary with key as string and value as numpy ndarray
+        A dictionary with key as string and value as numpy array.
     argv_array: DenseValues
-        A numpy ndarray
+        A numpy arra.y
 
     Raises
     ------
@@ -107,7 +107,20 @@ def _check_dict_dict(
 def _check_dict_len(
     argv: IrregArgvals
 ) -> None:
-    """Raise an error if all elements of `argv` do not have equal length."""
+    """Raise an error if all elements of `argv` do not have equal length.
+
+    Parameters
+    ----------
+    argv: IrregArgvals
+        A nested dictionary with key as string and value as dictionary with
+        key as integer and value as numpy array.
+
+    Raises
+    ------
+    ValueError
+        When the number of observations is different across the dimensions.
+
+    """
     lengths = [len(obj) for obj in argv.values()]
     if len(set(lengths)) > 1:
         raise ValueError(
@@ -119,7 +132,21 @@ def _check_same_type(
     argv1: Any,
     argv2: Any
 ) -> None:
-    """Raise an error if `argv1` and `argv2` have different type."""
+    """Raise an error if `argv1` and `argv2` have different type.
+
+    Parameters
+    ----------
+    argv1: Any
+        An object.
+    argv2: Any
+        An object.
+
+    Raises
+    ------
+    TypeError
+        When `argv1` and `argv2` do not have the same type.
+
+    """
     if not isinstance(argv2, type(argv1)):
         raise TypeError(f"{argv1} and {argv2} do not have the same type.")
 

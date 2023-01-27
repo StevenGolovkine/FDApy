@@ -10,10 +10,6 @@ import numpy as np
 import unittest
 
 from FDApy.representation.functional_data import (
-    DenseFunctionalData,
-    IrregularFunctionalData
-)
-from FDApy.representation.functional_data import (
     _check_dict_array,
     _check_dict_dict,
     _check_dict_len,
@@ -52,6 +48,7 @@ class TestCheckDictDict(unittest.TestCase):
         argv1 = {'a': {1: np.ones((5, 2)), 2: np.ones((5, 2))}}
         argv2 = {1: np.ones((5, 2)), 2: np.ones((5, 2))}
         _check_dict_dict(argv1, argv2)
+        self.assertTrue(True)  # if no error is raised, test passed
 
     def test_incoherent_dimensions(self):
         argv1 = {'a': {1: np.ones((5, 2)), 2: np.ones((5, 2))}}
@@ -60,33 +57,28 @@ class TestCheckDictDict(unittest.TestCase):
             _check_dict_dict(argv1, argv2)
 
 
-class TestCheckerFunctionalData(unittest.TestCase):
-    """Test class for the checkers in the class FunctionalData."""
+class TestCheckDictLen(unittest.TestCase):
+    def test_equal_length(self):
+        argv = {'a': {0: np.array([1, 2, 3]), 1: np.array([4, 5, 6])},
+                'b': {0: np.array([7, 8, 9]), 1: np.array([10, 11, 12])}}
+        _check_dict_len(argv)
+        self.assertTrue(True)  # if no error is raised, test passed
 
-    def test_check_dict_array(self):
-        argvals = {'input_dim_0': np.array([1, 2, 3, 4])}
-        values = np.array([[1, 2, 3, 4, 5]])
-        self.assertRaises(ValueError, _check_dict_array, argvals, values)
+    def test_unequal_length(self):
+        argv = {'a': {0: np.array([1, 2, 3]), 1: np.array([4, 5])},
+                'b': {0: np.array([7, 8, 9])}}
+        with self.assertRaises(ValueError):
+            _check_dict_len(argv)
 
-    def test_check_dict_dict(self):
-        argvals = {'input_dim_0': {0: np.array([1, 2, 3, 4])}}
-        values = {0: np.array([1, 2, 3, 4, 5])}
-        self.assertRaises(ValueError, _check_dict_dict, argvals, values)
 
-    def test_check_dict_len(self):
-        argvals = {'input_dim_0': {0: np.array([1, 2, 3, 4]),
-                                   1: np.array([2, 4]),
-                                   2: np.array([4, 5, 6])},
-                   'input_dim_1': {0: np.array([5, 6, 7]),
-                                   1: np.array([1, 2, 3])}}
-        self.assertRaises(ValueError, _check_dict_len, argvals)
+class TestCheckSameType(unittest.TestCase):
+    def test_same_type(self):
+        argv1 = [1, 2, 3]
+        argv2 = [4, 5, 6]
+        _check_same_type(argv1, argv2)
+        self.assertTrue(True)  # if no error is raised, test passed
 
-    def test_check_same_type(self):
-        argvals = {'input_dim_0': np.array([1, 2, 3, 4])}
-        values = np.array([[1, 2, 3, 4]])
-        dense_fd = DenseFunctionalData(argvals, values)
-
-        argvals = {'input_dim_0': {0: np.array([1, 2, 3, 4])}}
-        values = {0: np.array([1, 2, 3, 4])}
-        irregu_fd = IrregularFunctionalData(argvals, values)
-        self.assertRaises(TypeError, _check_same_type, dense_fd, irregu_fd)
+    def test_different_type(self):
+        argv1 = [1, 2, 3]
+        argv2 = "hello"
+        self.assertRaises(TypeError, _check_same_type, argv1, argv2)

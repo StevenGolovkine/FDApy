@@ -54,12 +54,12 @@ def read_csv(
         all_argvals = np.arange(0, len(data.columns))
 
     if not data.isna().values.any():
-        return read_csv_dense(data, all_argvals)
+        return _read_csv_dense(data, all_argvals)
     else:
-        return read_csv_irregular(data, all_argvals)
+        return _read_csv_irregular(data, all_argvals)
 
 
-def read_csv_dense(
+def _read_csv_dense(
     data: pd.DataFrame,
     argvals: npt.NDArray[np.float64]
 ) -> DenseFunctionalData:
@@ -83,7 +83,7 @@ def read_csv_dense(
     return DenseFunctionalData(argvals_, values)
 
 
-def read_csv_irregular(
+def _read_csv_irregular(
     data: pd.DataFrame,
     argvals: npt.NDArray[np.float64]
 ) -> IrregularFunctionalData:
