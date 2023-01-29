@@ -388,7 +388,7 @@ class DenseFunctionalData(FunctionalData):
     """
 
     @staticmethod
-    def _check_argvals_equality_dense(
+    def _check_argvals_equality(
         argv1: DenseArgvals,
         argv2: DenseArgvals
     ) -> None:
@@ -627,7 +627,7 @@ class DenseFunctionalData(FunctionalData):
 
         """
         super().is_compatible(fdata)
-        DenseFunctionalData._check_argvals_equality_dense(
+        DenseFunctionalData._check_argvals_equality(
             self.argvals, fdata.argvals)
         return True
 
@@ -1036,19 +1036,35 @@ class IrregularFunctionalData(FunctionalData):
             )
 
     @staticmethod
-    def _check_argvals_equality_irregular(
+    def _check_argvals_equality(
         argv1: IrregArgvals,
         argv2: IrregArgvals
     ) -> None:
-        """Raise an error if `argv1` and `argv2` are not equal."""
-        temp = []
-        for points1, points2 in zip(argv1.values(), argv2.values()):
-            temp.append(all(np.array_equal(points1[key], points2[key])
-                            for key in points1))
-        argvs_equal = all(temp)
-        if not argvs_equal:
-            raise ValueError(f"{argv1} and {argv2} do not have the same"
-                             " sampling points.")
+        """Check if `argv1` and `argv2` are equal.
+
+        Parameters
+        ----------
+        argv1 : IrregArgvals
+            The first set of argument values.
+        argv2 : IrregArgvals
+            The second set of argument values.
+
+        Raises
+        ------
+        ValueError
+            If `argv1` and `argv2` do not have the same sampling points.
+
+        """
+        temp = all([
+            all(
+                np.array_equal(points1[key], points2[key])
+                for key in points1
+            ) for points1, points2 in zip(argv1.values(), argv2.values())
+        ])
+        if not temp:
+            raise ValueError(
+                f"{argv1} and {argv2} do not have the same sampling points."
+            )
 
     @staticmethod
     def _check_argvals_values(
@@ -1298,7 +1314,7 @@ class IrregularFunctionalData(FunctionalData):
 
         """
         super().is_compatible(fdata)
-        IrregularFunctionalData._check_argvals_equality_irregular(
+        IrregularFunctionalData._check_argvals_equality(
             self.argvals, fdata.argvals)
         return True
 
