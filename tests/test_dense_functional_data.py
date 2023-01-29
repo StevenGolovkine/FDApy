@@ -67,7 +67,7 @@ class TestDenseFunctionalData1D(unittest.TestCase):
 
     def test_check_argvals_equality_dense(self):
         with self.assertRaises(ValueError) as cm:
-            DenseFunctionalData._check_argvals_equality_dense(
+            DenseFunctionalData._check_argvals_equality(
                 self.dense_fd.argvals,
                 self.dense_fd_2.argvals
             )

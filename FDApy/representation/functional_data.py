@@ -41,27 +41,6 @@ IrregValues = Dict[int, npt.NDArray[np.float64]]
 
 ###############################################################################
 # Checkers for parameters
-def _check_same_type(
-    argv1: Any,
-    argv2: Any
-) -> None:
-    """Raise an error if `argv1` and `argv2` have different type.
-
-    Parameters
-    ----------
-    argv1: Any
-        An object.
-    argv2: Any
-        An object.
-
-    Raises
-    ------
-    TypeError
-        When `argv1` and `argv2` do not have the same type.
-
-    """
-    if not isinstance(argv2, type(argv1)):
-        raise TypeError(f"{argv1} and {argv2} do not have the same type.")
 
 
 ###############################################################################
@@ -78,6 +57,29 @@ class FunctionalData(ABC):
     category: str, {'univariate', 'irregular', 'multivariate'}
 
     """
+
+    @staticmethod
+    def _check_same_type(
+        argv1: FunctionalData,
+        argv2: FunctionalData
+    ) -> None:
+        """Raise an error if `argv1` and `argv2` have different type.
+
+        Parameters
+        ----------
+        argv1: FunctionalData
+            An object.
+        argv2: FunctionalData
+            An object.
+
+        Raises
+        ------
+        TypeError
+            When `argv1` and `argv2` do not have the same type.
+
+        """
+        if not isinstance(argv2, type(argv1)):
+            raise TypeError(f"{argv1} and {argv2} do not have the same type.")
 
     @staticmethod
     def _check_same_nobs(
@@ -298,7 +300,7 @@ class FunctionalData(ABC):
         fdata: FunctionalData
     ) -> bool:
         """Check if `fdata` is compatible with `self`."""
-        _check_same_type(self, fdata)
+        FunctionalData._check_same_type(self, fdata)
         FunctionalData._check_same_nobs(self, fdata)
         FunctionalData._check_same_ndim(self, fdata)
         return True
