@@ -41,93 +41,6 @@ IrregValues = Dict[int, npt.NDArray[np.float64]]
 
 ###############################################################################
 # Checkers for parameters
-
-def _check_dict_array(
-    argv_dict: DenseArgvals,
-    argv_array: DenseValues
-) -> None:
-    """Raise an error in case of dimension conflicts between the arguments.
-
-    An error is raised when `argv_dict` (a dictionary) and `argv_array`
-    (a np.ndarray) do not have coherent common dimensions. The first dimension
-    of `arg_array` is assumed to represented the number of observation.
-
-    Parameters
-    ----------
-    argv_dict: DenseArgvals
-        A dictionary with key as string and value as numpy array.
-    argv_array: DenseValues
-        A numpy arra.y
-
-    Raises
-    ------
-    ValueError
-        When `argv_dict` and `argv_array` do not have coherent common
-        dimensions. The first dimension of `arg_array` is assumed to
-        represented the number of observations.
-
-    """
-    dim_dict = _get_dict_dimension(argv_dict)
-    dim_array = argv_array.shape[1:]
-    if dim_dict != dim_array:
-        raise ValueError(
-            f"{argv_dict} and {argv_array} do not have coherent dimension."
-        )
-
-
-def _check_dict_dict(
-    argv1: IrregArgvals,
-    argv2: IrregValues
-) -> None:
-    """Raise an error in case of dimension conflicts between the arguments.
-
-    Parameters
-    ----------
-    argv1: IrregArgvals
-        A nested dictionary with key as string and value as dictionary with
-        key as integer and value as numpy array.
-    argv2: IrregValues
-        A dictionary with key as integer and value as numpy array.
-
-    Raises
-    ------
-    ValueError
-        When `argv1` and `argv2` do not have coherent common dimensions.
-
-    """
-    has_obs_shape = [
-        obs.shape == _get_obs_shape(argv1, idx) for idx, obs in argv2.items()
-    ]
-    if not np.all(has_obs_shape):
-        raise ValueError(
-            f"{argv1} and {argv2} do not have coherent dimension."
-        )
-
-
-def _check_dict_len(
-    argv: IrregArgvals
-) -> None:
-    """Raise an error if all elements of `argv` do not have equal length.
-
-    Parameters
-    ----------
-    argv: IrregArgvals
-        A nested dictionary with key as string and value as dictionary with
-        key as integer and value as numpy array.
-
-    Raises
-    ------
-    ValueError
-        When the number of observations is different across the dimensions.
-
-    """
-    lengths = [len(obj) for obj in argv.values()]
-    if len(set(lengths)) > 1:
-        raise ValueError(
-            "The number of observations is different across the dimensions."
-        )
-
-
 def _check_same_type(
     argv1: Any,
     argv2: Any
@@ -479,7 +392,21 @@ class DenseFunctionalData(FunctionalData):
         argv1: DenseArgvals,
         argv2: DenseArgvals
     ) -> None:
-        """Raise an error if `argv1` and `argv2` are not equal."""
+        """Check if `argv1` and `argv2` are equal.
+
+        Parameters
+        ----------
+        argv1 : DenseArgvals
+            The first set of argument values.
+        argv2 : DenseArgvals
+            The second set of argument values.
+
+        Raises
+        ------
+        ValueError
+            If `argv1` and `argv2` do not have the same sampling points.
+
+        """
         argvs_equal = all(
             np.array_equal(argv1[key], argv2[key]) for key in argv1
         )
@@ -493,8 +420,34 @@ class DenseFunctionalData(FunctionalData):
         argvals: DenseArgvals,
         values: DenseValues
     ) -> None:
-        """Check the compatibility of argvals and values."""
-        _check_dict_array(argvals, values)
+        """Raise an error in case of dimension conflicts between the arguments.
+
+        An error is raised when `argvals` (a dictionary) and `values`
+        (a np.ndarray) do not have coherent common dimensions. The first
+        dimension of `values` is assumed to represented the number of
+        observation.
+
+        Parameters
+        ----------
+        argvals: DenseArgvals
+            A dictionary with key as string and value as numpy array.
+        values: DenseValues
+            A numpy array
+
+        Raises
+        ------
+        ValueError
+            When `argvals` and `values` do not have coherent common
+            dimensions. The first dimension of `argvals` is assumed to
+            represented the number of observations.
+
+        """
+        dim_dict = _get_dict_dimension(argvals)
+        dim_array = values.shape[1:]
+        if dim_dict != dim_array:
+            raise ValueError(
+                f"{argvals} and {values} do not have coherent dimension."
+            )
 
     @staticmethod
     def _perform_computation(
@@ -1059,6 +1012,30 @@ class IrregularFunctionalData(FunctionalData):
     """
 
     @staticmethod
+    def _check_argvals_length(
+        argv: IrregArgvals
+    ) -> None:
+        """Raise an error if all elements of `argv` do not have equal length.
+
+        Parameters
+        ----------
+        argv: IrregArgvals
+            A nested dictionary with key as string and value as dictionary with
+            key as integer and value as numpy array.
+
+        Raises
+        ------
+        ValueError
+            When the number of observations is different across the dimensions.
+
+        """
+        lengths = [len(obj) for obj in argv.values()]
+        if len(set(lengths)) > 1:
+            raise ValueError(
+                "The number of observations is different across the dimensions"
+            )
+
+    @staticmethod
     def _check_argvals_equality_irregular(
         argv1: IrregArgvals,
         argv2: IrregArgvals
@@ -1078,8 +1055,30 @@ class IrregularFunctionalData(FunctionalData):
         argvals: IrregArgvals,
         values: IrregValues
     ) -> None:
-        """Check the compatibility of argvals and values."""
-        _check_dict_dict(argvals, values)
+        """Raise an error in case of dimension conflicts between the arguments.
+
+        Parameters
+        ----------
+        argvals: IrregArgvals
+            A nested dictionary with key as string and value as dictionary with
+            key as integer and value as numpy array.
+        values: IrregValues
+            A dictionary with key as integer and value as numpy array.
+
+        Raises
+        ------
+        ValueError
+            When `argvals` and `values` do not have coherent common dimensions.
+
+        """
+        has_obs_shape = [
+            obs.shape == _get_obs_shape(argvals, idx)
+            for idx, obs in values.items()
+        ]
+        if not np.all(has_obs_shape):
+            raise ValueError(
+                f"{argvals} and {values} do not have coherent dimension."
+            )
 
     @staticmethod
     def _perform_computation(
@@ -1145,7 +1144,7 @@ class IrregularFunctionalData(FunctionalData):
         self,
         new_argvals: IrregArgvals
     ) -> None:
-        _check_dict_len(new_argvals)
+        IrregularFunctionalData._check_argvals_length(new_argvals)
         self._argvals = new_argvals
         points = self.gather_points()
         argvals_stand: IrregArgvals = {}
