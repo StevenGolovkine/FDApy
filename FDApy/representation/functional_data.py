@@ -40,13 +40,7 @@ IrregValues = Dict[int, npt.NDArray[np.float64]]
 
 
 ###############################################################################
-# Checkers for parameters
-
-
-###############################################################################
 # Class FunctionalData
-
-
 class FunctionalData(ABC):
     """Metaclass for the definition of diverse functional data objects.
 
@@ -355,7 +349,6 @@ class FunctionalData(ABC):
 
 ###############################################################################
 # Class DenseFunctionalData
-
 class DenseFunctionalData(FunctionalData):
     r"""A class for defining Dense Functional Data.
 
@@ -376,16 +369,20 @@ class DenseFunctionalData(FunctionalData):
 
     Examples
     --------
-    >>> argvals = {'input_dim_0': np.array([1, 2, 3, 4]),
-                   'input_dim_1': np.array([5, 6, 7])}
-
-    >>> values = np.array([[[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]],
-                   [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]],
-                   [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]],
-                   [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]],
-                   [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]]])
-
-    >>> DenseFunctionalData(argvals, values)
+    argvals = {
+        'input_dim_0': np.array([1, 2, 3, 4]),
+        'input_dim_1': np.array([5, 6, 7])
+    }
+    values = np.array(
+        [
+            [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]],
+            [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]],
+            [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]],
+            [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]],
+            [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]]
+        ]
+    )
+    DenseFunctionalData(argvals, values)
 
     """
 
@@ -998,18 +995,21 @@ class IrregularFunctionalData(FunctionalData):
 
     Examples
     --------
-    >>> argvals = {'input_dim_0': {
-                        0: np.array([1, 2, 3, 4]),
-                        1: np.array([2, 4])},
-                   'input_dim_1': {
-                        0: np.array([5, 6, 7]),
-                        1: np.array([1, 2, 3])}
-                  }
-
-    >>> values = {0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
-                  1: np.array([[1, 2, 3], [1, 2, 3]])}
-
-    >>> IrregularFunctionalData(argvals, values)
+    argvals = {
+        'input_dim_0': {
+            0: np.array([1, 2, 3, 4]),
+            1: np.array([2, 4])
+        },
+        'input_dim_1': {
+            0: np.array([5, 6, 7]),
+            1: np.array([1, 2, 3])
+        }
+    }
+    values = {
+        0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
+        1: np.array([[1, 2, 3], [1, 2, 3]])
+    }
+    IrregularFunctionalData(argvals, values)
 
     """
 

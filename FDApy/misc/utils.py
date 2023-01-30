@@ -30,7 +30,7 @@ def _normalization(
 
     Parameters
     ----------
-    x: np.array, shape=(n_obs,)
+    x: np.ndarray, shape=(n_obs,)
         Vector of data
     max_x: float, default=None
         Maximum value
@@ -69,12 +69,12 @@ def _standardization(
 
     Parameters
     ----------
-    x: np.array, shape=(n_obs,)
+    x: np.ndarray, shape=(n_obs,)
         Vector of data
 
     Returns
     -------
-    np.array, shape = (n_obs,)
+    np.ndarray, shape = (n_obs,)
         Vector of standardized data.
 
     Example
@@ -98,12 +98,12 @@ def _row_mean(
 
     Parameters
     ----------
-    x: np.array, shape = (n_obs, n_features)
+    x: np.ndarray, shape = (n_obs, n_features)
         Matrix of data
 
     Returns
     -------
-    np.array, shape = (n_features,)
+    np.ndarray, shape = (n_features,)
         Vector of means
 
     Example
@@ -133,12 +133,12 @@ def _row_var(
 
     Parameters
     ----------
-    x: np.array, shape = (n_obs, n_features)
+    x: np.ndarray, shape = (n_obs, n_features)
         Matrix of data
 
     Returns
     -------
-    np.array, shape = (n_features,)
+    np.ndarray, shape = (n_features,)
         Vector of variances
 
     Example
@@ -168,12 +168,12 @@ def _col_mean(
 
     Parameters
     ----------
-    x: np.array, shape = (n_obs, n_features)
+    x: np.ndarray, shape = (n_obs, n_features)
         Matrix of data
 
     Returns
     -------
-    np.array, shape = (n_obs,)
+    np.ndarray, shape = (n_obs,)
         Vector of means
 
     Example
@@ -203,15 +203,16 @@ def _col_var(
 
     Parameters
     ----------
-    x: np.array, shape = (n_obs, n_features)
+    x: np.ndarray, shape = (n_obs, n_features)
         Matrix of data
 
     Returns
     -------
-    np.array, shape = (n_obs,)
+    np.ndarray, shape = (n_obs,)
         Vector of variances
 
-    Example:
+    Example
+    -------
     _col_var(
         np.array(
             [
@@ -240,7 +241,7 @@ def _get_axis_dimension(
 
     Parameters
     ----------
-    x: np.array[np.float64], shape=(n_obs, n_features)
+    x: np.ndarray[np.float64], shape=(n_obs, n_features)
         Matrix of data
     axis: int, default=0
         Integer value that represents the axis along which the dimension of the
@@ -280,7 +281,10 @@ def _get_dict_dimension(
 
     Example
     -------
-    x = {'a': np.array([1, 2, 3]), 'b': np.array([4, 5])}
+    x = {
+        'a': np.array([1, 2, 3]),
+        'b': np.array([4, 5])
+    }
     _get_dict_dimension(x)
     > (3, 2)
 
@@ -334,7 +338,7 @@ def _shift(
 
     Parameters
     ----------
-    x: np.array, shape=(n_obs, n_features)
+    x: np.ndarray, shape=(n_obs, n_features)
         Matrix of data
     num: int, default=0
         The number of columns to shift.
@@ -343,7 +347,7 @@ def _shift(
 
     Returns
     -------
-    np.array, shape = (n_obs, n_features)
+    np.ndarray, shape = (n_obs, n_features)
         The shift array.
 
     Example
@@ -390,9 +394,9 @@ def _inner_product(
 
     Parameters
     ----------
-    x: np.array
+    x: np.ndarray
         First curve considered.
-    y: np.array
+    y: np.ndarray
         Second curve considered.
     t: np.ndarray, default=None
         Domain of integration. If ``t`` is ``None``, the domain is set to be a
@@ -426,14 +430,14 @@ def _outer(
 
     Parameters
     ----------
-    x: np.array, shape=(n_obs1,)
+    x: np.ndarray, shape=(n_obs1,)
         First input vector
-    y: np.array, shape=(n_obs2,)
+    y: np.ndarray, shape=(n_obs2,)
         Second input vector
 
     Returns
     -------
-    np.array, shape=(n_obs1, n_obs2)
+    np.ndarray, shape=(n_obs1, n_obs2)
         Tensor product between ``x`` and ``y``.
 
     Example
@@ -459,16 +463,16 @@ def _integrate(
 
     Parameters
     ----------
-    x: array-like, shape = (n_features,)
+    x: np.ndarray, shape = (n_features,)
         Domain for the integration, it has to be ordered.
-    y: array-like, shape = (n_features,)
+    y: np.ndarray, shape = (n_features,)
         Observations
     method : str, {'simpson', 'trapz'}, default = 'simpson'
         The method used to integrated.
 
     Returns
     -------
-    res : float
+    float
         Estimation of the integration of Y over X.
 
     Example
@@ -498,14 +502,14 @@ def _integration_weights(
 
     Parameters
     ----------
-    x: np.array, shape = (n_points,)
+    x: np.ndarray, shape = (n_points,)
         Domain on which compute the weights.
     method: str or callable, default = 'trapz'
         The method to compute the weights.
 
     Returns
     -------
-    np.array, shape = (n_points,)
+    np.ndarray, shape = (n_points,)
         The integration weights
 
     Example

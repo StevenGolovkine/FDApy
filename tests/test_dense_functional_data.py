@@ -15,6 +15,49 @@ from FDApy.representation.functional_data import (
 )
 
 
+class TestDenseFunctionalData(unittest.TestCase):
+    def setUp(self):
+        self.argvals = {'input_dim_0': np.array([1, 2, 3, 4, 5])}
+        self.values = np.array([
+            [1, 2, 3, 4, 5],
+            [6, 7, 8, 9, 10],
+            [11, 12, 13, 14, 15]
+        ])
+        self.func_data = DenseFunctionalData(self.argvals, self.values)
+
+    def test_getitem_dense_functional_data(self):
+        data = self.func_data[1]
+        expected_argvals = self.argvals
+        expected_values = np.array([[6, 7, 8, 9, 10]])
+        np.testing.assert_array_equal(data.argvals, expected_argvals)
+        np.testing.assert_array_equal(data.values, expected_values)
+
+    def test_argvals_property(self):
+        argvals = self.func_data.argvals
+        self.assertDictEqual(argvals, self.argvals)
+
+    def test_argvals_setter(self):
+        new_argvals = {'x': np.linspace(0, 5, 5)}
+        self.func_data.argvals = new_argvals
+        self.assertDictEqual(self.func_data._argvals, new_argvals)
+
+        expected_argvals_stand = {
+            "x": np.linspace(0, 1, 5),
+        }
+        np.testing.assert_array_almost_equal(
+            self.func_data._argvals_stand['x'], expected_argvals_stand['x']
+        )
+
+    def test_values_property(self):
+        dense_values = self.func_data.values
+        np.testing.assert_array_equal(dense_values, self.values)
+
+    def test_values_setter(self):
+        new_values = np.array([[11, 12, 13, 14, 15]])
+        self.func_data.values = new_values
+        np.testing.assert_array_equal(self.func_data.values, new_values)
+
+
 class TestDenseFunctionalData1D(unittest.TestCase):
     """Test class for the class DenseFunctionalData in one dimension."""
 
