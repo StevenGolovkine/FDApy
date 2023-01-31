@@ -531,7 +531,7 @@ class DenseFunctionalData(FunctionalData):
 
         Returns
         -------
-        min, max: tuple
+        tuple
             Tuple containing the mimimum and maximum values taken by all the
             observations for the object.
 
@@ -544,12 +544,16 @@ class DenseFunctionalData(FunctionalData):
 
         Returns
         -------
-        n_points: dict
-            A dictionary with the same shape than argavls with the number of
+        dict
+            A dictionary with the same shape than argvals with the number of
             sampling points along each axis.
 
+        Notes
+        -----
+        For DenseFunctionalData, this function is equivalent to shape().
+
         """
-        return {i: len(points) for i, points in self.argvals.items()}
+        return {idx: len(points) for idx, points in self.argvals.items()}
 
     @property
     def range_dim(self) -> Dict[str, Tuple[int, int]]:
@@ -557,13 +561,15 @@ class DenseFunctionalData(FunctionalData):
 
         Returns
         -------
-        ranges: dict
+        dict
             Dictionary containing the range of the argvals for each of the
             input dimension.
 
         """
-        return {idx: (min(argval), max(argval))
-                for idx, argval in self.argvals.items()}
+        return {
+            idx: (min(argval), max(argval))
+            for idx, argval in self.argvals.items()
+        }
 
     @property
     def shape(self) -> Dict[str, int]:
@@ -571,13 +577,17 @@ class DenseFunctionalData(FunctionalData):
 
         Returns
         -------
-        shape: dict
+        dict
             Dictionary containing the number of points for each of the
             dimension. It corresponds to :math:`m_j` for
             :math:`0 \leq j \leq p`.
 
+        Notes
+        -----
+        For DenseFunctionalData, this function is equivalent to n_points().
+
         """
-        return {idx: len(dim) for idx, dim in self.argvals.items()}
+        return {idx: len(points) for idx, points in self.argvals.items()}
 
     def as_irregular(self) -> IrregularFunctionalData:
         """Convert `self` from Dense to Irregular functional data.
@@ -1197,7 +1207,7 @@ class IrregularFunctionalData(FunctionalData):
         Returns
         -------
         n_points: dict
-            A dictionary with the same shape than argavls with the number of
+            A dictionary with the same shape than argvals with the number of
             sampling points along each axis.
 
         """

@@ -57,6 +57,26 @@ class TestDenseFunctionalData(unittest.TestCase):
         self.func_data.values = new_values
         np.testing.assert_array_equal(self.func_data.values, new_values)
 
+    def test_range_obs(self):
+        expected_result = (1, 15)
+        result = self.func_data.range_obs
+        self.assertEqual(result, expected_result)
+
+    def test_n_points(self):
+        expected_result = {"input_dim_0": 5}
+        result = self.func_data.n_points
+        self.assertDictEqual(result, expected_result)
+
+    def test_range_dim(self):
+        expected_range = {"input_dim_0": (1, 5)}
+        result = self.func_data.range_dim
+        self.assertDictEqual(result, expected_range)
+
+    def test_shape(self):
+        expected_output = {'input_dim_0': 5}
+        result = self.func_data.shape
+        self.assertDictEqual(result, expected_output)
+
 
 class TestDenseFunctionalData1D(unittest.TestCase):
     """Test class for the class DenseFunctionalData in one dimension."""
