@@ -646,7 +646,13 @@ class DenseFunctionalData(FunctionalData):
         self,
         basis: Basis
     ) -> None:
-        """Convert to basis"""
+        """Convert to basis
+
+        Parameters
+        ----------
+        basis: Basis
+
+        """
         xtx = np.linalg.inv(np.matmul(basis.values, basis.values.T))
         xty = np.matmul(basis.values, self.values.T)
         self.basis = basis
@@ -936,10 +942,6 @@ class DenseFunctionalData(FunctionalData):
     ) -> DenseFunctionalData:
         """Smooth the data.
 
-        Notes
-        -----
-        Only, one dimensional IrregularFunctionalData can be smoothed.
-
         Parameters
         ----------
         points: np.array
@@ -961,6 +963,10 @@ class DenseFunctionalData(FunctionalData):
         -------
         obj: DenseFunctionalData
             A smoothed version of the data.
+
+        Notes
+        -----
+        Only, one dimensional IrregularFunctionalData can be smoothed.
 
         """
         if self.n_dim != 1:

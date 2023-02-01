@@ -296,7 +296,7 @@ def _get_obs_shape(
     x: Dict[str, Dict[int, npt.NDArray[np.float64]]],
     obs: int
 ) -> Tuple[int, ...]:
-    """Return the shape of `obs` if `X` is a nested dict.
+    """Get the shape of `obs` if `X` is a nested dict.
 
     Parameters
     ----------
@@ -322,6 +322,7 @@ def _get_obs_shape(
     > (3, 2)
     _get_obs_shape(x, 1)
     > (2, 2)
+
     """
     shapes = tuple(el[obs].shape for el in x.values())
     return tuple(itertools.chain.from_iterable(shapes))
