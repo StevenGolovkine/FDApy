@@ -34,18 +34,24 @@ class UFPCA():
     ----------
     n_components: int, float, None, default=None
         Number of components to keep.
-        if n_components if None, all components are kept::
+        If `n_components` is `None`, all components are kept::
             n_components == min(n_samples, n_features)
-        if n_components is int, n_components are kept.
-        if 0 < n_components < 1, select the number of components such that
+        If `n_components` is an integer, `n_components` are kept.
+        If `0 < n_components < 1`, select the number of components such that
         the amount of variance that needs to be explained is greater than
-        the percentage specified by n_components.
+        the percentage specified by `n_components`.
+    method: str, {'covariance', 'inner-product'}, default='covariance'
+        Method used to estimate the eigencomponents. If
+        ``method == 'covariance'``, the estimation is based on an
+        eigendecomposition of the covariance operator. If
+        ``method == 'inner-product'``, the estimation is based on an
+        eigendecomposition of the inner-product matrix.
     normalize: bool, default=False
         Perform a normalization of the data.
 
     Attributes
     ----------
-    eigenvalues: array, shape = (n_components, )
+    eigenvalues: array, shape = (n_components,)
         The singular values corresponding to each of selected components.
     eigenfunctions: DenseFunctionalData
         Principal axes in feature space, representing the directions of
@@ -55,36 +61,31 @@ class UFPCA():
     covariance: DenseFunctionalData
         An estimation of the covariance of the training data based on the
         results of the functional principal components analysis.
-
     """
 
     def __init__(
         self,
         n_components: Union[int, float, None] = None,
+        method: str = 'covariance',
         normalize: bool = False
     ) -> None:
         """Initaliaze UFPCA object."""
         self.n_components = n_components
+        self.method = method
         self.normalize = normalize
         self.weights = 1
 
     def fit(
         self,
         data: DenseFunctionalData,
-        mean: Optional[DenseFunctionalData] = None,
-        covariance: Optional[DenseFunctionalData] = None,
         **kwargs
     ) -> None:
-        """Fit the model on data.
+        """Estimate the eigencomponents of the data.
 
         Parameters
         ----------
         data: DenseFunctionalData
-            Training data
-        mean: DenseFunctionalData, default=None
-            An estimation of the mean of the training data.
-        covariance: DenseFunctionalData, default=None
-            An estimation of the covariance of the training data.
+            Training data used to estimate the eigencomponents.
 
         Keyword Args
         ------------
@@ -107,22 +108,19 @@ class UFPCA():
             'degree': kwargs.get('degree', 2),
             'n_basis': kwargs.get('n_basis', 10)
         }
-        self._fit(data)
 
-    def _fit(
-        self,
-        data: DenseFunctionalData,
-        mean: Optional[DenseFunctionalData] = None,
-        covariance: Optional[DenseFunctionalData] = None
-    ) -> None:
-        """Dispatch to the right submethod depending on the input."""
-        if isinstance(data, DenseFunctionalData):
-            self._fit_uni(data, mean, covariance)
+        if not isinstance(data, DenseFunctionalData):
+            raise TypeError('UFPCA only support DenseFunctionalData object!')
+        if self.method == 'covariance':
+            self._fit_covariance(data)
+        elif self.method == 'inner-product':
+            self._fit_inner_product(data)
         else:
-            raise TypeError('UFPCA only support DenseFunctionalData'
-                            ' object!')
+            raise NotImplementedError(
+                f"{self.method} method not implemented."
+            )
 
-    def _fit_uni(
+    def _fit_covariance(
         self,
         data: DenseFunctionalData,
         mean: Optional[DenseFunctionalData] = None,
@@ -155,12 +153,16 @@ class UFPCA():
 
         smoothing_method = self.smoothing_parameters['method']
         if mean is None:
-            mean = data.mean(smooth=smoothing_method,
-                             **self.smoothing_parameters)
+            mean = data.mean(
+                smooth=smoothing_method,
+                **self.smoothing_parameters
+            )
         if covariance is None:
-            covariance = data.covariance(mean=mean,
-                                         smooth=smoothing_method,
-                                         **self.smoothing_parameters)
+            covariance = data.covariance(
+                mean=mean,
+                smooth=smoothing_method,
+                **self.smoothing_parameters
+            )
 
         # Choose the W_j's and the S_j's (Ramsey and Silverman, 2005)
         argvals = data.argvals['input_dim_0']
@@ -186,8 +188,9 @@ class UFPCA():
 
         # Slice eigenvalues and compute eigenfunctions = W^{-1/2}U
         eigenvalues = eigenvalues[:npc]
-        eigenfunctions = np.transpose(np.dot(weight_invsqrt,
-                                             np.fliplr(eigenvectors)[:, :npc]))
+        eigenfunctions = np.transpose(
+            np.dot(weight_invsqrt, np.fliplr(eigenvectors)[:, :npc])
+        )
         # Compute estimation of the covariance
         temp = np.dot(np.transpose(eigenfunctions), np.diag(eigenvalues))
         cov = np.dot(temp, eigenfunctions)
@@ -199,6 +202,36 @@ class UFPCA():
         self.eigenfunctions = DenseFunctionalData(new_argvals, eigenfunctions)
         self.mean = mean
         self.covariance = DenseFunctionalData(new_argvals_2, cov[np.newaxis])
+
+    def _fit_inner_product(
+        self,
+        data: DenseFunctionalData
+    ) -> None:
+        """Univariate Functional PCA using inner-product matrix decomposition.
+
+        Parameters
+        ----------
+        data: DenseFunctionalData
+            Training data used to estimate the eigencomponents.
+
+        """
+        # Compute inner-product matrix
+
+        # Diagonalization of the inner-product matrix
+
+        # Estimation of the eigenvalues
+
+        # estimation of the eigenfunctions
+        pass
+
+    def _select_number_eigencomponents(self):
+        """Select the number of eigencomponents.
+        
+        Notes
+        -----
+        Put into utils?
+        """
+        pass
 
     def transform(
         self,
