@@ -126,7 +126,7 @@ def _plot_2d(
                 indexing='ij'
             )
             for obs, l in zip(data.values, labels):
-                ax.plot_surface(x, y, obs, c=COLORS[l], **plt_kwargs)
+                ax.plot_surface(x, y, obs, color=COLORS[l], **plt_kwargs)
     elif isinstance(data, IrregularFunctionalData):
         raise NotImplementedError(
             "Currently 2d irregular functional data"

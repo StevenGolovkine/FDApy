@@ -417,7 +417,7 @@ def _inner_product(
         raise ValueError("Arguments x and y do not have the same shape.")
     if axis is None:
         axis = np.linspace(0, 1, x.shape[0])
-    return np.trapz(x=axis, y=x*y)
+    return np.trapz(x=axis, y=x * y)
 
 
 def _inner_product_2d(
@@ -473,7 +473,7 @@ def _inner_product_2d(
         primary_axis = np.linspace(0, 1, x.shape[0])
     if secondary_axis is None:
         secondary_axis = np.linspace(0, 1, x.shape[1])
-    return np.trapz(x=secondary_axis, y=np.trapz(x=primary_axis, y=x*y))
+    return np.trapz(x=secondary_axis, y=np.trapz(x=primary_axis, y=x * y))
 
 
 def _outer(

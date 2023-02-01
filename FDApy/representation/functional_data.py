@@ -10,6 +10,7 @@ Multivariate Functional Data.
 """
 from __future__ import annotations
 
+import itertools
 import numpy as np
 import numpy.typing as npt
 import pygam
@@ -27,7 +28,8 @@ from sklearn.metrics import pairwise_distances
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..preprocessing.smoothing.smoothing_splines import SmoothingSpline
 from ..misc.utils import _get_dict_dimension, _get_obs_shape
-from ..misc.utils import _inner_product, _integrate, _integration_weights
+from ..misc.utils import _inner_product, _inner_product_2d
+from ..misc.utils import _integrate, _integration_weights
 from ..misc.utils import _normalization, _outer
 
 if TYPE_CHECKING:
@@ -825,23 +827,103 @@ class DenseFunctionalData(FunctionalData):
 
         .. math::
             \langle x, y \rangle = \int_{\mathcal{T}} x(t)y(t)dt,
-            t \in \mathcal{T}.
+            t \in \mathcal{T},
+
+        where :math:`\mathcal{T}` is a one- or multi-dimensional domain.
 
         Returns
         -------
         np.array, shape=(n_obs, n_obs)
             Inner product matrix of the data.
 
+        Examples
+        --------
+        # For one-dimensional functional data
+        argvals = {'input_dim_0': array([0., 0.25, 0.5 , 0.75])}
+        values = array(
+            [
+                [ 2.48466259, -3.38397716, -1.2367073 , -1.85052901],
+                [ 1.44853118,  0.67716255,  1.79711043,  4.76950236],
+                [-5.13173463,  0.35830122,  0.56648942, -0.20965252]
+            ]
+        )
+        data = DenseFunctionalData(argvals, values)
+        data.inner_product()
+        > array(
+        >     [
+        >         [ 4.44493731, -1.78187445, -2.02359881],
+        >         [-1.78187445,  4.02783817, -0.73900893],
+        >         [-2.02359881, -0.73900893,  3.40965432]
+        >     ]
+        > )
+
+        # For two-dimensional functional data
+        argvals = {
+            'input_dim_0': array([0.  , 0.25, 0.5 , 0.75]),
+            'input_dim_1': array([0.  , 0.25, 0.5 , 0.75])
+        }
+        values = np.array(
+            [
+                [
+                    [  6.30864764, -18.37912204,   6.15515232,  29.8027036 ],
+                    [ -6.076622  , -15.48586803, -11.39997792,   8.40599319],
+                    [-20.4094798 ,  -1.3872093 ,  -0.59922597,  -6.42013363],
+                    [  5.78626375,  -1.83874696,  -0.87225549,   2.75000303]
+                ],
+                [
+                    [ -4.83576968,  18.85512513, -18.73086523,  15.1511348 ],
+                    [-24.41254888,  12.37333951,  28.85176939,  16.41806885],
+                    [-10.02681278,  14.76500118,   1.83114017,  -2.78985647],
+                    [  4.29268032,   8.1781319 ,  30.10132687,  -0.72828334]
+                ],
+                [
+                    [ -5.85921132,   1.85573561,  -5.11291405, -12.89441767],
+                    [ -4.79384081,  -0.93863074,  18.81909033,   4.55041973],
+                    [-13.27810529,  28.08961819, -13.79482673,  35.25677906],
+                    [  9.10058173, -16.43979436, -11.88561292,  -5.86481318]
+                ]
+            ]
+        )
+        data = DenseFunctionalData(argvals, values)
+        data.inner_product()
+        > array(
+        >     [
+        >         [ 67.93133466, -26.76503879, -17.70996479],
+        >         [-26.76503879, 162.59040715,  51.40230074],
+        >         [-17.70996479,  51.40230074, 147.86839738]
+        >     ]
+        > )
         """
         # Get parameters
-        argvals = self.argvals['input_dim_0']
+        n_obs = self.n_obs
+        if self.n_dim == 1:
+            inner_func = _inner_product
+            axis = self.argvals['input_dim_0']
+            params = {'axis': axis}
+        elif self.n_dim == 2:
+            inner_func = _inner_product_2d
+            primary_axis = self.argvals['input_dim_0']
+            secondary_axis = self.argvals['input_dim_1']
+            params = {
+                'primary_axis': primary_axis,
+                'secondary_axis': secondary_axis
+            }
+        else:
+            raise ValueError(
+                'The data dimension is not correct.'
+            )
 
-        inner_mat = np.zeros((self.n_obs, self.n_obs))
-        for idx in np.arange(self.n_obs):
-            inner_mat[idx, :] = np.apply_along_axis(
-                _inner_product, 1, self.values, self.values[idx], argvals
-            ).squeeze()
-        return inner_mat
+        in_mat = np.zeros((n_obs, n_obs))
+        for (i, j) in itertools.product(np.arange(n_obs), repeat=2):
+            if i <= j:
+                in_mat[i, j] = inner_func(
+                    self.values[i],
+                    self.values[j],
+                    **params
+                )
+        in_mat = in_mat + in_mat.T
+        np.fill_diagonal(in_mat, np.diag(in_mat) / 2)
+        return in_mat
 
     def smooth(
         self,
@@ -882,8 +964,9 @@ class DenseFunctionalData(FunctionalData):
 
         """
         if self.n_dim != 1:
-            raise NotImplementedError('Only one dimensional data can be'
-                                      ' smoothed.')
+            raise NotImplementedError(
+                'Only one dimensional data can be smoothed.'
+            )
 
         data = self.as_irregular()
         data_smooth = data.smooth(points, neighborhood,
