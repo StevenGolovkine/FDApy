@@ -815,7 +815,9 @@ class DenseFunctionalData(FunctionalData):
         new_argvals = {'input_dim_0': argvals, 'input_dim_1': argvals}
         return DenseFunctionalData(new_argvals, cov[np.newaxis])
 
-    def inner_product(self) -> npt.NDArray:
+    def inner_product(
+        self
+    ) -> npt.NDArray:
         r"""Compute the inner product matrix of the data.
 
         The inner product matrix is a ``n_obs`` by ``n_obs`` matrix where each

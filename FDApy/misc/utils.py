@@ -380,7 +380,7 @@ def _shift(
 def _inner_product(
     x: npt.NDArray[np.float64],
     y: npt.NDArray[np.float64],
-    t: Optional[npt.NDArray[np.float64]] = None
+    axis: Optional[npt.NDArray[np.float64]] = None
 ) -> float:
     r"""Compute the inner product between two curves.
 
@@ -390,7 +390,7 @@ def _inner_product(
     .. math::
         \langle x, y \rangle = \int_{\mathcal{T}} x(t)y(t)dt, t \in \mathcal{T}
 
-    where :math:`\mathcal{T}` is a one- or higher-dimensional domains.
+    where :math:`\mathcal{T}` is a one-dimensional domain.
 
     Parameters
     ----------
@@ -398,9 +398,9 @@ def _inner_product(
         First curve considered.
     y: np.ndarray
         Second curve considered.
-    t: np.ndarray, default=None
-        Domain of integration. If ``t`` is ``None``, the domain is set to be a
-        regular grid on :math:`[0, 1]` with ``len(x)`` number of points.
+    axis: np.ndarray, default=None
+        Domain of integration. If ``axis`` is ``None``, the domain is set to be
+        a regular grid on :math:`[0, 1]` with ``len(x)`` number of points.
 
     Returns
     -------
@@ -415,9 +415,65 @@ def _inner_product(
     """
     if x.shape != y.shape:
         raise ValueError("Arguments x and y do not have the same shape.")
-    if t is None:
-        t = np.linspace(0, 1, x.shape[0])
-    return np.trapz(x=t, y=x*y)
+    if axis is None:
+        axis = np.linspace(0, 1, x.shape[0])
+    return np.trapz(x=axis, y=x*y)
+
+
+def _inner_product_2d(
+    x: npt.NDArray[np.float64],
+    y: npt.NDArray[np.float64],
+    primary_axis: Optional[npt.NDArray[np.float64]] = None,
+    secondary_axis: Optional[npt.NDArray[np.float64]] = None
+) -> float:
+    r"""Compute the inner product between two surfaces.
+
+    This function computes the inner product between two surfaces. The inner
+    product is defined as
+
+    .. math::
+        \langle x, y \rangle = \int_{\mathcal{T}} x(t)y(t)dt =
+        \int_{\mathcal{T}_1}\int_{\mathcal{T}_2} x(t_1t_2)y(t_1t_2)dt_1 dt_2,
+        t = (t_1, t_2) \in \mathcal{T} = \mathcal{T}_1 \times \mathcal{T}_2
+
+    where :math:`\mathcal{T}` is a 2-dimensional domain.
+
+    Parameters
+    ----------
+    x: np.ndarray
+        First surface considered.
+    y: np.ndarray
+        Second surface considered.
+    primary_axis: np.ndarray, default=None
+        Domain of integration for the primary axis. If ``primary_axis`` is
+        ``None``, the domain is set to be a regular grid on :math:`[0, 1]` with
+        ``len(x)`` number of points.
+    secondary_axis: np.ndarray, default=None
+        Domain of integration for the secondary axis. If ``secondary_axis`` is
+        ``None``, the domain is set to be a regular grid on :math:`[0, 1]` with
+        ``len(x)`` number of points.
+
+    Returns
+    -------
+    float
+        The inner product between ``x`` and ``y``.
+
+    Example
+    -------
+    _inner_product_2d(
+        np.array([[1, 2, 3], [4, 5, 6], [1, 2, 3]])
+        np.array([[4, 5, 6], [1, 2, 3], [4, 5, 6]])
+    )
+    > 10.5
+
+    """
+    if x.shape != y.shape:
+        raise ValueError("Arguments x and y do not have the same shape.")
+    if primary_axis is None:
+        primary_axis = np.linspace(0, 1, x.shape[0])
+    if secondary_axis is None:
+        secondary_axis = np.linspace(0, 1, x.shape[1])
+    return np.trapz(x=secondary_axis, y=np.trapz(x=primary_axis, y=x*y))
 
 
 def _outer(
