@@ -77,6 +77,15 @@ class TestDenseFunctionalData(unittest.TestCase):
         result = self.func_data.shape
         self.assertDictEqual(result, expected_output)
 
+    def test_inner_product(self):
+        result = self.func_data.inner_product()
+        expected = np.array([
+            [42., 102., 162.],
+            [102., 262., 422.],
+            [162., 422., 682.]
+        ])
+        np.testing.assert_array_almost_equal(result, expected)
+
 
 class TestDenseFunctionalData1D(unittest.TestCase):
     """Test class for the class DenseFunctionalData in one dimension."""

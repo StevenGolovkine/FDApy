@@ -839,8 +839,8 @@ class DenseFunctionalData(FunctionalData):
         Examples
         --------
         # For one-dimensional functional data
-        argvals = {'input_dim_0': array([0., 0.25, 0.5 , 0.75])}
-        values = array(
+        argvals = {'input_dim_0': np.array([0., 0.25, 0.5 , 0.75])}
+        values = np.array(
             [
                 [ 2.48466259, -3.38397716, -1.2367073 , -1.85052901],
                 [ 1.44853118,  0.67716255,  1.79711043,  4.76950236],
@@ -859,8 +859,8 @@ class DenseFunctionalData(FunctionalData):
 
         # For two-dimensional functional data
         argvals = {
-            'input_dim_0': array([0.  , 0.25, 0.5 , 0.75]),
-            'input_dim_1': array([0.  , 0.25, 0.5 , 0.75])
+            'input_dim_0': np.array([0.  , 0.25, 0.5 , 0.75]),
+            'input_dim_1': np.array([0.  , 0.25, 0.5 , 0.75])
         }
         values = np.array(
             [
@@ -1773,18 +1773,60 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
         np.array, shape=(n_obs, n_obs)
             Inner product matrix of the data.
 
+        Examples
+        --------
+        argvals = {'input_dim_0': np.array([0., 0.25, 0.5 , 0.75])}
+        values = np.array(
+            [
+                [ 2.48466259, -3.38397716, -1.2367073 , -1.85052901],
+                [ 1.44853118,  0.67716255,  1.79711043,  4.76950236],
+                [-5.13173463,  0.35830122,  0.56648942, -0.20965252]
+            ]
+        )
+        data_1D = DenseFunctionalData(argvals, values)
+
+        argvals = {
+            'input_dim_0': np.array([0.  , 0.25, 0.5 , 0.75]),
+            'input_dim_1': np.array([0.  , 0.25, 0.5 , 0.75])
+        }
+        values = np.array(
+            [
+                [
+                    [  6.30864764, -18.37912204,   6.15515232,  29.8027036 ],
+                    [ -6.076622  , -15.48586803, -11.39997792,   8.40599319],
+                    [-20.4094798 ,  -1.3872093 ,  -0.59922597,  -6.42013363],
+                    [  5.78626375,  -1.83874696,  -0.87225549,   2.75000303]
+                ],
+                [
+                    [ -4.83576968,  18.85512513, -18.73086523,  15.1511348 ],
+                    [-24.41254888,  12.37333951,  28.85176939,  16.41806885],
+                    [-10.02681278,  14.76500118,   1.83114017,  -2.78985647],
+                    [  4.29268032,   8.1781319 ,  30.10132687,  -0.72828334]
+                ],
+                [
+                    [ -5.85921132,   1.85573561,  -5.11291405, -12.89441767],
+                    [ -4.79384081,  -0.93863074,  18.81909033,   4.55041973],
+                    [-13.27810529,  28.08961819, -13.79482673,  35.25677906],
+                    [  9.10058173, -16.43979436, -11.88561292,  -5.86481318]
+                ]
+            ]
+        )
+        data_2D = DenseFunctionalData(argvals, values)
+        data = MultivariateFunctionalData([data_1D, data_2D])
+        data.inner_product()
+        > array(
+        >     [
+        >         [ 72.37627198, -28.54691325, -19.7335636 ],
+        >         [-28.54691325, 166.61824532,  50.66329182],
+        >         [-19.7335636 ,  50.66329182, 151.2780517 ]
+        >     ]
+        > )
         """
-        inner_mat = np.zeros((self.n_obs, self.n_obs))
-        for component in np.arange(self.n_functional):
-            argvals = self[component].argvals['input_dim_0']
-            for idx in np.arange(self.n_obs):
-                inner_mat[idx, :] += np.apply_along_axis(
-                    _inner_product, 1,
-                    self[component].values,
-                    self[component].values[idx],
-                    argvals
-                ).squeeze()
-        return inner_mat
+        if not all([isinstance(data, DenseFunctionalData) for data in self]):
+            raise TypeError(
+                "All the univariate data must be DenseFunctionalData"
+            )
+        return np.sum([data.inner_product() for data in self], axis=0)
 
     def concatenate(
         self,
