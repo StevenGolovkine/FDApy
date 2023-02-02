@@ -45,6 +45,10 @@ docs/_templates/*
 docs/auto_examples/*
 docs/backreferences/*
 
+# Test files
+.junit/*
+.pytest_cache/*
+
 # Coverage files
 htmlcov/*
 .coverage
