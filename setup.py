@@ -19,31 +19,35 @@ from setuptools import find_packages, setup
 
 DOCLINES = (__doc__ or '').split('\n')
 
-setup(name='FDApy',
-      version='0.8.6',
-      python_requires='>= 3.9, <4',
-      description=DOCLINES[1],
-      long_description='\n'.join(DOCLINES[3:]),
-      long_description_content_type='text/x-rst',
-      classifiers=[
-          'Programming Language :: Python :: 3.9',
-          'Topic :: Scientific/Engineering :: Mathematics'],
-      keywords='functional data analysis',
-      url='https://github.com/StevenGolovkine/FDApy',
-      author='Steven Golovkine',
-      author_email='steven_golovkine@icloud.com',
-      license='MIT',
-      package_dir={'FDApy': 'FDApy'},
-      packages=find_packages(),
-      install_requires=[
-          'csaps >= 1.1.0',
-          'ggplot >= 0.11.0',
-          'numpy == 1.22.3',
-          'pandas >= 1.3.0',
-          'patsy >= 0.5.2',
-          'pygam >= 0.8.0',
-          'scikit-learn >= 0.23.0'],
-      test_suite='nose.collector',
-      tests_require=['nose'],
-      include_package_data=True,
-      zip_safe=False)
+setup(
+    name='FDApy',
+    version='0.8.6',
+    python_requires='>= 3.9, <4',
+    description=DOCLINES[1],
+    long_description='\n'.join(DOCLINES[3:]),
+    long_description_content_type='text/x-rst',
+    classifiers=[
+        'Programming Language :: Python :: 3.9',
+        'Topic :: Scientific/Engineering :: Mathematics'
+    ],
+    keywords='functional data analysis',
+    url='https://github.com/StevenGolovkine/FDApy',
+    author='Steven Golovkine',
+    author_email='steven_golovkine@icloud.com',
+    license='MIT',
+    package_dir={'FDApy': 'FDApy'},
+    packages=find_packages(),
+    install_requires=[
+        'csaps >= 1.1.0',
+        'ggplot >= 0.11.0',
+        'numpy == 1.22.3',
+        'pandas >= 1.3.0',
+        'patsy >= 0.5.2',
+        'pygam >= 0.8.0',
+        'scikit-learn >= 0.23.0'
+    ],
+    test_suite='nose.collector',
+    tests_require=['nose'],
+    include_package_data=True,
+    zip_safe=False
+)
