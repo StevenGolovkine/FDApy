@@ -11,14 +11,14 @@ FDApy: a Python package to analyze functional data
 		:target: https://pypi.org/project/FDApy/
 		:alt: PyPI
 
-.. image:: https://app.travis-ci.com/StevenGolovkine/FDApy.svg?branch=master
-    	:target: https://app.travis-ci.com/StevenGolovkine/FDApy
-
 .. image:: https://img.shields.io/pypi/l/FDApy
 		:target: https://raw.githubusercontent.com/StevenGolovkine/FDApy/master/LICENSE
 		:alt: PyPI - License
 
-.. image:: https://app.codacy.com/project/badge/Grade/3d9062cffc304ad4bb7c76bf97cc965c    
+.. image:: https://codecov.io/gh/StevenGolovkine/FDApy/branch/master/graph/badge.svg?token=S2H0D3QQMR 
+ 		:target: https://codecov.io/gh/StevenGolovkine/FDApy
+
+.. image:: https://app.codacy.com/project/badge/Grade/3d9062cffc304ad4bb7c76bf97cc965c
 		:target: https://www.codacy.com/gh/StevenGolovkine/FDApy/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=StevenGolovkine/FDApy&amp;utm_campaign=Badge_Grade
 		:alt: Code Quality
 
