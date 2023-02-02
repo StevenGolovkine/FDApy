@@ -1,4 +1,4 @@
-name: Python package
+name: Build Windows
 
 on: [push, pull_request]
 

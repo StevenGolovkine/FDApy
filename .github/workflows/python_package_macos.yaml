@@ -1,4 +1,4 @@
-name: Python package
+name: Build MacOS
 
 on: [push, pull_request]
 
