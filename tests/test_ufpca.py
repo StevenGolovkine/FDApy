@@ -8,4 +8,4 @@ Written with the help of ChatGPT.
 import numpy as np
 import unittest
 
-from FDApy.preprocessing.dim_reduction import UFPCA
+from FDApy.preprocessing.dim_reduction.fpca import UFPCA
