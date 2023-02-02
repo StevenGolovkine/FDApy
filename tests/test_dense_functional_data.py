@@ -25,6 +25,16 @@ class TestDenseFunctionalData(unittest.TestCase):
         ])
         self.func_data = DenseFunctionalData(self.argvals, self.values)
 
+        argvals = {'input_dim_0': {
+            0: np.array([1, 2, 3, 4]),
+            1: np.array([2, 4])
+        }}
+        values = {
+            0: np.array([1, 6, 9, 4]),
+            1: np.array([2, 3])
+        }
+        self.irreg_data = IrregularFunctionalData(argvals, values)
+
     def test_getitem_dense_functional_data(self):
         data = self.func_data[1]
         expected_argvals = self.argvals
@@ -76,6 +86,45 @@ class TestDenseFunctionalData(unittest.TestCase):
         expected_output = {'input_dim_0': 5}
         result = self.func_data.shape
         self.assertDictEqual(result, expected_output)
+
+    def test_is_compatible(self):
+        self.assertTrue(self.func_data.is_compatible(self.func_data))
+
+    def test_non_compatible_type(self):
+        with self.assertRaises(TypeError):
+            self.func_data.is_compatible(self.irreg_data)
+
+    def test_non_compatible_nobs(self):
+        argvals = {'input_dim_0': np.array([1, 2, 3, 4, 5])}
+        values = np.array([[1, 2, 3, 4, 5]])
+        func_data = DenseFunctionalData(argvals, values)
+        with self.assertRaises(ValueError):
+            self.func_data.is_compatible(func_data)
+
+    def test_non_compatible_ndim(self):
+            argvals = {
+                'input_dim_0': np.array([1, 2, 3, 4]),
+                'input_dim_1': np.array([5, 6, 7])
+            }
+            values = np.array([
+                [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]],
+                [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]],
+                [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]]
+            ])
+            func_data = DenseFunctionalData(argvals, values)
+            with self.assertRaises(ValueError):
+                self.func_data.is_compatible(func_data)
+
+    def test_non_compatible_argvals_equality(self):
+        argvals = {'input_dim_0': np.array([1, 2, 3, 4, 6])}
+        values = np.array([
+            [1, 2, 3, 4, 5],
+            [6, 7, 8, 9, 10],
+            [11, 12, 13, 14, 15]
+        ])
+        func_data = DenseFunctionalData(argvals, values)
+        with self.assertRaises(ValueError):
+            self.func_data.is_compatible(func_data)
 
     def test_inner_product(self):
         result = self.func_data.inner_product()

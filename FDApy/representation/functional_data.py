@@ -634,12 +634,14 @@ class DenseFunctionalData(FunctionalData):
         Returns
         -------
         True
-            If the objects are compatible.
+            If the objects are compatible, otherwise an error is raised before
+            the return statement.
 
         """
         super().is_compatible(fdata)
         DenseFunctionalData._check_argvals_equality(
-            self.argvals, fdata.argvals)
+            self.argvals, fdata.argvals
+        )
         return True
 
     def to_basis(
