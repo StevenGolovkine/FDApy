@@ -59,6 +59,32 @@ class TestIrregularFunctionalData(unittest.TestCase):
             self.values[1]
         )
 
+    def test_argvals_getter(self):
+        argvals = self.fdata.argvals
+        self.assertEqual(argvals, self.argvals)
+
+    def test_argvals_setter(self):
+        new_argvals = {
+            'input_dim_0': {
+                0: np.array([5, 6, 7, 8, 9]),
+                1: np.array([6, 8, 10]),
+                2: np.array([6, 8]),
+            }
+        }
+        self.fdata.argvals = new_argvals
+        self.assertEqual(self.fdata._argvals, new_argvals)
+
+        expected_argvals_stand = {
+            'input_dim_0': {
+                0: np.array([0, 0.2, 0.4, 0.6, 0.8]),
+                1: np.array([0.2, 0.6, 1]),
+                2: np.array([0.2, 0.6]),
+            }
+        }
+        print(self.fdata._argvals_stand)
+        print(expected_argvals_stand)
+        #self.assertEqual(self.fdata._argvals_stand, expected_argvals_stand)
+
 
 class TestIrregularFunctionalData1D(unittest.TestCase):
     """Test class for the class IrregularFunctionalData in one dimension."""

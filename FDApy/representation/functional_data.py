@@ -1268,6 +1268,7 @@ class IrregularFunctionalData(FunctionalData):
         IrregularFunctionalData._check_argvals_length(new_argvals)
         self._argvals = new_argvals
         points = self.gather_points()
+        
         argvals_stand: IrregArgvals = {}
         for dim, obss in new_argvals.items():
             max_x, min_x = np.max(points[dim]), np.min(points[dim])
