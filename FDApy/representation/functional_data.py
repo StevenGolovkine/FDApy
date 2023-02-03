@@ -482,7 +482,7 @@ class DenseFunctionalData(FunctionalData):
 
         Returns
         -------
-        data: DenseFunctionalData object
+        DenseFunctionalData
             The selected observation(s) as DenseFunctionalData object.
 
         """
@@ -921,17 +921,17 @@ class DenseFunctionalData(FunctionalData):
                 'The data dimension is not correct.'
             )
 
-        in_mat = np.zeros((n_obs, n_obs))
+        inner_mat = np.zeros((n_obs, n_obs))
         for (i, j) in itertools.product(np.arange(n_obs), repeat=2):
             if i <= j:
-                in_mat[i, j] = inner_func(
+                inner_mat[i, j] = inner_func(
                     self.values[i],
                     self.values[j],
                     **params
                 )
-        in_mat = in_mat + in_mat.T
-        np.fill_diagonal(in_mat, np.diag(in_mat) / 2)
-        return in_mat
+        inner_mat = inner_mat + inner_mat.T
+        np.fill_diagonal(inner_mat, np.diag(inner_mat) / 2)
+        return inner_mat
 
     def smooth(
         self,
@@ -1236,7 +1236,7 @@ class IrregularFunctionalData(FunctionalData):
 
         Returns
         -------
-        data: IrregularFunctionalData object
+        IrregularFunctionalData
             The selected observation(s) as IrregularFunctionalData object.
 
         """

@@ -4,8 +4,60 @@
 import numpy as np
 import unittest
 
-from FDApy.representation.functional_data import (DenseFunctionalData,
-                                                  IrregularFunctionalData)
+from FDApy.representation.functional_data import (
+    FunctionalData,
+    DenseFunctionalData,
+    IrregularFunctionalData
+)
+
+
+class TestIrregularFunctionalData(unittest.TestCase):
+    def setUp(self):
+        self.argvals = {
+            'input_dim_0': {
+                0: np.array([0, 1, 2, 3, 4]),
+                1: np.array([0, 2, 4]),
+                2: np.array([2, 4]),
+            }
+        }
+        self.values = {
+            0: np.array([1, 2, 3, 4, 5]),
+            1: np.array([2, 5, 6]),
+            2: np.array([4, 7]),
+        }
+        self.fdata = IrregularFunctionalData(self.argvals, self.values)
+
+    def test_get_item_slice(self):
+        fdata = self.fdata[1:3]
+        self.assertIsInstance(fdata, IrregularFunctionalData)
+        self.assertEqual(fdata.n_obs, 2)
+        self.assertEqual(fdata.n_dim, 1)
+        np.testing.assert_equal(
+            fdata.argvals['input_dim_0'][1],
+            self.argvals['input_dim_0'][1]
+        )
+        np.testing.assert_equal(
+            fdata.argvals['input_dim_0'][2],
+            self.argvals['input_dim_0'][2]
+        )
+        np.testing.assert_equal(
+            fdata.values[1],
+            self.values[1]
+        )
+
+    def test_get_item_index(self):
+        fdata = self.fdata[1]
+        self.assertIsInstance(fdata, IrregularFunctionalData)
+        self.assertEqual(fdata.n_obs, 1)
+        self.assertEqual(fdata.n_dim, 1)
+        np.testing.assert_equal(
+            fdata.argvals['input_dim_0'][1],
+            self.argvals['input_dim_0'][1]
+        )
+        np.testing.assert_equal(
+            fdata.values[1],
+            self.values[1]
+        )
 
 
 class TestIrregularFunctionalData1D(unittest.TestCase):
