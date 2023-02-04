@@ -21,7 +21,7 @@ DOCLINES = (__doc__ or '').split('\n')
 
 setup(
     name='FDApy',
-    version='0.8.6',
+    version='0.8.7',
     python_requires='>= 3.9, <4',
     description=DOCLINES[1],
     long_description='\n'.join(DOCLINES[3:]),
