@@ -107,6 +107,18 @@ class TestIrregularFunctionalData(unittest.TestCase):
         self.fdata.values = new_values
         np.testing.assert_array_equal(self.fdata.values, new_values)
 
+    def test_range_obs(self):
+        expected_range = (1, 7)
+        self.assertEqual(self.fdata.range_obs, expected_range)
+
+    def test_n_points(self):
+        expected_n_points = {'input_dim_0': 10 / 3}
+        self.assertDictEqual(self.fdata.n_points, expected_n_points)
+
+    def test_range_dim(self):
+        expected_range_dim = {'input_dim_0': (0, 4)}
+        self.assertDictEqual(expected_range_dim, self.fdata.range_dim)
+
 
 class TestIrregularFunctionalData1D(unittest.TestCase):
     """Test class for the class IrregularFunctionalData in one dimension."""

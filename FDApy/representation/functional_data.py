@@ -1265,6 +1265,7 @@ class IrregularFunctionalData(FunctionalData):
         self,
         new_argvals: IrregArgvals
     ) -> None:
+        """Setter for argvals."""
         IrregularFunctionalData._check_argvals_length(new_argvals)
         self._argvals = new_argvals
         points = self.gather_points()
@@ -1281,12 +1282,29 @@ class IrregularFunctionalData(FunctionalData):
         self.argvals_stand = argvals_stand
 
     @property
+    def values(
+        self
+    ) -> IrregValues:
+        """Getter for values."""
+        return cast(IrregValues, self._values)
+
+    @values.setter
+    def values(
+        self,
+        new_values: IrregValues
+    ) -> None:
+        """Setter for values."""
+        if hasattr(self, 'argvals'):
+            self._check_argvals_values(self.argvals, new_values)
+        self._values = new_values
+
+    @property
     def range_obs(self) -> Tuple[float, float]:
         """Get the range of the observations of the object.
 
         Returns
         -------
-        min, max: tuple
+        tuple
             Tuple containing the mimimum and maximum values taken by all the
             observations for the object.
 
@@ -1300,7 +1318,7 @@ class IrregularFunctionalData(FunctionalData):
 
         Returns
         -------
-        n_points: dict
+        dict
             A dictionary with the same shape than argvals with the number of
             sampling points along each axis.
 
@@ -1316,17 +1334,21 @@ class IrregularFunctionalData(FunctionalData):
 
         Returns
         -------
-        ranges: dict
+        dict
             Dictionary containing the range of the argvals for each of the
             input dimension.
 
         """
-        ranges = {idx: list(argval.values())
-                  for idx, argval in self.argvals.items()}
-        return {idx: (
-            cast(int, min(map(min, dim))),
-            cast(int, max(map(max, dim)))
-        ) for idx, dim in ranges.items()}
+        ranges = {
+            idx: list(argval.values())
+            for idx, argval in self.argvals.items()
+        }
+        return {
+            idx: (
+                cast(int, min(map(min, dim))),
+                cast(int, max(map(max, dim)))
+            ) for idx, dim in ranges.items()
+        }
 
     @property
     def shape(self) -> Dict[str, int]:
