@@ -1362,7 +1362,9 @@ class IrregularFunctionalData(FunctionalData):
             :math:`0 \leq j \leq p`.
 
         """
-        return {idx: len(dim) for idx, dim in self.gather_points().items()}
+        return {
+            idx: len(dim) for idx, dim in self.gather_points().items()
+        }
 
     def gather_points(self) -> DenseArgvals:
         """Gather all the `argvals` for each of the dimensions separetely.

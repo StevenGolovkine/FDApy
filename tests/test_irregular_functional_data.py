@@ -119,6 +119,10 @@ class TestIrregularFunctionalData(unittest.TestCase):
         expected_range_dim = {'input_dim_0': (0, 4)}
         self.assertDictEqual(expected_range_dim, self.fdata.range_dim)
 
+    def test_shape(self):
+        expected_shape = {'input_dim_0': 5}
+        self.assertDictEqual(self.fdata.shape, expected_shape)
+
 
 class TestIrregularFunctionalData1D(unittest.TestCase):
     """Test class for the class IrregularFunctionalData in one dimension."""
