@@ -248,7 +248,7 @@ class FunctionalData(ABC):
 
         Returns
         -------
-        n_obs: int
+        int
             Number of observations within the functional data.
 
         """
@@ -266,7 +266,7 @@ class FunctionalData(ABC):
 
         Returns
         -------
-        n_dim: int
+        int
             Number of input dimension with the functional data.
 
         """
@@ -371,20 +371,20 @@ class DenseFunctionalData(FunctionalData):
 
     Examples
     --------
-    argvals = {
-        'input_dim_0': np.array([1, 2, 3, 4]),
-        'input_dim_1': np.array([5, 6, 7])
-    }
-    values = np.array(
-        [
-            [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]],
-            [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]],
-            [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]],
-            [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]],
-            [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]]
-        ]
-    )
-    DenseFunctionalData(argvals, values)
+    For 2-dimensional dense data:
+
+    >>> argvals = {
+    >>>     'input_dim_0': np.array([1, 2, 3, 4]),
+    >>>     'input_dim_1': np.array([5, 6, 7])
+    >>> }
+    >>> values = np.array(
+    >>>     [
+    >>>         [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]],
+    >>>         [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]],
+    >>>         [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]]
+    >>>     ]
+    >>> )
+    >>> DenseFunctionalData(argvals, values)
 
     """
 
@@ -1098,21 +1098,39 @@ class IrregularFunctionalData(FunctionalData):
 
     Examples
     --------
-    argvals = {
-        'input_dim_0': {
-            0: np.array([1, 2, 3, 4]),
-            1: np.array([2, 4])
-        },
-        'input_dim_1': {
-            0: np.array([5, 6, 7]),
-            1: np.array([1, 2, 3])
-        }
-    }
-    values = {
-        0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
-        1: np.array([[1, 2, 3], [1, 2, 3]])
-    }
-    IrregularFunctionalData(argvals, values)
+    For 1-dimensional irregular data:
+
+    >>> argvals = {
+    >>>     'input_dim_0': {
+    >>>         0: np.array([0, 1, 2, 3, 4]),
+    >>>         1: np.array([0, 2, 4]),
+    >>>         2: np.array([2, 4]),
+    >>>     }
+    >>> }
+    >>> values = {
+    >>>     0: np.array([1, 2, 3, 4, 5]),
+    >>>     1: np.array([2, 5, 6]),
+    >>>     2: np.array([4, 7]),
+    >>> }
+    >>> IrregularFunctionalData(argvals, values)
+
+    For 2-dimensional irregular data:
+
+    >>> argvals = {
+    >>>     'input_dim_0': {
+    >>>         0: np.array([1, 2, 3, 4]),
+    >>>         1: np.array([2, 4])
+    >>>     },
+    >>>     'input_dim_1': {
+    >>>         0: np.array([5, 6, 7]),
+    >>>         1: np.array([1, 2, 3])
+    >>>     }
+    >>> }
+    >>> values = {
+    >>>     0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
+    >>>     1: np.array([[1, 2, 3], [1, 2, 3]])
+    >>> }
+    >>> IrregularFunctionalData(argvals, values)
 
     """
 
@@ -1149,9 +1167,9 @@ class IrregularFunctionalData(FunctionalData):
 
         Parameters
         ----------
-        argv1 : IrregArgvals
+        argv1: IrregArgvals
             The first set of argument values.
-        argv2 : IrregArgvals
+        argv2: IrregArgvals
             The second set of argument values.
 
         Raises
@@ -1324,8 +1342,8 @@ class IrregularFunctionalData(FunctionalData):
 
         """
         n_points = {}
-        for i, points in self.argvals.items():
-            n_points[i] = np.mean([len(p) for p in points.values()])
+        for idx, points in self.argvals.items():
+            n_points[idx] = np.mean([len(p) for p in points.values()])
         return n_points
 
     @property
@@ -1356,7 +1374,7 @@ class IrregularFunctionalData(FunctionalData):
 
         Returns
         -------
-        shape: dict
+        dict
             Dictionary containing the number of points for each of the
             dimension. It corresponds to :math:`m_j` for
             :math:`0 \leq j \leq p`.
@@ -1371,13 +1389,15 @@ class IrregularFunctionalData(FunctionalData):
 
         Returns
         -------
-        argvals: dict
+        DenseArgvals
             Dictionary containing all the unique observations points for each
             of the input dimension.
 
         """
-        return {idx: np.unique(np.hstack(list(dim.values())))
-                for idx, dim in self.argvals.items()}
+        return {
+            idx: np.unique(np.hstack(list(dim.values())))
+            for idx, dim in self.argvals.items()
+        }
 
     def as_dense(self) -> DenseFunctionalData:
         """Convert `self` from Irregular to Dense functional data.
@@ -1394,28 +1414,33 @@ class IrregularFunctionalData(FunctionalData):
 
         Returns
         -------
-        obj: DenseFunctionalData
+        DenseFunctionalData
             An object of the class DenseFunctionalData
 
         """
         new_argvals = self.gather_points()
-        new_values = np.full((self.n_obs,) + tuple(self.shape.values()),
-                             np.nan)
+        new_values = np.full(
+            (self.n_obs,) + tuple(self.shape.values()), np.nan
+        )
 
         # Create the index definition domain for each of the observation
         index_obs = {}
         for obs in self.values.keys():
             index_obs_dim = []
             for dim in new_argvals.keys():
-                _, idx, _ = np.intersect1d(new_argvals[dim],
-                                           self.argvals[dim][obs],
-                                           return_indices=True)
+                _, idx, _ = np.intersect1d(
+                    new_argvals[dim],
+                    self.argvals[dim][obs],
+                    return_indices=True
+                )
                 index_obs_dim.append(idx)
             index_obs[obs] = index_obs_dim
 
         # Create mask arrays
-        mask_obs = {obs: np.full(tuple(self.shape.values()), False)
-                    for obs in self.values.keys()}
+        mask_obs = {
+            obs: np.full(tuple(self.shape.values()), False)
+            for obs in self.values.keys()
+        }
         for obs in self.values.keys():
             mask_obs[obs][tuple(np.meshgrid(*index_obs[obs]))] = True
 
@@ -1437,6 +1462,11 @@ class IrregularFunctionalData(FunctionalData):
         fdata : IrregularFunctionalData object
             The object to compare with `self`.
 
+        Raises
+        ------
+        ValueError
+            When the data are not compatible.
+
         Returns
         -------
         True
@@ -1445,14 +1475,22 @@ class IrregularFunctionalData(FunctionalData):
         """
         super().is_compatible(fdata)
         IrregularFunctionalData._check_argvals_equality(
-            self.argvals, fdata.argvals)
+            self.argvals, fdata.argvals
+        )
         return True
 
     def to_basis(
         self,
         basis: Basis
     ) -> None:
-        """Convert to basis"""
+        """Convert to basis
+        
+        Raises
+        ------
+        NotImplementedError
+            Currently not implemented.
+
+        """
         raise NotImplementedError()
 
     def mean(
@@ -1488,11 +1526,35 @@ class IrregularFunctionalData(FunctionalData):
         smooth: Optional[str] = None,
         **kwargs: Any
     ) -> FunctionalData:
-        """Compute an estimate of the covariance."""
-        pass
+        """Compute an estimate of the covariance.
+        
+        Raises
+        ------
+        NotImplementedError
+            Currently not implemented.
+
+        """
+        raise NotImplementedError()
 
     def inner_product(self) -> npt.NDArray:
-        return super().inner_product()
+        r"""Compute the inner product matrix of the data.
+
+        The inner product matrix is a ``n_obs`` by ``n_obs`` matrix where each
+        entry is defined as
+
+        .. math::
+            \langle x, y \rangle = \int_{\mathcal{T}} x(t)y(t)dt,
+            t \in \mathcal{T},
+
+        where :math:`\mathcal{T}` is a one- or multi-dimensional domain.
+
+        Raises
+        ------
+        NotImplementedError
+            Currently not implemented.
+
+        """
+        raise NotImplementedError()
 
     def smooth(
         self,

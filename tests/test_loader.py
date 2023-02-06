@@ -97,8 +97,6 @@ class TestReadCsv(unittest.TestCase):
     def test_read_csv_irregular(self):
         irregular_obj = read_csv('irregular_test.csv')
         self.assertIsInstance(irregular_obj, IrregularFunctionalData)
-        print(irregular_obj.argvals)
-        print(irregular_obj.values)
         np.testing.assert_array_equal(
             irregular_obj.argvals['input_dim_0'][0], np.array([0, 1])
         )

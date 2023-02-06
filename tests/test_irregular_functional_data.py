@@ -27,6 +27,16 @@ class TestIrregularFunctionalData(unittest.TestCase):
         }
         self.fdata = IrregularFunctionalData(self.argvals, self.values)
 
+        self.dense_argvals = {'input_dim_0': np.array([1, 2, 3, 4, 5])}
+        self.dense_values = np.array([
+            [1, 2, 3, 4, 5],
+            [6, 7, 8, 9, 10],
+            [11, 12, 13, 14, 15]
+        ])
+        self.dense_data = DenseFunctionalData(
+            self.dense_argvals, self.dense_values
+        )
+
     def test_get_item_slice(self):
         fdata = self.fdata[1:3]
         self.assertIsInstance(fdata, IrregularFunctionalData)
@@ -122,6 +132,91 @@ class TestIrregularFunctionalData(unittest.TestCase):
     def test_shape(self):
         expected_shape = {'input_dim_0': 5}
         self.assertDictEqual(self.fdata.shape, expected_shape)
+
+    def test_gather_points(self):
+        expected_points = {'input_dim_0': np.arange(5)}
+        np.testing.assert_array_equal(
+            self.fdata.gather_points()['input_dim_0'],
+            expected_points['input_dim_0']
+        )
+
+    def test_as_dense(self):
+        dense_fdata = self.fdata.as_dense()
+        expected_argvals = {'input_dim_0': np.arange(5)}
+        expected_values = np.array([
+            [1, 2, 3, 4, 5],
+            [2, np.nan, 5, np.nan, 6],
+            [np.nan, np.nan, 4, np.nan, 7]
+        ])
+        np.testing.assert_array_equal(
+            dense_fdata.argvals['input_dim_0'],
+            expected_argvals['input_dim_0']
+        )
+        np.testing.assert_array_equal(
+            dense_fdata.values,
+            expected_values
+        )
+
+    def test_is_compatible(self):
+        self.assertTrue(self.fdata.is_compatible(self.fdata))
+
+    def test_non_compatible_type(self):
+        with self.assertRaises(TypeError):
+            self.fdata.is_compatible(self.dense_data)
+
+    def test_non_compatible_nobs(self):
+        argvals = {
+            'input_dim_0': {
+                0: np.array([0, 1, 2, 3, 4]),
+                1: np.array([0, 2, 4]),
+            }
+        }
+        values = {
+            0: np.array([1, 2, 3, 4, 5]),
+            1: np.array([2, 5, 6]),
+        }
+        func_data = IrregularFunctionalData(argvals, values)
+        with self.assertRaises(ValueError):
+            self.fdata.is_compatible(func_data)
+
+    def test_non_compatible_ndim(self):
+        argvals = {
+            'input_dim_0': {
+                0: np.array([0, 1, 2, 3, 4]),
+                1: np.array([0, 2, 4]),
+                2: np.array([2, 4]),
+            },
+            'input_dim_1': {
+                0: np.array([5, 6, 7]),
+                1: np.array([1, 2, 3]),
+                2: np.array([1, 2])
+            }
+        }
+        values = {
+            0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4], [1, 2, 4]]),
+            1: np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]]),
+            2: np.array([[1, 2], [3, 4]])
+        }
+        func_data = IrregularFunctionalData(argvals, values)
+        with self.assertRaises(ValueError):
+            self.fdata.is_compatible(func_data)
+
+    def test_non_compatible_argvals_equality(self):
+        argvals = {
+            'input_dim_0': {
+                0: np.array([0, 1, 2, 3, 5]),
+                1: np.array([0, 2, 4]),
+                2: np.array([2, 4]),
+            }
+        }
+        values = {
+            0: np.array([1, 2, 3, 4, 5]),
+            1: np.array([2, 5, 6]),
+            2: np.array([4, 7]),
+        }
+        func_data = IrregularFunctionalData(argvals, values)
+        with self.assertRaises(ValueError):
+            self.fdata.is_compatible(func_data)
 
 
 class TestIrregularFunctionalData1D(unittest.TestCase):
