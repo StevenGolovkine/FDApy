@@ -163,7 +163,7 @@ class FunctionalData(ABC):
         self,
         obj: FunctionalData
     ) -> FunctionalData:
-        """Overrude mul function."""
+        """Override mul function."""
         return self._perform_computation(self, obj, np.multiply)
 
     def __rmul__(
@@ -178,14 +178,14 @@ class FunctionalData(ABC):
         obj: FunctionalData
     ) -> FunctionalData:
         """Override truediv function."""
-        return self._perform_computation(self, obj, np.divide)
+        return self._perform_computation(self, obj, np.true_divide)
 
     def __floordiv__(
         self,
         obj: FunctionalData
     ) -> FunctionalData:
         """Override floordiv function."""
-        return self / obj
+        return self._perform_computation(self, obj, np.floor_divide)
 
     @property
     def argvals(
@@ -361,29 +361,37 @@ class DenseFunctionalData(FunctionalData):
 
     Parameters
     ----------
-    argvals: dict
+    argvals: DenseArgvals
         The sampling points of the functional data. Each entry of the
-        dictionary represents an input dimension. The shape of the :math:`j`th
+        dictionary represents an input dimension. The shape of the :math:`j` th
         dimension is :math:`(m_j,)` for :math:`0 \leq j \leq p`.
-    values: np.ndarray
+    values: DenseValues
         The values of the functional data. The shape of the array is
         :math:`(n, m_1, \dots, m_p)`.
 
     Examples
     --------
+    For 1-dimensional dense data:
+
+    >>> argvals = {'input_dim_0': np.array([1, 2, 3, 4, 5])}
+    >>> values = np.array([
+    ...     [1, 2, 3, 4, 5],
+    ...     [6, 7, 8, 9, 10],
+    ...     [11, 12, 13, 14, 15]
+    ... ])
+    >>> DenseFunctionalData(argvals, values)
+
     For 2-dimensional dense data:
 
     >>> argvals = {
-    >>>     'input_dim_0': np.array([1, 2, 3, 4]),
-    >>>     'input_dim_1': np.array([5, 6, 7])
-    >>> }
-    >>> values = np.array(
-    >>>     [
-    >>>         [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]],
-    >>>         [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]],
-    >>>         [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]]
-    >>>     ]
-    >>> )
+    ...     'input_dim_0': np.array([1, 2, 3, 4]),
+    ...     'input_dim_1': np.array([5, 6, 7])
+    ... }
+    >>> values = np.array([
+    ...     [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]],
+    ...     [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]],
+    ...     [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]]
+    ... ])
     >>> DenseFunctionalData(argvals, values)
 
     """
@@ -397,9 +405,9 @@ class DenseFunctionalData(FunctionalData):
 
         Parameters
         ----------
-        argv1 : DenseArgvals
+        argv1: DenseArgvals
             The first set of argument values.
-        argv2 : DenseArgvals
+        argv2: DenseArgvals
             The second set of argument values.
 
         Raises
@@ -424,7 +432,7 @@ class DenseFunctionalData(FunctionalData):
         """Raise an error in case of dimension conflicts between the arguments.
 
         An error is raised when `argvals` (a dictionary) and `values`
-        (a np.ndarray) do not have coherent common dimensions. The first
+        (a numpy array) do not have coherent common dimensions. The first
         dimension of `values` is assumed to represented the number of
         observation.
 
