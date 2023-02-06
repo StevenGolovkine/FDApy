@@ -554,7 +554,7 @@ class DenseFunctionalData(FunctionalData):
 
         Returns
         -------
-        dict
+        Dict[str, int]
             A dictionary with the same shape than argvals with the number of
             sampling points along each axis.
 
@@ -571,7 +571,7 @@ class DenseFunctionalData(FunctionalData):
 
         Returns
         -------
-        dict
+        Dict[str, Tuple[int, int]]
             Dictionary containing the range of the argvals for each of the
             input dimension.
 
@@ -587,7 +587,7 @@ class DenseFunctionalData(FunctionalData):
 
         Returns
         -------
-        dict
+        Dict[str, int]
             Dictionary containing the number of points for each of the
             dimension. It corresponds to :math:`m_j` for
             :math:`0 \leq j \leq p`.
@@ -597,7 +597,7 @@ class DenseFunctionalData(FunctionalData):
         For DenseFunctionalData, this function is equivalent to n_points().
 
         """
-        return {idx: len(points) for idx, points in self.argvals.items()}
+        return self.n_points
 
     def as_irregular(self) -> IrregularFunctionalData:
         """Convert `self` from Dense to Irregular functional data.
@@ -607,8 +607,8 @@ class DenseFunctionalData(FunctionalData):
 
         Returns
         -------
-        obj: IrregularFunctionalData
-            An object of the class IrregularFunctionalData
+        IrregularFunctionalData
+            An object of the class IrregularFunctionalData.
 
         """
         new_argvals: IrregArgvals = dict.fromkeys(self.argvals.keys(), {})
@@ -618,7 +618,7 @@ class DenseFunctionalData(FunctionalData):
                 temp[idx] = self.argvals[dim]
             new_argvals[dim] = temp
 
-        new_values = {}
+        new_values: IrregValues = {}
         for idx in range(self.n_obs):
             new_values[idx] = self.values[idx]
 
