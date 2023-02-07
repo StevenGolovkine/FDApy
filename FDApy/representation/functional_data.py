@@ -512,7 +512,10 @@ class DenseFunctionalData(FunctionalData):
         new_argvals: DenseArgvals
     ) -> None:
         """Setter for argvals."""
-        self._argvals = new_argvals
+        super(DenseFunctionalData, self.__class__).argvals.fset(
+            self, new_argvals
+        )
+        #self._argvals = new_argvals
         argvals_stand = {}
         for dim, points in new_argvals.items():
             argvals_stand[dim] = _normalization(points)
@@ -523,7 +526,7 @@ class DenseFunctionalData(FunctionalData):
         self
     ) -> DenseValues:
         """Getter for values."""
-        return cast(DenseValues, self._values)
+        return cast(DenseValues, super().values)
 
     @values.setter
     def values(
@@ -533,7 +536,10 @@ class DenseFunctionalData(FunctionalData):
         """Setter for values."""
         if hasattr(self, 'argvals'):
             self._check_argvals_values(self.argvals, new_values)
-        self._values = new_values
+        super(DenseFunctionalData, self.__class__).values.fset(
+            self, new_values
+        )
+        #self._values = new_values
 
     @property
     def range_obs(self) -> Tuple[float, float]:
