@@ -329,7 +329,7 @@ class Brownian(Simulation):
         n_obs: int
             Number of observations to simulate.
         n_clusters: int
-            Not used. 
+            Not used.
         argvals: numpy.ndarray, default=None, shape=(n,)
             Values at which Brownian motions are evaluated. If ``None``, the
             functions are evaluated on the interval :math:`[0, 1]` with

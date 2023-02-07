@@ -667,6 +667,7 @@ class DenseFunctionalData(FunctionalData):
         Parameters
         ----------
         basis: Basis
+            Basis used to simulate the data.
 
         """
         xtx = np.linalg.inv(np.matmul(basis.values, basis.values.T))
@@ -1499,8 +1500,8 @@ class IrregularFunctionalData(FunctionalData):
         self,
         basis: Basis
     ) -> None:
-        """Convert to basis
-        
+        """Convert to basis.
+
         Raises
         ------
         NotImplementedError
@@ -1932,6 +1933,7 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
         >         [-19.7335636 ,  50.66329182, 151.2780517 ]
         >     ]
         > )
+
         """
         if not all([isinstance(data, DenseFunctionalData) for data in self]):
             raise TypeError(
