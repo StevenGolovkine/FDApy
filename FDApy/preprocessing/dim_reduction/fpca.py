@@ -403,10 +403,12 @@ class MFPCA():
     def __init__(
         self,
         n_components: List[Union[int, float, None]] = None,
+        method: str = 'covariance',
         normalize: bool = False
     ) -> None:
         """Initialize MFPCA object."""
         self.n_components = n_components
+        self.method = method
         self.normalize = normalize
 
     def fit(
@@ -414,32 +416,30 @@ class MFPCA():
         data: MultivariateFunctionalData,
         method: str = 'NumInt'
     ) -> None:
-        """Fit the model with X.
+        """Estimate the eigencomponents of the data.
 
         Parameters
         ----------
         data: MultivariateFunctionalData
-            Training data
+            Training data used to estimate the eigencomponents.
         method: str, {'PACE', 'NumInt'}, default='NumInt'
             Method for the estimation of the univariate scores.
 
         """
-        self._fit(data, method)
-
-    def _fit(
-        self,
-        data: MultivariateFunctionalData,
-        method: str = 'NumInt'
-    ) -> None:
-        """Dispatch to the right submethod depending on the input."""
-        # TODO: Different possiblity for n_components
-        if isinstance(data, MultivariateFunctionalData):
-            self._fit_multi(data, method)
+        if not isinstance(data, MultivariateFunctionalData):
+            raise TypeError(
+                'MFPCA only support MultivariateFunctionalData object!'
+            )
+        if self.method == 'covariance':
+            self._fit_covariance(data, method)
+        elif self.method == 'inner-product':
+            self._fit_inner_product(data)
         else:
-            raise TypeError('MFPCA only support MultivariateFunctionalData'
-                            ' object!')
+            raise NotImplementedError(
+                "f{self.method} method not implemented."
+            )
 
-    def _fit_multi(
+    def _fit_covariance(
         self,
         data: MultivariateFunctionalData,
         method: str = 'NumInt'
@@ -520,6 +520,62 @@ class MFPCA():
         self.eigenvalues = eigenvalues
         self.eigenvectors = eigenvectors
         self.basis = MultivariateFunctionalData(basis_multi)
+
+    def _fit_inner_product(
+        self,
+        data: MultivariateFunctionalData,
+        compute_covariance: bool = False
+    ) -> None:
+        """Multivariate Functional PCA using inner-product matrix decomposition.
+
+        Parameters
+        ----------
+        data: MultivariateFunctionalData
+            Training data used to estimate the eigencomponents.
+        compute_covariance: bool, default=False
+            Should we compute an estimate of the covariance of the data using
+            Mercer's theorem and the estimated eigenfunctions.
+
+        """
+        # Compute inner-product matrix
+        inner_mat = data.inner_product()
+
+        # Diagonalization of the inner-product matrix
+        eigenvalues, eigenvectors = np.linalg.eigh(inner_mat)
+
+        # Estimation of the number of components
+        eigenvalues = np.real(eigenvalues[::-1])
+        eigenvalues[eigenvalues < 0] = 0
+        n_components = _select_number_eigencomponents(
+           eigenvalues, self.n_components
+        )
+
+        # Estimation of the eigenvalues
+        eigenvalues = eigenvalues[:n_components]
+
+        # Estimation of the eigenfunctions
+        eigenvectors = np.real(np.fliplr(eigenvectors)[:, :n_components])
+        eigenfunctions = [
+            DenseFunctionalData(
+                data_uni.argvals,
+                np.transpose(
+                    np.matmul(
+                        data_uni.values.T, eigenvectors
+                    ) / np.sqrt(eigenvalues)
+                )
+            ) for data_uni in data
+        ]
+
+        self.eigenvalues = eigenvalues / data.n_obs
+        self.eigenfunctions = MultivariateFunctionalData(eigenfunctions)
+
+        # if compute_covariance:
+        #     argvals = data.argvals['input_dim_0']
+        #     covariance = _compute_covariance(eigenvalues, eigenfunctions)
+        #     self.covariance = DenseFunctionalData(
+        #         {'input_dim_0': argvals, 'input_dim_1': argvals},
+        #         covariance[np.newaxis]
+        #     )
 
     def transform(
         self,
