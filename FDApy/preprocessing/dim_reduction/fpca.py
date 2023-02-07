@@ -61,6 +61,7 @@ class UFPCA():
     covariance: DenseFunctionalData
         An estimation of the covariance of the training data based on the
         results of the functional principal components analysis.
+
     """
 
     def __init__(
@@ -226,10 +227,11 @@ class UFPCA():
 
     def _select_number_eigencomponents(self):
         """Select the number of eigencomponents.
-        
+
         Notes
         -----
         Put into utils?
+
         """
         pass
 

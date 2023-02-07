@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 # -*-coding:utf8 -*
 
-"""Karhunen-Loève decomposition
--------------------------------
+"""
+Karhunen-Loève decomposition
+----------------------------
+
+This module defines simulation based on the Karhunen-Loève decomposition.
 
 """
 import numpy as np
@@ -159,6 +162,8 @@ def _make_coef(
         The standard deviation of the clusters to generate. The
         ``n_features`` parameter corresponds to the number of functions within
         the basis.
+    rnorm: Callable, default=np.random.multivariate_normal
+        Method used to generate Gaussian coefficients.
 
     Returns
     -------

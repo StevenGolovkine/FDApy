@@ -662,7 +662,7 @@ class DenseFunctionalData(FunctionalData):
         self,
         basis: Basis
     ) -> None:
-        """Convert to basis
+        """Convert to basis.
 
         Parameters
         ----------
@@ -915,6 +915,7 @@ class DenseFunctionalData(FunctionalData):
         >         [-17.70996479,  51.40230074, 147.86839738]
         >     ]
         > )
+
         """
         # Get parameters
         n_obs = self.n_obs
@@ -1074,6 +1075,7 @@ class DenseFunctionalData(FunctionalData):
         Happ and Greven, Multivariate Functional Principal Component Analysis
         for Data Observed on Different (Dimensional Domains), Journal of the
         American Statistical Association.
+
         """
         if self.n_dim > 1:
             raise ValueError(
@@ -1301,7 +1303,7 @@ class IrregularFunctionalData(FunctionalData):
         IrregularFunctionalData._check_argvals_length(new_argvals)
         self._argvals = new_argvals
         points = self.gather_points()
-        
+
         argvals_stand: IrregArgvals = {}
         for dim, obss in new_argvals.items():
             max_x, min_x = np.max(points[dim]), np.min(points[dim])

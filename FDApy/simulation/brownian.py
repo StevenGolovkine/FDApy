@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 # -*-coding:utf8 -*
 
-"""Brownian motions
--------------------
+"""
+Brownian motions
+----------------
+
+This module defined the simulation of Brownian motions.
 
 """
 import numpy as np
@@ -312,6 +315,7 @@ class Brownian(Simulation):
     def new(
         self,
         n_obs: int,
+        n_clusters: int = 1,
         argvals: Optional[npt.NDArray] = None,
         **kwargs
     ) -> None:
@@ -324,6 +328,8 @@ class Brownian(Simulation):
         ----------
         n_obs: int
             Number of observations to simulate.
+        n_clusters: int
+            Not used. 
         argvals: numpy.ndarray, default=None, shape=(n,)
             Values at which Brownian motions are evaluated. If ``None``, the
             functions are evaluated on the interval :math:`[0, 1]` with

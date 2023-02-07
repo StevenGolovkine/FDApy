@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 # -*-coding:utf8 -*
 
-"""Simulation class
--------------------
+"""
+Simulation class
+----------------
+
+This module defines different simulation scenarios.
 
 """
 import numpy as np
@@ -190,6 +193,7 @@ class Simulation(ABC):
     def new(
         self,
         n_obs: int,
+        n_clusters: int = 1,
         argvals: Optional[np.ndarray] = None,
         **kwargs
     ) -> None:
