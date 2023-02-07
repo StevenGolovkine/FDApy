@@ -700,7 +700,7 @@ class DenseFunctionalData(FunctionalData):
 
         Returns
         -------
-        obj: DenseFunctionalData object
+        DenseFunctionalData object
             An estimate of the mean as a DenseFunctionalData object with the
             same argvals as `self` and one observation.
 
@@ -751,7 +751,7 @@ class DenseFunctionalData(FunctionalData):
 
         Returns
         -------
-        obj: DenseFunctionalData object
+        DenseFunctionalData object
             An estimate of the covariance as a two-dimensional
             DenseFunctionalData object with same argvals as `self`.
 
@@ -856,66 +856,66 @@ class DenseFunctionalData(FunctionalData):
 
         Returns
         -------
-        np.array, shape=(n_obs, n_obs)
+        npt.NDArray, shape=(n_obs, n_obs)
             Inner product matrix of the data.
 
         Examples
         --------
-        # For one-dimensional functional data
-        argvals = {'input_dim_0': np.array([0., 0.25, 0.5 , 0.75])}
-        values = np.array(
-            [
-                [ 2.48466259, -3.38397716, -1.2367073 , -1.85052901],
-                [ 1.44853118,  0.67716255,  1.79711043,  4.76950236],
-                [-5.13173463,  0.35830122,  0.56648942, -0.20965252]
-            ]
-        )
-        data = DenseFunctionalData(argvals, values)
-        data.inner_product()
-        > array(
-        >     [
-        >         [ 4.44493731, -1.78187445, -2.02359881],
-        >         [-1.78187445,  4.02783817, -0.73900893],
-        >         [-2.02359881, -0.73900893,  3.40965432]
-        >     ]
-        > )
+        For one-dimensional functional data:
 
-        # For two-dimensional functional data
-        argvals = {
-            'input_dim_0': np.array([0.  , 0.25, 0.5 , 0.75]),
-            'input_dim_1': np.array([0.  , 0.25, 0.5 , 0.75])
-        }
-        values = np.array(
+        >>> argvals = {'input_dim_0': np.array([0., 0.25, 0.5 , 0.75])}
+        >>> values = np.array(
+        ...     [
+        ...         [ 2.48466259, -3.38397716, -1.2367073 , -1.85052901],
+        ...         [ 1.44853118,  0.67716255,  1.79711043,  4.76950236],
+        ...         [-5.13173463,  0.35830122,  0.56648942, -0.20965252]
+        ...     ]
+        ... )
+        >>> data = DenseFunctionalData(argvals, values)
+        >>> data.inner_product()
+        array(
             [
-                [
-                    [  6.30864764, -18.37912204,   6.15515232,  29.8027036 ],
-                    [ -6.076622  , -15.48586803, -11.39997792,   8.40599319],
-                    [-20.4094798 ,  -1.3872093 ,  -0.59922597,  -6.42013363],
-                    [  5.78626375,  -1.83874696,  -0.87225549,   2.75000303]
-                ],
-                [
-                    [ -4.83576968,  18.85512513, -18.73086523,  15.1511348 ],
-                    [-24.41254888,  12.37333951,  28.85176939,  16.41806885],
-                    [-10.02681278,  14.76500118,   1.83114017,  -2.78985647],
-                    [  4.29268032,   8.1781319 ,  30.10132687,  -0.72828334]
-                ],
-                [
-                    [ -5.85921132,   1.85573561,  -5.11291405, -12.89441767],
-                    [ -4.79384081,  -0.93863074,  18.81909033,   4.55041973],
-                    [-13.27810529,  28.08961819, -13.79482673,  35.25677906],
-                    [  9.10058173, -16.43979436, -11.88561292,  -5.86481318]
-                ]
+                [ 4.44493731, -1.78187445, -2.02359881],
+                [-1.78187445,  4.02783817, -0.73900893],
+                [-2.02359881, -0.73900893,  3.40965432]
             ]
         )
-        data = DenseFunctionalData(argvals, values)
-        data.inner_product()
-        > array(
-        >     [
-        >         [ 67.93133466, -26.76503879, -17.70996479],
-        >         [-26.76503879, 162.59040715,  51.40230074],
-        >         [-17.70996479,  51.40230074, 147.86839738]
-        >     ]
-        > )
+
+        For two-dimensional functional data:
+
+        >>> argvals = {
+        ...     'input_dim_0': np.array([0.  , 0.25, 0.5 , 0.75]),
+        ...     'input_dim_1': np.array([0.  , 0.25, 0.5 , 0.75])
+        ... }
+        >>> values = np.array([
+        ...     [
+        ...         [  6.30864764, -18.37912204,   6.15515232,  29.8027036 ],
+        ...         [ -6.076622  , -15.48586803, -11.39997792,   8.40599319],
+        ...         [-20.4094798 ,  -1.3872093 ,  -0.59922597,  -6.42013363],
+        ...         [  5.78626375,  -1.83874696,  -0.87225549,   2.75000303]
+        ...     ],
+        ...     [
+        ...         [ -4.83576968,  18.85512513, -18.73086523,  15.1511348 ],
+        ...         [-24.41254888,  12.37333951,  28.85176939,  16.41806885],
+        ...         [-10.02681278,  14.76500118,   1.83114017,  -2.78985647],
+        ...         [  4.29268032,   8.1781319 ,  30.10132687,  -0.72828334]
+        ...     ],
+        ...     [
+        ...         [ -5.85921132,   1.85573561,  -5.11291405, -12.89441767],
+        ...         [ -4.79384081,  -0.93863074,  18.81909033,   4.55041973],
+        ...         [-13.27810529,  28.08961819, -13.79482673,  35.25677906],
+        ...         [  9.10058173, -16.43979436, -11.88561292,  -5.86481318]
+        ...     ]
+        ... ])
+        >>> data = DenseFunctionalData(argvals, values)
+        >>> data.inner_product()
+        array(
+            [
+                [ 67.93133466, -26.76503879, -17.70996479],
+                [-26.76503879, 162.59040715,  51.40230074],
+                [-17.70996479,  51.40230074, 147.86839738]
+            ]
+        )
 
         """
         # Get parameters
@@ -979,7 +979,7 @@ class DenseFunctionalData(FunctionalData):
 
         Returns
         -------
-        obj: DenseFunctionalData
+        DenseFunctionalData
             A smoothed version of the data.
 
         Notes
@@ -1041,7 +1041,7 @@ class DenseFunctionalData(FunctionalData):
 
         Returns
         -------
-        res: DenseFunctionalData
+        DenseFunctionalData
             The concatenation of self and data.
 
         """
@@ -1063,7 +1063,7 @@ class DenseFunctionalData(FunctionalData):
 
         Returns
         -------
-        res: DenseFunctionalData
+        DenseFunctionalData
             The normalized data.
 
         Todo

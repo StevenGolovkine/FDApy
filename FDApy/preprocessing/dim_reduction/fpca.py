@@ -8,6 +8,7 @@ functional data. Univariate functional data and irregular functional data are
 concerned with UFPCA, whereas multivariate functional data with MFPCA.
 """
 import numpy as np
+import numpy.typing as npt
 import warnings
 
 from typing import Optional, List, Union
@@ -33,13 +34,12 @@ class UFPCA():
     Parameters
     ----------
     n_components: int, float, None, default=None
-        Number of components to keep.
-        If `n_components` is `None`, all components are kept::
-            n_components == min(n_samples, n_features)
-        If `n_components` is an integer, `n_components` are kept.
-        If `0 < n_components < 1`, select the number of components such that
-        the amount of variance that needs to be explained is greater than
-        the percentage specified by `n_components`.
+        Number of components to keep. If `n_components` is `None`, all
+        components are kept, ``n_components == min(n_samples, n_features)``.
+        If `n_components` is an integer, `n_components` are kept. If
+        `0 < n_components < 1`, select the number of components such that the
+        amount of variance that needs to be explained is greater than the
+        percentage specified by `n_components`.
     method: str, {'covariance', 'inner-product'}, default='covariance'
         Method used to estimate the eigencomponents. If
         ``method == 'covariance'``, the estimation is based on an
@@ -51,7 +51,7 @@ class UFPCA():
 
     Attributes
     ----------
-    eigenvalues: array, shape = (n_components,)
+    eigenvalues: npt.NDArray[np.float64], shape=(n_components,)
         The singular values corresponding to each of selected components.
     eigenfunctions: DenseFunctionalData
         Principal axes in feature space, representing the directions of
@@ -225,21 +225,11 @@ class UFPCA():
         # estimation of the eigenfunctions
         pass
 
-    def _select_number_eigencomponents(self):
-        """Select the number of eigencomponents.
-
-        Notes
-        -----
-        Put into utils?
-
-        """
-        pass
-
     def transform(
         self,
         data: DenseFunctionalData,
         method: str = 'PACE'
-    ) -> np.ndarray:
+    ) -> npt.NDArray[np.float64]:
         """Apply dimensionality reduction to data.
 
         The functional principal components scores are given by:
@@ -260,7 +250,7 @@ class UFPCA():
 
         Returns
         -------
-        scores: np.ndarrray, shape=(n_obs, n_components)
+        npt.NDArray[np.float64], shape=(n_obs, n_components)
             An array representing the projection of the data onto the basis of
             functions defined by the eigenfunctions.
 

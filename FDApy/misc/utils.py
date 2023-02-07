@@ -30,7 +30,7 @@ def _normalization(
 
     Parameters
     ----------
-    x: np.ndarray, shape=(n_obs,)
+    x: npt.NDArray[np.float64], shape=(n_obs,)
         Vector of data
     max_x: float, default=None
         Maximum value
@@ -39,13 +39,13 @@ def _normalization(
 
     Returns
     -------
-    np.array, shape = (n_obs,)
+    npt.NDArray[np.float64], shape=(n_obs,)
         Vector of standardized data.
 
     Example
     -------
-    _normalization(np.array([0, 5, 10]))
-    > array([0., 0.5, 1.])
+    >>> _normalization(np.array([0, 5, 10]))
+    array([0., 0.5, 1.])
 
     """
     if (np.isnan(max_x)) and (np.isnan(min_x)):
@@ -69,18 +69,18 @@ def _standardization(
 
     Parameters
     ----------
-    x: np.ndarray, shape=(n_obs,)
+    x: npt.NDArray[np.float64], shape=(n_obs,)
         Vector of data
 
     Returns
     -------
-    np.ndarray, shape = (n_obs,)
+    npt.NDArray[np.float64], shape=(n_obs,)
         Vector of standardized data.
 
     Example
     -------
-    _standardization(np.array([0, 5, 10]))
-    > array([-1.22474487, 0., 1.22474487])
+    >>> _standardization(np.array([0, 5, 10]))
+    array([-1.22474487, 0., 1.22474487])
 
     """
     if np.std(x) == 0:
@@ -98,27 +98,27 @@ def _row_mean(
 
     Parameters
     ----------
-    x: np.ndarray, shape = (n_obs, n_features)
+    x: npt.NDArray[np.float64], shape=(n_obs, n_features)
         Matrix of data
 
     Returns
     -------
-    np.ndarray, shape = (n_features,)
+    npt.NDArray[np.float64], shape=(n_features,)
         Vector of means
 
     Example
     -------
-    _row_mean(
-        np.array(
-            [
-                [1., 2., 3.],
-                [1., 2., 3.],
-                [1., 2., 3.],
-                [1., 2., 3.]
-            ]
-        )
-    )
-    > array([1., 2., 3.])
+    >>> _row_mean(
+    ...     np.array(
+    ...         [
+    ...             [1., 2., 3.],
+    ...             [1., 2., 3.],
+    ...             [1., 2., 3.],
+    ...             [1., 2., 3.]
+    ...         ]
+    ...     )
+    ... )
+    array([1., 2., 3.])
 
     """
     return np.mean(x, axis=0)
@@ -133,27 +133,27 @@ def _row_var(
 
     Parameters
     ----------
-    x: np.ndarray, shape = (n_obs, n_features)
+    x: npt.NDArray[np.float64], shape=(n_obs, n_features)
         Matrix of data
 
     Returns
     -------
-    np.ndarray, shape = (n_features,)
+    npt.NDArray[np.float64], shape = (n_features,)
         Vector of variances
 
     Example
     -------
-    _row_var(
-        np.array(
-            [
-                [1., 2., 3.],
-                [1., 2., 3.],
-                [1., 2., 3.],
-                [1., 2., 3.]
-            ]
-        )
-    )
-    > array([0., 0., 0.])
+    >>> _row_var(
+    ...     np.array(
+    ...         [
+    ...             [1., 2., 3.],
+    ...             [1., 2., 3.],
+    ...             [1., 2., 3.],
+    ...             [1., 2., 3.]
+    ...         ]
+    ...     )
+    ... )
+    array([0., 0., 0.])
 
     """
     return x.var(axis=0)
@@ -168,27 +168,27 @@ def _col_mean(
 
     Parameters
     ----------
-    x: np.ndarray, shape = (n_obs, n_features)
+    x: npt.NDArray[np.float64], shape=(n_obs, n_features)
         Matrix of data
 
     Returns
     -------
-    np.ndarray, shape = (n_obs,)
+    npt.NDArray[np.float64], shape=(n_obs,)
         Vector of means
 
     Example
     -------
-    _col_mean(
-        np.array(
-            [
-                [1., 2., 3.],
-                [1., 2., 3.],
-                [1., 2., 3.],
-                [1., 2., 3.]
-            ]
-        )
-    )
-    > array([2., 2., 2., 2.])
+    >>> _col_mean(
+    ...     np.array(
+    ...         [
+    ...             [1., 2., 3.],
+    ...             [1., 2., 3.],
+    ...             [1., 2., 3.],
+    ...             [1., 2., 3.]
+    ...         ]
+    ...     )
+    ... )
+    array([2., 2., 2., 2.])
 
     """
     return x.mean(axis=1)
@@ -203,27 +203,27 @@ def _col_var(
 
     Parameters
     ----------
-    x: np.ndarray, shape = (n_obs, n_features)
+    x: npt.NDArray[np.float64], shape=(n_obs, n_features)
         Matrix of data
 
     Returns
     -------
-    np.ndarray, shape = (n_obs,)
+    npt.NDArray[np.float64], shape=(n_obs,)
         Vector of variances
 
     Example
     -------
-    _col_var(
-        np.array(
-            [
-                [1., 2., 3.],
-                [1., 2., 3.],
-                [1., 2., 3.],
-                [1., 2., 3.]
-            ]
-        )
-    )
-    > array([0.66666667, 0.66666667, 0.66666667, 0.66666667])
+    >>> _col_var(
+    ...     np.array(
+    ...         [
+    ...             [1., 2., 3.],
+    ...             [1., 2., 3.],
+    ...             [1., 2., 3.],
+    ...             [1., 2., 3.]
+    ...         ]
+    ...     )
+    ... )
+    array([0.66666667, 0.66666667, 0.66666667, 0.66666667])
 
     """
     return x.var(axis=1)
@@ -241,7 +241,7 @@ def _get_axis_dimension(
 
     Parameters
     ----------
-    x: np.ndarray[np.float64], shape=(n_obs, n_features)
+    x: npt.NDArray[np.float64], shape=(n_obs, n_features)
         Matrix of data
     axis: int, default=0
         Integer value that represents the axis along which the dimension of the
@@ -254,11 +254,11 @@ def _get_axis_dimension(
 
     Example
     -------
-    x = np.array([[1, 2], [4, 5], [7, 8]])
-    _get_axis_dimension(x, 0)
-    > 3
-    _get_axis_dimension(x, 1)
-    > 2
+    >>> x = np.array([[1, 2], [4, 5], [7, 8]])
+    >>> _get_axis_dimension(x, 0)
+    3
+    >>> _get_axis_dimension(x, 1)
+    2
 
     """
     return x.shape[axis]
@@ -271,22 +271,22 @@ def _get_dict_dimension(
 
     Parameters
     ----------
-    x: dict
+    x: Dict[str, npt.NDArray[np.float64]]
         Dictionary containing keys as string and values as numpy array.
 
     Returns
     -------
-    tuple
+    Tuple[int, ...]
         Tuple containing the shape of the arrays defined in the dictionary.
 
     Example
     -------
-    x = {
-        'a': np.array([1, 2, 3]),
-        'b': np.array([4, 5])
-    }
-    _get_dict_dimension(x)
-    > (3, 2)
+    >>> x = {
+    ...     'a': np.array([1, 2, 3]),
+    ...     'b': np.array([4, 5])
+    ... }
+    >>> _get_dict_dimension(x)
+    (3, 2)
 
     """
     return tuple(el.shape[0] for el in x.values())
@@ -300,7 +300,7 @@ def _get_obs_shape(
 
     Parameters
     ----------
-    x: dict
+    x: Dict[str, Dict[int, npt.NDArray[np.float64]]]
         Nested dictionary containing the data, where the first level of keys
         are strings and the second level of keys are integers representing the
         observation number.
@@ -309,19 +309,19 @@ def _get_obs_shape(
 
     Returns
     -------
-    tuple
+    Tuple[int, ...]
         Tuple containing the shape of the `obs`-th observation.
 
     Example
     -------
-    x = {
-        'a': {0: np.array([1, 2, 3]), 1: np.array([4, 5])},
-        'b': {0: np.array([1, 2]), 1: np.array([3, 4])}
-    }
-    _get_obs_shape(x, 0)
-    > (3, 2)
-    _get_obs_shape(x, 1)
-    > (2, 2)
+    >>> x = {
+    ...     'a': {0: np.array([1, 2, 3]), 1: np.array([4, 5])},
+    ...     'b': {0: np.array([1, 2]), 1: np.array([3, 4])}
+    ... }
+    >>> _get_obs_shape(x, 0)
+    (3, 2)
+    >>> _get_obs_shape(x, 1)
+    (2, 2)
 
     """
     shapes = tuple(el[obs].shape for el in x.values())
@@ -339,22 +339,22 @@ def _shift(
 
     Parameters
     ----------
-    x: np.ndarray, shape=(n_obs, n_features)
+    x: npt.NDArray[np.float64], shape=(n_obs, n_features)
         Matrix of data
     num: int, default=0
         The number of columns to shift.
-    fill_value: float or np.nan
+    fill_value: float, default=np.nan
         The value with one fill the array.
 
     Returns
     -------
-    np.ndarray, shape = (n_obs, n_features)
+    npt.NDArray[np.float64], shape=(n_obs, n_features)
         The shift array.
 
     Example
     -------
-    _shift(np.array([1, 2, 3, 4, 5]), num=2, fill_value=np.nan)
-    > array([nan, nan, 1., 2., 3.])
+    >>> _shift(np.array([1, 2, 3, 4, 5]), num=2, fill_value=np.nan)
+    array([nan, nan, 1., 2., 3.])
 
     References
     ----------
@@ -395,11 +395,11 @@ def _inner_product(
 
     Parameters
     ----------
-    x: np.ndarray
+    x: npt.NDArray[np.float64]
         First curve considered.
-    y: np.ndarray
+    y: npt.NDArray[np.float64]
         Second curve considered.
-    axis: np.ndarray, default=None
+    axis: Optional[npt.NDArray[np.float64]], default=None
         Domain of integration. If ``axis`` is ``None``, the domain is set to be
         a regular grid on :math:`[0, 1]` with ``len(x)`` number of points.
 
@@ -410,8 +410,8 @@ def _inner_product(
 
     Example
     -------
-    _inner_product(np.array([1, 2, 3]), np.array([4, 5, 6]))
-    > 10.5
+    >>> _inner_product(np.array([1, 2, 3]), np.array([4, 5, 6]))
+    10.5
 
     """
     if x.shape != y.shape:
@@ -441,15 +441,15 @@ def _inner_product_2d(
 
     Parameters
     ----------
-    x: np.ndarray
+    x: npt.NDArray[np.float64]
         First surface considered.
-    y: np.ndarray
+    y: npt.NDArray[np.float64]
         Second surface considered.
-    primary_axis: np.ndarray, default=None
+    primary_axis: Optional[npt.NDArray[np.float64]], default=None
         Domain of integration for the primary axis. If ``primary_axis`` is
         ``None``, the domain is set to be a regular grid on :math:`[0, 1]` with
         ``len(x)`` number of points.
-    secondary_axis: np.ndarray, default=None
+    secondary_axis: Optional[npt.NDArray[np.float64]], default=None
         Domain of integration for the secondary axis. If ``secondary_axis`` is
         ``None``, the domain is set to be a regular grid on :math:`[0, 1]` with
         ``len(x)`` number of points.
@@ -461,11 +461,11 @@ def _inner_product_2d(
 
     Example
     -------
-    _inner_product_2d(
-        np.array([[1, 2, 3], [4, 5, 6], [1, 2, 3]])
-        np.array([[4, 5, 6], [1, 2, 3], [4, 5, 6]])
-    )
-    > 10.5
+    >>> _inner_product_2d(
+    ...     np.array([[1, 2, 3], [4, 5, 6], [1, 2, 3]])
+    ...     np.array([[4, 5, 6], [1, 2, 3], [4, 5, 6]])
+    ... )
+    10.5
 
     """
     if x.shape != y.shape:
@@ -487,22 +487,22 @@ def _outer(
 
     Parameters
     ----------
-    x: np.ndarray, shape=(n_obs1,)
+    x: npt.NDArray[np.float64], shape=(n_obs1,)
         First input vector
-    y: np.ndarray, shape=(n_obs2,)
+    y: npt.NDArray[np.float64], shape=(n_obs2,)
         Second input vector
 
     Returns
     -------
-    np.ndarray, shape=(n_obs1, n_obs2)
+    npt.NDArray[np.float64], shape=(n_obs1, n_obs2)
         Tensor product between ``x`` and ``y``.
 
     Example
     -------
-    X = np.array([1, 2, 3])
-    Y = np.array([-1, 2])
-    _outer(X, Y)
-    > array([[-1, 2], [-2, 4], [-3, 6]])
+    >>> X = np.array([1, 2, 3])
+    >>> Y = np.array([-1, 2])
+    >>> _outer(X, Y)
+    array([[-1, 2], [-2, 4], [-3, 6]])
 
     """
     return np.outer(x, y)
@@ -520,11 +520,11 @@ def _integrate(
 
     Parameters
     ----------
-    x: np.ndarray, shape = (n_features,)
+    x: npt.NDArray[np.float64], shape=(n_features,)
         Domain for the integration, it has to be ordered.
-    y: np.ndarray, shape = (n_features,)
+    y: npt.NDArray[np.float64], shape=(n_features,)
         Observations
-    method : str, {'simpson', 'trapz'}, default = 'simpson'
+    method: str, {'simpson', 'trapz'}, default = 'simpson'
         The method used to integrated.
 
     Returns
@@ -559,22 +559,22 @@ def _integration_weights(
 
     Parameters
     ----------
-    x: np.ndarray, shape = (n_points,)
+    x: npt.NDArray[np.float64], shape=(n_points,)
         Domain on which compute the weights.
-    method: str or callable, default = 'trapz'
+    method: str or callable, default='trapz'
         The method to compute the weights.
 
     Returns
     -------
-    np.ndarray, shape = (n_points,)
-        The integration weights
+    npt.NDArray[np.float64], shape=(n_points,)
+        The integration weights.
 
     Example
     -------
-    _integration_weights(np.array([1, 2, 3, 4, 5]), method='trapz')
-    > array([0.5, 1., 1., 1., 0.5])
-    _integration_weights(np.array([1, 2, 3, 4, 5]), method='simpson')
-    > array([0.33333333, 1.33333333, 0.66666667, 1.33333333, 0.33333333])
+    >>> _integration_weights(np.array([1, 2, 3, 4, 5]), method='trapz')
+    array([0.5, 1., 1., 1., 0.5])
+    >>> _integration_weights(np.array([1, 2, 3, 4, 5]), method='simpson')
+    array([0.33333333, 1.33333333, 0.66666667, 1.33333333, 0.33333333])
 
     References
     ----------
@@ -608,3 +608,27 @@ def _integration_weights(
     else:
         raise NotImplementedError(f"{method} not implemented!")
     return weights  # type: ignore
+
+
+def _select_number_eigencomponents(
+    self,
+    eigenvalues: npt.NDArray[np.float64],
+    percentage: np.float = 0.95
+) -> int:
+    """Select the number of eigencomponents.
+
+    Parameters
+    ----------
+    eigenvalues: npt.NDArray[np.float64]
+        An estimation of the eigenvalues.
+    percentage: np.float, default=0.95
+        Percentage of variance explained.
+
+    Returns
+    -------
+    int
+        Number of eigenvalues to retain.
+
+    """
+    var_explained = np.cumsum(eigenvalues) / np.sum(eigenvalues)
+    return np.sum(var_explained < percentage) + 1
