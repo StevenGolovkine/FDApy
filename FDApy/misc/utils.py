@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import scipy
 
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Union
 
 
 #############################################################################
@@ -611,9 +611,8 @@ def _integration_weights(
 
 
 def _select_number_eigencomponents(
-    self,
     eigenvalues: npt.NDArray[np.float64],
-    percentage: np.float64 = 0.95
+    percentage: Optional[Union[np.float64, np.int64]] = None
 ) -> int:
     """Select the number of eigencomponents.
 
@@ -621,8 +620,13 @@ def _select_number_eigencomponents(
     ----------
     eigenvalues: npt.NDArray[np.float64]
         An estimation of the eigenvalues.
-    percentage: np.float, default=0.95
-        Percentage of variance explained.
+    percentage: Optional[Union[np.float64, np.int]], default=None
+        Number of components to keep. If `percentage` is `None`, all
+        components are kept, ``percentage == len(eigenvalues)``.
+        If `percentage` is an integer, `percentage` components are kept. If
+        `0 < percentage < 1`, select the number of components such that the
+        amount of variance that needs to be explained is greater than the
+        percentage specified by `percentage`.
 
     Returns
     -------
@@ -630,5 +634,41 @@ def _select_number_eigencomponents(
         Number of eigenvalues to retain.
 
     """
-    var_explained = np.cumsum(eigenvalues) / np.sum(eigenvalues)
-    return np.sum(var_explained < percentage) + 1
+    if isinstance(percentage, int):
+        return percentage
+    elif isinstance(percentage, float) and (percentage < 1):
+        var_explained = np.cumsum(eigenvalues) / np.sum(eigenvalues)
+        return np.sum(var_explained < percentage) + 1
+    elif percentage is None:
+        return len(eigenvalues)
+    else:
+        raise ValueError('The `percentage` parameter is not correct.')
+
+
+def _compute_covariance(
+    eigenvalues: npt.NDArray[np.float64],
+    eigenfunctions: npt.NDArray[np.float64]
+) -> npt.NDArray[np.float64]:
+    """Compute the covariance matrix using Mercer's theorem.
+
+    Parameters
+    ----------
+    eigenvalues: npt.NDArray[np.float64], shape=(n_components,)
+        The singular values corresponding to each of selected components.
+    eigenfunctions: npt.NDArray[np.float64], shape=(n_components, n_points)
+        An array representing the eigenfunctions.
+
+    Returns
+    -------
+    npt.NDArray[np.float64]
+        An estimation of the covariance using Mercer's theorem.
+
+    References
+    ----------
+    - Mercer, J. (1909), "Functions of positive and negative type and their
+    connection with the theory of integral equations", Philosophical
+    Transactions of the Royal Society A, 209 (441-458): 415-446.
+
+    """
+    temp = np.dot(np.transpose(eigenfunctions), np.diag(eigenvalues))
+    return np.dot(temp, eigenfunctions)

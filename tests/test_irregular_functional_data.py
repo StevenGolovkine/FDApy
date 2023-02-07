@@ -193,7 +193,9 @@ class TestIrregularFunctionalData(unittest.TestCase):
             }
         }
         values = {
-            0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4], [1, 2, 4]]),
+            0: np.array([
+                [1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4], [1, 2, 4]
+            ]),
             1: np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]]),
             2: np.array([[1, 2], [3, 4]])
         }

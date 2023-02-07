@@ -25,7 +25,8 @@ from FDApy.misc.utils import (
     _row_mean,
     _row_var,
     _shift,
-    _standardization
+    _standardization,
+    _select_number_eigencomponents
 )
 
 
@@ -396,7 +397,6 @@ class TestIntegrate(unittest.TestCase):
 
 
 class TestIntegrationWeights(unittest.TestCase):
-
     def test_trapz(self):
         x = np.array([1, 2, 3, 4, 5])
         expected_output = np.array([0.5, 1., 1., 1., 0.5])
@@ -434,3 +434,28 @@ class TestIntegrationWeights(unittest.TestCase):
             str(cm.exception), 'invalid_method not implemented!',
             "NotImplementedError should be raised for invalid method"
         )
+
+
+class TestSelectNumberComponents(unittest.TestCase):
+    def test_integer_input(self):
+        eigenvalues = np.array([0.1, 0.2, 0.3, 0.4])
+        num_eigen = 2
+        result = _select_number_eigencomponents(eigenvalues, num_eigen)
+        self.assertEqual(result, num_eigen)
+
+    def test_float_input(self):
+        eigenvalues = np.array([0.1, 0.2, 0.3, 0.4])
+        percent = 0.5
+        result = _select_number_eigencomponents(eigenvalues, percent)
+        self.assertEqual(result, 3)
+
+    def test_None_input(self):
+        eigenvalues = np.array([0.1, 0.2, 0.3, 0.4])
+        result = _select_number_eigencomponents(eigenvalues)
+        self.assertEqual(result, len(eigenvalues))
+
+    def test_unexpected_input(self):
+        eigenvalues = np.array([0.1, 0.2, 0.3, 0.4])
+        percent = 1.75
+        with self.assertRaises(ValueError):
+            _select_number_eigencomponents(eigenvalues, percent)

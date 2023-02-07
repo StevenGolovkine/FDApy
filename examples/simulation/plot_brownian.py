@@ -23,7 +23,7 @@ rng = 42
 n_obs = 10
 argvals = np.arange(0, 1.01, 0.01)
 
-# Set Brownian parameters 
+# Set Brownian parameters
 init_point = 1.0
 mu = 1.0
 sigma = 0.5
@@ -33,8 +33,8 @@ hurst = 0.8
 # Standard Brownian motion
 # ------------------------
 #
-# A standard Brownian motion is a stochastic process :math:`\{X_t\}_{t \geq 0}`.
-# The process has the following properties:
+# A standard Brownian motion is a stochastic process define as
+# :math:`\{X_t\}_{t \geq 0}`. The process has the following properties:
 #
 # * :math:`\{X_t\}_{t \geq 0}` is a Gaussian process.
 #

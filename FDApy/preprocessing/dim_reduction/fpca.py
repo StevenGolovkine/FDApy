@@ -16,7 +16,9 @@ from typing import Optional, List, Union
 from ...representation.functional_data import (
     DenseFunctionalData, MultivariateFunctionalData
 )
-from ...misc.utils import _integration_weights
+from ...misc.utils import (
+    _compute_covariance, _integration_weights, _select_number_eigencomponents
+)
 
 from .fcp_tpa import FCPTPA
 
@@ -55,7 +57,7 @@ class UFPCA():
         The singular values corresponding to each of selected components.
     eigenfunctions: DenseFunctionalData
         Principal axes in feature space, representing the directions of
-        maximum variances in the dataas a DenseFunctionalData.
+        maximum variances in the data as a DenseFunctionalData.
     mean: DenseFunctionalData
         An estimation of the mean of the training data
     covariance: DenseFunctionalData
@@ -79,6 +81,7 @@ class UFPCA():
     def fit(
         self,
         data: DenseFunctionalData,
+        compute_covariance: bool = False,
         **kwargs
     ) -> None:
         """Estimate the eigencomponents of the data.
@@ -87,6 +90,9 @@ class UFPCA():
         ----------
         data: DenseFunctionalData
             Training data used to estimate the eigencomponents.
+        compute_covariance: bool, default=False
+            Should we compute an estimate of the covariance of the data using
+            Mercer's theorem and the estimated eigenfunctions.
 
         Keyword Args
         ------------
@@ -113,9 +119,15 @@ class UFPCA():
         if not isinstance(data, DenseFunctionalData):
             raise TypeError('UFPCA only support DenseFunctionalData object!')
         if self.method == 'covariance':
-            self._fit_covariance(data)
+            self._fit_covariance(
+                data,
+                compute_covariance=compute_covariance
+            )
         elif self.method == 'inner-product':
-            self._fit_inner_product(data)
+            self._fit_inner_product(
+                data,
+                compute_covariance=compute_covariance
+            )
         else:
             raise NotImplementedError(
                 f"{self.method} method not implemented."
@@ -125,7 +137,8 @@ class UFPCA():
         self,
         data: DenseFunctionalData,
         mean: Optional[DenseFunctionalData] = None,
-        covariance: Optional[DenseFunctionalData] = None
+        covariance: Optional[DenseFunctionalData] = None,
+        compute_covariance: bool = False
     ) -> None:
         """Univariate Functional PCA.
 
@@ -137,15 +150,14 @@ class UFPCA():
             An estimation of the mean of the training data.
         covariance: DenseFunctionalData, default=None
             An estimation of the covariance of the training data.
+        compute_covariance: bool, default=False
+            Should we compute an estimate of the covariance of the data using
+            Mercer's theorem and the estimated eigenfunctions.
 
         References
         ----------
         * Ramsey and Silverman, Functional Data Analysis, 2005, chapter 8
         * https://raw.githubusercontent.com/refunders/refund/master/R/fpca.sc.R
-
-        Notes
-        -----
-        TODO : Add possibility to smooth the eigenfunctions.
 
         """
         if self.normalize:
@@ -177,36 +189,31 @@ class UFPCA():
         eigenvalues, eigenvectors = np.linalg.eigh(var)
         eigenvalues[eigenvalues < 0] = 0
         eigenvalues = eigenvalues[::-1]
-        if isinstance(self.n_components, int):
-            npc = self.n_components
-        elif isinstance(self.n_components, float) and (self.n_components < 1):
-            exp_variance = np.cumsum(eigenvalues) / np.sum(eigenvalues)
-            npc = np.sum(exp_variance < self.n_components) + 1
-        elif self.n_components is None:
-            npc = len(eigenvalues)
-        else:
-            raise ValueError('Wrong n_components')
+
+        npc = _select_number_eigencomponents(eigenvalues, self.n_components)
 
         # Slice eigenvalues and compute eigenfunctions = W^{-1/2}U
         eigenvalues = eigenvalues[:npc]
         eigenfunctions = np.transpose(
             np.dot(weight_invsqrt, np.fliplr(eigenvectors)[:, :npc])
         )
-        # Compute estimation of the covariance
-        temp = np.dot(np.transpose(eigenfunctions), np.diag(eigenvalues))
-        cov = np.dot(temp, eigenfunctions)
 
         # Save the results
-        new_argvals = {'input_dim_0': argvals}
-        new_argvals_2 = {'input_dim_0': argvals, 'input_dim_1': argvals}
         self.eigenvalues = eigenvalues
-        self.eigenfunctions = DenseFunctionalData(new_argvals, eigenfunctions)
-        self.mean = mean
-        self.covariance = DenseFunctionalData(new_argvals_2, cov[np.newaxis])
+        self.eigenfunctions = DenseFunctionalData(data.argvals, eigenfunctions)
+
+        # Compute estimation of the covariance
+        if compute_covariance:
+            covariance = _compute_covariance(eigenvalues, eigenfunctions)
+            self.covariance = DenseFunctionalData(
+                {'input_dim_0': argvals, 'input_dim_1': argvals},
+                covariance[np.newaxis]
+            )
 
     def _fit_inner_product(
         self,
-        data: DenseFunctionalData
+        data: DenseFunctionalData,
+        compute_covariance: bool = False
     ) -> None:
         """Univariate Functional PCA using inner-product matrix decomposition.
 
@@ -214,16 +221,45 @@ class UFPCA():
         ----------
         data: DenseFunctionalData
             Training data used to estimate the eigencomponents.
+        compute_covariance: bool, default=False
+            Should we compute an estimate of the covariance of the data using
+            Mercer's theorem and the estimated eigenfunctions.
 
         """
         # Compute inner-product matrix
+        inner_mat = data.inner_product()
 
         # Diagonalization of the inner-product matrix
+        eigenvalues, eigenvectors = np.linalg.eigh(inner_mat)
+
+        # Estimation of the number of components
+        eigenvalues = np.real(eigenvalues[::-1])
+        eigenvalues[eigenvalues < 0] = 0
+        n_components = _select_number_eigencomponents(
+           eigenvalues, self.n_components
+        )
 
         # Estimation of the eigenvalues
+        eigenvalues = eigenvalues[:n_components]
 
-        # estimation of the eigenfunctions
-        pass
+        # Estimation of the eigenfunctions
+        eigenvectors = np.real(np.fliplr(eigenvectors)[:, :n_components])
+        eigenfunctions = (
+           np.matmul(data.values.T, eigenvectors) / np.sqrt(eigenvalues)
+        )
+
+        self.eigenvalues = eigenvalues / data.n_obs
+        self.eigenfunctions = DenseFunctionalData(
+           data.argvals, eigenfunctions.T
+        )
+
+        if compute_covariance:
+            argvals = data.argvals['input_dim_0']
+            covariance = _compute_covariance(eigenvalues, eigenfunctions)
+            self.covariance = DenseFunctionalData(
+                {'input_dim_0': argvals, 'input_dim_1': argvals},
+                covariance[np.newaxis]
+            )
 
     def transform(
         self,

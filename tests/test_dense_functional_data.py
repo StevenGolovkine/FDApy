@@ -100,7 +100,7 @@ class TestDenseFunctionalData(unittest.TestCase):
             1: np.array([6, 7, 8, 9, 10]),
             2: np.array([11, 12, 13, 14, 15])
         }
-        
+
         self.assertIsInstance(irreg_data, IrregularFunctionalData)
         np.testing.assert_array_equal(
             irreg_data.argvals['input_dim_0'][0],
@@ -143,18 +143,18 @@ class TestDenseFunctionalData(unittest.TestCase):
             self.func_data.is_compatible(func_data)
 
     def test_non_compatible_ndim(self):
-            argvals = {
-                'input_dim_0': np.array([1, 2, 3, 4]),
-                'input_dim_1': np.array([5, 6, 7])
-            }
-            values = np.array([
-                [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]],
-                [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]],
-                [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]]
-            ])
-            func_data = DenseFunctionalData(argvals, values)
-            with self.assertRaises(ValueError):
-                self.func_data.is_compatible(func_data)
+        argvals = {
+            'input_dim_0': np.array([1, 2, 3, 4]),
+            'input_dim_1': np.array([5, 6, 7])
+        }
+        values = np.array([
+            [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]],
+            [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]],
+            [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]]
+        ])
+        func_data = DenseFunctionalData(argvals, values)
+        with self.assertRaises(ValueError):
+            self.func_data.is_compatible(func_data)
 
     def test_non_compatible_argvals_equality(self):
         argvals = {'input_dim_0': np.array([1, 2, 3, 4, 6])}
