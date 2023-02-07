@@ -613,7 +613,7 @@ def _integration_weights(
 def _select_number_eigencomponents(
     self,
     eigenvalues: npt.NDArray[np.float64],
-    percentage: np.float = 0.95
+    percentage: np.float64 = 0.95
 ) -> int:
     """Select the number of eigencomponents.
 
