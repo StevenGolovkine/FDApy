@@ -100,6 +100,7 @@ sphinx_gallery_conf = {
 }
 
 autosummary_generate = True
+autodoc_member_order = 'bysource'
 
 autodoc_default_options = {
     'show-inheritance': True

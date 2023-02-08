@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*-coding:utf8 -*
 
-"""Module for UFPCA and MFPCA classes.
+"""
+Functional Principal Components Analysis
+----------------------------------------
 
 This module is used to compute UFPCA and MFPCA eigencomponents on the provided
 functional data. Univariate functional data and irregular functional data are
@@ -9,7 +11,6 @@ concerned with UFPCA, whereas multivariate functional data with MFPCA.
 """
 import numpy as np
 import numpy.typing as npt
-import warnings
 
 from typing import Optional, List, Union
 
@@ -17,7 +18,8 @@ from ...representation.functional_data import (
     DenseFunctionalData, MultivariateFunctionalData
 )
 from ...misc.utils import (
-    _compute_covariance, _integration_weights, _select_number_eigencomponents
+    _compute_covariance, _integrate, _integration_weights,
+    _select_number_eigencomponents
 )
 
 from .fcp_tpa import FCPTPA
@@ -251,6 +253,7 @@ class UFPCA():
            np.matmul(data.values.T, eigenvectors) / np.sqrt(eigenvalues)
         )
 
+        self.eigenvectors = eigenvectors
         self.eigenvalues = eigenvalues / data.n_obs
         self.eigenfunctions = DenseFunctionalData(
            data.argvals, eigenfunctions.T
@@ -269,25 +272,44 @@ class UFPCA():
     def transform(
         self,
         data: DenseFunctionalData,
-        method: str = 'PACE'
+        method: str = 'NumInt',
+        **kwargs
     ) -> npt.NDArray[np.float64]:
-        """Apply dimensionality reduction to data.
+        r"""Apply dimensionality reduction to data.
 
-        The functional principal components scores are given by:
-            c_ik = int (X_i(t) - mu(t))phi_k(t)dt
+        The functional principal components scores are defined as the
+        projection of the observation :math:`X_i` on the eigenfunction
+        :math:`\phi_k`. These scores are given by:
 
-        Two methods are proposed to estimate these scores:
-            * Numerical integration, works well in case of large density of
-            the grid of measurements of each individuals.
-            * PACE: Principal Components through Conditional Expectation,
-            particularly suitable for sparse functional data.
+        .. math::
+            c_{ik} = \int_{\mathcal{T}} \{X_i(t) - \mu(t)\}\phi_k(t)dt.
+
+        This integrale can be estimated using two ways. First, if data are
+        sampled on a common fine grid, the estimation is done using
+        numerical integration. Second, the PACE (Principal Components through
+        Conditional Expectation) algorithm [1]_ is used for sparse functional
+        data. If the eigenfunctions have been estimated using the inner-product
+        matrix, the scores can also be estimated using the formula
+
+        .. math::
+            c_{ik} = \sqrt{l_k}v_{ik},
+
+        where :math:`l_k` and :math:`v_{k}` are the eigenvalues and
+        eigenvectors of the inner-product matrix.
 
         Parameters
         ----------
-        data: UnivariateFunctionalData object
+        data: DenseFunctionalData object
             Data
-        method: 'PACE' or 'NumInt'
+        method: str, {'PACE', 'NumInt', '}
             Which method we should use for the estimation of the scores?
+
+        Keyword Args
+        ------------
+        tol: np.float64, default=1e-4
+            Tolerance parameter to prevent overflow to inverse a matrix.
+        int_method: str, {'trapz', 'simpson'}, default='trapz'
+            Method used to perform numerical integration.
 
         Returns
         -------
@@ -297,11 +319,14 @@ class UFPCA():
 
         References
         ----------
-        Yao, Müller and Wang (2005), Functional Data Analysis for Sparse
-        Longitudinal Data, Journal of the American Statistical Association,
-        Vol. 100, No. 470
+        .. [1] Yao, Müller and Wang (2005), Functional Data Analysis for Sparse Longitudinal Data, Journal of the American Statistical Association, Vol. 100, No. 470.
 
         """
+        parameters = {
+            'tol': kwargs.get('tol', 1e-4),
+            'int_method': kwargs.get('int_method', 'trapz')
+        }
+
         # TODO: Add checkers
         if self.normalize:
             values = data.values / self.weights
@@ -310,24 +335,70 @@ class UFPCA():
         data_unmean = data.values - self.mean.values
 
         if method == 'PACE':
-            warnings.warn((
-                "The implementation of PACE is not sure, prefer to use "
-                "`method=NumInt`."
-            ))
-            sigma_inv = np.linalg.inv(
-                self.covariance.values[0] + data.var_noise * np.diagflat(
-                    np.ones(shape=self.covariance.values[0].shape[0]))
-            )
-            scores = self.eigenvalues * np.dot(
-                np.dot(data_unmean, sigma_inv), self.eigenfunctions.values.T)
+            return self._pace(data, parameters['tol'])
         elif method == 'NumInt':
-            prod = [traj * self.eigenfunctions.values for traj in data_unmean]
-            # TODO: Modify to add other numrical integration methods
-            scores = np.trapz(prod, data.argvals['input_dim_0'])
+            return self._numerical_integration(data, parameters['int_method'])
         else:
             raise ValueError('Method not implemented!')
 
-        return scores
+    def _pace(
+        self,
+        data: DenseFunctionalData,
+        tol: np.float64 = 1e-4
+    ) -> npt.NDArray[np.float64]:
+        """Estimate scores using PACE algorithm.
+
+        Parameters
+        ----------
+        data: DenseFunctionalData
+            Data
+        tol: np.float64, default=1e-4
+            Tolerance parameter to prevent overflow to inverse a matrix.
+
+        Returns
+        -------
+        npt.NDArray[np.float64], shape=(n_obs, n_components)
+            An array representing the projection of the data onto the basis of
+            functions defined by the eigenfunctions.
+
+        References
+        ----------
+        [1] Yao, Müller and Wang (2005), Functional Data Analysis for Sparse Longitudinal Data, Journal of the American Statistical Association, Vol. 100, No. 470.
+
+        """
+        noise = max(tol, data.var_noise)
+        noise_mat = noise * np.eye(self.covariance.values[0].shape[0])
+        sigma_inv = np.linalg.pinv(self.covariance.values[0] + noise_mat)
+        return self.eigenvalues * np.linalg.multi_dot(
+            [data.values, sigma_inv, self.eigenfunctions.values.T]
+        )
+
+    def _numerical_integration(
+        self,
+        data: DenseFunctionalData,
+        method: str = "trapz"
+    ) -> npt.NDArray[np.float64]:
+        """Estimate scores using numerical integration.
+
+        Parameters
+        ----------
+        data: DenseFunctionalData
+            Data
+        int_method: str, {'trapz', 'simpson'}, default='trapz'
+            Method used to perform numerical integration.
+
+        Returns
+        -------
+        npt.NDArray[np.float64], shape=(n_obs, n_components)
+            An array representing the projection of the data onto the basis of
+            functions defined by the eigenfunctions.
+
+        """
+        return _integrate(
+            x=data.argvals['input_dim_0'],
+            y=[traj * self.eigenfunctions.values for traj in data.values],
+            method=method
+        )
 
     def inverse_transform(
         self,
