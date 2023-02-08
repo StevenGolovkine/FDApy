@@ -332,12 +332,13 @@ class UFPCA():
             values = data.values / self.weights
             data = DenseFunctionalData(data.argvals, values)
 
-        data_unmean = data.values - self.mean.values
-
+        #data_unmean = data.values - self.mean.values
         if method == 'PACE':
             return self._pace(data, parameters['tol'])
         elif method == 'NumInt':
             return self._numerical_integration(data, parameters['int_method'])
+        elif method == 'InnPro':
+            return np.sqrt(self.eigenvalues) * self.eigenvectors
         else:
             raise ValueError('Method not implemented!')
 
