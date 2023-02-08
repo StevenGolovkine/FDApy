@@ -152,7 +152,7 @@ class UFPCA():
             An estimation of the covariance of the training data.
         compute_covariance: bool, default=False
             Should we compute an estimate of the covariance of the data using
-            Mercer's theorem and the estimated eigenfunctions.
+            Mercer's theorem and the estimated eigenfunctions?
 
         References
         ----------
@@ -203,8 +203,11 @@ class UFPCA():
         self.eigenfunctions = DenseFunctionalData(data.argvals, eigenfunctions)
 
         # Compute estimation of the covariance
+        self.mean = mean
         if compute_covariance:
-            covariance = _compute_covariance(eigenvalues, eigenfunctions)
+            covariance = _compute_covariance(
+                eigenvalues, eigenfunctions
+            )
             self.covariance = DenseFunctionalData(
                 {'input_dim_0': argvals, 'input_dim_1': argvals},
                 covariance[np.newaxis]
@@ -223,7 +226,7 @@ class UFPCA():
             Training data used to estimate the eigencomponents.
         compute_covariance: bool, default=False
             Should we compute an estimate of the covariance of the data using
-            Mercer's theorem and the estimated eigenfunctions.
+            Mercer's theorem and the estimated eigenfunctions?
 
         """
         # Compute inner-product matrix
@@ -255,7 +258,9 @@ class UFPCA():
 
         if compute_covariance:
             argvals = data.argvals['input_dim_0']
-            covariance = _compute_covariance(eigenvalues, eigenfunctions)
+            covariance = _compute_covariance(
+                eigenvalues / data.n_obs, eigenfunctions.T
+            )
             self.covariance = DenseFunctionalData(
                 {'input_dim_0': argvals, 'input_dim_1': argvals},
                 covariance[np.newaxis]
@@ -465,7 +470,7 @@ class MFPCA():
         for function, n in zip(data, self.n_components):
             if function.n_dim == 1:
                 ufpca = UFPCA(n_components=n, normalize=self.normalize)
-                ufpca.fit(data=function, method='GAM')
+                ufpca.fit(data=function)
                 scores_uni = ufpca.transform(data=function, method='NumInt')
             elif function.n_dim == 2:
                 n_points = function.n_points
@@ -526,7 +531,7 @@ class MFPCA():
         data: MultivariateFunctionalData,
         compute_covariance: bool = False
     ) -> None:
-        """Multivariate Functional PCA using inner-product matrix decomposition.
+        """Multivariate FPCA using inner-product matrix decomposition.
 
         Parameters
         ----------
