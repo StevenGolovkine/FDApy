@@ -55,19 +55,18 @@ class UFPCA():
 
     Attributes
     ----------
+    mean: DenseFunctionalData
+        An estimation of the mean of the training data.
+    covariance: DenseFunctionalData
+        An estimation of the covariance of the training data based on their
+        eigendecomposition using the Mercer's theorem.
     eigenvalues: npt.NDArray[np.float64], shape=(n_components,)
         The singular values corresponding to each of selected components.
     eigenfunctions: DenseFunctionalData
         Principal axes in feature space, representing the directions of
         maximum variances in the data as a DenseFunctionalData.
-    mean: DenseFunctionalData
-        An estimation of the mean of the training data
-    covariance: DenseFunctionalData
-        An estimation of the covariance of the training data based on the
-        results of the functional principal components analysis.
 
     """
-
     def __init__(
         self,
         n_components: Union[int, float, None] = None,
@@ -87,6 +86,8 @@ class UFPCA():
         **kwargs
     ) -> None:
         """Estimate the eigencomponents of the data.
+
+        Before estimating the eigencomponents, the data is centered. 
 
         Parameters
         ----------
@@ -118,16 +119,25 @@ class UFPCA():
             'n_basis': kwargs.get('n_basis', 10)
         }
 
+        # Checkers
         if not isinstance(data, DenseFunctionalData):
             raise TypeError('UFPCA only support DenseFunctionalData object!')
+
+        # Center the data
+        data_mean = data.mean()
+        data_new = DenseFunctionalData(
+            data.argvals, data.values - data_mean.values
+        )
+
+        self.mean = data_mean
         if self.method == 'covariance':
             self._fit_covariance(
-                data,
+                data_new,
                 compute_covariance=compute_covariance
             )
         elif self.method == 'inner-product':
             self._fit_inner_product(
-                data,
+                data_new,
                 compute_covariance=compute_covariance
             )
         else:
@@ -327,18 +337,25 @@ class UFPCA():
             'int_method': kwargs.get('int_method', 'trapz')
         }
 
+        # Center the data using the estimated mean in the fitting step.
+        data_new = DenseFunctionalData(
+            data.argvals, data.values - self.mean.values
+        )
+
         # TODO: Add checkers
         if self.normalize:
             values = data.values / self.weights
             data = DenseFunctionalData(data.argvals, values)
 
-        #data_unmean = data.values - self.mean.values
         if method == 'PACE':
-            return self._pace(data, parameters['tol'])
+            return self._pace(data_new, parameters['tol'])
         elif method == 'NumInt':
-            return self._numerical_integration(data, parameters['int_method'])
+            return self._numerical_integration(
+                data_new, parameters['int_method']
+            )
         elif method == 'InnPro':
-            return np.sqrt(data.n_obs * self.eigenvalues) * self.eigenvectors
+            temp = np.sqrt(data.n_obs * self.eigenvalues)
+            return temp * self.eigenvectors
         else:
             raise ValueError('Method not implemented!')
 
@@ -435,11 +452,11 @@ class UFPCA():
             values = np.einsum(
                 'ij,jkl->ikl',
                 scores,
-                self.eigenfunctions.values
+                self.eigenfunctions.values + self.mean.values
             )
         else:
             raise ValueError("The dimension of the data have to be 1 or 2.")
-        return DenseFunctionalData(argvals, values)
+        return DenseFunctionalData(argvals, values + self.mean.values)
 
 
 #############################################################################
