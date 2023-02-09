@@ -403,28 +403,43 @@ class UFPCA():
 
     def inverse_transform(
         self,
-        scores: np.ndarray
+        scores: npt.NDArray[np.float64]
     ) -> DenseFunctionalData:
-        """Transform the data back to its original space.
+        r"""Transform the data back to its original space.
 
-        Return a DenseFunctionalData data_original whose transform would
-        be `scores`.
+        Given a set of scores :math:`c_{ik}`, we reconstruct the observations
+        using a truncation of the Karhunen-Loève expansion,
+
+        .. math::
+            X_{i}(t) = \mu(t) + \sum_{k = 1}^K c_{ik}\phi_k(t).
+
+        Data can be multidimensional. 
 
         Parameters
         ----------
-        scores: np.ndarray, shape=(n_obs, n_components)
-            New data, where n_obs is the number of observations and
-            n_components is the number of components.
+        scores: npt.NDArray[np.float64], shape=(n_obs, n_components)
+            New data, where `n_obs` is the number of observations and
+            `n_components` is the number of components.
 
         Returns
         -------
-        data_original: DenseFunctionalData object
-            The transformation of the scores into the original space.
+        DenseFunctionalData
+            A DenseFunctionalData object representing the transformation of the
+            scores into the original curve space.
 
         """
         argvals = self.eigenfunctions.argvals
-        values = np.dot(scores, self.eigenfunctions.values)
-        return DenseFunctionalData(argvals, values + self.mean.values)
+        if self.eigenfunctions.n_dim == 1:
+            values = np.dot(scores, self.eigenfunctions.values)
+        elif self.eigenfunctions.n_dim == 2:
+            values = np.einsum(
+                'ij,jkl->ikl',
+                scores,
+                self.eigenfunctions.values
+            )
+        else:
+            raise ValueError("The dimension of the data have to be 1 or 2.")
+        return DenseFunctionalData(argvals, values)
 
 
 #############################################################################

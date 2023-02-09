@@ -13,6 +13,7 @@ from numpy import AxisError
 from FDApy.misc.utils import (
     _col_mean,
     _col_var,
+    _compute_covariance,
     _get_axis_dimension,
     _get_dict_dimension,
     _get_obs_shape,
@@ -459,3 +460,34 @@ class TestSelectNumberComponents(unittest.TestCase):
         percent = 1.75
         with self.assertRaises(ValueError):
             _select_number_eigencomponents(eigenvalues, percent)
+
+
+class TestComputeCovariance(unittest.TestCase):
+    def test_compute_covariance(self):
+        eigenvalues = np.array([1, 2, 3], dtype=np.float64)
+        eigenfunctions = np.array(
+            [
+                [1, 2, 3],
+                [2, 3, 4],
+                [3, 4, 5]
+            ], dtype=np.float64
+        )
+
+        expected_covariance = np.array(
+            [
+                [ 36.,  50.,  64.],
+                [ 50.,  70.,  90.],
+                [ 64.,  90., 116.]
+            ], dtype=np.float64
+        )
+
+        result = _compute_covariance(eigenvalues, eigenfunctions)
+        np.testing.assert_array_equal(result, expected_covariance)
+
+    def test_input_shape_mismatch(self):
+        eigenvalues = np.array([1, 2, 3], dtype=np.float64)
+        eigenfunctions = np.array(
+            [[1, 2, 3], [2, 3, 4]], dtype=np.float64
+        )
+        with self.assertRaises(ValueError):
+            _compute_covariance(eigenvalues, eigenfunctions)

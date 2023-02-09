@@ -1966,19 +1966,19 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
 def _concatenate(
     data: List[FunctionalData]
 ) -> FunctionalData:
-    """Concatenate functional data.
+    """Concatenate multiple functional data.
 
-    Compute multiple DenseFunctionalData into one. It works with higher
+    Concateate multiple DenseFunctionalData into one. It works with higher
     dimension for the input data.
 
     Parameters
     ----------
     data: DenseFunctionalData
-        DenseFunctionalData to concatenate.
+        A list of DenseFunctionalData to concatenate.
 
     Returns
     -------
-    data: DenseFunctionalData
+    DenseFunctionalData
         The concatenation of the input data.
 
     Notes
