@@ -338,7 +338,7 @@ class UFPCA():
         elif method == 'NumInt':
             return self._numerical_integration(data, parameters['int_method'])
         elif method == 'InnPro':
-            return np.sqrt(self.eigenvalues) * self.eigenvectors
+            return np.sqrt(data.n_obs * self.eigenvalues) * self.eigenvectors
         else:
             raise ValueError('Method not implemented!')
 
