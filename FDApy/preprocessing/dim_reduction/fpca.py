@@ -13,10 +13,10 @@ import numpy as np
 import numpy.typing as npt
 import warnings
 
-from typing import Optional, List, Union
+from typing import Optional, List, Tuple, Union
 
 from ...representation.functional_data import (
-    DenseFunctionalData, MultivariateFunctionalData
+    FunctionalData, DenseFunctionalData, MultivariateFunctionalData
 )
 from ...misc.utils import (
     _compute_covariance, _integrate, _integration_weights,
@@ -219,24 +219,27 @@ class UFPCA():
             Training data used to estimate the eigencomponents.
 
         """
-        # Compute inner-product matrix
-        inner_mat = data.inner_product()
+        # # Compute inner-product matrix
+        # inner_mat = data.inner_product()
 
-        # Diagonalization of the inner-product matrix
-        eigenvalues, eigenvectors = np.linalg.eigh(inner_mat)
+        # # Diagonalization of the inner-product matrix
+        # eigenvalues, eigenvectors = np.linalg.eigh(inner_mat)
 
-        # Estimation of the number of components
-        eigenvalues = np.real(eigenvalues[::-1])
-        eigenvalues[eigenvalues < 0] = 0
-        n_components = _select_number_eigencomponents(
-           eigenvalues, self.n_components
+        # # Estimation of the number of components
+        # eigenvalues = np.real(eigenvalues[::-1])
+        # eigenvalues[eigenvalues < 0] = 0
+        # n_components = _select_number_eigencomponents(
+        #    eigenvalues, self.n_components
+        # )
+
+        # # Estimation of the eigenvalues
+        # eigenvalues = eigenvalues[:n_components]
+
+        # # Estimation of the eigenfunctions
+        # eigenvectors = np.real(np.fliplr(eigenvectors)[:, :n_components])
+        eigenvalues, eigenvectors = _compute_inner_product(
+            data, self.n_components
         )
-
-        # Estimation of the eigenvalues
-        eigenvalues = eigenvalues[:n_components]
-
-        # Estimation of the eigenfunctions
-        eigenvectors = np.real(np.fliplr(eigenvectors)[:, :n_components])
         eigenfunctions = (
            np.matmul(data.values.T, eigenvectors) / np.sqrt(eigenvalues)
         )
@@ -636,8 +639,7 @@ class MFPCA():
 
     def _fit_inner_product(
         self,
-        data: MultivariateFunctionalData,
-        compute_covariance: bool = False
+        data: MultivariateFunctionalData
     ) -> None:
         """Multivariate FPCA using inner-product matrix decomposition.
 
@@ -645,29 +647,30 @@ class MFPCA():
         ----------
         data: MultivariateFunctionalData
             Training data used to estimate the eigencomponents.
-        compute_covariance: bool, default=False
-            Should we compute an estimate of the covariance of the data using
-            Mercer's theorem and the estimated eigenfunctions.
 
         """
-        # Compute inner-product matrix
-        inner_mat = data.inner_product()
+        # # Compute inner-product matrix
+        # inner_mat = data.inner_product()
 
-        # Diagonalization of the inner-product matrix
-        eigenvalues, eigenvectors = np.linalg.eigh(inner_mat)
+        # # Diagonalization of the inner-product matrix
+        # eigenvalues, eigenvectors = np.linalg.eigh(inner_mat)
 
-        # Estimation of the number of components
-        eigenvalues = np.real(eigenvalues[::-1])
-        eigenvalues[eigenvalues < 0] = 0
-        n_components = _select_number_eigencomponents(
-           eigenvalues, self.n_components
+        # # Estimation of the number of components
+        # eigenvalues = np.real(eigenvalues[::-1])
+        # eigenvalues[eigenvalues < 0] = 0
+        # n_components = _select_number_eigencomponents(
+        #    eigenvalues, self.n_components
+        # )
+
+        # # Estimation of the eigenvalues
+        # eigenvalues = eigenvalues[:n_components]
+
+        # # Estimation of the eigenfunctions
+        # eigenvectors = np.real(np.fliplr(eigenvectors)[:, :n_components])
+        eigenvalues, eigenvectors = _compute_inner_product(
+            data,
+            self.n_components
         )
-
-        # Estimation of the eigenvalues
-        eigenvalues = eigenvalues[:n_components]
-
-        # Estimation of the eigenfunctions
-        eigenvectors = np.real(np.fliplr(eigenvectors)[:, :n_components])
         eigenfunctions = [
             DenseFunctionalData(
                 data_uni.argvals,
@@ -751,3 +754,49 @@ class MFPCA():
                 raise TypeError("Something went wrong with univariate "
                                 "decomposition.")
         return MultivariateFunctionalData(res)
+
+
+def _compute_inner_product(
+    data: FunctionalData,
+    n_components: Optional[Union[np.float64, np.int64]] = None
+) -> Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    """Compute the inner-product matrix and its eigendecomposition.
+
+    Parameters
+    ----------
+    data: FunctionalData
+        Observed data, an instance of DenseFunctionalData or
+        MultivariateFunctionalData.
+    n_components: int, float, None, default=None
+        Number of components to keep. If `n_components` is `None`, all
+        components are kept, ``n_components == min(n_samples, n_features)``.
+        If `n_components` is an integer, `n_components` are kept. If
+        `0 < n_components < 1`, select the number of components such that the
+        amount of variance that needs to be explained is greater than the
+        percentage specified by `n_components`.
+
+    Returns
+    -------
+    Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]
+        A tuple containing the eigenvalues and the eigenvectors of the inner
+        product matrix.
+
+    """
+    # Compute inner-product matrix
+    inner_mat = data.inner_product()
+
+    # Diagonalization of the inner-product matrix
+    eigenvalues, eigenvectors = np.linalg.eigh(inner_mat)
+
+    # Estimation of the number of components
+    eigenvalues = np.real(eigenvalues[::-1])
+    eigenvalues[eigenvalues < 0] = 0
+    npc = _select_number_eigencomponents(eigenvalues, n_components)
+
+    # Estimation of the eigenvalues
+    eigenvalues = eigenvalues[:npc]
+
+    # Estimation of the eigenfunctions
+    eigenvectors = np.real(np.fliplr(eigenvectors)[:, :npc])
+
+    return eigenvalues, eigenvectors
