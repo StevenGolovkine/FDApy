@@ -6,6 +6,7 @@ FDApy.sublime-workspace
 
 # Visual code project
 FDApy.code-workspace
+.vscode
 
 # Compiled python modules
 *.pyc
