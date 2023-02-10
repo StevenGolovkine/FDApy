@@ -102,6 +102,7 @@ class UFPCA():
         ----------
         .. [RS] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
             Analysis, Springer Science, Chapter 8.
+
         """
         # Checkers
         if not isinstance(data, DenseFunctionalData):
@@ -148,6 +149,7 @@ class UFPCA():
         ----------
         .. [RS] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
             Analysis, Springer Science, Chapter 8.
+
         """
         if self.normalize:
             data, weights = data.normalize(use_argvals_stand=True)
@@ -488,6 +490,7 @@ class MFPCA():
         maximum variances in the data as a MultivariateFunctionalData.
 
     """
+
     def __init__(
         self,
         method: str = 'covariance',
@@ -523,6 +526,7 @@ class MFPCA():
             Component Analysis for Data Observed on Different (Dimensional)
             Domains, Journal of the American Statistical Association, 113:522,
             649-659, DOI: 10.1080/01621459.2016.1273115
+
         """
         # Checkers
         if not isinstance(data, MultivariateFunctionalData):
@@ -748,7 +752,7 @@ class MFPCA():
         # TODO: Add checkers
         if self.normalize:
             values = data.values / self.weights
-            data = MultivariateFunctionalData(data.argvals, values)
+            #data = MultivariateFunctionalData(data.argvals, values)
 
         if method == 'NumInt':
             return self._numerical_integration(
@@ -779,7 +783,7 @@ class MFPCA():
         self,
         scores: npt.NDArray[np.float64]
     ) -> MultivariateFunctionalData:
-        """Transform the data back to its original space.
+        r"""Transform the data back to its original space.
 
         Given a set of scores :math:`c_{ik}`, we reconstruct the observations
         using a truncation of the Karhunen-Loève expansion,
