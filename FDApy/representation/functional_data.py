@@ -780,9 +780,11 @@ class DenseFunctionalData(FunctionalData):
 
         p = self.n_points['input_dim_0']
         argvals = self.argvals['input_dim_0']
+
         if mean is None:
             mean = self.mean(smooth)
         data = self.values - mean.values
+
         cov = np.dot(data.T, data) / (self.n_obs - 1)
         cov_diag = np.copy(np.diag(cov))
 

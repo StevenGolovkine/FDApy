@@ -11,6 +11,7 @@ concerned with UFPCA, whereas multivariate functional data with MFPCA.
 """
 import numpy as np
 import numpy.typing as npt
+import warnings
 
 from typing import Optional, List, Union
 
@@ -82,20 +83,16 @@ class UFPCA():
     def fit(
         self,
         data: DenseFunctionalData,
-        compute_covariance: bool = False,
         **kwargs
     ) -> None:
         """Estimate the eigencomponents of the data.
 
-        Before estimating the eigencomponents, the data is centered. 
+        Before estimating the eigencomponents, the data is centered.
 
         Parameters
         ----------
         data: DenseFunctionalData
             Training data used to estimate the eigencomponents.
-        compute_covariance: bool, default=False
-            Should we compute an estimate of the covariance of the data using
-            Mercer's theorem and the estimated eigenfunctions.
 
         Keyword Args
         ------------
@@ -129,17 +126,18 @@ class UFPCA():
             data.argvals, data.values - data_mean.values
         )
 
+        # Estimate eigencomponents
         self.mean = data_mean
         if self.method == 'covariance':
-            self._fit_covariance(
-                data_new,
-                compute_covariance=compute_covariance
-            )
+            if data_new.n_dim == 1:
+                self._fit_covariance(data_new)
+            else:
+                raise ValueError((
+                    "Estimation of the eigencomponents is not implemented "
+                    f"for {data_new.n_dim}-dimensional data."
+                ))
         elif self.method == 'inner-product':
-            self._fit_inner_product(
-                data_new,
-                compute_covariance=compute_covariance
-            )
+            self._fit_inner_product(data_new)
         else:
             raise NotImplementedError(
                 f"{self.method} method not implemented."
@@ -148,9 +146,7 @@ class UFPCA():
     def _fit_covariance(
         self,
         data: DenseFunctionalData,
-        mean: Optional[DenseFunctionalData] = None,
-        covariance: Optional[DenseFunctionalData] = None,
-        compute_covariance: bool = False
+        covariance: Optional[DenseFunctionalData] = None
     ) -> None:
         """Univariate Functional PCA.
 
@@ -158,13 +154,8 @@ class UFPCA():
         ----------
         data: DenseFunctionalData
             Training data
-        mean: DenseFunctionalData, default=None
-            An estimation of the mean of the training data.
         covariance: DenseFunctionalData, default=None
             An estimation of the covariance of the training data.
-        compute_covariance: bool, default=False
-            Should we compute an estimate of the covariance of the data using
-            Mercer's theorem and the estimated eigenfunctions?
 
         References
         ----------
@@ -175,16 +166,11 @@ class UFPCA():
         if self.normalize:
             data, weights = data.normalize(use_argvals_stand=True)
             self.weights = weights
-
         smoothing_method = self.smoothing_parameters['method']
-        if mean is None:
-            mean = data.mean(
-                smooth=smoothing_method,
-                **self.smoothing_parameters
-            )
+
         if covariance is None:
             covariance = data.covariance(
-                mean=mean,
+                mean=None,
                 smooth=smoothing_method,
                 **self.smoothing_parameters
             )
@@ -214,21 +200,16 @@ class UFPCA():
         self.eigenvalues = eigenvalues
         self.eigenfunctions = DenseFunctionalData(data.argvals, eigenfunctions)
 
-        # Compute estimation of the covariance
-        self.mean = mean
-        if compute_covariance:
-            covariance = _compute_covariance(
-                eigenvalues, eigenfunctions
-            )
-            self.covariance = DenseFunctionalData(
-                {'input_dim_0': argvals, 'input_dim_1': argvals},
-                covariance[np.newaxis]
-            )
+        # Compute an estimation of the covariance
+        covariance = _compute_covariance(eigenvalues, eigenfunctions)
+        self.covariance = DenseFunctionalData(
+            {'input_dim_0': argvals, 'input_dim_1': argvals},
+            covariance[np.newaxis]
+        )
 
     def _fit_inner_product(
         self,
-        data: DenseFunctionalData,
-        compute_covariance: bool = False
+        data: DenseFunctionalData
     ) -> None:
         """Univariate Functional PCA using inner-product matrix decomposition.
 
@@ -236,9 +217,6 @@ class UFPCA():
         ----------
         data: DenseFunctionalData
             Training data used to estimate the eigencomponents.
-        compute_covariance: bool, default=False
-            Should we compute an estimate of the covariance of the data using
-            Mercer's theorem and the estimated eigenfunctions?
 
         """
         # Compute inner-product matrix
@@ -269,7 +247,8 @@ class UFPCA():
            data.argvals, eigenfunctions.T
         )
 
-        if compute_covariance:
+        # Compute an estimation of the covariance
+        if data.n_dim == 1:
             argvals = data.argvals['input_dim_0']
             covariance = _compute_covariance(
                 eigenvalues / data.n_obs, eigenfunctions.T
@@ -278,6 +257,11 @@ class UFPCA():
                 {'input_dim_0': argvals, 'input_dim_1': argvals},
                 covariance[np.newaxis]
             )
+        else:
+            warnings.warn((
+                "The estimation of the covariance is not performed for "
+                f"{data.n_dim}-dimensional data."
+            ), UserWarning)
 
     def transform(
         self,
@@ -309,17 +293,25 @@ class UFPCA():
 
         Parameters
         ----------
-        data: DenseFunctionalData object
+        data: DenseFunctionalData
             Data
-        method: str, {'PACE', 'NumInt', '}
-            Which method we should use for the estimation of the scores?
+        method: str, {'NumInt', 'PACE', 'InnPro'}, default='NumInt'
+            Method used to estimate the scores. If ``method == 'NumInt'``,
+            numerical integration method is performed. If
+            ``method == 'PACE'``, the PACE algorithm [1]_ is used. If
+            ``method == 'InnPro'``, the estimation is performed using the
+            inner product matrix of the data (can also be used if the
+            eigencomponents have been estimated using the inner-product
+            matrix.)
 
         Keyword Args
         ------------
         tol: np.float64, default=1e-4
-            Tolerance parameter to prevent overflow to inverse a matrix.
+            Tolerance parameter to prevent overflow to inverse a matrix, only
+            used if ``method == 'PACE'``.
         int_method: str, {'trapz', 'simpson'}, default='trapz'
-            Method used to perform numerical integration.
+            Method used to perform numerical integration, only used if
+            ``method == 'NumInt'``.
 
         Returns
         -------
@@ -329,13 +321,23 @@ class UFPCA():
 
         References
         ----------
-        .. [1] Yao, Müller and Wang (2005), Functional Data Analysis for Sparse Longitudinal Data, Journal of the American Statistical Association, Vol. 100, No. 470.
+        .. [1] Yao, Müller and Wang (2005), Functional Data Analysis for Sparse
+            Longitudinal Data, Journal of the American Statistical Association,
+            Vol. 100, No. 470.
 
         """
+        # Get the keyword arguments
         parameters = {
             'tol': kwargs.get('tol', 1e-4),
             'int_method': kwargs.get('int_method', 'trapz')
         }
+
+        # Checkers
+        if method == 'InnPro' and not hasattr(self, 'eigenvectors'):
+            raise ValueError((
+                f"The method {method} can not be used as the eigencomponents "
+                "have not been estimated using the inner-product matrix."
+            ))
 
         # Center the data using the estimated mean in the fitting step.
         data_new = DenseFunctionalData(
@@ -381,7 +383,9 @@ class UFPCA():
 
         References
         ----------
-        [1] Yao, Müller and Wang (2005), Functional Data Analysis for Sparse Longitudinal Data, Journal of the American Statistical Association, Vol. 100, No. 470.
+        .. [1] Yao, Müller and Wang (2005), Functional Data Analysis for Sparse
+            Longitudinal Data, Journal of the American Statistical Association,
+            Vol. 100, No. 470.
 
         """
         noise = max(tol, data.var_noise)
@@ -430,7 +434,7 @@ class UFPCA():
         .. math::
             X_{i}(t) = \mu(t) + \sum_{k = 1}^K c_{ik}\phi_k(t).
 
-        Data can be multidimensional. 
+        Data can be multidimensional.
 
         Parameters
         ----------
