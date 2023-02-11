@@ -72,6 +72,7 @@ class UFPCA():
         maximum variance in the data.
 
     """
+
     def __init__(
         self,
         method: str = 'covariance',
@@ -750,9 +751,9 @@ class MFPCA():
         ])
 
         # TODO: Add checkers
-        if self.normalize:
-            values = data.values / self.weights
-            #data = MultivariateFunctionalData(data.argvals, values)
+        # if self.normalize:
+        #     values = data.values / self.weights
+        #     data = MultivariateFunctionalData(data.argvals, values)
 
         if method == 'NumInt':
             return self._numerical_integration(
@@ -772,12 +773,27 @@ class MFPCA():
         # return np.dot(scores_uni, self.eigenvectors)
 
     def _numerical_integration(
-        self
+        self,
+        data: DenseFunctionalData,
+        method: str = "trapz"
     ) -> npt.NDArray[np.float64]:
+        """Estimate scores using numerical integration.
+
+        Parameters
+        ----------
+        data: DenseFunctionalData
+            Data
+        method: str, {'trapz', 'simpson'}, default='trapz'
+            Method used to perform numerical integration.
+
+        Returns
+        -------
+        npt.NDArray[np.float64], shape=(n_obs, n_components)
+            An array representing the projection of the data onto the basis of
+            functions defined by the eigenfunctions.
+
         """
-        
-        """
-        pass
+        return np.array([0])
 
     def inverse_transform(
         self,
