@@ -155,13 +155,12 @@ class UFPCA():
         if self.normalize:
             data, weights = data.normalize(use_argvals_stand=True)
             self.weights = weights
-        smoothing_method = self.smoothing_parameters['method']
+        smoothing_method = None
 
         if covariance is None:
             covariance = data.covariance(
                 mean=None,
-                smooth=smoothing_method,
-                **self.smoothing_parameters
+                smooth=smoothing_method
             )
 
         # Choose the W_j's and the S_j's (Ramsey and Silverman, 2005)
