@@ -13,7 +13,7 @@ import numpy as np
 import numpy.typing as npt
 
 from matplotlib.axes import Axes
-from typing import Optional, Union
+from typing import Optional, List, Union
 
 from ..representation.functional_data import (
     DenseFunctionalData, IrregularFunctionalData, MultivariateFunctionalData
@@ -37,7 +37,8 @@ def _init_ax(
 def _plot_1d(
     data: Union[DenseFunctionalData, IrregularFunctionalData],
     labels: npt.NDArray,
-    ax: Axes = None,
+    colors: Optional[npt.NDArray] = None,
+    ax: Optional[Axes] = None,
     **plt_kwargs
 ) -> Axes:
     """Plot one dimensional functional data.
@@ -48,8 +49,11 @@ def _plot_1d(
     ----------
     data: UnivariateFunctionalData or IrregularFunctionalData
         The object to plot.
-    labels: np.array, default=None
+    labels: npt.NDArray, default=None
         The labels of each curve.
+    colors: npt.NDArray, default=None
+        Colors used for the plot. If `colors` is `None`, it uses the `jet`
+        colormaps from the `matplotlib` library by default.
     ax: matplotlib.axes._subplots.AxesSubplot
         Axes object onto which the objects are plotted.
     **plt_kwargs:
@@ -61,7 +65,11 @@ def _plot_1d(
         Axes objects onto the plot is done.
 
     """
-    COLORS = mpl.cm.jet(np.linspace(0, 1, len(np.unique(labels))))
+    if colors is None:
+        COLORS = mpl.cm.jet(np.linspace(0, 1, len(np.unique(labels))))
+    else:
+        COLORS = colors
+
     if isinstance(data, DenseFunctionalData):
         for obs, l in zip(data.values, labels):
             ax.plot(
@@ -85,7 +93,8 @@ def _plot_1d(
 def _plot_2d(
     data: Union[DenseFunctionalData, IrregularFunctionalData],
     labels: npt.NDArray,
-    ax: Axes = None,
+    colors: Optional[npt.NDArray] = None,
+    ax: Optional[Axes] = None,
     **plt_kwargs
 ) -> Axes:
     """Plot two dimensional functional data.
@@ -96,8 +105,11 @@ def _plot_2d(
     ----------
     data: IrregularFunctionalData
         The object to plot.
-    labels: np.array, default=None
+    labels: npt.NDArray, default=None
         The labels of each curve.
+    colors: npt.NDArray, default=None
+        Colors used for the plot. If `colors` is `None`, it uses the `jet`
+        colormaps from the `matplotlib` library by default.
     ax: matplotlib.axes._subplots.AxesSubplot
         Axes object onto which the objects are plotted.
     **plt_kwargs:
@@ -109,7 +121,11 @@ def _plot_2d(
         Axes objects onto the plot is done.
 
     """
-    COLORS = mpl.cm.jet(np.linspace(0, 1, len(np.unique(labels))))
+    if colors is None:
+        COLORS = mpl.cm.jet(np.linspace(0, 1, len(np.unique(labels))))
+    else:
+        COLORS = colors
+
     if isinstance(data, DenseFunctionalData):
         if data.n_obs == 1:
             cs = ax.contourf(
@@ -142,6 +158,7 @@ def _plot_2d(
 def plot(
     data: Union[DenseFunctionalData, IrregularFunctionalData],
     labels: Optional[npt.NDArray] = None,
+    colors: Optional[npt.NDArray] = None,
     ax: Axes = None,
     **plt_kwargs
 ) -> Axes:
@@ -154,8 +171,11 @@ def plot(
     ----------
     data: UnivariateFunctionalData, IrregularFunctionalData
         The object to plot.
-    labels: np.array, default=None
+    labels: npt.NDArray, default=None
         The labels of each curve.
+    colors: npt.NDArray, default=None
+        Colors used for the plot. If `colors` is `None`, it uses the `jet`
+        colormaps from the `matplotlib` library by default.
     ax: matplotlib.axes._subplots.AxesSubplot
         Axes object onto which the objects are plotted.
     **plt_kwargs:
@@ -171,13 +191,13 @@ def plot(
         labels = np.arange(data.n_obs)
     if data.n_dim == 1:
         ax = _init_ax(ax, projection='rectilinear')
-        ax = _plot_1d(data, labels, ax, **plt_kwargs)
+        ax = _plot_1d(data, labels, colors, ax, **plt_kwargs)
     elif data.n_dim == 2:
         if data.n_obs == 1:
             ax = _init_ax(ax, projection='rectilinear')
         else:
             ax = _init_ax(ax, projection='3d')
-        ax = _plot_2d(data, labels, ax, **plt_kwargs)
+        ax = _plot_2d(data, labels, colors, ax, **plt_kwargs)
     else:
         raise ValueError(
             f"Can not plot functions of dimension {data.n_dim},"
@@ -189,9 +209,11 @@ def plot(
 def plot_multivariate(
     data: MultivariateFunctionalData,
     labels: Optional[npt.NDArray] = None,
+    titles: Optional[List[str]] = None,
+    colors: Optional[npt.NDArray] = None,
     ax: Axes = None,
     **plt_kwargs
-):
+) -> List[Axes]:
     """Plot function for multivariate functional data.
 
     Generic plot function for MultivariateFunctionalData objects.
@@ -200,8 +222,13 @@ def plot_multivariate(
     ----------
     data: MultivariateFunctional
         The object to plot.
-    labels: np.array, default=None
+    labels: npt.NDArray, default=None
         The labels of each curve.
+    titles: List[str], default=None
+        Titles of the subfigure.
+    colors: npt.NDArray, default=None
+        Colors used for the plot. If `colors` is `None`, it uses the `jet`
+        colormaps from the `matplotlib` library by default.
     ax: matplotlib.axes._subplots.AxesSubplot
         Axes object onto which the objects are plotted.
     **plt_kwargs:
@@ -217,16 +244,20 @@ def plot_multivariate(
     ncols = plt_kwargs.get("ncols", 2)
     nrows = data.n_functional // ncols + (data.n_functional % ncols > 0)
 
+    if titles is None:
+        titles = data.n_functional * [""]
+
     # Set spacing of the plots
     plt.subplots_adjust(wspace=0.7, hspace=0.2)
 
     axes = []
     for n, data in enumerate(data):
         ax = plt.subplot(nrows, ncols, n + 1)
+        ax.set_title(titles[n])
         if data.n_dim == 1:
-            axes.append(plot(data, labels=labels, ax=ax))
+            axes.append(plot(data, labels=labels, colors=colors, ax=ax))
         elif data.n_dim == 2:
-            axes.append(plot(data[0], labels=labels, ax=ax))
+            axes.append(plot(data[0], labels=labels, colors=colors, ax=ax))
         else:
             raise ValueError(
                 f"Can not plot functions of dimension {data.n_dim},"
