@@ -735,7 +735,7 @@ class MFPCA():
         }
 
         # Checkers
-        if method == 'InnPro' and not hasattr(self, 'eigenvectors'):
+        if method == 'InnPro' and not hasattr(self, '_eigenvectors'):
             raise ValueError((
                 f"The method {method} can not be used as the eigencomponents "
                 "have not been estimated using the inner-product matrix."
@@ -754,12 +754,15 @@ class MFPCA():
         #     values = data.values / self.weights
         #     data = MultivariateFunctionalData(data.argvals, values)
 
-        if method == 'NumInt':
+        if method == 'PACE':
+            raise ValueError("PACE method not implemented.")
+        elif method == 'NumInt':
             return self._numerical_integration(
                 data_new, parameters['integration_method']
             )
         elif method == 'InnPro':
-            return 0
+            temp = np.sqrt(data.n_obs * self.eigenvalues)
+            return temp * self._eigenvectors
         else:
             raise ValueError(
                 f"Method {method} not implemented."
@@ -792,7 +795,15 @@ class MFPCA():
             functions defined by the eigenfunctions.
 
         """
-        return np.array([0])
+        # Maybe, it only works for inner-product matrix
+        scores_uni = [
+            _integrate(
+                x=data_uni.argvals['input_dim_0'],
+                y=[traj * eigen_uni.values for traj in data_uni.values],
+                method=method
+            ) for (data_uni, eigen_uni) in zip(data, self.eigenfunctions)
+        ]
+        return np.array(scores_uni).sum(axis=0)
 
     def inverse_transform(
         self,
@@ -811,7 +822,7 @@ class MFPCA():
 
         Parameters
         ----------
-        scores: np.ndarray, shape=(n_obs, n_components)
+        scores: npt.NDArray[np.float64], shape=(n_obs, n_components)
             New data, where `n_obs` is the number of observations and
             `n_components` is the number of components.
 
@@ -822,6 +833,13 @@ class MFPCA():
             transformation of the scores into the original curve space.
 
         """
+        # res = [None] * self.eigenfunctions.n_functional
+        # for idx, eigenfunction in enumerate(self.eigenfunctions):
+        #     res[idx] = DenseFunctionalData(
+        #         eigenfunction.argvals,
+        #         np.dot(scores, eigenfunction.values)
+        #     )
+
         res = []
         for idx, ufpca in enumerate(self.ufpca_list):
             if isinstance(ufpca, UFPCA):
