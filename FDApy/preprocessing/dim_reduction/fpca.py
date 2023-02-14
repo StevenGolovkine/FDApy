@@ -393,11 +393,21 @@ class UFPCA():
             functions defined by the eigenfunctions.
 
         """
-        return _integrate(
+        projection = _integrate(
             x=data.argvals['input_dim_0'],
             y=[traj * self.eigenfunctions.values for traj in data.values],
             method=method
         )
+        if data.n_dim == 1:
+            return projection
+        elif data.n_dim == 2:
+            return _integrate(
+                x=data.argvals['input_dim_1'],
+                y=projection,
+                method=method
+            )
+        else:
+            raise ValueError("The dimension of the data have to be 1 or 2.")
 
     def inverse_transform(
         self,
@@ -619,7 +629,7 @@ class MFPCA():
         nb_eigenfunction_uni_cum = np.cumsum(nb_eigenfunction_uni)
 
         # Compute the multivariate eigenbasis.
-        basis_multi = []
+        eigenfunctions = []
         for idx, function in enumerate(ufpca_list):
             start = nb_eigenfunction_uni_cum[idx]
             end = nb_eigenfunction_uni_cum[idx + 1]
@@ -627,14 +637,14 @@ class MFPCA():
             argvals = function.eigenfunctions.argvals
             values = np.dot(function.eigenfunctions.values.T,
                             eigenvectors[start:end, :]).T
-            basis_multi.append(DenseFunctionalData(argvals, values))
+            eigenfunctions.append(DenseFunctionalData(argvals, values))
 
         self.ufpca_list = ufpca_list
         self.scores_univariate = scores_univariate
         self.covariance = covariance
         self.eigenvalues = eigenvalues
         self.eigenvectors = eigenvectors
-        self.basis = MultivariateFunctionalData(basis_multi)
+        self.eigenfunctions = MultivariateFunctionalData(eigenfunctions)
 
     def _fit_inner_product(
         self,
@@ -728,6 +738,21 @@ class MFPCA():
             An array representing the projection of the data onto the basis of
             functions defined by the eigenfunctions.
 
+        Notes
+        -----
+        Concerning the estimation of the scores using numerical integration, we
+        directly estimate the scores using the projection of the data onto the
+        multivariate eigenfunctions and not use the univariate components and
+        the decomposition of the covariance of the univariate scores as Happ
+        and Greven [HG]_ could do.
+
+        References
+        ----------
+        .. [HG] Happ C. & Greven S. (2018) Multivariate Functional Principal
+            Component Analysis for Data Observed on Different (Dimensional)
+            Domains, Journal of the American Statistical Association, 113:522,
+            649-659, DOI: 10.1080/01621459.2016.1273115
+
         """
         # Get the keyword arguments
         parameters = {
@@ -768,22 +793,16 @@ class MFPCA():
                 f"Method {method} not implemented."
             )
 
-        # scores_uni = list()
-        # for data_uni, ufpca in zip(data, self.ufpca_list):
-        #     scores_uni.append(ufpca.transform(data_uni, method=method))
-        # scores_uni = np.concatenate(scores_uni, axis=1)
-        # return np.dot(scores_uni, self.eigenvectors)
-
     def _numerical_integration(
         self,
-        data: DenseFunctionalData,
+        data: MultivariateFunctionalData,
         method: str = "trapz"
     ) -> npt.NDArray[np.float64]:
         """Estimate scores using numerical integration.
 
         Parameters
         ----------
-        data: DenseFunctionalData
+        data: MultivariateFunctionalData
             Data
         method: str, {'trapz', 'simpson'}, default='trapz'
             Method used to perform numerical integration.
@@ -795,14 +814,26 @@ class MFPCA():
             functions defined by the eigenfunctions.
 
         """
-        # Maybe, it only works for inner-product matrix
-        scores_uni = [
-            _integrate(
-                x=data_uni.argvals['input_dim_0'],
-                y=[traj * eigen_uni.values for traj in data_uni.values],
+        scores_uni = [None] * len(self.eigenfunctions)
+        for idx, (dat_uni, eigen) in enumerate(zip(data, self.eigenfunctions)):
+            projection = _integrate(
+                x=dat_uni.argvals['input_dim_0'],
+                y=[traj * eigen.values for traj in dat_uni.values],
                 method=method
-            ) for (data_uni, eigen_uni) in zip(data, self.eigenfunctions)
-        ]
+            )
+            if eigen.n_dim == 1:
+                scores_uni[idx] = projection
+            elif eigen.n_dim == 2:
+                scores_uni[idx] = _integrate(
+                    x=dat_uni.argvals['input_dim_1'],
+                    y=projection,
+                    method=method
+                )
+            else:
+                raise ValueError(
+                    "The dimension of the data have to be 1 or 2."
+                )
+
         return np.array(scores_uni).sum(axis=0)
 
     def inverse_transform(
@@ -833,26 +864,35 @@ class MFPCA():
             transformation of the scores into the original curve space.
 
         """
-        # res = [None] * self.eigenfunctions.n_functional
-        # for idx, eigenfunction in enumerate(self.eigenfunctions):
-        #     res[idx] = DenseFunctionalData(
-        #         eigenfunction.argvals,
-        #         np.dot(scores, eigenfunction.values)
-        #     )
-
-        res = []
-        for idx, ufpca in enumerate(self.ufpca_list):
-            if isinstance(ufpca, UFPCA):
-                mean = ufpca.mean
-                reconst = np.dot(scores, self.basis[idx].values) + mean.values
-                res.append(DenseFunctionalData(mean.argvals, reconst))
-            elif isinstance(ufpca, FCPTPA):
-                reconst = np.einsum('ij, jkl', scores, self.basis[idx].values)
-                res.append(DenseFunctionalData(ufpca.eigenfunctions.argvals,
-                                               reconst))
+        res = [None] * self.eigenfunctions.n_functional
+        for idx, (mean, eigenfunction) in enumerate(
+            zip(self.mean, self.eigenfunctions)
+        ):
+            if eigenfunction.n_dim == 1:
+                values = np.dot(scores, eigenfunction.values)
+            elif eigenfunction.n_dim == 2:
+                values = np.einsum('ij,jkl->ikl', scores, eigenfunction.values)
             else:
-                raise TypeError("Something went wrong with univariate "
-                                "decomposition.")
+                raise ValueError(
+                    "The dimension of the data have to be 1 or 2."
+                )
+            res[idx] = DenseFunctionalData(
+                eigenfunction.argvals, values + mean.values
+            )
+
+        # res = []
+        # for idx, ufpca in enumerate(self.ufpca_list):
+        #     if isinstance(ufpca, UFPCA):
+        #         mean = ufpca.mean
+        #         reconst = np.dot(scores, self.basis[idx].values) + mean.values
+        #         res.append(DenseFunctionalData(mean.argvals, reconst))
+        #     elif isinstance(ufpca, FCPTPA):
+        #         reconst = np.einsum('ij, jkl', scores, self.basis[idx].values)
+        #         res.append(DenseFunctionalData(ufpca.eigenfunctions.argvals,
+        #                                        reconst))
+        #     else:
+        #         raise TypeError("Something went wrong with univariate "
+        #                         "decomposition.")
         return MultivariateFunctionalData(res)
 
 
