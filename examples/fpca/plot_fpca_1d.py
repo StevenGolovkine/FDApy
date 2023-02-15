@@ -48,7 +48,7 @@ _ = plot(data)
 #
 # Perform univariate FPCA with a predefined number of components using a
 # decomposition of the covariance operator.
-ufpca = UFPCA(n_components=3, method='covariance', normalize=True)
+ufpca = UFPCA(n_components=3, method='covariance')
 ufpca.fit(data)
 
 # Plot the eigenfunctions
@@ -80,7 +80,7 @@ plt.show()
 # Perform univariate FPCA with an estimation of the number of components by the
 # percentage of variance explained using a decomposition of the inner-product
 # matrix.
-ufpca = UFPCA(n_components=0.99, method='inner-product', normalize=True)
+ufpca = UFPCA(n_components=0.99, method='inner-product')
 ufpca.fit(data)
 
 # Plot the eigenfunctions

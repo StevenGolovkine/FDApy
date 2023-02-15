@@ -876,6 +876,8 @@ class MFPCA():
             transformation of the scores into the original curve space.
 
         """
+        if self.weights == 1:
+            self.weights = np.repeat(1, self.eigenfunctions.n_functional)
         res = [None] * self.eigenfunctions.n_functional
         for idx, (mean, eigenfunction, weight) in enumerate(
             zip(self.mean, self.eigenfunctions, self.weights)
