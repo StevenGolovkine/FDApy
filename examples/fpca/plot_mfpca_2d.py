@@ -62,7 +62,7 @@ _  = plot_multivariate(data, titles=['1st', '2nd'])
 # decomposition of the covariance operator. The decomposition of the covariance
 # operator is based on the FCP-TPA algorithm, which is an iterative algorithm.
 # The number of components has thus to be prespecified.
-mfpca = MFPCA(n_components=[3, 3], method='covariance')
+mfpca = MFPCA(n_components=[3, 3], method='covariance', normalize=True)
 mfpca.fit(data)
 
 ###############################################################################
@@ -97,7 +97,7 @@ plt.show()
 # Perform multivariate FPCA with an estimation of the number of components by
 # the percentage of variance explained using a decomposition of the
 # inner-product matrix.
-mfpca = MFPCA(n_components=0.95, method='inner-product')
+mfpca = MFPCA(n_components=0.95, method='inner-product', normalize=True)
 mfpca.fit(data)
 
 ###############################################################################

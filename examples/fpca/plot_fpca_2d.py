@@ -51,7 +51,7 @@ _ = plot(data)
 # Perform univariate FPCA with an estimation of the number of components by the
 # percentage of variance explained using a decomposition of the inner-product
 # matrix.
-ufpca = UFPCA(n_components=0.99, method='inner-product')
+ufpca = UFPCA(n_components=0.99, method='inner-product', normalize=True)
 ufpca.fit(data)
 
 ###############################################################################

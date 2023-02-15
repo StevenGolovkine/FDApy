@@ -56,7 +56,7 @@ _ = plot_multivariate(data)
 # Perform multivariate FPCA with an estimation of the number of components by
 # the percentage of variance explained using a decomposition of the covariance
 # operator.
-mfpca = MFPCA(n_components=[0.95, 0.95], method='covariance')
+mfpca = MFPCA(n_components=[0.95, 0.95], method='covariance', normalize=True)
 mfpca.fit(data)
 
 # Plot the eigenfunctions
@@ -86,7 +86,7 @@ plt.show()
 # Perform univariate FPCA with an estimation of the number of components by the
 # percentage of variance explained using a decomposition of the inner-product
 # matrix.
-mfpca = MFPCA(n_components=0.99, method='inner-product')
+mfpca = MFPCA(n_components=0.99, method='inner-product', normalize=True)
 mfpca.fit(data)
 
 # Plot the eigenfunctions
