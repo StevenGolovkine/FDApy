@@ -1809,10 +1809,14 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
         """Return a shallow copy of the list."""
         return super().copy()
 
-    def get_obs(self) -> Iterator[MultivariateFunctionalData]:
+    def items(self) -> Iterator[MultivariateFunctionalData]:
         """Return a generator over the observation."""
         for idx in range(self.n_obs):
             yield MultivariateFunctionalData([obs[idx] for obs in self])
+
+    def get_obs(self, idx) -> MultivariateFunctionalData:
+        """Return the observation idx."""
+        return MultivariateFunctionalData([obs[idx] for obs in self])
 
     def mean(
         self,

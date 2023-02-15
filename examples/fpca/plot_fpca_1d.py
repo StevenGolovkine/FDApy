@@ -33,7 +33,7 @@ n_functions = 25
 # We simulate :math:`N = 50` curves on the one-dimensional observation grid
 # :math:`\{0, 0.01, 0.02, \cdots, 1\}`, based on the first :math:`K = 25`
 # Fourier basis functions on :math:`[0, 1]` and the variance of the scores
-# random variables equal to :math:`1` (default).
+# random variables equal to :math:`1`.
 kl = KarhunenLoeve(
     basis_name=name, n_functions=n_functions, random_state=rng
 )
@@ -89,7 +89,6 @@ _ = plot(ufpca.eigenfunctions)
 ###############################################################################
 # Estimate the scores -- projection of the curves onto the eigenfunctions --
 # using the eigenvectors from the decomposition of the inner-product matrix.
-# numerical integration.
 scores = ufpca.transform(data, method='InnPro')
 
 # Plot of the scores

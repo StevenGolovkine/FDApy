@@ -879,20 +879,6 @@ class MFPCA():
             res[idx] = DenseFunctionalData(
                 eigenfunction.argvals, values + mean.values
             )
-
-        # res = []
-        # for idx, ufpca in enumerate(self.ufpca_list):
-        #     if isinstance(ufpca, UFPCA):
-        #         mean = ufpca.mean
-        #         reconst = np.dot(scores, self.basis[idx].values) + mean.values
-        #         res.append(DenseFunctionalData(mean.argvals, reconst))
-        #     elif isinstance(ufpca, FCPTPA):
-        #         reconst = np.einsum('ij, jkl', scores, self.basis[idx].values)
-        #         res.append(DenseFunctionalData(ufpca.eigenfunctions.argvals,
-        #                                        reconst))
-        #     else:
-        #         raise TypeError("Something went wrong with univariate "
-        #                         "decomposition.")
         return MultivariateFunctionalData(res)
 
 

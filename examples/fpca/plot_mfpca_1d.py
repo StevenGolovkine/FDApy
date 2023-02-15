@@ -1,6 +1,6 @@
 """
 MFPCA of 1-dimensional data
---------------------------
+===========================
 
 Example of multivariate functional principal components analysis of
 1-dimensional data.
@@ -13,83 +13,98 @@ Example of multivariate functional principal components analysis of
 # License: MIT
 
 # Load packages
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 from FDApy.simulation.karhunen import KarhunenLoeve
-from FDApy.representation.functional_data import MultivariateFunctionalData
 from FDApy.preprocessing.dim_reduction.fpca import MFPCA
-from FDApy.visualization.plot import plot, plot_multivariate
+from FDApy.visualization.plot import plot_multivariate
 
-
-
-# With simulated data
-kl = KarhunenLoeve(basis_name='bsplines', n_functions=5)
-kl.new(n_obs=50)
-
-kl_2 = KarhunenLoeve(basis_name='fourier', n_functions=5)
-kl_2.new(n_obs=50)
-
-data = MultivariateFunctionalData([kl.data, kl_2.data])
-
-
-plot_multivariate(data)
-plt.show()
-
-
-plot_multivariate(data.mean())
-plt.show()
-
-
-# Perform multivariate FPCA
-mfpca_cov = MFPCA(n_components=[0.95, 0.95], method='covariance')
-mfpca_cov.fit(data)
-
-mfpca_cov.eigenvalues
-
-plot_multivariate(mfpca_cov.eigenfunctions)
-plt.show()
-
-
-# Perform multivariate FPCA
-mfpca_inn = MFPCA(n_components=0.99, method='inner-product')
-mfpca_inn.fit(data)
-
-
-mfpca_inn.eigenvalues
-
-
-plot_multivariate(mfpca_inn.eigenfunctions)
-plt.show()
-
-
-# ## Estimate the scores
-scores = mfpca_cov.transform(data, method='NumInt')
-
-
-scores_ = mfpca_inn.transform(data, method='InnPro')
-
-
-
-plt.scatter(scores[:, 0], scores[:, 1])
-plt.scatter(scores_[:, 0], scores_[:, 1])
-plt.show()
-
-
-# ## Transform the data back to the original space
-
-
-data_f_cov = mfpca_cov.inverse_transform(scores)
-
-
-
-data_f_inn = mfpca_inn.inverse_transform(scores_)
-
-
+# Set general parameters
+rng = 42
+n_obs = 50
 idx = 5
 colors = np.array([[0.5, 0, 0, 1]])
-colors_2 = np.array([[0, 0.5, 0, 1]])
 
-ax = plot_multivariate(MultivariateFunctionalData([data[0][idx], data[1][idx]]))
-ax = plot_multivariate(MultivariateFunctionalData([data_f_cov[0][idx], data_f_cov[1][idx]]), colors=colors, ax=ax)
-ax = plot_multivariate(MultivariateFunctionalData([data_f_inn[0][idx], data_f_inn[1][idx]]), colors=colors_2, ax=ax)
+
+# Parameters of the basis
+name = ['bsplines', 'fourier']
+n_functions = [5, 5]
+
+###############################################################################
+# We simulate :math:`N = 50` curves of a 2-dimensional process. The first
+# component of the process is defined on the one-dimensional observation grid
+# :math:`\{0, 0.01, 0.02, \cdots, 1\}`, based on the first :math:`K = 25`
+# B-splines basis functions on :math:`[0, 1]` and the variance of the scores
+# random variables equal to :math:`1`. The second component of the process is
+# defined on the one-dimensional observation grid
+# :math:`\{0, 0.01, 0.02, \cdots, 1\}`, based on the first :math:`K = 10`
+# Fourier basis functions on :math:`[0, 1]` and the variance of the scores
+# random variables equal to :math:`1`.
+kl = KarhunenLoeve(
+    basis_name=name, n_functions=n_functions, random_state=rng
+)
+kl.new(n_obs=n_obs)
+data = kl.data
+
+_ = plot_multivariate(data)
+
+###############################################################################
+# Covariance decomposition
+# ------------------------
+#
+# Perform multivariate FPCA with an estimation of the number of components by
+# the percentage of variance explained using a decomposition of the covariance
+# operator.
+mfpca = MFPCA(n_components=[0.95, 0.95], method='covariance')
+mfpca.fit(data)
+
+# Plot the eigenfunctions
+_ = plot_multivariate(mfpca.eigenfunctions)
+
+###############################################################################
+# Estimate the scores -- projection of the curves onto the eigenfunctions -- by
+# numerical integration.
+scores = mfpca.transform(data, method='NumInt')
+
+# Plot of the scores
+_ = plt.scatter(scores[:, 0], scores[:, 1])
+
+###############################################################################
+# Reconstruct the curves using the scores. 
+data_recons = mfpca.inverse_transform(scores)
+
+ax = plot_multivariate(data.get_obs(idx))
+ax = plot_multivariate(data_recons.get_obs(idx), colors=colors, ax=ax)
+plt.legend(['True', 'Reconstruction'])
+plt.show()
+
+###############################################################################
+# Inner-product matrix decomposition
+# ----------------------------------
+#
+# Perform univariate FPCA with an estimation of the number of components by the
+# percentage of variance explained using a decomposition of the inner-product
+# matrix.
+mfpca = MFPCA(n_components=0.99, method='inner-product')
+mfpca.fit(data)
+
+# Plot the eigenfunctions
+_ = plot_multivariate(mfpca.eigenfunctions)
+
+###############################################################################
+# Estimate the scores -- projection of the curves onto the eigenfunctions --
+# using the eigenvectors from the decomposition of the inner-product matrix.
+scores = mfpca.transform(data, method='InnPro')
+
+# Plot of the scores
+_ = plt.scatter(scores[:, 0], scores[:, 1])
+
+###############################################################################
+# Reconstruct the curves using the scores. 
+data_recons = mfpca.inverse_transform(scores)
+
+ax = plot_multivariate(data.get_obs(idx))
+ax = plot_multivariate(data_recons.get_obs(idx), colors=colors, ax=ax)
+plt.legend(['True', 'Reconstruction'])
+plt.show()
