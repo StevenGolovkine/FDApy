@@ -29,7 +29,7 @@ from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..preprocessing.smoothing.smoothing_splines import SmoothingSpline
 from ..misc.utils import _get_dict_dimension, _get_obs_shape
 from ..misc.utils import _inner_product, _inner_product_2d
-from ..misc.utils import _integrate, _integration_weights
+from ..misc.utils import _integrate, _integrate_2d, _integration_weights
 from ..misc.utils import _normalization, _outer
 
 if TYPE_CHECKING:
@@ -1078,16 +1078,31 @@ class DenseFunctionalData(FunctionalData):
         American Statistical Association.
 
         """
-        if self.n_dim > 1:
-            raise ValueError(
-                "Normalization can only be performed on one dimensional data"
-            )
-
-        if use_argvals_stand:
-            argvals = self.argvals_stand['input_dim_0']
+        if self.n_dim == 1:
+            int_func = _integrate
+            if use_argvals_stand:
+                x = self.argvals_stand['input_dim_0']
+            else:
+                x = self.argvals['input_dim_0']
+            params = {'x': x}
+        elif self.n_dim == 2:
+            int_func = _integrate_2d
+            if use_argvals_stand:
+                x = self.argvals_stand['input_dim_0']
+                y = self.argvals_stand['input_dim_1']
+            else:
+                x = self.argvals['input_dim_0']
+                y = self.argvals['input_dim_1']
+            params = {
+                'x': x,
+                'y': y
+            }
         else:
-            argvals = self.argvals['input_dim_0']
-            weights = _integrate(argvals, np.var(self.values, axis=0))
+            raise ValueError(
+                'The data dimension is not correct.'
+            )
+        variance = np.var(self.values, axis=0)
+        weights = int_func(variance, **params)
         new_values = self.values / weights
         return DenseFunctionalData(self.argvals, new_values), weights
 
@@ -1964,6 +1979,40 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
         """
         new = [_concatenate([d1, d2]) for d1, d2 in zip(self, data)]
         return MultivariateFunctionalData(new)
+
+    def normalize(
+        self,
+        use_argvals_stand: bool = False
+    ) -> Tuple[MultivariateFunctionalData, npt.NDArray[np.float64]]:
+        r"""Normalize the data.
+
+        The normalization is performed by divising each functional datum by
+        :math:`w_j = \int_{T} Var(X(t))dt`.
+
+        Parameters
+        ----------
+        use_argvals_stand: bool, default=False
+            Use standardized argvals to compute the normalization of the data.
+
+        Returns
+        -------
+        MultivariateFunctionalData, npt.NDArray[np.float64]
+            The normalized data.
+
+        References
+        ----------
+        Happ and Greven, Multivariate Functional Principal Component Analysis
+        for Data Observed on Different (Dimensional Domains), Journal of the
+        American Statistical Association.
+
+        """
+        normalization = [
+            data_uni.normalize(use_argvals_stand=use_argvals_stand)
+            for data_uni in self
+        ]
+        data_norm = [data for data, _ in normalization]
+        weights = np.array([weight for _, weight in normalization])
+        return MultivariateFunctionalData(data_norm), weights
 
 
 ##############################################################################

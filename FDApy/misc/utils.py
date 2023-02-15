@@ -378,6 +378,92 @@ def _shift(
 # Array computation
 ##############################################################################
 
+def _integrate(
+    y: npt.NDArray[np.float64],
+    x: npt.NDArray[np.float64],
+    method: str = 'simpson'
+) -> float:
+    r"""Compute an estimate of the integral of 1-dimensional curve.
+
+    This function computes an estimation of the integral of :math:`y(x)` over
+    the domain :math:`x`:
+
+    .. math:: \int y(x)dx
+
+    Parameters
+    ----------
+    x: npt.NDArray[np.float64], shape=(n_features,)
+        Domain for the integration, it has to be ordered.
+    y: npt.NDArray[np.float64], shape=(n_features,)
+        Observations
+    method: str, {'simpson', 'trapz'}, default = 'simpson'
+        The method used to integrated.
+
+    Returns
+    -------
+    float
+        Estimation of the integration of :math:`y(x)`.
+
+    Example
+    -------
+    >>> X = np.array([1, 2, 4])
+    >>> Y = np.array([1, 4, 16])
+    >>> _integrate(Y, X)
+    21.0
+
+    """
+    if method == 'simpson':
+        return scipy.integrate.simps(x=x, y=y)  # type: ignore
+    elif method == 'trapz':
+        return np.trapz(x=x, y=y)
+    else:
+        raise ValueError(f'{method} not implemented!')
+
+
+def _integrate_2d(
+    z: npt.NDArray[np.float64],
+    x: npt.NDArray[np.float64],
+    y: npt.NDArray[np.float64],
+    method: str = 'simpson'
+) -> float:
+    r"""Compute an estimate of the integral of 2- dimensional surface.
+
+    This function computes an estimation of the integral of :math:`z(x, y)`
+    over the domain :math:`x \times y`.
+
+    Parameters
+    ----------
+    x: npt.NDArray[np.float64], shape=(n_features,)
+        Domain for the integration, it has to be ordered.
+    y: npt.NDArray[np.float64], shape=(n_features,)
+        Observations
+    method: str, {'simpson', 'trapz'}, default = 'simpson'
+        The method used to integrated.
+
+    Returns
+    -------
+    float
+        Estimation of the integration of :math:`z(x, y)`.
+
+    Example
+    -------
+    >>> X = np.array([1, 2, 4])
+    >>> Y = np.array([1, 2])
+    >>> Z = np.array([[1, 2], [4, 5], [7, 8]])
+    >>> _integrate_2d(Z, X, Y)
+    15.75
+
+    """
+    if method == 'simpson':
+        temp = scipy.integrate.simps(x=x, y=z, axis=0)
+        return scipy.integrate.simps(x=y, y=temp)  # type: ignore
+    elif method == 'trapz':
+        temp = np.trapz(x=x, y=z, axis=0)
+        return np.trapz(x=y, y=temp)
+    else:
+        raise ValueError(f'{method} not implemented!')
+
+
 def _inner_product(
     x: npt.NDArray[np.float64],
     y: npt.NDArray[np.float64],
@@ -506,46 +592,6 @@ def _outer(
 
     """
     return np.outer(x, y)
-
-
-def _integrate(
-    x: npt.NDArray[np.float64],
-    y: npt.NDArray[np.float64],
-    method: str = 'simpson'
-) -> float:
-    """Compute an estimate of the integral.
-
-    This function computes an estimation of the integral of :math:`Y` over the
-    domain :math:`X`.
-
-    Parameters
-    ----------
-    x: npt.NDArray[np.float64], shape=(n_features,)
-        Domain for the integration, it has to be ordered.
-    y: npt.NDArray[np.float64], shape=(n_features,)
-        Observations
-    method: str, {'simpson', 'trapz'}, default = 'simpson'
-        The method used to integrated.
-
-    Returns
-    -------
-    float
-        Estimation of the integration of Y over X.
-
-    Example
-    -------
-    >>> X = np.array([1, 2, 4])
-    >>> Y = np.array([1, 4, 16])
-    >>> _integrate(X, Y)
-    21.0
-
-    """
-    if method == 'simpson':
-        return scipy.integrate.simps(x=x, y=y)  # type: ignore
-    elif method == 'trapz':
-        return np.trapz(x=x, y=y)
-    else:
-        raise ValueError(f'{method} not implemented!')
 
 
 def _integration_weights(

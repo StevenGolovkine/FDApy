@@ -115,6 +115,10 @@ class UFPCA():
             data.argvals, data.values - data_mean.values
         )
 
+        # Normalize the data
+        if self.normalize:
+            data_new, self.weights = data_new.normalize(use_argvals_stand=True)
+
         # Estimate eigencomponents
         self.mean = data_mean
         if self.method == 'covariance':
@@ -152,9 +156,6 @@ class UFPCA():
             Analysis, Springer Science, Chapter 8.
 
         """
-        if self.normalize:
-            data, weights = data.normalize(use_argvals_stand=True)
-            self.weights = weights
         smoothing_method = None
 
         if covariance is None:
@@ -321,8 +322,8 @@ class UFPCA():
 
         # TODO: Add checkers
         if self.normalize:
-            values = data.values / self.weights
-            data = DenseFunctionalData(data.argvals, values)
+            values = data_new.values / self.weights
+            data_new = DenseFunctionalData(data_new.argvals, values)
 
         if method == 'PACE':
             return self._pace(data_new, parameters['tol'])
@@ -331,7 +332,7 @@ class UFPCA():
                 data_new, parameters['integration_method']
             )
         elif method == 'InnPro':
-            temp = np.sqrt(data.n_obs * self.eigenvalues)
+            temp = np.sqrt(data_new.n_obs * self.eigenvalues)
             return temp * self._eigenvectors
         else:
             raise ValueError(
@@ -447,7 +448,9 @@ class UFPCA():
             )
         else:
             raise ValueError("The dimension of the data have to be 1 or 2.")
-        return DenseFunctionalData(argvals, values + self.mean.values)
+        return DenseFunctionalData(
+            argvals, self.weights * values + self.mean.values
+        )
 
 
 #############################################################################
@@ -511,6 +514,7 @@ class MFPCA():
         self.n_components = n_components
         self.method = method
         self.normalize = normalize
+        self.weights = 1
 
     def fit(
         self,
@@ -552,6 +556,10 @@ class MFPCA():
                 data_uni.values - mean.values
             ) for data_uni, mean in zip(data, data_mean)
         ])
+
+        # Normalize the data
+        if self.normalize:
+            data_new, self.weights = data_new.normalize(use_argvals_stand=True)
 
         # Estimate eigencomponents
         self.mean = data_mean
@@ -775,9 +783,13 @@ class MFPCA():
         ])
 
         # TODO: Add checkers
-        # if self.normalize:
-        #     values = data.values / self.weights
-        #     data = MultivariateFunctionalData(data.argvals, values)
+        if self.normalize:
+            data_new = MultivariateFunctionalData([
+                DenseFunctionalData(data.argvals, data.values / weights)
+                for data, weights in zip(data, self.weights)
+            ])
+            # values = data.values / self.weights
+            # data = MultivariateFunctionalData(data.argvals, values)
 
         if method == 'PACE':
             raise ValueError("PACE method not implemented.")
@@ -865,8 +877,8 @@ class MFPCA():
 
         """
         res = [None] * self.eigenfunctions.n_functional
-        for idx, (mean, eigenfunction) in enumerate(
-            zip(self.mean, self.eigenfunctions)
+        for idx, (mean, eigenfunction, weight) in enumerate(
+            zip(self.mean, self.eigenfunctions, self.weights)
         ):
             if eigenfunction.n_dim == 1:
                 values = np.dot(scores, eigenfunction.values)
@@ -877,7 +889,7 @@ class MFPCA():
                     "The dimension of the data have to be 1 or 2."
                 )
             res[idx] = DenseFunctionalData(
-                eigenfunction.argvals, values + mean.values
+                eigenfunction.argvals, weight * values + mean.values
             )
         return MultivariateFunctionalData(res)
 

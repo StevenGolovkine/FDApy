@@ -381,20 +381,20 @@ class TestIntegrate(unittest.TestCase):
     def test_integrate_simpson(self):
         X = np.array([1, 2, 4])
         Y = np.array([1, 4, 16])
-        result = _integrate(X, Y)
+        result = _integrate(Y, X)
         self.assertEqual(result, 21.0)
 
     def test_integrate_trapeze(self):
         X = np.array([1, 2, 4])
         Y = np.array([1, 4, 16])
-        result = _integrate(X, Y, method='trapz')
+        result = _integrate(Y, X, method='trapz')
         self.assertEqual(result, 22.5)
 
     def test_integrate_method_error(self):
         X = np.array([1, 2, 4])
         Y = np.array([1, 4, 16])
         with self.assertRaises(ValueError):
-            _integrate(X, Y, method='error')
+            _integrate(Y, X, method='error')
 
 
 class TestIntegrationWeights(unittest.TestCase):
