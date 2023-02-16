@@ -49,7 +49,7 @@ def _eigenvalues_linear(
     array([1.0, 0.6666666666666666, 0.3333333333333333])
 
     """
-    return np.array([(n - m + 1) / n for m in np.arange(1, n + 1)])
+    return (n - np.arange(1, n + 1) + 1) / n
 
 
 def _eigenvalues_exponential(
@@ -73,7 +73,7 @@ def _eigenvalues_exponential(
     array([0.36787944117144233, 0.22313016014842982, 0.1353352832366127])
 
     """
-    return np.array([np.exp(-(m + 1) / 2) for m in np.arange(1, n + 1)])
+    return np.exp(-(np.arange(1, n + 1) + 1) / 2)
 
 
 def _eigenvalues_wiener(
@@ -97,9 +97,7 @@ def _eigenvalues_wiener(
     array([0.4052847345693511, 0.04503163717437235, 0.016211389382774045])
 
     """
-    return np.array(
-        [np.power((np.pi / 2) * (2 * m - 1), -2) for m in np.arange(1, n + 1)]
-    )
+    return np.power((np.pi / 2) * (2 * np.arange(1, n + 1) - 1), -2)
 
 
 def _simulate_eigenvalues(
@@ -113,7 +111,7 @@ def _simulate_eigenvalues(
     name: str, {'linear', 'exponential', 'wiener'}
         Name of the eigenvalues generation process to use.
     n: int, default=3
-        Number of eigenvalues to generates.
+        Number of eigenvalues to generates. Should be strictly positive.
 
     Returns
     -------
@@ -126,6 +124,8 @@ def _simulate_eigenvalues(
     array([1.0, 0.6666666666666666, 0.3333333333333333])
 
     """
+    if n < 1:
+        raise ValueError(f'Parameter has to be strictly positive (now {n})')
     if name == 'linear':
         return _eigenvalues_linear(n)
     elif name == 'exponential':
