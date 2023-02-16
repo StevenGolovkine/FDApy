@@ -20,6 +20,7 @@ from FDApy.misc.utils import (
     _inner_product,
     _inner_product_2d,
     _integrate,
+    _integrate_2d,
     _integration_weights,
     _outer,
     _normalization,
@@ -395,6 +396,29 @@ class TestIntegrate(unittest.TestCase):
         Y = np.array([1, 4, 16])
         with self.assertRaises(ValueError):
             _integrate(Y, X, method='error')
+
+
+class TestIntegrate2D(unittest.TestCase):
+    def test_integrate_simpson(self):
+        X = np.array([1, 2, 4])
+        Y = np.array([1, 2])
+        Z = np.array([[1, 2], [4, 5], [7, 8]])
+        result = _integrate_2d(Z, X, Y)
+        self.assertEqual(result, 15.75)
+
+    def test_integrate_trapeze(self):
+        X = np.array([1, 2, 4])
+        Y = np.array([1, 2])
+        Z = np.array([[1, 2], [4, 5], [7, 8]])
+        result = _integrate_2d(Z, X, Y, method='trapz')
+        self.assertEqual(result, 15.0)
+
+    def test_integrate_method_error(self):
+        X = np.array([1, 2, 4])
+        Y = np.array([1, 2])
+        Z = np.array([[1, 2], [4, 5], [7, 8]])
+        with self.assertRaises(ValueError):
+            _integrate_2d(Z, X, Y, method='error')
 
 
 class TestIntegrationWeights(unittest.TestCase):
