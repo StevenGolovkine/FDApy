@@ -433,10 +433,12 @@ def _integrate_2d(
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64], shape=(n_features,)
+    z: npt.NDArray[np.float64], shape=(n_features_1, n_features_2,)
         Domain for the integration, it has to be ordered.
-    y: npt.NDArray[np.float64], shape=(n_features,)
-        Observations
+    x: npt.NDArray[np.float64], shape=(n_features_1,)
+        First domain for the integration, it has to be ordered.
+    y: npt.NDArray[np.float64], shape=(n_features_2,)
+        Second domain for the integration, it has to be ordered.
     method: str, {'simpson', 'trapz'}, default = 'simpson'
         The method used to integrated.
 

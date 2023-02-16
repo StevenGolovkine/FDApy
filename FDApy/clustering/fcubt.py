@@ -79,7 +79,7 @@ def joining_step(
         if isinstance(new_data, DenseFunctionalData):
             if new_data.n_dim == 1:
                 ufpca = UFPCA(n_components=n_components, normalize=normalize)
-                ufpca.fit(data=new_data, method='GAM')
+                ufpca.fit(data=new_data)
                 scores = ufpca.transform(data=new_data, method='NumInt')
             elif new_data.n_dim == 2:
                 n_points = new_data.n_points
@@ -98,7 +98,7 @@ def joining_step(
                                  "be 1 or 2.")
         elif isinstance(new_data, MultivariateFunctionalData):
             mfpca = MFPCA(n_components=n_components, normalize=normalize)
-            mfpca.fit(data=new_data, method='NumInt')
+            mfpca.fit(data=new_data)
             scores = mfpca.transform(new_data)
         else:
             raise TypeError("Not the right data type!")
@@ -336,7 +336,7 @@ class Node():
                         n_components=n_components,
                         normalize=self.normalize
                     )
-                    ufpca.fit(data=self.data, method='GAM')
+                    ufpca.fit(data=self.data)
                     scores = ufpca.transform(data=self.data, method='NumInt')
                     self.fpca = ufpca
                 elif self.data.n_dim == 2:
@@ -361,7 +361,7 @@ class Node():
                     n_components=n_components,
                     normalize=self.normalize
                 )
-                mfpca.fit(data=self.data, method='NumInt')
+                mfpca.fit(data=self.data)
                 scores = mfpca.transform(self.data, method='NumInt')
                 self.fpca = mfpca
             else:
