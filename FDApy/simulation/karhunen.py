@@ -40,7 +40,7 @@ def _eigenvalues_linear(
 
     Returns
     -------
-    values: numpy.ndarray, shape=(n,)
+    npt.NDArray, shape=(n,)
         The generated eigenvalues.
 
     Example
@@ -64,7 +64,7 @@ def _eigenvalues_exponential(
 
     Returns
     -------
-    values: numpy.ndarray, shape=(n,)
+    npt.NDArray, shape=(n,)
         The generated eigenvalues.
 
     Example
@@ -88,7 +88,7 @@ def _eigenvalues_wiener(
 
     Returns
     -------
-    values: numpy.ndarray, shape=(n,)
+    npt.NDArray, shape=(n,)
         The generated eigenvalues.
 
     Example
@@ -115,7 +115,7 @@ def _simulate_eigenvalues(
 
     Returns
     -------
-    eigenvalues: numpy.ndarray, shape=(n,)
+    npt.NDArray, shape=(n,)
         The generated eigenvalues.
 
     Example
@@ -155,10 +155,10 @@ def _make_coef(
         Number of observations to simulate.
     n_features: int
         Number of features to simulate.
-    centers: numpy.ndarray, shape=(n_features, n_clusters)
+    centers: npt.NDArray, shape=(n_features, n_clusters)
         The centers of the clusters to generate. The ``n_features`` parameter
         corresponds to the number of functions within the basis.
-    cluster_std: numpy.ndarray, shape=(n_features, n_clusters)
+    cluster_std: npt.NDArray, shape=(n_features, n_clusters)
         The standard deviation of the clusters to generate. The
         ``n_features`` parameter corresponds to the number of functions within
         the basis.
@@ -167,10 +167,11 @@ def _make_coef(
 
     Returns
     -------
-    coef: numpy.ndarray, shape=(n_obs, n_features)
-        Array of generated coefficients.
-    labels: numpy.ndarray, shape=(n_obs,)
-        The integer labels for cluster membership of each observations.
+    Tuple[npt.NDArray, npt.NDArray]
+        Returns a tuple containing the coefficients, as `npt.NDArray` of shape
+        `(n_obs, n_features)`, and the labels, as `npt.NDArray` of shape
+        `(n_obs,)`. The labels refer to the cluster membership of each
+        observation.
 
     Notes
     -----
@@ -191,9 +192,8 @@ def _make_coef(
     """
     n_centers = centers.shape[1]
 
-    n_obs_per_center = [int(n_obs // n_centers)] * n_centers
-    for idx in range(n_obs % n_centers):
-        n_obs_per_center[idx] += 1
+    n_obs_per_center = np.ones(n_centers, dtype=int) * (n_obs // n_centers)
+    n_obs_per_center[:n_obs % n_centers] += 1
     cum_sum_n_obs = np.cumsum(n_obs_per_center)
 
     coefs = np.empty(shape=(n_obs, n_features), dtype=np.float64)
@@ -229,7 +229,7 @@ def _initialize_centers(
 
     Returns
     -------
-    centers: numpy.ndarray, shape=(n_features, n_clusters)
+    npt.NDArray, shape=(n_features, n_clusters)
         An array with good shape for the initialization of the centers of the
         cluster.
 
@@ -258,15 +258,14 @@ def _initialize_cluster_std(
 
     Returns
     -------
-    cluster_std: numpy.ndarray, shape=(n_features, n_clusters)
+    npt.NDArray, shape=(n_features, n_clusters)
         An array with good shape for the initialization of the standard
         deviation of the cluster.
 
     """
     if isinstance(cluster_std, str):
         eigenvalues = _simulate_eigenvalues(cluster_std, n_features)
-        eigenvalues = np.repeat(eigenvalues, n_clusters)
-        return eigenvalues.reshape((n_features, n_clusters))
+        return np.full((n_clusters, n_features), eigenvalues).T
     elif cluster_std is None:
         return np.ones((n_features, n_clusters))
     else:
