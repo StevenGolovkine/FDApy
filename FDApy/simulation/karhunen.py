@@ -304,7 +304,7 @@ def _compute_data(
         Generated data as a DenseFunctionalData object.
 
     """
-    
+
     if basis.dimension == '1D':
         values = np.matmul(coefficients, basis.values)
     elif basis.dimension == '2D':
@@ -341,7 +341,7 @@ class KarhunenLoeve(Simulation):
     :math:`\phi_{k}` are vectors and according to the multivariate
     Karhunen-Loève theorem (see, e.g, [HG]_), the coefficients do not depend
     on the component :math:`p`.
-    
+
     If the basis is user-defined, the object has to be an element of the class
     Basis and not just DenseFunctionalData or MultivariateFunctionalData.
 
@@ -396,11 +396,12 @@ class KarhunenLoeve(Simulation):
         basis: Optional[Basis]
     ) -> None:
         """Check if `basis_name` of `basis` is None.
-        
+
         Parameters
         ----------
         basis_name: Union[str, Sequence[str]]
-            A str or a sequence of str indicating the name or names of the basis.
+            A str or a sequence of str indicating the name or names of the
+            basis.
         basis: Basis
             A Basis instance.
 
@@ -444,7 +445,7 @@ class KarhunenLoeve(Simulation):
         basis: Union[Basis, Sequence[Basis]]
     ) -> Tuple[Sequence[str], Sequence[Basis]]:
         """Format `basis_name` and `basis` if `basis_name==None`.
-        
+
         Parameters
         ----------
         basis: Union[Basis, Sequence[Basis]]
@@ -502,11 +503,11 @@ class KarhunenLoeve(Simulation):
         **kwargs_basis: Any
     ) -> None:
         """Initialize KarhunenLoeve object."""
-        
+
         # Checkers
         KarhunenLoeve._check_basis_none(basis_name, basis)
         KarhunenLoeve._check_basis_type(basis)
-        
+
         if basis_name is None:
             basis_name, basis = KarhunenLoeve._format_basis_name_none(basis)
         else:
@@ -595,7 +596,9 @@ class KarhunenLoeve(Simulation):
         n_features = self.basis.n_obs
 
         centers = _initialize_centers(n_features, n_clusters, centers)
-        cluster_std = _initialize_cluster_std(n_features, n_clusters, cluster_std)
+        cluster_std = _initialize_cluster_std(
+            n_features, n_clusters, clusters_std
+        )
 
         # Generate data
         coef, labels = _make_coef(
