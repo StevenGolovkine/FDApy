@@ -304,7 +304,6 @@ def _compute_data(
         Generated data as a DenseFunctionalData object.
 
     """
-
     if basis.dimension == '1D':
         values = np.matmul(coefficients, basis.values)
     elif basis.dimension == '2D':
@@ -468,7 +467,7 @@ class KarhunenLoeve(Simulation):
         n_functions: Union[int, Sequence[int]],
         dimension: Union[str, Sequence[str]]
     ) -> Tuple[Sequence[str], Sequence[int], Sequence[str]]:
-        """"Format different arguments if `basis_name != None`.
+        """Format different arguments if `basis_name != None`.
 
         name: Sequence[str]
             Name of the basis to use.
@@ -592,37 +591,37 @@ class KarhunenLoeve(Simulation):
         if isinstance(clusters_std, str):
             clusters_std = len(self.basis) * [clusters_std]
 
-        # Initialize parameters
-        n_features = self.basis.n_obs
+        # # Initialize parameters
+        # n_features = self.basis.n_obs
 
-        centers = _initialize_centers(n_features, n_clusters, centers)
-        cluster_std = _initialize_cluster_std(
-            n_features, n_clusters, clusters_std
-        )
+        # centers = _initialize_centers(n_features, n_clusters, centers)
+        # cluster_std = _initialize_cluster_std(
+        #     n_features, n_clusters, clusters_std
+        # )
 
-        # Generate data
-        coef, labels = _make_coef(
-            n_obs, n_features, centers, cluster_std, rnorm
-        )
+        # # Generate data
+        # coef, labels = _make_coef(
+        #     n_obs, n_features, centers, cluster_std, rnorm
+        # )
 
-        # Generate data
-        simus_univariate = [
-            _compute_data(
-                basis=basis,
-                n_obs=n_obs,
-                n_clusters=n_clusters,
-                rnorm=rnorm,
-                centers=center,
-                cluster_std=cluster_std
-            ) for basis, center, cluster_std in zip(
-                self.basis, centers, clusters_std
-            )
-        ]
+        # # Generate data
+        # simus_univariate = [
+        #     _compute_data(
+        #         basis=basis,
+        #         n_obs=n_obs,
+        #         n_clusters=n_clusters,
+        #         rnorm=rnorm,
+        #         centers=center,
+        #         cluster_std=cluster_std
+        #     ) for basis, center, cluster_std in zip(
+        #         self.basis, centers, clusters_std
+        #     )
+        # ]
 
-        data_univariate = [simu.data for simu in simus_univariate]
-        if len(data_univariate) > 1:
-            self.data = MultivariateFunctionalData(data_univariate)
-        else:
-            self.data = data_univariate[0]
-        self.labels = simus_univariate[0].labels
-        self.eigenvalues = [simu.eigenvalues for simu in simus_univariate]
+        # data_univariate = [simu.data for simu in simus_univariate]
+        # if len(data_univariate) > 1:
+        #     self.data = MultivariateFunctionalData(data_univariate)
+        # else:
+        #     self.data = data_univariate[0]
+        # self.labels = simus_univariate[0].labels
+        # self.eigenvalues = [simu.eigenvalues for simu in simus_univariate]
