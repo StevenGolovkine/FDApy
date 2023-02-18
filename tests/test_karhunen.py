@@ -15,7 +15,9 @@ from FDApy.simulation.karhunen import (
     _simulate_eigenvalues,
     _make_coef,
     _initialize_centers,
-    _initialize_cluster_std
+    _initialize_cluster_std,
+    _compute_data,
+    KarhunenLoeve
 )
 
 
@@ -117,6 +119,46 @@ class TestSimulateEigenvalues(unittest.TestCase):
             _simulate_eigenvalues('unknown', n=3)
 
 
+class TestMakeCoef(unittest.TestCase):
+    def setUp(self):
+        self.centers = np.array([[1, 2, 3], [0, 4, 6]])
+        self.cluster_std = np.array([[0.5, 0.25, 1],[1, 0.1, 0.5]])
+        self.n_obs = 4
+        self.n_features = 2
+        self.rnorm = np.random.default_rng(42).multivariate_normal
+
+    def test_output_shape(self):
+        coefs, labels = _make_coef(
+            self.n_obs, self.n_features, self.centers, self.cluster_std
+        )
+        np.testing.assert_equal(coefs.shape, (self.n_obs, self.n_features))
+        np.testing.assert_equal(labels.shape, (self.n_obs,))
+
+    def test_output_labels(self):
+        _, labels = _make_coef(
+            self.n_obs, self.n_features,
+            self.centers, self.cluster_std,
+            self.rnorm
+        )
+        unique_labels = np.unique(labels)
+        output = np.array([0, 1, 2])
+        np.testing.assert_array_almost_equal(output, unique_labels)
+
+    def test_output_coefs(self):
+        coefs, _ = _make_coef(
+            self.n_obs, self.n_features,
+            self.centers, self.cluster_std,
+            self.rnorm
+        )
+        output = np.array([
+            [0.26462019, 0.30471708],
+            [1.66507969, 0.7504512 ],
+            [1.02448241, 3.58821468],
+            [3.1278404 , 5.77638272]
+        ])
+        np.testing.assert_array_almost_equal(output, coefs)
+
+
 class TestInitializeCenters(unittest.TestCase):
     def test_centers_initialized_to_zero(self):
         n_features = 3
@@ -193,39 +235,126 @@ class TestInitializeClusterStd(unittest.TestCase):
         np.testing.assert_array_equal(result, expected)
 
 
-class TestMakeCoef(unittest.TestCase):
+class TestComputeData(unittest.TestCase):
     def setUp(self):
-        self.centers = np.array([[1, 2, 3], [0, 4, 6]])
-        self.cluster_std = np.array([[0.5, 0.25, 1],[1, 0.1, 0.5]])
-        self.n_obs = 4
-        self.n_features = 2
-        self.rnorm = np.random.default_rng(42).multivariate_normal
+        from FDApy.representation.basis import Basis
 
-    def test_output_shape(self):
-        coefs, labels = _make_coef(
-            self.n_obs, self.n_features, self.centers, self.cluster_std
-        )
-        np.testing.assert_equal(coefs.shape, (self.n_obs, self.n_features))
-        np.testing.assert_equal(labels.shape, (self.n_obs,))
+        self.basis1d = Basis(name='legendre', n_functions=2, dimension='1D')
+        self.basis2d = Basis(name='legendre', n_functions=2, dimension='2D')
 
-    def test_output_labels(self):
-        _, labels = _make_coef(
-            self.n_obs, self.n_features,
-            self.centers, self.cluster_std,
-            self.rnorm
-        )
-        unique_labels = np.unique(labels)
-        output = np.array([0, 1, 2])
-        np.testing.assert_array_almost_equal(output, unique_labels)
-
-    def test_output_coefs(self):
-        coefs, _ = _make_coef(
-            self.n_obs, self.n_features, self.centers, self.cluster_std, self.rnorm
-        )
-        output = np.array([
-            [0.26462019, 0.30471708],
-            [1.66507969, 0.7504512 ],
-            [1.02448241, 3.58821468],
-            [3.1278404 , 5.77638272]
+        self.coef_1d = np.array([[0.30471708, -0.73537981]])
+        self.coef_2d = np.array([
+            [0.30471708, -0.90065266,  0.53064913,  0.47028236]
         ])
-        np.testing.assert_array_almost_equal(output, coefs)
+
+    def test_dimension_1d(self):
+        output = _compute_data(self.basis1d, self.coef_1d)
+        expected = np.matmul(self.coef_1d, self.basis1d.values)
+        np.testing.assert_array_almost_equal(output.values, expected)
+
+    def test_dimension_2d(self):
+        output = _compute_data(self.basis2d, self.coef_2d)
+        expected = np.tensordot(self.coef_2d, self.basis2d.values, axes=1)
+        np.testing.assert_array_almost_equal(output.values, expected)
+
+    def test_raise_value_error(self):
+        from FDApy.representation.basis import Basis
+
+        basis = Basis(name='legendre', n_functions=2, dimension='1D')
+        basis.dimension = 'error'
+
+        with self.assertRaises(ValueError):
+            _compute_data(basis, self.coef_1d)
+
+
+class TestCheckBasisNone(unittest.TestCase):
+    def setUp(self):
+        from FDApy.representation.basis import Basis
+
+        self.basis = Basis(name='legendre', n_functions=2, dimension='1D')
+        self.basis_name = 'fourier'
+
+    def test_raise_error(self):
+        with self.assertRaises(ValueError):
+            KarhunenLoeve._check_basis_none(self.basis_name, self.basis)
+
+    def test_no_raise_error(self):
+        KarhunenLoeve._check_basis_none(self.basis_name, None)
+        self.assertTrue(True)  # if no error was raised, the test is successful
+
+
+class TestCheckBasisType(unittest.TestCase):
+    def setUp(self):
+        from FDApy.representation.basis import Basis
+
+        self.basis = Basis(name='legendre', n_functions=2, dimension='1D')
+
+    def test_raise_error(self):
+        with self.assertRaises(ValueError):
+            KarhunenLoeve._check_basis_type('error')
+
+    def test_basis_none(self):
+        KarhunenLoeve._check_basis_type(None)
+        self.assertTrue(True)  # if no error was raised, the test is successful
+
+    def test_basis_basis(self):
+        KarhunenLoeve._check_basis_type(self.basis)
+        self.assertTrue(True)  # if no error was raised, the test is successful
+
+    def test_basis_list_basis(self):
+        KarhunenLoeve._check_basis_type([self.basis, self.basis])
+        self.assertTrue(True)  # if no error was raised, the test is successful
+
+
+class TestFormatBasisNameNone(unittest.TestCase):
+    def setUp(self):
+        from FDApy.representation.basis import Basis
+
+        self.basis = Basis(name='legendre', n_functions=2, dimension='1D')
+
+    def test_basis_basis(self):
+        basis_name, basis = KarhunenLoeve._format_basis_name_none(self.basis)
+        expected_name = ['user-defined']
+        expected_basis_legnth = 1
+
+        np.testing.assert_equal(basis_name, expected_name)
+        np.testing.assert_equal(len(basis), expected_basis_legnth)
+
+    def test_basis_basis_2(self):
+        basis_name, basis = KarhunenLoeve._format_basis_name_none(
+            [self.basis, self.basis]
+        )
+        expected_name = ['user-defined', 'user-defined']
+        expected_basis_legnth = 2
+
+        np.testing.assert_equal(basis_name, expected_name)
+        np.testing.assert_equal(len(basis), expected_basis_legnth)
+
+
+class TestFormatBasisNotNone(unittest.TestCase):
+
+    def test_format_basis_name_not_none(self):
+        basis_name = ['basis1', 'basis2']
+        n_functions = [10, 20]
+        dimension = ['1D', '2D']
+
+        arguments = KarhunenLoeve._format_basis_name_not_none(
+            basis_name, n_functions, dimension
+        )
+
+        self.assertListEqual(basis_name, arguments[0])
+        self.assertListEqual(n_functions, arguments[1])
+        self.assertListEqual(dimension, arguments[2])
+
+    def test_format_basis_name_not_none_2(self):
+        basis_name = 'basis1'
+        n_functions = 10
+        dimension = '1D'
+
+        arguments = KarhunenLoeve._format_basis_name_not_none(
+            basis_name, n_functions, dimension
+        )
+
+        self.assertListEqual([basis_name], arguments[0])
+        self.assertListEqual([n_functions], arguments[1])
+        self.assertListEqual([dimension], arguments[2])

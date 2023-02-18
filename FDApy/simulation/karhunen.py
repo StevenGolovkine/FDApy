@@ -274,76 +274,46 @@ def _initialize_cluster_std(
 
 #############################################################################
 # Generation of univariate functional data
-def _generate_univariate_data(
-    basis: DenseFunctionalData,
-    n_obs: int,
-    n_clusters: int = 1,
-    centers: Optional[npt.NDArray] = None,
-    cluster_std: Union[str, npt.NDArray, None] = None,
-    rnorm: Callable = np.random.multivariate_normal,
-) -> Data:
-    r"""Generate univariate functional data.
+def _compute_data(
+    basis: Basis,
+    coefficients: npt.NDArray
+) -> DenseFunctionalData:
+    r"""Compute functional data.
 
-    This function can be used to simulate univariate functional data
+    This function can be used to compute functional data
     :math:`X_1, \dots, X_N` based on a truncated Karhunen-Loève decomposition:
 
     .. math::
         X_i(t) = \sum_{K = 1}^K c_{i, k}\phi_{k}(t), i = 1, \dots, N,
 
-    on one- or higher-dimensional domains. The eigenfunctions
-    :math:`\phi_{k}(t)` could be generated using different basis functions or
-    be user-defined. The scores :math:`c_{i, k}` are simulated independently
-    from a normal distribution with zero mean and decreasing variance. For
+    on one- or higher-dimensional domains. For
     higher-dimensional domains, the eigenfunctions are constructed as tensors
     of marginal orthonormal function systems.
 
     Parameters
     ----------
-    basis: DenseFunctionalData
+    basis: Basis
         Basis of functions to use for the generation of the data.
-    n_obs: int
-        Number of observations to simulate.
-    n_clusters: int, default=1
-        Number of clusters to generate.
-    centers: numpy.ndarray, shape=(n_features, n_clusters)
-        The centers of the clusters to generate. The ``n_features``
-        correspond to the number of functions within the basis.
-    cluster_std: numpy.ndarray, shape=(n_features, n_clusters)
-        The standard deviation of the clusters to generate. The
-        ``n_features`` correspond to the number of functions within the
-        basis.
-    rnorm: Callable, default=np.random.multivariate_normal
-        Random data generator.
+    coefficients: npt.NDArray, shape=(n_obs, n_features)
+        A set of coefficients of shape the number of observations times the
+        number of elements in the basis.
 
     Returns
     -------
-    simu: Data
-        An element of the class Data with the labels, eigenvalues and simulated
-        data.
+    DenseFunctionalData
+        Generated data as a DenseFunctionalData object.
 
     """
-    # Initialize parameters
-    n_features = basis.n_obs
-
-    centers = _initialize_centers(n_features, n_clusters, centers)
-    cluster_std = _initialize_cluster_std(n_features, n_clusters, cluster_std)
-
-    # Generate data
-    coef, labels = _make_coef(
-        n_obs, n_features, centers, cluster_std, rnorm
-    )
-
+    
     if basis.dimension == '1D':
-        values = np.matmul(coef, basis.values)
+        values = np.matmul(coefficients, basis.values)
     elif basis.dimension == '2D':
-        values = np.tensordot(coef, basis.values, axes=1)
+        values = np.tensordot(coefficients, basis.values, axes=1)
     else:
-        raise ValueError("Something went wrong with the basis dimension.")
-    return Data(
-        labels=labels,
-        eigenvalues=cluster_std[:, 0],
-        data=DenseFunctionalData(basis.argvals, values)
-    )
+        raise ValueError(
+            f"The basis dimension {basis.dimension} has to be 1D or 2D"
+        )
+    return DenseFunctionalData(basis.argvals, values)
 
 
 #############################################################################
@@ -365,21 +335,34 @@ class KarhunenLoeve(Simulation):
     higher-dimensional domains, the eigenfunctions are constructed as tensors
     of marginal orthonormal function systems.
 
+    Notes
+    -----
+    In the case of multivariate functional data, :math:`X_i` and
+    :math:`\phi_{k}` are vectors and according to the multivariate
+    Karhunen-Loève theorem (see, e.g, [HG]_), the coefficients do not depend
+    on the component :math:`p`.
+    
+    If the basis is user-defined, the object has to be an element of the class
+    Basis and not just DenseFunctionalData or MultivariateFunctionalData.
+
     Parameters
     ----------
-    name: str or list of str, {'legendre', 'wiener', 'fourier', 'bsplines'}
-        Type of basis to use.
-    n_functions: int or list of int, default=5
-        Number of functions to use to generate the basis.
-    dimension: str or list of str, {'1D', '2D'}, default='1D'
-        Dimension of the basis to generate.
-    argvals: dict
+    name: Sequence[str], {'legendre', 'wiener', 'fourier', 'bsplines'}
+        Name of the basis to use. For multivariate functional data, this is a
+        list of `str` of length `n_features`.
+    n_functions: Sequence[int], default=5
+        Number of functions to use to generate the basis. For multivariate
+        functional data, this is a list of `int` of length `n_features`.
+    dimension: Sequence[str], {'1D', '2D'}, default='1D'
+        Dimension of the basis to generate. For multivariate functional data,
+        this is a list of `str` of length `n_features`.
+    argvals: Dict[str, npt.NDArray]
         The sampling points of the functional data. Each entry of the
         dictionary represents an input dimension. The shape of the :math:`j`th
         dimension is :math:`(m_j,)` for :math:`0 \leq j \leq p`.
-    basis: DenseFunctionalData, default=None
-        Basis of functions as a DenseFunctionalData object. Used to have a
-        user-defined basis of function.
+    basis: Union[Basis, Sequence[Basis]], default=None
+        Basis of functions as a Basis object. Used to have a user-defined basis
+        of function.
     random_state: int, default=None
         A seed to initialize the random number generator.
 
@@ -398,7 +381,115 @@ class KarhunenLoeve(Simulation):
     eigenvalues: numpy.ndarray, shape=(n_functions,)
         The eigenvalues used to simulate the data.
 
+    References
+    ----------
+    .. [HG] Happ C. & Greven S. (2018) Multivariate Functional Principal
+        Component Analysis for Data Observed on Different (Dimensional)
+        Domains, Journal of the American Statistical Association, 113:522,
+        649-659, DOI: 10.1080/01621459.2016.1273115
+
     """
+
+    @staticmethod
+    def _check_basis_none(
+        basis_name: Union[str, Sequence[str]],
+        basis: Optional[Basis]
+    ) -> None:
+        """Check if `basis_name` of `basis` is None.
+        
+        Parameters
+        ----------
+        basis_name: Union[str, Sequence[str]]
+            A str or a sequence of str indicating the name or names of the basis.
+        basis: Basis
+            A Basis instance.
+
+        Raises
+        ------
+        ValueError
+            If both `basis_name` and `basis` are not None.
+
+        """
+        if (basis_name is not None) and (basis is not None):
+            raise ValueError(
+                'One of the arguments `basis_name` or `basis` have to be None.'
+                ' Do not know which basis to use.'
+            )
+
+    @staticmethod
+    def _check_basis_type(
+        basis: Optional[Basis]
+    ) -> None:
+        """Check if `basis` has the right type.
+
+        Parameters
+        ----------
+        basis: Optional[Basis]
+            A Basis instance or None.
+
+        Raises
+        ------
+        ValueError
+            If the basis argument is not None and is not an instance of the
+            Basis class.
+
+        """
+        if not isinstance(basis, (Basis, list)) and (basis is not None):
+            raise ValueError(
+                'The basis argument has to be an instance of Basis.'
+            )
+
+    @staticmethod
+    def _format_basis_name_none(
+        basis: Union[Basis, Sequence[Basis]]
+    ) -> Tuple[Sequence[str], Sequence[Basis]]:
+        """Format `basis_name` and `basis` if `basis_name==None`.
+        
+        Parameters
+        ----------
+        basis: Union[Basis, Sequence[Basis]]
+            Basis of functions as a Basis object.
+
+        Returns
+        -------
+        Tuple[Sequence[str], Sequence[Basis]]
+            Tuple containing the basis names and the basis objects as a list.
+
+        """
+        if isinstance(basis, Basis):
+            basis = [basis]
+        basis_name = len(basis) * ['user-defined']
+        return basis_name, basis
+
+    @staticmethod
+    def _format_basis_name_not_none(
+        basis_name: Union[str, Sequence[str]],
+        n_functions: Union[int, Sequence[int]],
+        dimension: Union[str, Sequence[str]]
+    ) -> Tuple[Sequence[str], Sequence[int], Sequence[str]]:
+        """"Format different arguments if `basis_name != None`.
+
+        name: Sequence[str]
+            Name of the basis to use.
+        n_functions: Sequence[int]
+            Number of functions to use to generate the basis.
+        dimension: Sequence[str]
+            Dimension of the basis to generate.
+
+        Returns
+        -------
+        Tuple[Sequence[str], Sequence[int], Sequence[str]]
+            Tuple containing the basis names, the number of functions ans the
+            dimensions as list.
+
+        """
+        if isinstance(basis_name, str):
+            basis_name = [basis_name]
+        if isinstance(n_functions, int):
+            n_functions = len(basis_name) * [n_functions]
+        if isinstance(dimension, str):
+            dimension = len(basis_name) * [dimension]
+        return basis_name, n_functions, dimension
 
     def __init__(
         self,
@@ -406,41 +497,25 @@ class KarhunenLoeve(Simulation):
         n_functions: Union[int, Sequence[int]] = 5,
         dimension: Union[str, Sequence[str]] = '1D',
         argvals: Optional[Dict[str, npt.NDArray]] = None,
-        basis: Optional[
-            Union[DenseFunctionalData, Sequence[DenseFunctionalData]]
-        ] = None,
+        basis: Optional[Union[Basis, Sequence[Basis]]] = None,
         random_state: Optional[int] = None,
         **kwargs_basis: Any
     ) -> None:
         """Initialize KarhunenLoeve object."""
-        if (basis_name is not None) and (basis is not None):
-            raise ValueError(
-                'Name or basis have to be None. Do not know'
-                ' which basis to use.'
+        
+        # Checkers
+        KarhunenLoeve._check_basis_none(basis_name, basis)
+        KarhunenLoeve._check_basis_type(basis)
+        
+        if basis_name is None:
+            basis_name, basis = KarhunenLoeve._format_basis_name_none(basis)
+        else:
+            arguments = KarhunenLoeve._format_basis_name_not_none(
+                basis_name, n_functions, dimension
             )
-        if (
-            not isinstance(basis, (DenseFunctionalData, list)) and
-            (basis is not None)
-        ):
-            raise ValueError(
-                'Basis have to be an instance of DenseFunctionalData or a list'
-                ' of DenseFunctionalData'
-            )
-        if (basis_name is None) and isinstance(basis, DenseFunctionalData):
-            basis_name = ['user-defined']
-            basis = [basis]
-        if (basis_name is None) and isinstance(basis, list):
-            basis_name = len(basis) * ['user_defined']
+            basis_name, n_functions, dimension = arguments
 
-        if isinstance(basis_name, str):
-            basis_name = [basis_name]
-            n_functions = [n_functions]
-            dimension = [dimension]
-        if isinstance(basis_name, list) and isinstance(n_functions, int):
-            n_functions = len(basis_name) * [n_functions]
-        if isinstance(basis_name, list) and isinstance(dimension, str):
-            dimension = len(basis_name) * [dimension]
-
+        # Create the Basis list using the basis_name list.
         if basis is None:
             basis = [
                 Basis(
@@ -479,6 +554,18 @@ class KarhunenLoeve(Simulation):
             Not used in this context. We will use the ``argvals`` from the
             :mod:`Basis` object as ``argvals`` of the simulation.
 
+        n_obs: int
+            Number of observations to simulate.
+        n_clusters: int, default=1
+            Number of clusters to generate.
+        centers: numpy.ndarray, shape=(n_features, n_clusters)
+            The centers of the clusters to generate. The ``n_features``
+            correspond to the number of functions within the basis.
+        cluster_std: numpy.ndarray, shape=(n_features, n_clusters)
+            The standard deviation of the clusters to generate. The
+            ``n_features`` correspond to the number of functions within the
+            basis.
+
         Keyword Args
         ------------
         centers: numpy.ndarray, shape=(n_features, n_clusters)
@@ -504,9 +591,20 @@ class KarhunenLoeve(Simulation):
         if isinstance(clusters_std, str):
             clusters_std = len(self.basis) * [clusters_std]
 
+        # Initialize parameters
+        n_features = self.basis.n_obs
+
+        centers = _initialize_centers(n_features, n_clusters, centers)
+        cluster_std = _initialize_cluster_std(n_features, n_clusters, cluster_std)
+
+        # Generate data
+        coef, labels = _make_coef(
+            n_obs, n_features, centers, cluster_std, rnorm
+        )
+
         # Generate data
         simus_univariate = [
-            _generate_univariate_data(
+            _compute_data(
                 basis=basis,
                 n_obs=n_obs,
                 n_clusters=n_clusters,
