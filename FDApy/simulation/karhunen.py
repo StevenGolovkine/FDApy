@@ -144,7 +144,7 @@ def _make_coef(
     n_obs: int,
     n_features: int,
     centers: npt.NDArray,
-    cluster_std: npt.NDArray,
+    clusters_std: npt.NDArray,
     rnorm: Callable = np.random.multivariate_normal
 ) -> Tuple[npt.NDArray, npt.NDArray]:
     """Simulate a set of coefficients for the Karhunen-Loève decomposition.
@@ -158,7 +158,7 @@ def _make_coef(
     centers: npt.NDArray, shape=(n_features, n_clusters)
         The centers of the clusters to generate. The ``n_features`` parameter
         corresponds to the number of functions within the basis.
-    cluster_std: npt.NDArray, shape=(n_features, n_clusters)
+    clusters_std: npt.NDArray, shape=(n_features, n_clusters)
         The standard deviation of the clusters to generate. The
         ``n_features`` parameter corresponds to the number of functions within
         the basis.
@@ -204,7 +204,7 @@ def _make_coef(
 
         coefs[start_idx:end_idx, :] = rnorm(
             mean=centers[:, idx],
-            cov=np.diag(cluster_std[:, idx]),
+            cov=np.diag(clusters_std[:, idx]),
             size=n_obs
         )
         labels[start_idx:end_idx] = idx
@@ -237,10 +237,10 @@ def _initialize_centers(
     return np.zeros((n_features, n_clusters)) if centers is None else centers
 
 
-def _initialize_cluster_std(
+def _initialize_clusters_std(
     n_features: int,
     n_clusters: int,
-    cluster_std: Union[str, npt.NDArray, None] = None
+    clusters_std: Union[str, npt.NDArray, None] = None
 ) -> npt.NDArray:
     """Initialize the standard deviation of the clusters.
 
@@ -250,7 +250,7 @@ def _initialize_cluster_std(
         Number of features to simulate.
     n_clusters: int
         Number of clusters to simulate.
-    cluster_std: str or np.ndarray or None
+    clusters_std: str or np.ndarray or None
         The standard deviation of each cluster per feature. If the parameter
         is given as a string, it has to be one of {`linear`, `exponential`,
         `wiener`}. If `None`, the standard deviation of each cluster per
@@ -263,13 +263,13 @@ def _initialize_cluster_std(
         deviation of the cluster.
 
     """
-    if isinstance(cluster_std, str):
-        eigenvalues = _simulate_eigenvalues(cluster_std, n_features)
+    if isinstance(clusters_std, str):
+        eigenvalues = _simulate_eigenvalues(clusters_std, n_features)
         return np.full((n_clusters, n_features), eigenvalues).T
-    elif cluster_std is None:
+    elif clusters_std is None:
         return np.ones((n_features, n_clusters))
     else:
-        return cluster_std
+        return clusters_std
 
 
 #############################################################################
@@ -516,9 +516,14 @@ class KarhunenLoeve(Simulation):
         Sequence[Basis]
             A list of Basis objects generated for each name-dimension pair.
         """
+        
+        # Because Fourier is defined by pairs.
+        if 'fourier' in basis_name and n_functions % 2 == 0:
+                n_functions += 1
+
         basis_list = len(basis_name) * [None]
-        for idx, (name, dim) in enumerate(zip(basis_name, dimension)):
-            if dim == '1D':
+        for idx, (name, dim) in enumerate(zip(basis_name, dimension)): 
+            if dim == '1D' and '2D' in dimension:
                 n_func = np.power(n_functions, 2)
             else:
                 n_func = n_functions
@@ -601,45 +606,28 @@ class KarhunenLoeve(Simulation):
             rnorm = self.random_state.multivariate_normal
 
         # Get parameters
-        centers = kwargs.get('centers', len(self.basis) * [None])
-        clusters_std = kwargs.get('cluster_std', len(self.basis) * [None])
+        centers = kwargs.get('centers', None)
+        clusters_std = kwargs.get('clusters_std', None)
 
-        if isinstance(centers, np.ndarray) and len(self.basis) == 1:
-            centers = [centers]
-        if isinstance(clusters_std, str):
-            clusters_std = len(self.basis) * [clusters_std]
+        # Initialize parameters
+        n_features = self.basis[0].n_obs
+        centers = _initialize_centers(n_features, n_clusters, centers)
+        clusters_std = _initialize_clusters_std(
+            n_features, n_clusters, clusters_std
+        )
 
-        # # Initialize parameters
-        # n_features = self.basis.n_obs
+        # Generate coefficients
+        coef, labels = _make_coef(
+            n_obs, n_features, centers, clusters_std, rnorm
+        )
+        simus_univariate = [
+            _compute_data(basis=basis, coefficients=coef)
+            for basis in self.basis
+        ]
 
-        # centers = _initialize_centers(n_features, n_clusters, centers)
-        # cluster_std = _initialize_cluster_std(
-        #     n_features, n_clusters, clusters_std
-        # )
-
-        # # Generate data
-        # coef, labels = _make_coef(
-        #     n_obs, n_features, centers, cluster_std, rnorm
-        # )
-
-        # # Generate data
-        # simus_univariate = [
-        #     _compute_data(
-        #         basis=basis,
-        #         n_obs=n_obs,
-        #         n_clusters=n_clusters,
-        #         rnorm=rnorm,
-        #         centers=center,
-        #         cluster_std=cluster_std
-        #     ) for basis, center, cluster_std in zip(
-        #         self.basis, centers, clusters_std
-        #     )
-        # ]
-
-        # data_univariate = [simu.data for simu in simus_univariate]
-        # if len(data_univariate) > 1:
-        #     self.data = MultivariateFunctionalData(data_univariate)
-        # else:
-        #     self.data = data_univariate[0]
-        # self.labels = simus_univariate[0].labels
-        # self.eigenvalues = [simu.eigenvalues for simu in simus_univariate]
+        if len(simus_univariate) > 1:
+            self.data = MultivariateFunctionalData(simus_univariate)
+        else:
+            self.data = simus_univariate[0]
+        self.labels = labels
+        self.eigenvalues = clusters_std[:, 0]

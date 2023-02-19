@@ -85,7 +85,7 @@ _ = plot(kl.data)
 kl = KarhunenLoeve(
     basis_name=name, n_functions=n_functions, random_state=rng
 )
-kl.new(n_obs=n_obs, cluster_std='exponential')
+kl.new(n_obs=n_obs, clusters_std='exponential')
 
 _ = plot(kl.data)
 
@@ -121,6 +121,6 @@ _ = plot(kl.data)
 kl = KarhunenLoeve(
     basis_name=name, dimension='2D', n_functions=n_functions, random_state=rng
 )
-kl.new(n_obs=1, cluster_std='linear')
+kl.new(n_obs=1, clusters_std='linear')
 
 _ = plot(kl.data)

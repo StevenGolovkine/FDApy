@@ -16,7 +16,7 @@ from FDApy.simulation.karhunen import (
     _simulate_eigenvalues,
     _make_coef,
     _initialize_centers,
-    _initialize_cluster_std,
+    _initialize_clusters_std,
     _compute_data,
     KarhunenLoeve
 )
@@ -183,7 +183,7 @@ class TestInitializeClusterStd(unittest.TestCase):
         n_features = 2
         n_clusters = 3
         expected = np.ones((n_features, n_clusters))
-        result = _initialize_cluster_std(n_features, n_clusters)
+        result = _initialize_clusters_std(n_features, n_clusters)
         np.testing.assert_array_equal(result, expected)
 
     def test_linear(self):
@@ -193,8 +193,8 @@ class TestInitializeClusterStd(unittest.TestCase):
             [1.0, 1.0, 1.0],
             [0.5, 0.5, 0.5]
         ])
-        result = _initialize_cluster_std(
-            n_features, n_clusters, cluster_std='linear'
+        result = _initialize_clusters_std(
+            n_features, n_clusters, clusters_std='linear'
         )
         np.testing.assert_allclose(result, expected)
 
@@ -205,8 +205,8 @@ class TestInitializeClusterStd(unittest.TestCase):
             [0.36787944, 0.36787944, 0.36787944],
             [0.22313016, 0.22313016, 0.22313016]
         ])
-        result = _initialize_cluster_std(
-            n_features, n_clusters, cluster_std='exponential'
+        result = _initialize_clusters_std(
+            n_features, n_clusters, clusters_std='exponential'
         )
         np.testing.assert_allclose(result, expected)
 
@@ -217,8 +217,8 @@ class TestInitializeClusterStd(unittest.TestCase):
             [0.40528473, 0.40528473, 0.40528473],
             [0.04503164, 0.04503164, 0.04503164]
         ])
-        result = _initialize_cluster_std(
-            n_features, n_clusters, cluster_std='wiener'
+        result = _initialize_clusters_std(
+            n_features, n_clusters, clusters_std='wiener'
         )
         np.testing.assert_allclose(result, expected)
 
@@ -230,8 +230,8 @@ class TestInitializeClusterStd(unittest.TestCase):
             [1.0, 2.0, 3.0]
         ])
         expected = cluster_std
-        result = _initialize_cluster_std(
-            n_features, n_clusters, cluster_std=cluster_std
+        result = _initialize_clusters_std(
+            n_features, n_clusters, clusters_std=cluster_std
         )
         np.testing.assert_array_equal(result, expected)
 

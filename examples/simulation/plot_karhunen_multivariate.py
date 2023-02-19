@@ -48,7 +48,7 @@ n_obs = 10
 
 # Parameters of the basis
 name = ['fourier', 'bsplines']
-n_functions = [25, 10]
+n_functions = 5
 dimensions = ['2D', '1D']
 argvals = {'input_dim_0': np.arange(0, 10.01, 0.01)}
 
@@ -108,7 +108,7 @@ _ = plot_multivariate(kl.data)
 kl = KarhunenLoeve(
     basis_name=name, n_functions=n_functions, random_state=rng
 )
-kl.new(n_obs=n_obs, cluster_std='exponential')
+kl.new(n_obs=n_obs, clusters_std='exponential')
 
 _ = plot_multivariate(kl.data)
 
@@ -161,6 +161,6 @@ kl = KarhunenLoeve(
     n_functions=n_functions,
     random_state=rng
 )
-kl.new(n_obs=1, cluster_std='linear')
+kl.new(n_obs=1, clusters_std='linear')
 
 _ = plot_multivariate(kl.data)
