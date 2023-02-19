@@ -367,17 +367,17 @@ class KarhunenLoeve(Simulation):
 
     Attributes
     ----------
-    data: DenseFunctionalData or MultivariateFunctionalData
+    data: Union[DenseFunctionalData, MultivariateFunctionalData]
         An object that represents the simulated data.
-    noisy_data: DenseFunctionalData or MultivariateFunctionalData
+    noisy_data: Union[DenseFunctionalData, MultivariateFunctionalData]
         An object that represents a noisy version of the simulated data.
-    sparse_data: IrregularFunctionalData or MultivariateFunctionalData
+    sparse_data: Union[IrregularFunctionalData, MultivariateFunctionalData]
         An object that represents a sparse version of the simulated data.
-    labels: numpy.ndarray, shape=(n_obs,)
+    labels: npt.NDArray[np.float64], shape=(n_obs,)
         The integer labels for cluster membership of each sample.
-    basis: DenseFunctionalData of list of DenseFunctionalData
+    basis: Sequence[Basis]
         The eigenfunctions used to simulate the data.
-    eigenvalues: numpy.ndarray, shape=(n_functions,)
+    eigenvalues: npt.NDArray, shape=(n_functions,)
         The eigenvalues used to simulate the data.
 
     References
@@ -394,7 +394,7 @@ class KarhunenLoeve(Simulation):
         basis_name: Union[str, Sequence[str]],
         basis: Optional[Basis]
     ) -> None:
-        """Check if `basis_name` of `basis` is None.
+        """Check if ``basis_name`` of ``basis`` is ``None``.
 
         Parameters
         ----------
@@ -443,7 +443,7 @@ class KarhunenLoeve(Simulation):
     def _format_basis_name_none(
         basis: Union[Basis, Sequence[Basis]]
     ) -> Tuple[Sequence[str], Sequence[Basis]]:
-        """Format `basis_name` and `basis` if `basis_name==None`.
+        """Format ``basis_name`` and ``basis`` if ``basis_name==None``.
 
         Parameters
         ----------
@@ -464,10 +464,9 @@ class KarhunenLoeve(Simulation):
     @staticmethod
     def _format_basis_name_not_none(
         basis_name: Union[str, Sequence[str]],
-        n_functions: Union[int, Sequence[int]],
         dimension: Union[str, Sequence[str]]
-    ) -> Tuple[Sequence[str], Sequence[int], Sequence[str]]:
-        """Format different arguments if `basis_name != None`.
+    ) -> Tuple[Sequence[str], Sequence[str]]:
+        """Format different arguments if ``basis_name != None``.
 
         name: Sequence[str]
             Name of the basis to use.
@@ -485,16 +484,57 @@ class KarhunenLoeve(Simulation):
         """
         if isinstance(basis_name, str):
             basis_name = [basis_name]
-        if isinstance(n_functions, int):
-            n_functions = len(basis_name) * [n_functions]
         if isinstance(dimension, str):
             dimension = len(basis_name) * [dimension]
-        return basis_name, n_functions, dimension
+        return basis_name, dimension
+
+    @staticmethod
+    def _create_list_basis(
+        basis_name: Sequence[str],
+        dimension: Sequence[str],
+        n_functions: int,
+        argvals: Optional[Dict[str, npt.NDArray]] = None,
+        **kwargs_basis
+    ) -> None:
+        """Create a list of Basis given some parameters.
+
+        Parameters
+        ----------
+        basis_name: Sequence[str]
+            A sequence of basis names.
+        dimension: Sequence[str]
+            A sequence of basis dimensions.
+        n_functions: int
+            The number of functions to generate for each basis object.
+        argvals: Optional[Dict[str, npt.NDArray]]
+            The argument values used to generate the basis functions.
+        **kwargs_basis
+            Additional keyword arguments used to generate the Basis objects.
+
+        Returns
+        -------
+        Sequence[Basis]
+            A list of Basis objects generated for each name-dimension pair.
+        """
+        basis_list = len(basis_name) * [None]
+        for idx, (name, dim) in enumerate(zip(basis_name, dimension)):
+            if dim == '1D':
+                n_func = np.power(n_functions, 2)
+            else:
+                n_func = n_functions
+            basis_list[idx] = Basis(
+                name=name,
+                n_functions=n_func,
+                dimension=dim,
+                argvals=argvals,
+                **kwargs_basis
+            )
+        return basis_list
 
     def __init__(
         self,
         basis_name: Union[str, Sequence[str]],
-        n_functions: Union[int, Sequence[int]] = 5,
+        n_functions: int = 5,
         dimension: Union[str, Sequence[str]] = '1D',
         argvals: Optional[Dict[str, npt.NDArray]] = None,
         basis: Optional[Union[Basis, Sequence[Basis]]] = None,
@@ -502,7 +542,6 @@ class KarhunenLoeve(Simulation):
         **kwargs_basis: Any
     ) -> None:
         """Initialize KarhunenLoeve object."""
-
         # Checkers
         KarhunenLoeve._check_basis_none(basis_name, basis)
         KarhunenLoeve._check_basis_type(basis)
@@ -510,25 +549,15 @@ class KarhunenLoeve(Simulation):
         if basis_name is None:
             basis_name, basis = KarhunenLoeve._format_basis_name_none(basis)
         else:
-            arguments = KarhunenLoeve._format_basis_name_not_none(
-                basis_name, n_functions, dimension
+            basis_name, dimension = KarhunenLoeve._format_basis_name_not_none(
+                basis_name, dimension
             )
-            basis_name, n_functions, dimension = arguments
 
         # Create the Basis list using the basis_name list.
         if basis is None:
-            basis = [
-                Basis(
-                    name=name,
-                    n_functions=n_func,
-                    dimension=dim,
-                    argvals=argvals,
-                    **kwargs_basis
-                ) for name, n_func, dim in zip(
-                    basis_name, n_functions, dimension
-                )
-            ]
-
+            basis = KarhunenLoeve._create_list_basis(
+                basis_name, dimension, n_functions, argvals, **kwargs_basis
+            )
         super().__init__(basis_name, random_state)
         self.basis = basis
 
@@ -538,7 +567,7 @@ class KarhunenLoeve(Simulation):
         n_clusters: int = 1,
         argvals: Optional[Dict[str, npt.NDArray]] = None,
         **kwargs
-    ):
+    ) -> None:
         """Simulate realizations from Karhunen-Loève decomposition.
 
         This function generates ``n_obs`` realizations of a Gaussian process
@@ -552,26 +581,15 @@ class KarhunenLoeve(Simulation):
             Number of clusters to generate.
         argvals: None
             Not used in this context. We will use the ``argvals`` from the
-            :mod:`Basis` object as ``argvals`` of the simulation.
-
-        n_obs: int
-            Number of observations to simulate.
-        n_clusters: int, default=1
-            Number of clusters to generate.
-        centers: numpy.ndarray, shape=(n_features, n_clusters)
-            The centers of the clusters to generate. The ``n_features``
-            correspond to the number of functions within the basis.
-        cluster_std: numpy.ndarray, shape=(n_features, n_clusters)
-            The standard deviation of the clusters to generate. The
-            ``n_features`` correspond to the number of functions within the
-            basis.
+            :mod:`Basis` object as ``argvals`` of the simulation. Here to be
+            compliant with the class :mod:`Simulation`.
 
         Keyword Args
         ------------
-        centers: numpy.ndarray, shape=(n_features, n_clusters)
+        centers: npt.NDArray[np.float64], shape=(n_features, n_clusters)
             The centers of the clusters to generate. The ``n_features``
             correspond to the number of functions within the basis.
-        cluster_std: numpy.ndarray, shape=(n_features, n_clusters)
+        cluster_std: npt.NDArray[np.float64], shape=(n_features, n_clusters)
             The standard deviation of the clusters to generate. The
             ``n_features`` correspond to the number of functions within the
             basis.

@@ -8,6 +8,7 @@ Written with the help of ChatGPT.
 import numpy as np
 import unittest
 
+from FDApy.representation.basis import Basis
 from FDApy.simulation.karhunen import (
     _eigenvalues_linear,
     _eigenvalues_exponential,
@@ -332,29 +333,49 @@ class TestFormatBasisNameNone(unittest.TestCase):
 
 
 class TestFormatBasisNotNone(unittest.TestCase):
-
     def test_format_basis_name_not_none(self):
         basis_name = ['basis1', 'basis2']
-        n_functions = [10, 20]
         dimension = ['1D', '2D']
 
         arguments = KarhunenLoeve._format_basis_name_not_none(
-            basis_name, n_functions, dimension
+            basis_name, dimension
         )
 
         self.assertListEqual(basis_name, arguments[0])
-        self.assertListEqual(n_functions, arguments[1])
-        self.assertListEqual(dimension, arguments[2])
+        self.assertListEqual(dimension, arguments[1])
 
     def test_format_basis_name_not_none_2(self):
         basis_name = 'basis1'
-        n_functions = 10
         dimension = '1D'
 
         arguments = KarhunenLoeve._format_basis_name_not_none(
-            basis_name, n_functions, dimension
+            basis_name, dimension
         )
 
         self.assertListEqual([basis_name], arguments[0])
-        self.assertListEqual([n_functions], arguments[1])
-        self.assertListEqual([dimension], arguments[2])
+        self.assertListEqual([dimension], arguments[1])
+
+
+class TestCreateListBasis(unittest.TestCase):
+    def setUp(self):
+        self.basis_name = ['fourier', 'bsplines']
+        self.dimension = ['1D', '2D']
+        self.n_functions = 5
+
+    def test_create_list_basis(self):
+        
+        basis_list = KarhunenLoeve._create_list_basis(
+            self.basis_name, self.dimension, self.n_functions
+        )
+
+        self.assertEqual(len(basis_list), 2)
+        self.assertIsInstance(basis_list[0], Basis)
+        self.assertIsInstance(basis_list[1], Basis)
+
+        self.assertEqual(basis_list[0].name, 'fourier')
+        self.assertEqual(basis_list[0].n_obs, 25)
+        self.assertEqual(basis_list[0].dimension, '1D')
+
+        self.assertEqual(basis_list[1].name, 'bsplines')
+        self.assertEqual(basis_list[1].n_obs, 25)
+        self.assertEqual(basis_list[1].dimension, '2D')
