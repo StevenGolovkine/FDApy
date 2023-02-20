@@ -279,6 +279,10 @@ class TestCheckBasisNone(unittest.TestCase):
         with self.assertRaises(ValueError):
             KarhunenLoeve._check_basis_none(self.basis_name, self.basis)
 
+    def test_raise_error_none(self):
+        with self.assertRaises(ValueError):
+            KarhunenLoeve._check_basis_none(None, None)
+
     def test_no_raise_error(self):
         KarhunenLoeve._check_basis_none(self.basis_name, None)
         self.assertTrue(True)  # if no error was raised, the test is successful
@@ -379,3 +383,86 @@ class TestCreateListBasis(unittest.TestCase):
         self.assertEqual(basis_list[1].name, 'bsplines')
         self.assertEqual(basis_list[1].n_obs, 25)
         self.assertEqual(basis_list[1].dimension, '2D')
+
+    def test_create_list_basis_fourier(self):
+        n_functions = 6
+
+        basis_list = KarhunenLoeve._create_list_basis(
+            self.basis_name, self.dimension, n_functions
+        )
+
+        self.assertEqual(len(basis_list), 2)
+        self.assertIsInstance(basis_list[0], Basis)
+        self.assertIsInstance(basis_list[1], Basis)
+
+        self.assertEqual(basis_list[0].name, 'fourier')
+        self.assertEqual(basis_list[0].n_obs, 49)
+        self.assertEqual(basis_list[0].dimension, '1D')
+
+        self.assertEqual(basis_list[1].name, 'bsplines')
+        self.assertEqual(basis_list[1].n_obs, 49)
+        self.assertEqual(basis_list[1].dimension, '2D')
+
+
+class TestKarhunenLoeveInit(unittest.TestCase):
+    def setUp(self):
+        self.basis_name = ['fourier', 'bsplines']
+        self.dimension = '1D'
+        self.n_functions = 5
+        self.basis = Basis('fourier', n_functions=self.n_functions)
+
+    def test_init_with_no_basis_name(self):
+        with self.assertRaises(ValueError):
+            KarhunenLoeve(
+                basis_name=None,
+                n_functions=self.n_functions,
+                dimension=self.dimension,
+                basis=None
+            )
+
+    def test_init_with_basis_name_and_basis(self):
+        with self.assertRaises(ValueError):
+            KarhunenLoeve(
+                basis_name=self.basis_name,
+                n_functions=self.n_functions,
+                dimension=self.dimension,
+                basis=self.basis
+            )
+
+    def test_init_with_basis_name_as_string(self):
+        kl = KarhunenLoeve(
+            basis_name=self.basis_name[0],
+            n_functions=self.n_functions,
+            dimension=self.dimension,
+        )
+        self.assertIsNotNone(kl.basis)
+        self.assertEqual(len(kl.basis), 1)
+        self.assertIsInstance(kl.basis[0], Basis)
+        self.assertEqual(kl.basis[0].name, 'fourier')
+        self.assertEqual(kl.basis[0].n_obs, 5)
+        self.assertEqual(kl.basis[0].dimension, '1D')
+
+    def test_init_with_basis_name_as_list(self):
+        kl = KarhunenLoeve(
+            basis_name=self.basis_name,
+            n_functions=self.n_functions,
+            dimension=self.dimension
+        )
+        self.assertIsNotNone(kl.basis)
+        self.assertEqual(len(kl.basis), 2)
+        self.assertIsInstance(kl.basis[0], Basis)
+        self.assertIsInstance(kl.basis[1], Basis)
+
+    def test_init_with_basis_as_list(self):
+        kl = KarhunenLoeve(
+            basis_name=None,
+            n_functions=None,
+            dimension=None,
+            basis=self.basis
+        )
+        self.assertIsNotNone(kl.basis)
+        self.assertEqual(len(kl.basis), 1)
+        self.assertIsInstance(kl.basis[0], Basis)
+        self.assertEqual(kl.basis[0].name, 'fourier')
+        self.assertEqual(kl.basis[0].n_obs, 5)
+        self.assertEqual(kl.basis[0].dimension, '1D')

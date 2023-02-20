@@ -411,10 +411,13 @@ class KarhunenLoeve(Simulation):
             If both `basis_name` and `basis` are not None.
 
         """
-        if (basis_name is not None) and (basis is not None):
+        if (
+            ((basis_name is not None) and (basis is not None)) or
+            ((basis_name is None) and (basis is None))
+        ):
             raise ValueError(
-                'One of the arguments `basis_name` or `basis` have to be None.'
-                ' Do not know which basis to use.'
+                'Only one of the arguments `basis_name` or `basis` have to be '
+                'provided. Do not know which basis to use.'
             )
 
     @staticmethod
@@ -516,6 +519,7 @@ class KarhunenLoeve(Simulation):
         -------
         Sequence[Basis]
             A list of Basis objects generated for each name-dimension pair.
+
         """
 
         # Because Fourier is defined by pairs.
