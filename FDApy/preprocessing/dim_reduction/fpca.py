@@ -514,7 +514,7 @@ class MFPCA():
         self.n_components = n_components
         self.method = method
         self.normalize = normalize
-        self.weights = 1
+        self.weights = None
 
     def fit(
         self,
@@ -876,7 +876,7 @@ class MFPCA():
             transformation of the scores into the original curve space.
 
         """
-        if self.weights == 1:
+        if self.weights is None:
             self.weights = np.repeat(1, self.eigenfunctions.n_functional)
         res = [None] * self.eigenfunctions.n_functional
         for idx, (mean, eigenfunction, weight) in enumerate(

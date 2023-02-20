@@ -29,16 +29,16 @@ colors = np.array([[0.5, 0, 0, 1]])
 
 # Parameters of the basis
 name = ['bsplines', 'fourier']
-n_functions = [5, 5]
+n_functions = 5
 
 ###############################################################################
 # We simulate :math:`N = 50` curves of a 2-dimensional process. The first
 # component of the process is defined on the one-dimensional observation grid
-# :math:`\{0, 0.01, 0.02, \cdots, 1\}`, based on the first :math:`K = 25`
+# :math:`\{0, 0.01, 0.02, \cdots, 1\}`, based on the first :math:`K = 5`
 # B-splines basis functions on :math:`[0, 1]` and the variance of the scores
 # random variables equal to :math:`1`. The second component of the process is
 # defined on the one-dimensional observation grid
-# :math:`\{0, 0.01, 0.02, \cdots, 1\}`, based on the first :math:`K = 10`
+# :math:`\{0, 0.01, 0.02, \cdots, 1\}`, based on the first :math:`K = 5`
 # Fourier basis functions on :math:`[0, 1]` and the variance of the scores
 # random variables equal to :math:`1`.
 kl = KarhunenLoeve(
@@ -56,7 +56,7 @@ _ = plot_multivariate(data)
 # Perform multivariate FPCA with an estimation of the number of components by
 # the percentage of variance explained using a decomposition of the covariance
 # operator.
-mfpca = MFPCA(n_components=[0.95, 0.95], method='covariance')
+mfpca = MFPCA(n_components=[0.99, 0.99], method='covariance')
 mfpca.fit(data)
 
 # Plot the eigenfunctions

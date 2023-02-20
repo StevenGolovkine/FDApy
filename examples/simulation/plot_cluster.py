@@ -23,7 +23,7 @@ random_state = np.random.default_rng(rng)
 
 # Parameters of the basis
 name = 'fourier'
-n_functions = 5
+n_functions = 25
 
 # Parameters of the clusters
 n_clusters = 2

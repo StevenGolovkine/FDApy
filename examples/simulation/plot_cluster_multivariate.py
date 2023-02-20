@@ -23,16 +23,13 @@ random_state = np.random.default_rng(rng)
 
 # Parameters of the basis
 name = ['fourier', 'wiener']
-n_functions = 5
+n_functions = 5  # Set an odd number of functions for Fourier basis
 
 # Parameters of the clusters
 n_clusters = 2
 mean = np.array([0, 0])
 covariance = np.array([[1, -0.6], [-0.6, 1]])
-centers = [
-    random_state.multivariate_normal(mean, covariance, size=n_func) 
-    for n_func in n_functions
-]
+centers = random_state.multivariate_normal(mean, covariance, size=n_functions)
 
 ###############################################################################
 #
@@ -40,11 +37,11 @@ centers = [
 # ---
 # We simulate :math:`N = 20` curves of a 2-dimensional process. The first
 # component of the process is defined on the one-dimensional observation grid
-# :math:`\{0, 0.01, 0.02, \cdots, 1\}`, based on the first :math:`K = 25`
+# :math:`\{0, 0.01, 0.02, \cdots, 1\}`, based on the first :math:`K = 5`
 # Fourier basis functions on :math:`[0, 1]` and the decreasing of the variance
 # of the scores is exponential. The second component of the process is defined
 # on the one-dimensional observation grid :math:`\{0, 0.01, 0.02, \cdots, 1\}`,
-# based on the first :math:`K = 25` Wiener basis functions on :math:`[0, 1]`
+# based on the first :math:`K = 5` Wiener basis functions on :math:`[0, 1]`
 # and the decreasing of the variance of the scores is exponential. The clusters
 # are defined through the coefficients in the Karhunen-Loève decomposition. The
 # centers of the clusters are generated as Gaussian random variables with
@@ -56,7 +53,7 @@ kl.new(
     n_obs=n_obs,
     n_clusters=n_clusters,
     centers=centers,
-    cluster_std='exponential'
+    clusters_std='exponential'
 )
 
 _ = plot_multivariate(kl.data, kl.labels)
@@ -67,11 +64,11 @@ _ = plot_multivariate(kl.data, kl.labels)
 # ---
 # We simulate :math:`N = 20` curves of a 2-dimensional process. The first
 # component of the process is defined on the one-dimensional observation grid
-# :math:`\{0, 0.01, 0.02, \cdots, 1\}`, based on the first :math:`K = 25`
+# :math:`\{0, 0.01, 0.02, \cdots, 1\}`, based on the first :math:`K = 5`
 # Fourier basis functions on :math:`[0, 1]` and the decreasing of the variance
-# of the scores is exponential. The second component of the process is defined
+# of the scores is linear. The second component of the process is defined
 # on the one-dimensional observation grid :math:`\{0, 0.01, 0.02, \cdots, 1\}`,
-# based on the first :math:`K = 25` Wiener basis functions on :math:`[0, 1]`
+# based on the first :math:`K = 5` Wiener basis functions on :math:`[0, 1]`
 # and the decreasing of the variance of the scores is linear. The clusters
 # are defined through the coefficients in the Karhunen-Loève decomposition. The
 # centers of the clusters are generated as Gaussian random variables with
@@ -83,7 +80,7 @@ kl.new(
     n_obs=n_obs,
     n_clusters=n_clusters,
     centers=centers,
-    cluster_std=['exponential', 'linear']
+    clusters_std='linear'
 )
 
 _ = plot_multivariate(kl.data, kl.labels)

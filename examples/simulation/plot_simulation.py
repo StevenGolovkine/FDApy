@@ -18,7 +18,7 @@ n_obs = 10
 
 # Parameters of the basis
 name = 'bsplines'
-n_functions = 25
+n_functions = 5
 
 ###############################################################################
 # For one dimensional data
@@ -26,7 +26,7 @@ n_functions = 25
 #
 # We simulate :math:`N = 10` curves on the one-dimensional observation grid
 # :math:`\{0, 0.01, 0.02, \cdots, 1\}`, based on the first
-# :math:`K = 25` B-splines basis functions on :math:`[0, 1]` and the variance of
+# :math:`K = 5` B-splines basis functions on :math:`[0, 1]` and the variance of
 # the scores random variables equal to :math:`1`.
 kl = KarhunenLoeve(
     basis_name=name, n_functions=n_functions, random_state=rng

@@ -10,6 +10,7 @@ This module defines simulation based on the Karhunen-Loève decomposition.
 """
 import numpy as np
 import numpy.typing as npt
+import warnings
 
 from collections import namedtuple
 from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
@@ -516,13 +517,13 @@ class KarhunenLoeve(Simulation):
         Sequence[Basis]
             A list of Basis objects generated for each name-dimension pair.
         """
-        
+
         # Because Fourier is defined by pairs.
         if 'fourier' in basis_name and n_functions % 2 == 0:
-                n_functions += 1
+            n_functions += 1
 
         basis_list = len(basis_name) * [None]
-        for idx, (name, dim) in enumerate(zip(basis_name, dimension)): 
+        for idx, (name, dim) in enumerate(zip(basis_name, dimension)):
             if dim == '1D' and '2D' in dimension:
                 n_func = np.power(n_functions, 2)
             else:
@@ -556,6 +557,12 @@ class KarhunenLoeve(Simulation):
         else:
             basis_name, dimension = KarhunenLoeve._format_basis_name_not_none(
                 basis_name, dimension
+            )
+
+        if ('fourier' in basis_name) and (n_functions % 2 == 0):
+            warnings.warn(
+                "The number of basis of functions is even for the "
+                "Fourier basis, it may result to strange behavior."
             )
 
         # Create the Basis list using the basis_name list.
