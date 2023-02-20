@@ -9,6 +9,10 @@ import numpy as np
 import unittest
 
 from FDApy.representation.basis import Basis
+from FDApy.representation.functional_data import (
+    DenseFunctionalData,
+    MultivariateFunctionalData
+)
 from FDApy.simulation.karhunen import (
     _eigenvalues_linear,
     _eigenvalues_exponential,
@@ -484,7 +488,8 @@ class TestKarhunenLoeveNew(unittest.TestCase):
         self.kl = KarhunenLoeve(
             basis_name=self.basis_name,
             n_functions=self.n_functions,
-            dimension=self.dimension
+            dimension=self.dimension,
+            random_state=42
         )
 
     def test_new_n_obs(self):
@@ -502,3 +507,16 @@ class TestKarhunenLoeveNew(unittest.TestCase):
         clusters_std = np.ones((self.n_functions, 1))
         self.kl.new(10, 1, centers=centers, clusters_std=clusters_std)
         np.testing.assert_allclose(self.kl.eigenvalues, clusters_std[:, 0])
+
+    def test_new_univariate(self):
+        self.kl.new(10, 1)
+        self.assertIsInstance(self.kl.data, MultivariateFunctionalData)
+
+    def test_new_univariate(self):
+        kl = KarhunenLoeve(
+            basis_name=self.basis_name[0],
+            n_functions=self.n_functions,
+            dimension=self.dimension
+        )
+        kl.new(10, 1)
+        self.assertIsInstance(kl.data, DenseFunctionalData)

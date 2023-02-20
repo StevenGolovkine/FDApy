@@ -521,7 +521,6 @@ class KarhunenLoeve(Simulation):
             A list of Basis objects generated for each name-dimension pair.
 
         """
-
         # Because Fourier is defined by pairs.
         if 'fourier' in basis_name and n_functions % 2 == 0:
             n_functions += 1
