@@ -433,7 +433,7 @@ class TestKarhunenLoeveInit(unittest.TestCase):
         kl = KarhunenLoeve(
             basis_name=self.basis_name[0],
             n_functions=self.n_functions,
-            dimension=self.dimension,
+            dimension=self.dimension
         )
         self.assertIsNotNone(kl.basis)
         self.assertEqual(len(kl.basis), 1)
@@ -466,3 +466,39 @@ class TestKarhunenLoeveInit(unittest.TestCase):
         self.assertEqual(kl.basis[0].name, 'fourier')
         self.assertEqual(kl.basis[0].n_obs, 5)
         self.assertEqual(kl.basis[0].dimension, '1D')
+
+    def test_init_warning(self):
+        with self.assertWarns(Warning):
+            KarhunenLoeve(
+                basis_name=self.basis_name[0],
+                n_functions=6,
+                dimension=self.dimension
+            )
+
+
+class TestKarhunenLoeveNew(unittest.TestCase):
+    def setUp(self):
+        self.basis_name = ['fourier', 'bsplines']
+        self.dimension = '1D'
+        self.n_functions = 5
+        self.kl = KarhunenLoeve(
+            basis_name=self.basis_name,
+            n_functions=self.n_functions,
+            dimension=self.dimension
+        )
+
+    def test_new_n_obs(self):
+        n_obs = 100
+        self.kl.new(n_obs)
+        self.assertEqual(self.kl.data.n_obs, n_obs)
+
+    def test_new_labels(self):
+        n_clusters = 3
+        self.kl.new(10, n_clusters=n_clusters)
+        self.assertEqual(len(np.unique(self.kl.labels)), n_clusters)
+
+    def test_new_eigenvalues(self):
+        centers = np.zeros((self.n_functions, 1))
+        clusters_std = np.ones((self.n_functions, 1))
+        self.kl.new(10, 1, centers=centers, clusters_std=clusters_std)
+        np.testing.assert_allclose(self.kl.eigenvalues, clusters_std[:, 0])
