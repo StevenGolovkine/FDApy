@@ -150,7 +150,7 @@ class TestSimulateBrownian(unittest.TestCase):
 class TestBrownian(unittest.TestCase):
     def test_standard_brownian(self):
         # Test standard Brownian motion simulation
-        brownian = Brownian(name='standard', random_state=42)
+        brownian = Brownian(name='standard')
         brownian.new(n_obs=1)
         self.assertIsInstance(brownian.data, DenseFunctionalData)
         self.assertEqual(brownian.data.n_obs, 1)
