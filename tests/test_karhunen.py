@@ -508,7 +508,7 @@ class TestKarhunenLoeveNew(unittest.TestCase):
         self.kl.new(10, 1, centers=centers, clusters_std=clusters_std)
         np.testing.assert_allclose(self.kl.eigenvalues, clusters_std[:, 0])
 
-    def test_new_univariate(self):
+    def test_new_multivariate(self):
         self.kl.new(10, 1)
         self.assertIsInstance(self.kl.data, MultivariateFunctionalData)
 

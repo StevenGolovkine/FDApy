@@ -21,7 +21,7 @@ from .simulation import Simulation
 # Definition of the different Browian motion
 
 def _init_brownian(
-    argvals: Optional[npt.NDArray]
+    argvals: npt.NDArray
 ) -> Tuple[float, npt.NDArray]:
     """Initialize Brownian motions.
 
@@ -30,12 +30,12 @@ def _init_brownian(
 
     Parameters
     ----------
-    argvals: numpy.ndarray, default=None, shape=(n,)
+    argvals: npt.NDArray, shape=(n,)
         Values at which Brownian motions are evaluated.
 
     Returns
     -------
-    delta, argvals: (float, numpy.ndarray)
+    Tuple[float, npt.NDArray]
         A tuple containing the step size, ``delta``, and the sampling points
         ``argvals``.
 
@@ -45,7 +45,7 @@ def _init_brownian(
 
 
 def _standard_brownian(
-    argvals: Optional[npt.NDArray],
+    argvals: npt.NDArray,
     init_point: float = 0.0,
     rnorm: Callable = np.random.normal
 ) -> npt.NDArray:
@@ -53,17 +53,17 @@ def _standard_brownian(
 
     Parameters
     ----------
-    argvals: numpy.ndarray, default=None, shape=(n,)
+    argvals: npt.NDArray, shape=(n,)
         Values at which Brownian motions are evaluated.
     init_point: float, default=0.0
         Start value of the Brownian motion.
-    rnorm: callable, default=np.random.normal
+    rnorm: Callable, default=np.random.normal
         Function to use for normal random variables generation (used for
         reproducibility purpose).
 
     Returns
     -------
-    values: np.ndarray, shape=(n,)
+    npt.NDArray, shape=(n,)
         Array representing a standard Brownian motion with the same shape
         than argvals.
 
@@ -91,7 +91,7 @@ def _standard_brownian(
 
 
 def _geometric_brownian(
-    argvals: Optional[npt.NDArray],
+    argvals: npt.NDArray,
     init_point: float = 1.0,
     mu: float = 0.0,
     sigma: float = 1.0,
@@ -101,7 +101,7 @@ def _geometric_brownian(
 
     Parameters
     ----------
-    argvals: numpy.ndarray, default=None, shape=(n,)
+    argvals: npt.NDArray, shape=(n,)
         Values at which Brownian motions are evaluated.
     init_point: float, default=1.0
         Start value of the Brownian motion. For geometric Brownian motion,
@@ -110,13 +110,13 @@ def _geometric_brownian(
         Interest rate (or percentage drift).
     sigma: float, default=1
         Diffusion coefficient (or percentage volatility).
-    rnorm: callable, default=np.random.normal
+    rnorm: Callable, default=np.random.normal
         Function to use for normal random variables generation (used for
         reproducibility purpose).
 
     Returns
     -------
-    values: np.ndarray, shape=(n,)
+    npt.NDArray, shape=(n,)
         Array representing a geometric Brownian motion with the same shape
         than argvals.
 
@@ -147,7 +147,7 @@ def _geometric_brownian(
 
 
 def _fractional_brownian(
-    argvals: Optional[npt.NDArray],
+    argvals: npt.NDArray,
     hurst: float = 0.5,
     rnorm: Callable = np.random.normal
 ) -> npt.NDArray:
@@ -155,18 +155,18 @@ def _fractional_brownian(
 
     Parameters
     ----------
-    argvals: numpy.ndarray, default=None, shape=(n,)
+    argvals: npt.NDArray, shape=(n,)
         Values at which Brownian motions are evaluated.
     hurst: float, default=0.5
         Hurst parameter. If ``hurst = 0.5``. the fractional Brownian motion is
         equivalent to the standard Brownian motion.
-    rnorm: callable, default=np.random.normal
+    rnorm: Callable, default=np.random.normal
         Function to use for normal random variables generation (used for
         reproducibility purpose).
 
     Returns
     -------
-    values: np.ndarray, shape=(n,)
+    npt.NDArray, shape=(n,)
         Array representing a geometric Brownian motion with the same shape
         than argvals.
 
@@ -187,6 +187,9 @@ def _fractional_brownian(
     def p(idx, hurst):
         return np.power(idx, 2 * hurst)
 
+    if hurst <= 0:
+        raise ValueError('The Hurst parameter has to be strictly positive.')
+
     _, argvals = _init_brownian(argvals)
     n = np.size(argvals)
 
@@ -205,7 +208,7 @@ def _fractional_brownian(
 
 def _simulate_brownian(
     name: str,
-    argvals: Optional[npt.NDArray],
+    argvals: npt.NDArray,
     rnorm: Callable = np.random.normal,
     **kwargs
 ) -> npt.NDArray:
@@ -215,9 +218,9 @@ def _simulate_brownian(
     ----------
     name: str, {'standard', 'geometric', 'fractional'}
         Name of the Brownian motion type to simulate.
-    argvals: numpy.ndarray, default=None, shape=(n,)
+    argvals: npt.NDArray, shape=(n,)
         Values at which Brownian motions are evaluated.
-    rnorm: callable, default=np.random.normal
+    rnorm: Callable, default=np.random.normal
         Function to use for normal random variables generation (used for
         reproducibility purpose).
 
@@ -236,7 +239,7 @@ def _simulate_brownian(
 
     Returns
     -------
-    values: np.ndarray, shape=(n,)
+    npt.NDArray, shape=(n,)
         An array representing a standard brownian motion with the same shape
         than argvals.
 
@@ -330,7 +333,7 @@ class Brownian(Simulation):
             Number of observations to simulate.
         n_clusters: int
             Not used.
-        argvals: numpy.ndarray, default=None, shape=(n,)
+        argvals: npt.NDArray, default=None, shape=(n,)
             Values at which Brownian motions are evaluated. If ``None``, the
             functions are evaluated on the interval :math:`[0, 1]` with
             :math:`21` regularly spaced sampled points.
