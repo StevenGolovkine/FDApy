@@ -48,7 +48,7 @@ def _add_noise_univariate_data(
 
     Returns
     -------
-    noisy_data: DenseFunctionalData
+    DenseFunctionalData
         Noisy version of the functional data.
 
     """
@@ -96,7 +96,7 @@ def _sparsify_univariate_data(
 
     Returns
     -------
-    sparse_data: IrregularFunctionalData
+    IrregularFunctionalData
         Sparse version of the functional data.
 
     """
