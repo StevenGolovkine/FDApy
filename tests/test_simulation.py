@@ -97,6 +97,31 @@ class TestSparsifyUnivariateData(unittest.TestCase):
         self.assertIsInstance(sparse_data, IrregularFunctionalData)
 
 
+class TestCheckData(unittest.TestCase):
+    def setUp(self):
+        self.simulation = KarhunenLoeve('fourier', random_state=1)
+
+    def test_check_data(self):
+        with self.assertRaises(ValueError):
+            self.simulation._check_data()
+
+
+class TestCheckDimension(unittest.TestCase):
+    def setUp(self):
+        self.simulation = KarhunenLoeve('fourier', dimension='2D')
+        self.simulation_multi = KarhunenLoeve(
+            ['fourier', 'bsplines'], dimension='2D'
+        )
+
+    def test_dimension(self):
+        with self.assertRaises(ValueError):
+            self.simulation._check_dimension()
+
+    def test_dimension_multi(self):
+        with self.assertRaises(ValueError):
+            self.simulation_multi._check_dimension()
+
+
 class TestSimulationUnivariate(unittest.TestCase):
     def setUp(self):
         self.simulation = KarhunenLoeve('fourier', random_state=1)
