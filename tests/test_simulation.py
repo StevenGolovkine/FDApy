@@ -7,6 +7,7 @@ Written with the help of ChatGPT.
 """
 import numpy as np
 import unittest
+from unittest.mock import patch
 
 from FDApy.representation.functional_data import (
     DenseFunctionalData,
@@ -15,6 +16,7 @@ from FDApy.representation.functional_data import (
 )
 from FDApy.simulation.karhunen import KarhunenLoeve
 from FDApy.simulation.simulation import (
+    Simulation,
     _add_noise_univariate_data,
     _sparsify_univariate_data
 )
@@ -170,3 +172,24 @@ class TestSimulationMultivariate(unittest.TestCase):
         self.assertIsInstance(
             self.simulation.sparse_data, MultivariateFunctionalData
         )
+
+
+class TestSimulationRandom(unittest.TestCase):
+    def setUp(self) -> None:
+        self.simulation = KarhunenLoeve(['fourier', 'bsplines'])
+        self.simulation.new(n_obs=50, n_clusters=1)
+
+    def test_add_noise(self):
+        self.simulation.add_noise(noise_variance=0.5)
+        self.assertTrue(True)
+
+    def test_sparsify(self):
+        self.simulation.sparsify(percentage=0.5, epsilon=0.1)
+        self.assertTrue(True)
+
+
+class MyAbcClassTest(unittest.TestCase):
+    @patch.multiple(Simulation, __abstractmethods__=set())
+    def test(self):
+        self.instance = Simulation('fourier')
+        self.instance.new(1)
