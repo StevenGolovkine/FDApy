@@ -627,8 +627,14 @@ class MFPCA():
         eigenvectors = np.fliplr(eigenvectors)
 
         # Step 4: Estimation of the multivariate eigenfunctions.
-        # nb_axis = sum(eigenvalues.cumsum() / eigenvalues.sum() < n_components
-        # eigenvectors = eigenvectors[:, :nb_axis]
+        M = self.n_components[0]
+        if isinstance(M, float):
+            nb_axis = sum(eigenvalues.cumsum() / eigenvalues.sum() < M)
+        elif isinstance(M, int):
+            nb_axis = M
+        else:
+            nb_axis = eigenvectors.shape[1]
+        eigenvectors = eigenvectors[:, :nb_axis]
 
         # Retrieve the number of eigenfunctions for each univariate function.
         nb_eigenfunction_uni = [0]
