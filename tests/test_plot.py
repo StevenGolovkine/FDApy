@@ -18,7 +18,8 @@ from FDApy.representation.functional_data import (
 )
 from FDApy.visualization.plot import (
     _init_ax,
-    _plot_1d
+    _plot_1d,
+    _plot_2d
 )
 
 
@@ -53,9 +54,9 @@ class TestPlot1D(unittest.TestCase):
         self.data_irreg = IrregularFunctionalData(
             {'input_dim_0': {0: self.arg_irr}}, {0: self.val_irr}
         )
-        
+
         self.labels = np.array([0])
-        
+
     def test_plot_1d_error(self):
         with self.assertRaises(TypeError):
             _plot_1d(data=np.array([1, 2, 3]), labels=np.array([0]))
@@ -107,3 +108,61 @@ class TestPlot1D(unittest.TestCase):
         _plot_1d(self.data_dense, self.labels, colors='r', ax=ax)
 
         np.testing.assert_equal(ax.get_lines()[0].get_color(), 'r')
+
+
+class TestPlot2D(unittest.TestCase):
+    def setUp(self):
+        self.arg_den = {
+            'input_dim_0': np.array([1, 2, 3, 4]),
+            'input_dim_1': np.array([5, 6, 7])
+        }
+        self.val_den = np.array([[[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]]])
+        self.data_dense = DenseFunctionalData(self.arg_den, self.val_den)
+
+        self.arg_irr = argvals = {
+            'input_dim_0': {0: np.array([1, 2, 3, 4])},
+            'input_dim_1': {0: np.array([5, 6, 7])}
+        }
+        self.val_irr = {
+            0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]])
+        }
+        self.data_irreg = IrregularFunctionalData(self.arg_irr, self.val_irr)
+
+        self.labels = np.array([0])
+
+    def test_plot_2d_error_type(self):
+        with self.assertRaises(TypeError):
+            _plot_2d(data=np.array([1, 2, 3]), labels=np.array([0]))
+
+    def test_plot_2d_error_irregular(self):
+        with self.assertRaises(NotImplementedError):
+            _plot_2d(data=self.data_irreg, labels=self.labels)
+
+    # def test_plot_2d_dense(self):
+    #     # Call the function to plot the object
+    #     _, ax = plt.subplots()
+    #     ax = _plot_1d(self.data_dense, labels=self.labels, colors=None, ax=ax)
+
+    #     # Generate the expected plot
+    #     _, ax_expected = plt.subplots()
+    #     ax_expected.plot(self.arg_den, self.val_den, c='b')
+
+    #     # Compare the generated plot with the expected plot
+    #     np.testing.assert_array_equal(
+    #         ax.get_lines()[0].get_xdata(),
+    #         ax_expected.get_lines()[0].get_xdata()
+    #     )
+    #     np.testing.assert_array_equal(
+    #         ax.get_lines()[0].get_ydata(),
+    #         ax_expected.get_lines()[0].get_ydata()
+    #     )
+    #     np.testing.assert_array_equal(
+    #         ax.get_lines()[0].get_color(), mpl.cm.jet(self.labels[0])
+    #     )
+
+    # def test_plot_2d_with_colors(self):
+    #     # Plot the data with specified colors
+    #     _, ax = plt.subplots()
+    #     _plot_1d(self.data_dense, self.labels, colors='r', ax=ax)
+
+    #     np.testing.assert_equal(ax.get_lines()[0].get_color(), 'r')
