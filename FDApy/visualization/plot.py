@@ -129,8 +129,8 @@ def _plot_2d(
     if isinstance(data, DenseFunctionalData):
         if data.n_obs == 1:
             cs = ax.contourf(
-                data.argvals['input_dim_0'],
                 data.argvals['input_dim_1'],
+                data.argvals['input_dim_0'],
                 data.values.squeeze(),
                 **plt_kwargs
             )

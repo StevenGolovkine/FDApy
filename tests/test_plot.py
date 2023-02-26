@@ -116,10 +116,13 @@ class TestPlot2D(unittest.TestCase):
             'input_dim_0': np.array([1, 2, 3, 4]),
             'input_dim_1': np.array([5, 6, 7])
         }
-        self.val_den = np.array([[[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]]])
+        self.val_den = np.array([
+            [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]],
+            [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]]
+        ])
         self.data_dense = DenseFunctionalData(self.arg_den, self.val_den)
 
-        self.arg_irr = argvals = {
+        self.arg_irr = {
             'input_dim_0': {0: np.array([1, 2, 3, 4])},
             'input_dim_1': {0: np.array([5, 6, 7])}
         }
@@ -128,7 +131,7 @@ class TestPlot2D(unittest.TestCase):
         }
         self.data_irreg = IrregularFunctionalData(self.arg_irr, self.val_irr)
 
-        self.labels = np.array([0])
+        self.labels = np.array([0, 0])
 
     def test_plot_2d_error_type(self):
         with self.assertRaises(TypeError):
@@ -136,29 +139,73 @@ class TestPlot2D(unittest.TestCase):
 
     def test_plot_2d_error_irregular(self):
         with self.assertRaises(NotImplementedError):
-            _plot_2d(data=self.data_irreg, labels=self.labels)
+            _plot_2d(data=self.data_irreg, labels=np.array([0]))
 
-    # def test_plot_2d_dense(self):
-    #     # Call the function to plot the object
-    #     _, ax = plt.subplots()
-    #     ax = _plot_1d(self.data_dense, labels=self.labels, colors=None, ax=ax)
+    def test_plot_2d_dense_unique(self):
+        # Call the function to plot the object
+        ax = _init_ax(projection='rectilinear')
+        ax = _plot_2d(self.data_dense[0], labels=self.labels[0], ax=ax)
 
-    #     # Generate the expected plot
-    #     _, ax_expected = plt.subplots()
-    #     ax_expected.plot(self.arg_den, self.val_den, c='b')
+        # Generate the expected plot
+        ax_expected = _init_ax(projection='rectilinear')
+        ax_expected.contourf(
+            self.arg_den['input_dim_1'],
+            self.arg_den['input_dim_0'],
+            self.val_den[0]
+        )
 
-    #     # Compare the generated plot with the expected plot
-    #     np.testing.assert_array_equal(
-    #         ax.get_lines()[0].get_xdata(),
-    #         ax_expected.get_lines()[0].get_xdata()
-    #     )
-    #     np.testing.assert_array_equal(
-    #         ax.get_lines()[0].get_ydata(),
-    #         ax_expected.get_lines()[0].get_ydata()
-    #     )
-    #     np.testing.assert_array_equal(
-    #         ax.get_lines()[0].get_color(), mpl.cm.jet(self.labels[0])
-    #     )
+        self.assertIsInstance(ax, Axes)
+
+        # Compare the generated plot with the expected plot
+        np.testing.assert_array_equal(
+            ax.collections[0].get_paths()[0].vertices,
+            ax_expected.collections[0].get_paths()[0].vertices
+        )
+        np.testing.assert_array_equal(
+            ax.collections[1].get_paths()[0].vertices,
+            ax_expected.collections[1].get_paths()[0].vertices
+        )
+    
+    def test_plot_2d_dense_multiple(self):
+        ax = _init_ax(projection='3d')
+        ax = _plot_2d(
+            self.data_dense,
+            labels=self.labels, ax=ax, colors=['r', 'y']
+        )
+
+        # Generate the expected plot
+        ax_expected = _init_ax(projection='3d')
+        x, y = np.meshgrid(
+                self.data_dense.argvals['input_dim_0'],
+                self.data_dense.argvals['input_dim_1'],
+                indexing='ij'
+            )
+        ax_expected.plot_surface(x, y, self.data_dense.values[0], color='r')
+        ax_expected.plot_surface(x, y, self.data_dense.values[1], color='y')
+
+        self.assertIsInstance(ax, Axes)
+
+        print(dir(ax))
+        print(dir(ax_expected))        
+
+        # Compare the generated plot with the expected plot
+        # np.testing.assert_array_equal(
+        #     ax.collections[0].get_paths()[0].vertices,
+        #     ax_expected.collections[0].get_paths()[0].vertices
+        # )
+        # np.testing.assert_array_equal(
+        #     ax.collections[1].get_paths()[0].vertices,
+        #     ax_expected.collections[1].get_paths()[0].vertices
+        # )
+
+        # np.testing.assert_array_equal(
+        #     ax.collections[0].get_facecolor()[0],
+        #     np.array([0.40251269, 0., 0., 1.])
+        # )
+        # np.testing.assert_array_equal(
+        #     ax.collections[1].get_facecolor()[0],
+        #     ax_expected.collections[1].get_facecolor()[0]
+        # )
 
     # def test_plot_2d_with_colors(self):
     #     # Plot the data with specified colors
