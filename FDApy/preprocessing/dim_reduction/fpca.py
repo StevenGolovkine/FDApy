@@ -368,6 +368,8 @@ class UFPCA():
             Association, Vol. 100, No. 470.
 
         """
+        if not hasattr(data, 'var_noise'):
+            data.var_noise = 0.0
         noise = max(tol, data.var_noise)
         noise_mat = noise * np.eye(self.covariance.values[0].shape[0])
         sigma_inv = np.linalg.pinv(self.covariance.values[0] + noise_mat)

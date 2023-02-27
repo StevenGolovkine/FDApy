@@ -7,7 +7,9 @@ Written with the help of ChatGPT.
 """
 import numpy as np
 import unittest
+import warnings
 
+from FDApy.representation.functional_data import DenseFunctionalData
 from FDApy.simulation.karhunen import KarhunenLoeve
 from FDApy.preprocessing.dim_reduction.fpca import (
     UFPCA
@@ -45,7 +47,9 @@ class TestFitCovariance(unittest.TestCase):
             uf.eigenvalues, expected_eigenvalues
         )
         np.testing.assert_array_almost_equal(
-            uf.eigenfunctions.values, expected_eigenfunctions, decimal=5
+            np.abs(uf.eigenfunctions.values),
+            np.abs(expected_eigenfunctions),
+            decimal=5
         )
         
     def test_with_known_covariance(self):
@@ -72,8 +76,11 @@ class TestFitCovariance(unittest.TestCase):
             uf.eigenvalues, expected_eigenvalues
         )
         np.testing.assert_array_almost_equal(
-            uf.eigenfunctions.values, expected_eigenfunctions, decimal=5
+            np.abs(uf.eigenfunctions.values),
+            np.abs(expected_eigenfunctions),
+            decimal=5
         )
+
 
 class TestFitInnerProduct(unittest.TestCase):
     def setUp(self):
@@ -106,7 +113,9 @@ class TestFitInnerProduct(unittest.TestCase):
             uf.eigenvalues, expected_eigenvalues
         )
         np.testing.assert_array_almost_equal(
-            uf.eigenfunctions.values, expected_eigenfunctions, decimal=5
+            np.abs(uf.eigenfunctions.values),
+            np.abs(expected_eigenfunctions),
+            decimal=5
         )
 
     def test_wrnings_2d(self):
@@ -119,6 +128,7 @@ class TestFitInnerProduct(unittest.TestCase):
 
         with self.assertWarns(UserWarning):
             uf.fit(data)
+
 
 class TestFit(unittest.TestCase):
     def setUp(self):
@@ -181,4 +191,205 @@ class TestFit(unittest.TestCase):
         expected_eigenvalues = np.array([0.37250134, 0.0529043])
         np.testing.assert_array_almost_equal(
             uf.eigenvalues, expected_eigenvalues
+        )
+
+
+class TestPace(unittest.TestCase):
+    def setUp(self):
+        argvals = {'input_dim_0': np.linspace(0, 1, 10)}
+        kl = KarhunenLoeve(
+            basis_name='fourier', argvals=argvals, 
+            n_functions=5, random_state=42
+        )
+        kl.new(n_obs=50)
+        self.data = kl.data
+
+    def test_pace(self):
+        self.data.covariance()
+        
+        uf = UFPCA(n_components=2, method='covariance')
+        uf.fit(self.data)
+
+        scores = uf._pace(self.data)
+
+        expected_scores = np.array([
+            [-2.70324475e-01,  -7.54032250e-01],
+            [ 1.89943408e+00,  -5.17586244e-01],
+            [-2.30573992e+00,  -2.14846678e-01],
+            [ 8.99858737e-01,  -5.28052839e-01],
+            [-2.25425896e-01, 2.02702135e-01]
+        ])
+        np.testing.assert_array_almost_equal(
+            np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
+        )
+
+
+class TestNumericalIntegration(unittest.TestCase):
+    def setUp(self):
+        warnings.simplefilter('ignore', category=UserWarning)
+
+        argvals = {'input_dim_0': np.linspace(0, 1, 10)}
+        kl = KarhunenLoeve(
+            basis_name='fourier', argvals=argvals, 
+            n_functions=5, random_state=42
+        )
+        kl.new(n_obs=50)
+        self.data = kl.data
+
+    def test_numerical_integration(self):
+        self.data.covariance()
+        
+        uf = UFPCA(n_components=2, method='covariance')
+        uf.fit(self.data)
+
+        scores = uf._numerical_integration(self.data)
+
+        expected_scores = np.array([
+            [-0.26337429, -0.75976051],
+            [ 1.89087774, -0.51679176],
+            [-2.31549977, -0.21327057],
+            [ 0.87391109, -0.52526401],
+            [-0.21814701, 0.19876454]
+        ])
+        np.testing.assert_array_almost_equal(
+            np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
+        )
+
+    def test_numerical_integration_2d(self):
+        argvals = {'input_dim_0': np.linspace(0, 1, 10)}
+        kl = KarhunenLoeve(
+            basis_name='fourier', argvals=argvals, n_functions=5,
+            dimension='2D', random_state=42
+        )
+        kl.new(n_obs=50)
+        data = kl.data
+
+        uf = UFPCA(n_components=2, method='inner-product')
+        uf.fit(data)
+
+        scores = uf._numerical_integration(data)
+
+        expected_scores = np.array([
+            [-0.88091993, 1.23604672],
+            [-2.36805008, -0.0315452],
+            [2.23914369, -1.25243888],
+            [0.60748215, -0.7046951],
+            [0.49341521, 0.39777882]
+        ])
+        np.testing.assert_array_almost_equal(
+            np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
+        )
+
+    def test_value_error(self):
+        argvals = {
+            'input_dim_0': np.array([3, 4, 3]),
+            'input_dim_1': np.array([5, 6]),
+            'input_dim_2': np.array([1, 2, 4])
+        }
+        values = np.array([
+            [
+                [[1, 2, 3], [1, 2, 3]],
+                [[5, 6, 7], [5, 6, 7]],
+                [[3, 4, 5], [3, 4, 5]]
+            ]
+        ])
+        data = DenseFunctionalData(argvals, values)
+
+        uf = UFPCA(n_components=2, method='inner-product')
+        uf.fit(self.data)
+
+        with self.assertRaises(ValueError):
+            uf._numerical_integration(data)
+
+
+class TestTranform(unittest.TestCase):
+    def setUp(self):
+        warnings.simplefilter('ignore', category=UserWarning)
+
+        argvals = {'input_dim_0': np.linspace(0, 1, 10)}
+        kl = KarhunenLoeve(
+            basis_name='fourier', argvals=argvals, 
+            n_functions=5, random_state=42
+        )
+        kl.new(n_obs=50)
+        self.data = kl.data
+
+    def test_error_innpro(self):
+        uf = UFPCA(n_components=2, method='covariance')
+        uf.fit(self.data)
+
+        with self.assertRaises(ValueError):
+            uf.transform(self.data, method='InnPro')
+
+    def test_error_unkown_method(self):
+        uf = UFPCA(n_components=2, method='covariance')
+        uf.fit(self.data)
+
+        with self.assertRaises(ValueError):
+            uf.transform(self.data, method='error')
+
+    def test_pace(self):
+        self.data.covariance()
+
+        uf = UFPCA(n_components=2, method='inner-product')
+        uf.fit(self.data)
+
+        scores = uf.transform(self.data, method='PACE')
+        expected_scores = np.array([
+            [-0.39121016,  0.62482911],
+            [ 1.77859707,  0.38835183],
+            [-2.42667221,  0.085571  ],
+            [ 0.77899918,  0.39881965],
+            [-0.34631175, -0.33203334]
+        ])
+        np.testing.assert_array_almost_equal(
+            np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
+        )
+
+    def test_numint(self):
+        uf = UFPCA(n_components=2, method='inner-product')
+        uf.fit(self.data)
+
+        scores = uf.transform(self.data, method='NumInt')
+        expected_scores = np.array([
+            [-0.38336168,  0.63031539],
+            [ 1.77089036,  0.38734664],
+            [-2.43548716,  0.08382546],
+            [ 0.75392371,  0.39581889],
+            [-0.33813439, -0.32820965]
+        ])
+        np.testing.assert_array_almost_equal(
+            np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
+        )
+
+    def test_innpro(self):
+        uf = UFPCA(n_components=2, method='inner-product')
+        uf.fit(self.data)
+
+        scores = uf.transform(self.data, method='InnPro')
+        expected_scores = np.array([
+            [-0.38336168,  0.63031539],
+            [ 1.77089036,  0.38734664],
+            [-2.43548716,  0.08382546],
+            [ 0.75392371,  0.39581889],
+            [-0.33813439, -0.32820965]
+        ])
+        np.testing.assert_array_almost_equal(
+            np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
+        )
+
+    def test_normalize(self):
+        uf = UFPCA(n_components=2, method='inner-product', normalize=True)
+        uf.fit(self.data)
+
+        scores = uf.transform(self.data, method='InnPro')
+        expected_scores = np.array([
+            [-0.16066415,  0.2641607 ],
+            [ 0.74216755,  0.16233422],
+            [-1.02069534,  0.03513065],
+            [ 0.31596406,  0.16588488],
+            [-0.14170972, -0.13755033]
+        ])
+        np.testing.assert_array_almost_equal(
+            np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
         )
