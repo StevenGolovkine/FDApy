@@ -22,7 +22,9 @@ from ...representation.functional_data import (
     FunctionalData, DenseFunctionalData, MultivariateFunctionalData
 )
 from ...misc.utils import (
-    _compute_covariance, _integrate, _integration_weights,
+    _compute_covariance,
+    _integrate,
+    _integration_weights,
     _select_number_eigencomponents
 )
 
@@ -37,7 +39,7 @@ class UFPCA():
 
     Linear dimensionality reduction of a univariate functional dataset. The
     projection of the data in a lower dimensional space is performed using
-    a diagomalization of the covariance operator or of the inner-product matrix
+    a diagonalization of the covariance operator or of the inner-product matrix
     of the data.
 
     Parameters
@@ -913,7 +915,7 @@ def _compute_inner_product(
     data: FunctionalData
         Observed data, an instance of DenseFunctionalData or
         MultivariateFunctionalData.
-    n_components: int, float, None, default=None
+    n_components: Optional[Union[np.float64, np.int64]], default=None
         Number of components to keep. If `n_components` is `None`, all
         components are kept, ``n_components == min(n_samples, n_features)``.
         If `n_components` is an integer, `n_components` are kept. If

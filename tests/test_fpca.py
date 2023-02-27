@@ -8,14 +8,13 @@ Written with the help of ChatGPT.
 import numpy as np
 import unittest
 
+from FDApy.representation.functional_data import DenseFunctionalData
 from FDApy.preprocessing.dim_reduction.fpca import (
-    DenseFunctionalData,
     _compute_inner_product
 )
 
 
 class TestComputeInnerProduct(unittest.TestCase):
-
     def setUp(self):
         self.argvals = {'input_dim_0': np.array([1, 2, 3, 4])}
         self.values = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])
