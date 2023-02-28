@@ -118,7 +118,7 @@ class TestFitInnerProduct(unittest.TestCase):
             decimal=5
         )
 
-    def test_wrnings_2d(self):
+    def test_warnings_2d(self):
         kl = KarhunenLoeve(
             basis_name='fourier', n_functions=5, dimension='2D'
         )
@@ -302,7 +302,7 @@ class TestNumericalIntegration(unittest.TestCase):
             uf._numerical_integration(data)
 
 
-class TestTranform(unittest.TestCase):
+class TestTransform(unittest.TestCase):
     def setUp(self):
         warnings.simplefilter('ignore', category=UserWarning)
 
@@ -393,3 +393,75 @@ class TestTranform(unittest.TestCase):
         np.testing.assert_array_almost_equal(
             np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
         )
+
+
+class TestInverseTranform(unittest.TestCase):
+    def setUp(self):
+        warnings.simplefilter('ignore', category=UserWarning)
+
+        argvals = {'input_dim_0': np.linspace(0, 1, 10)}
+        kl = KarhunenLoeve(
+            basis_name='fourier', argvals=argvals,
+            n_functions=5, random_state=42
+        )
+        kl.new(n_obs=50)
+        self.data_1d = kl.data
+
+        kl = KarhunenLoeve(
+            basis_name='fourier', argvals=argvals,
+            n_functions=5, dimension='2D', random_state=42
+        )
+        kl.new(n_obs=50)
+        self.data_2d = kl.data
+
+    def test_inverse_tranform_1D(self):
+        uf = UFPCA(n_components=2, method='inner-product')
+        uf.fit(self.data_1d)
+        scores = uf.transform(self.data_1d)
+
+        expected_data = uf.weights * np.dot(scores, uf.eigenfunctions.values)
+        data = uf.inverse_transform(scores)
+
+        np.testing.assert_array_almost_equal(
+            data.values,
+            expected_data + uf.mean.values
+        )
+    
+    def test_inverse_tranform_2D(self):
+        uf = UFPCA(n_components=2, method='inner-product')
+        uf.fit(self.data_2d)
+        scores = uf.transform(self.data_2d)
+
+        expected_data = uf.weights * np.einsum(
+            'ij,jkl->ikl',
+            scores,
+            uf.eigenfunctions.values
+        )
+        data = uf.inverse_transform(scores)
+
+        np.testing.assert_array_almost_equal(
+            data.values,
+            expected_data + uf.mean.values
+        )
+
+    def test_error(self):
+        uf = UFPCA(n_components=2, method='inner-product')
+        uf.fit(self.data_1d)
+        scores = uf.transform(self.data_1d)
+
+        argvals = {
+            'input_dim_0': np.array([3, 4, 3]),
+            'input_dim_1': np.array([5, 6]),
+            'input_dim_2': np.array([1, 2, 4])
+        }
+        values = np.array([
+            [
+                [[1, 2, 3], [1, 2, 3]],
+                [[5, 6, 7], [5, 6, 7]],
+                [[3, 4, 5], [3, 4, 5]]
+            ]
+        ])
+        uf.eigenfunctions = DenseFunctionalData(argvals, values)
+
+        with self.assertRaises(ValueError):
+            uf.inverse_transform(scores)
