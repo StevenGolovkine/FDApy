@@ -398,21 +398,22 @@ class UFPCA():
             functions defined by the eigenfunctions.
 
         """
+        if data.n_dim > 2:
+            raise ValueError("The dimension of the data have to be 1 or 2.")
+
         projection = _integrate(
             x=data.argvals['input_dim_0'],
             y=[traj * self.eigenfunctions.values for traj in data.values],
             method=method
         )
-        if data.n_dim == 1:
-            return projection
-        elif data.n_dim == 2:
+        if data.n_dim == 2:
             return _integrate(
                 x=data.argvals['input_dim_1'],
                 y=projection,
                 method=method
             )
         else:
-            raise ValueError("The dimension of the data have to be 1 or 2.")
+            return projection
 
     def inverse_transform(
         self,
