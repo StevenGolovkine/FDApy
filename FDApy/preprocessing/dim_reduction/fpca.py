@@ -478,7 +478,7 @@ class MFPCA():
         eigendecomposition of the covariance operator of each univariate
         components. If ``method == 'inner-product'``, the estimation is
         based on an eigendecomposition of the inner-product matrix.
-    n_components: List[int, float, None], default=None
+    n_components: List[Union[int, float, None]], default=None
         Number of components to keep. If ``method=='covariance'``,
         `n_components` should be a list of length :math:`P`. Each entry
         represents the variance explained by each univariate component. Note
@@ -590,12 +590,6 @@ class MFPCA():
             Training data.
         scores_method: str, {'NumInt', 'PACE'}, default='NumInt'
             Method for the estimation of the univariate scores.
-
-        Notes
-        -----
-        TODO: Add a selection of the number of PC in FD. Maybe, consider the
-        paper of Li, Wang and Carool (2013), Selecting the number of principal
-        components in functional data.
 
         """
         # Step 1: Perform univariate fPCA on each functions.

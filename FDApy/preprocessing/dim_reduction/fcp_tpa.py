@@ -1,25 +1,29 @@
 #!/usr/bin/env python
 # -*-coding:utf8 -*
 
-"""Module for FCPTPA class.
+"""
+Functional CP-Tensor Power Algorithm
+------------------------------------
 
-This module is used to implement the Functional CP-TPA algorithm [1]. This
+This module is used to implement the Functional CP-TPA algorithm [1]_. This
 method computes an eigendecomposition of image observations, which can be
 interpreted as functions on a two-dimensional domain.
 
 References
 ----------
-[1] - G. I. Allen, "Multi-way Functional Principal Components Analysis", IEEE
-International Workshop on Computational Advances in Multi-Sensor Adaptive
-Processing, 2013.
-[2] - C. Happ, S. Greven (2018): Multivariate Functional Principal Component
-Analysis for Data Observed on Different (Dimensional) Domains. Journal of the
-American Statistical Association, 113(522): 649-659 .
-[3] - C. Happ-Kurz (2020): Object-Oriented Software for Functional Data.
-Journal of Statistical Software, 93(5): 1-38 .
+.. [A] Allen G., Multi-way Functional Principal Components Analysis (2013),
+IEEE International Workshop on Computational Advances in Multi-Sensor Adaptive
+Processing
+.. [HG] Happ C. & Greven S. (2018) Multivariate Functional Principal Component
+Analysis for Data Observed on Different (Dimensional) Domains, Journal of the
+American Statistical Association, 113:522, 649-659,
+DOI: 10.1080/01621459.2016.1273115
+.. [HK] Happ-Kurz C. (2020) Object-Oriented Software for Functional Data.
+Journal of Statistical Software, 93(5): 1-38
 
 """
 import numpy as np
+import numpy.typing as npt
 import warnings
 
 from numpy.linalg import norm
@@ -32,116 +36,167 @@ from ...representation.functional_data import DenseFunctionalData
 ##############################################################################
 # Utility functions
 
-def gcv(
-    alpha: float,
-    n: int,
-    z: np.ndarray,
-    eta: float,
-    lamb: np.ndarray
+def _gcv(
+    alpha: np.float64,
+    dimension_length: np.int64,
+    vector: npt.NDArray[np.float64],
+    smoother: np.float64,
+    rayleigh: npt.NDArray[np.float64]
 ) -> float:
     r"""Generalized cross-validation for the FCP-TPA algortihm.
 
     This function calculates the generalized cross-validation criterion for the
-    smoothing parameters alpha that is used in the FCP-TPA algorithm.
+    smoothing parameters alpha that is used in the FCP-TPA algorithm [A]_. The
+    code is adapted from [HK]_. It corresponds to Equations (19) and (20) in
+    [HSB]_.
 
     Parameters
     ----------
-    alpha: float
-        The current value of the smoothing parameter.
-    n: integer
+    alpha: np.float64
+        The current value of the smoothing parameter. It corresponds to
+        :math:`\alpha_u` and :math:`\alpha_v` in Equations (19) and (20) in
+        [HSB]_.
+    dimension_length: np.int64
         The length of the dimension, for which the smoothing parameter is to
-        be optimized.
-    z: np.ndarray
-        A vector of length :math:`n`.
-    eta: float
-        A value.
-    lamb: np.ndarray
-        A vector of length :math:`n`, containing the eigenvalues of the
-        penalty matrix corresponding to the current image direction.
+        be optimized. It corresponds to :math:`m` and :math:`n` in Equations
+        (19) and (20) in [HSB]_.
+    vector: npt.NDArray[np.float64], shape=(dimension_length,)
+        Solutions to the least square problem. It corresponds to
+        :math:`Xv / ||v||^2` and :math:`X^\top u / ||u||^2` in Equations (19)
+        and (20) in [HSB]_.
+    smoother: np.float64
+        Nornalization parameter. It corresponds to :math:`S_u` and :math:`S_v`
+        in Equations (19) and (20) in [HSB]_.
+    rayleigh: npt.NDArray[np.float64], shape=(dimension_length,)
+        A vector containing the eigenvalues of the penalty matrix corresponding
+        to the current image direction. It corresponds to the Rayleight
+        quotients :math:`\mathcal{R}_u(u)` and :math:`\mathcal{R}_v(v)` in
+        Equations (19) and (20) in [HSB]_.
 
     Returns
     -------
-    gcv: float
+    float
         The value of the GCV criterion.
 
     References
     ----------
-    - G. I. Allen, "Multi-way Functional Principal Components Analysis", IEEE
-    International Workshop on Computational Advances in Multi-Sensor Adaptive
-    Processing, 2013.
-
-    """
-    eig = 1 / (1 + alpha * lamb)
-    res = np.sum((z * (1 - eta * eig))**2) / n
-    return res / (1 - eta / n * np.sum(eig))**2
-
-
-def find_opt_alpha(
-    alpha_range: np.ndarray,
-    data: np.ndarray,
-    u: np.ndarray,
-    v: np.ndarray,
-    alpha: float,
-    penal_mat: np.ndarray,
-    eival: Tuple[np.ndarray, np.ndarray],
-    dim: int
-) -> float:
-    r"""Find the optimal smoothing parameters in FCP-TPA using GCV.
-
-    Parameters
-    ----------
-    alpha_range: np.ndarray
-        A numeric vector with two elements, containing the minimal and maximal
-        values for the smoothing parameter that is to be optimized.
-    data: np.ndarray
-        The tensor containing the data of dimension
-        :math:`N \times S_1 \times S_2`
-    u: np.ndarray
-        First eigenvectors
-    v: np.ndarray
-        Second eigenvectors
-    alpha: float
-        The current value of the smoothing parameter for the eigenvector v.
-    penal_mat: np.ndarray
-        The penalty matrix corresponding to the direction given by v.
-    eival: tuple of np.array
-        The eigenvectors and eigenvalues of the penalty matrix for the image
-        direction for which the optimal smoothing parameter is to be found.
-    dim: integer
-        The direction to optimize. Should be 2 or 3.
-
-    Returns
-    -------
-    alpha: float
-        The optimal smoothing parameter found by optimizing the GCV criterion
-        within the given range of possible values.
-
-    References
-    ----------
-    - G. I. Allen (2013), "Multi-way Functional Principal Components Analysis",
+    .. [A] Allen G., Multi-way Functional Principal Components Analysis (2013),
     IEEE International Workshop on Computational Advances in Multi-Sensor
-    Adaptive Processing.
-    - J. Z. Huang, H. Shen and A. Buja (2009), "The Analysis of Two-Way
-    Functional Data Using Two-Way Regularized Singular Value Decomposition".
+    Adaptive Processing
+    .. [HK] Happ-Kurz C. (2020) Object-Oriented Software for Functional Data.
+    Journal of Statistical Software, 93(5): 1-38
+    .. [HSB] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
+    Functional Data Using Two-Way Regularized Singular Value Decomposition.
     Journal of the American Statistical Association, Vol. 104, No. 488,
     1609 -- 1620.
 
     """
-    evec, lamb = eival
-    if dim == 2:
+    shrinking = smoother / (1 + alpha * rayleigh)
+    num = np.sum(np.power(((1 - shrinking) * vector), 2)) / dimension_length
+    deno = np.power((1 - np.sum(shrinking) / dimension_length), 2)
+    return num / deno
+
+
+def _find_optimal_alpha(
+    alpha_range: Tuple[np.float64, np.float64],
+    data: npt.NDArray[np.float64],
+    u: npt.NDArray[np.float64],
+    v: npt.NDArray[np.float64],
+    alpha: np.float64,
+    penalty_matrix: npt.NDArray[np.float64],
+    eigencomponents: Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]],
+    dimension: np.int64
+) -> float:
+    r"""Find the optimal smoothing parameters in FCP-TPA using GCV.
+
+    This function find the optimal smoothing parameters :math:`\alpha_v` (or
+    :math:`\alpha_w`) for the two image directions (v and w) in the FCP_TPA
+    algorithm [A]_ based on generalized cross-validation, which is nested in
+    the tensor power algorithm. Given a range of possible values of
+    :math:`\alpha_v` (or :math:`\alpha_w`, respectively), the optimum is found
+    by optimizing the GCV criterion using the function ``scipy.optimize``. The
+    code is adapted from [HK]_.
+
+    Parameters
+    ----------
+    alpha_range: Tuple[np.float64, np.float64]
+        A tuple with two elements, containing the minimal and maximal
+        values for the smoothing parameter that is to be optimized. It
+        corresponds to minimal and maximal values of :math:`\alpha_u` and
+        :math:`\alpha_v` in Equations (19) and (20) in [HSB]_.
+    data: npt.NDArray[np.float64], shape=(n_obs, m_1, m_2)
+        The tensor containing the data of dimension
+        :math:`n_{obs} \times m_1 \times m_2`. It corresponds to
+        :math:`\hat{\mathcal{X}}` in Algorithm in [A]_.
+    u: npt.NDArray[np.float64], shape=(n_obs,)
+        The current value of the eigenvectors :math:`u_k` (not
+        normalized) of dimensions :math:`n_{obs}`. It corresponds to
+        :math:`u_k` in Algorithm in [A]_.
+    v: npt.NDArray[np.float64]
+        The current value of the eigenvectors :math:`v_k` (or :math:`w_k`) (not
+        normalized) of dimensions :math:`m_1` (or :math:`m_2`). It corresponds
+        to :math:`v_k` (or :math:`w_k`) in Algorithm in [A]_.
+    alpha: np.float64
+        The current value of the smoothing parameter for the other image
+        direction (:math:`\alpha_w` if the optimization is performed with
+        respect to the vector :math:`v_k` and :math:`\alpha_v` if the
+        optimization is performed with respect to the vector :math:`w_k`),
+        which is kept as fixed. It corresponds to :math:`\alpha_u` and
+        :math:`\alpha_v` in Equations (19) and (20) in [HSB]_.
+    penalty_matrix: npt.NDArray[np.float64], shape=(m, m)
+        A matrix of dimension :math:`m \times m`, the penalty matrix for the
+        other image direction. It corresponds to :math:`\Omega_v` and
+        :math:`\Omega_u` in Equations (17) and (18) in [HSB]_.
+    eigencomponents: Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]
+        A tuple containing the eigenvalues and eigenvectors of the penalty
+        matrix for the image direction for which the optimal smoothing
+        parameter is to be found. The shape of the eigenvalues array is
+        :math:`m` and the shape of the eigenvectors array is
+        :math:`m \times m`. The eigenvalues corresponds to the Rayleight
+        quotients :math:`\mathcal{R}_u(u)` and :math:`\mathcal{R}_v(v)` in
+        Equations (19) and (20) in [HSB]_.
+    dimension: np.int64, {2, 3}
+        The direction to optimize. If ``dimension == 2``, the optimization is
+        performed with respect to the first dimension of the images and if
+        ``dimension == 3``, the optimization is performed with respect to the
+        second dimension of the images.
+
+    Returns
+    -------
+    float
+        The optimal smoothing parameter :math:`\alpha` found by optimizing the
+        GCV criterion within the given range of possible values.
+
+    References
+    ----------
+    .. [A] Allen G., Multi-way Functional Principal Components Analysis (2013),
+    IEEE International Workshop on Computational Advances in Multi-Sensor
+    Adaptive Processing
+    .. [HSB] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
+    Functional Data Using Two-Way Regularized Singular Value Decomposition.
+    Journal of the American Statistical Association, Vol. 104, No. 488,
+    1609 -- 1620.
+
+    """
+    evec, lamb = eigencomponents
+    if dimension == 2:
         b = np.einsum('i, j, ikj', u, v, data)
-    elif dim == 3:
+    elif dimension == 3:
         b = np.einsum('i, j, ijk', u, v, data)
     else:
-        raise ValueError(f"The direction can not be {dim}.")
+        raise ValueError(f"The direction can not be {dimension}.")
 
     z = np.dot(evec.T, b) / (norm(u) * norm(v))
-    vv = np.dot(v.T, np.dot(penal_mat, v))
+    vv = np.dot(v.T, np.dot(penalty_matrix, v))
     eta = 1 / (1 + alpha * vv / norm(v))
 
-    res = minimize(gcv, x0=min(alpha_range), args=(len(lamb), z, eta, lamb),
-                   bounds=[(min(alpha_range), max(alpha_range))]).x
-    return res
+    res = minimize(
+        _gcv,
+        x0=min(alpha_range),
+        args=(len(lamb), z, eta, lamb),
+        bounds=alpha_range
+    )
+    return res.x
 
 
 ##############################################################################
@@ -281,13 +336,15 @@ class FCPTPA():
                 v = np.linalg.solve(a, b) / (u_cross * w_cross)
 
                 # Update alpha_v
-                alpha_v = find_opt_alpha(alpha_range=alpha_range['v'],
-                                         data=values,
-                                         u=u, v=w,
-                                         alpha=alpha_w,
-                                         penal_mat=penal_mat['w'],
-                                         eival=eigen_v,
-                                         dim=2)
+                alpha_v = _find_optimal_alpha(
+                    alpha_range=alpha_range['v'],
+                    data=values,
+                    u=u, v=w,
+                    alpha=alpha_w,
+                    penalty_matrix=penal_mat['w'],
+                    eigencomponents=eigen_v,
+                    dimension=2
+                )
                 # Update w
                 w_old = w
                 v_cross = np.dot(v.T, v + alpha_v * np.dot(penal_mat['v'], v))
@@ -296,13 +353,15 @@ class FCPTPA():
                 w = np.linalg.solve(a, b) / (u_cross * v_cross)
 
                 # Update alpha_w
-                alpha_w = find_opt_alpha(alpha_range=alpha_range['w'],
-                                         data=values,
-                                         u=u, v=v,
-                                         alpha=alpha_v,
-                                         penal_mat=penal_mat['v'],
-                                         eival=eigen_w,
-                                         dim=3)
+                alpha_w = _find_optimal_alpha(
+                    alpha_range=alpha_range['w'],
+                    data=values,
+                    u=u, v=v,
+                    alpha=alpha_v,
+                    penalty_matrix=penal_mat['v'],
+                    eigencomponents=eigen_w,
+                    dimension=3
+                )
 
                 it = it + 1
 
