@@ -94,7 +94,7 @@ class UFPCA():
         """Estimate the eigencomponents of the data.
 
         Before estimating the eigencomponents, the data is centered. Using the
-        covariance operator, the estimation is based on [RS]_.
+        covariance operator, the estimation is based on [1]_.
 
         Parameters
         ----------
@@ -103,7 +103,7 @@ class UFPCA():
 
         References
         ----------
-        .. [RS] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+        .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
             Analysis, Springer Science, Chapter 8.
 
         """
@@ -154,7 +154,7 @@ class UFPCA():
 
         References
         ----------
-        .. [RS] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+        .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
             Analysis, Springer Science, Chapter 8.
 
         """
@@ -529,7 +529,7 @@ class MFPCA():
         """Estimate the eigencomponents of the data.
 
         Before estimating the eigencomponents, the data is centered. Using the
-        covariance operator, the estimation is based on [HG]_.
+        covariance operator, the estimation is based on [2]_.
 
         Parameters
         ----------
@@ -541,7 +541,7 @@ class MFPCA():
 
         References
         ----------
-        .. [HG] Happ C. & Greven S. (2018) Multivariate Functional Principal
+        .. [2] Happ C. & Greven S. (2018) Multivariate Functional Principal
             Component Analysis for Data Observed on Different (Dimensional)
             Domains, Journal of the American Statistical Association, 113:522,
             649-659, DOI: 10.1080/01621459.2016.1273115
@@ -757,11 +757,11 @@ class MFPCA():
         directly estimate the scores using the projection of the data onto the
         multivariate eigenfunctions and not use the univariate components and
         the decomposition of the covariance of the univariate scores as Happ
-        and Greven [HG]_ could do.
+        and Greven [2]_ could do.
 
         References
         ----------
-        .. [HG] Happ C. & Greven S. (2018) Multivariate Functional Principal
+        .. [2] Happ C. & Greven S. (2018) Multivariate Functional Principal
             Component Analysis for Data Observed on Different (Dimensional)
             Domains, Journal of the American Statistical Association, 113:522,
             649-659, DOI: 10.1080/01621459.2016.1273115

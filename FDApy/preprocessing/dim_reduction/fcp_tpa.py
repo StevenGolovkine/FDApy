@@ -40,6 +40,21 @@ from ...representation.functional_data import DenseFunctionalData
 ##############################################################################
 # Utility functions
 
+def _initialize_vectors(
+    shape: Tuple[np.int64, np.int64, np.int64]
+) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
+    r"""Initalize u, v and w in the FCP-TPA algorithm.
+    
+    Parameters
+    ----------
+    shape: Tuple[np.int64, np.int64, np.int64]
+        Shape of the dataset. It should be in the format :math:`(N, M_1, M_2)`.
+
+    """
+    vectors = [np.random.uniform(-1, 1, dimension) for dimension in shape]
+    return tuple(vector / norm(vector) for vector in vectors)
+
+
 def _gcv(
     alpha: np.float64,
     dimension_length: np.int64,
@@ -220,18 +235,18 @@ class FCPTPA():
 
     .. math::
 
-        X = \sum_{k = 1}^K c_k \cdot u_k \circ \phi_k \circ \psi_k
+        X = \sum_{k = 1}^K c_k \cdot u_k \circ v_k \circ w_k
 
     where :math:`\circ` stands for the outer product, :math:`c_k` is a
-    coefficient (scalar) and :math:`u_k, \phi_k, \psi_k` are eigenvectors for
+    coefficient (scalar) and :math:`u_k, v_k, w_k` are eigenvectors for
     each direction of the tensor. In  this representation, the outer product
-    :math:`\phi_k \circ \psi_k` can be regarded as the :math:`k`-th eigenimage,
+    :math:`v_k \circ w_k` can be regarded as the :math:`k`-th eigenimage,
     while :math:`d_k \cdot u_k` represents the vector of individual scores for
     this eigenimage and each observation.
 
-    The smoothness of the eigenvectors :math:`\phi_k, \psi_k` is induced by
+    The smoothness of the eigenvectors :math:`v_k, w_k` is induced by
     penalty matrices for both image directions, that are weighted by
-    smoothing parameters :math:`\alpha_{\phi_k}, \alpha_{\psi_k}`. The
+    smoothing parameters :math:`\alpha_{v_k}, \alpha_{w_k}`. The
     eigenvectors :math:`u_k` are not smoothed, hence the algorithm does not
     induce smoothness along observations.
 
@@ -242,7 +257,7 @@ class FCPTPA():
 
     The FCP-TPA algorithm is an iterative algorithm. Convergence is assumed if
     the relative difference between the actual and the previous values are all
-    below the tolerance level ``tol``. The tolerance level is increased
+    below the tolerance level ``tolerance``. The tolerance level is increased
     automatically, if the algorithm has not converged after ``maxIter`` steps
     and if ``adaptTol = TRUE``. If the algorithm did not converge after
     ``maxIter`` steps steps, the function throws a warning. The code is
@@ -250,8 +265,18 @@ class FCPTPA():
 
     Parameters
     ----------
-    n_components: int, default=None
+    n_components: np.int64, default=None
         Number of components to be calculated.
+
+    Attributes
+    ----------
+    mean: DenseFunctionalData
+        An estimation of the mean of the training data.
+    eigenvalues: npt.NDArray[np.float64], shape=(n_components,)
+        The singular values corresponding to each of selected components.
+    eigenfunctions: DenseFunctionalData
+        Principal axes in feature space, representing the directions of
+        maximum variance in the data.
 
     References
     ----------
@@ -281,12 +306,12 @@ class FCPTPA():
     def fit(
         self,
         data: DenseFunctionalData,
-        penal_mat: Dict[str, np.ndarray],
-        alpha_range: Dict[str, np.ndarray],
-        tol: float = 1e-4,
-        max_iter: int = 15,
-        adapt_tol: bool = True,
-        verbose: bool = False
+        penal_mat: Dict[str, npt.NDArray[np.float64]],
+        alpha_range: Dict[str, Tuple[np.float64, np.float64]],
+        tol: np.float64 = 1e-4,
+        max_iter: np.int64 = 15,
+        adapt_tol: np.bool_ = True,
+        verbose: np.bool_ = False
     ) -> None:
         r"""Fit the model on data.
 
@@ -295,27 +320,28 @@ class FCPTPA():
         Parameters
         ----------
         data: DenseFunctionalData
-            Training data. The dimension of its value parameter is
-            :math:`N \times S_1 \times S_2`.
-        penal_mat: dict
+            Training data used to estimate the eigencoponents. The dimension of
+            its value parameter is :math:`N \times M_1 \times M_2`.
+        penalty_matrices: Dict[str, npt.NDArray[np.float64]]
             A dictionary with entries :math:`v` and :math:`w`, containing a
-            roughness penalty matrix for each direction of the image.
-        alpha_range: dict
-            A dictionary of length 2 with entries :math:`v` and :math:`w`,
-            containing the range of smoothness parameters to test for each
-            direction.
-        tol: float, default=1e-4
+            roughness penalty matrix for each direction of the image. The
+            algorithm does not induce smoothness along observations.
+        alpha_range: Dict[str, Tuple[np.float64, np.float64]]
+            A dictionary with entries :math:`v` and :math:`w`, containing the
+            range of smoothness parameters :math:`\alpha_{v_k}, \alpha_{w_k}`
+            as a tuple.
+        tolerance: np.float64, default=1e-4
             A numeric value, giving the tolerance for relative error values
-            in the algorithm. It is automatically multiplued by 10 after
-            `max_iter` steps, if `adapt_tol = True`.
-        max_iter: int, default=15
+            in the algorithm. It is automatically multiplyed by 10 after
+            ``max_iter`` steps, if ``adapt_tol = True``.
+        max_iteration: np.int64, default=15
             An integer, the maximal iteration steps. Can be doubled, if
-            `adapt_tol = True`.
-        adapt_tol: bool, default=True
+            ``adapt_tol = True``.
+        adapt_tolerance: np.bool_, default=True
             If True, the tolerance is adapted (multiply by 10), if the
-            algorithm has not converged after `max_iter` steps and another
-            `max_iter` steps are allowed with the increased tolerance.
-        verbose: bool, default=False
+            algorithm has not converged after ``max_iter`` steps and another
+            ``max_iter`` steps are allowed with the increased tolerance.
+        verbose: np.bool_, default=False
             If True, computational details are given on the standard output
             during the computation.
 
@@ -329,15 +355,16 @@ class FCPTPA():
         """
         # Get the values and dimension
         values = data.values
-        dim = values.shape
+        dimension = values.shape
 
         # Initialization vectors
-        u = np.random.uniform(low=-1, high=1, size=dim[0])
-        u = u / norm(u)
-        v = np.random.uniform(low=-1, high=1, size=dim[1])
-        v = v / norm(v)
-        w = np.random.uniform(low=-1, high=1, size=dim[2])
-        w = w / norm(w)
+        u, v, w = _initialize_vectors(dimension)
+        # u = np.random.uniform(low=-1, high=1, size=dimension[0])
+        # u = u / norm(u)
+        # v = np.random.uniform(low=-1, high=1, size=dimension[1])
+        # v = v / norm(v)
+        # w = np.random.uniform(low=-1, high=1, size=dimension[2])
+        # w = w / norm(w)
 
         # Initialization smoothing parameters
         alpha_v = min(alpha_range['v'])
@@ -348,14 +375,14 @@ class FCPTPA():
         eigen_w = np.linalg.eigh(penal_mat['w'])
 
         # Initialization of diagonal matrices
-        iden_v = np.identity(dim[1])
-        iden_w = np.identity(dim[2])
+        iden_v = np.identity(dimension[1])
+        iden_w = np.identity(dimension[2])
 
         # Initialization of the output
         coef = np.zeros(self.n_components)
-        mat_u = np.zeros((dim[0], self.n_components))
-        mat_v = np.zeros((dim[1], self.n_components))
-        mat_w = np.zeros((dim[2], self.n_components))
+        mat_u = np.zeros((dimension[0], self.n_components))
+        mat_v = np.zeros((dimension[1], self.n_components))
+        mat_w = np.zeros((dimension[2], self.n_components))
 
         # Loop over the number of wanted components
         for k in range(self.n_components):
