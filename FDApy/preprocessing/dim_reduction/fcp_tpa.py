@@ -27,7 +27,7 @@ import numpy.typing as npt
 import warnings
 
 from numpy.linalg import norm
-from scipy.optimize import minimize
+from scipy.optimize import minimize_scalar
 from typing import Dict, Optional, Tuple
 
 from ...representation.functional_data import DenseFunctionalData
@@ -190,9 +190,8 @@ def _find_optimal_alpha(
     vv = np.dot(v.T, np.dot(penalty_matrix, v))
     eta = 1 / (1 + alpha * vv / norm(v))
 
-    res = minimize(
+    res = minimize_scalar(
         _gcv,
-        x0=min(alpha_range),
         args=(len(lamb), z, eta, lamb),
         bounds=alpha_range
     )
