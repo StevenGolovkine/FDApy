@@ -2,8 +2,8 @@
 # -*-coding:utf8 -*
 
 """
-Functional CP-Tensor Power Algorithm
-------------------------------------
+Functional Canonical Polyadic-Tensor Power Algorithm
+----------------------------------------------------
 
 This module is used to implement the Functional CP-TPA algorithm [1]_. This
 method computes an eigendecomposition of image observations, which can be
@@ -11,15 +11,19 @@ interpreted as functions on a two-dimensional domain.
 
 References
 ----------
-.. [A] Allen G., Multi-way Functional Principal Components Analysis (2013),
-IEEE International Workshop on Computational Advances in Multi-Sensor Adaptive
-Processing
-.. [HG] Happ C. & Greven S. (2018) Multivariate Functional Principal Component
-Analysis for Data Observed on Different (Dimensional) Domains, Journal of the
-American Statistical Association, 113:522, 649-659,
-DOI: 10.1080/01621459.2016.1273115
-.. [HK] Happ-Kurz C. (2020) Object-Oriented Software for Functional Data.
-Journal of Statistical Software, 93(5): 1-38
+.. [1] Allen G., Multi-way Functional Principal Components Analysis (2013),
+    IEEE International Workshop on Computational Advances in Multi-Sensor
+    Adaptive Processing
+.. [2] Happ C. & Greven S. (2018) Multivariate Functional Principal Component
+    Analysis for Data Observed on Different (Dimensional) Domains, Journal of
+    the American Statistical Association, 113:522, 649-659,
+    DOI: 10.1080/01621459.2016.1273115
+.. [3] Happ-Kurz C. (2020) Object-Oriented Software for Functional Data.
+    Journal of Statistical Software, 93(5): 1-38
+.. [4] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
+    Functional Data Using Two-Way Regularized Singular Value Decomposition.
+    Journal of the American Statistical Association, Vol. 104, No. 488,
+    1609 -- 1620.
 
 """
 import numpy as np
@@ -46,32 +50,32 @@ def _gcv(
     r"""Generalized cross-validation for the FCP-TPA algortihm.
 
     This function calculates the generalized cross-validation criterion for the
-    smoothing parameters alpha that is used in the FCP-TPA algorithm [A]_. The
-    code is adapted from [HK]_. It corresponds to Equations (19) and (20) in
-    [HSB]_.
+    smoothing parameters alpha that is used in the FCP-TPA algorithm [1]_. The
+    code is adapted from [3]_. It corresponds to Equations (19) and (20) in
+    [4]_.
 
     Parameters
     ----------
     alpha: np.float64
         The current value of the smoothing parameter. It corresponds to
         :math:`\alpha_u` and :math:`\alpha_v` in Equations (19) and (20) in
-        [HSB]_.
+        [4]_.
     dimension_length: np.int64
         The length of the dimension, for which the smoothing parameter is to
         be optimized. It corresponds to :math:`m` and :math:`n` in Equations
-        (19) and (20) in [HSB]_.
+        (19) and (20) in [4]_.
     vector: npt.NDArray[np.float64], shape=(dimension_length,)
         Solutions to the least square problem. It corresponds to
         :math:`Xv / ||v||^2` and :math:`X^\top u / ||u||^2` in Equations (19)
-        and (20) in [HSB]_.
+        and (20) in [4]_.
     smoother: np.float64
         Nornalization parameter. It corresponds to :math:`S_u` and :math:`S_v`
-        in Equations (19) and (20) in [HSB]_.
+        in Equations (19) and (20) in [4]_.
     rayleigh: npt.NDArray[np.float64], shape=(dimension_length,)
         A vector containing the eigenvalues of the penalty matrix corresponding
         to the current image direction. It corresponds to the Rayleight
         quotients :math:`\mathcal{R}_u(u)` and :math:`\mathcal{R}_v(v)` in
-        Equations (19) and (20) in [HSB]_.
+        Equations (19) and (20) in [4]_.
 
     Returns
     -------
@@ -80,15 +84,15 @@ def _gcv(
 
     References
     ----------
-    .. [A] Allen G., Multi-way Functional Principal Components Analysis (2013),
-    IEEE International Workshop on Computational Advances in Multi-Sensor
-    Adaptive Processing
-    .. [HK] Happ-Kurz C. (2020) Object-Oriented Software for Functional Data.
-    Journal of Statistical Software, 93(5): 1-38
-    .. [HSB] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
-    Functional Data Using Two-Way Regularized Singular Value Decomposition.
-    Journal of the American Statistical Association, Vol. 104, No. 488,
-    1609 -- 1620.
+    .. [1] Allen G., Multi-way Functional Principal Components Analysis (2013),
+        IEEE International Workshop on Computational Advances in Multi-Sensor
+        Adaptive Processing
+    .. [3] Happ-Kurz C. (2020) Object-Oriented Software for Functional Data.
+        Journal of Statistical Software, 93(5): 1-38
+    .. [4] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
+        Functional Data Using Two-Way Regularized Singular Value Decomposition.
+        Journal of the American Statistical Association, Vol. 104, No. 488,
+        1609 -- 1620.
 
     """
     shrinking = smoother / (1 + alpha * rayleigh)
@@ -111,11 +115,11 @@ def _find_optimal_alpha(
 
     This function find the optimal smoothing parameters :math:`\alpha_v` (or
     :math:`\alpha_w`) for the two image directions (v and w) in the FCP_TPA
-    algorithm [A]_ based on generalized cross-validation, which is nested in
+    algorithm [1]_ based on generalized cross-validation, which is nested in
     the tensor power algorithm. Given a range of possible values of
-    :math:`\alpha_v` (or :math:`\alpha_w`, respectively), the optimum is found
-    by optimizing the GCV criterion using the function ``scipy.optimize``. The
-    code is adapted from [HK]_.
+    :math:`\alpha_v` (or :math:`\alpha_w`, respectively), the minimum is found
+    by optimizing the GCV criterion using the function ``minimize_scalar`` from
+    the module ``scipy.optimize``. The code is adapted from [3]_.
 
     Parameters
     ----------
@@ -123,30 +127,30 @@ def _find_optimal_alpha(
         A tuple with two elements, containing the minimal and maximal
         values for the smoothing parameter that is to be optimized. It
         corresponds to minimal and maximal values of :math:`\alpha_u` and
-        :math:`\alpha_v` in Equations (19) and (20) in [HSB]_.
+        :math:`\alpha_v` in Equations (19) and (20) in [4]_.
     data: npt.NDArray[np.float64], shape=(n_obs, m_1, m_2)
         The tensor containing the data of dimension
         :math:`n_{obs} \times m_1 \times m_2`. It corresponds to
-        :math:`\hat{\mathcal{X}}` in Algorithm in [A]_.
+        :math:`\hat{\mathcal{X}}` in Algorithm in [1]_.
     u: npt.NDArray[np.float64], shape=(n_obs,)
         The current value of the eigenvectors :math:`u_k` (not
         normalized) of dimensions :math:`n_{obs}`. It corresponds to
-        :math:`u_k` in Algorithm in [A]_.
+        :math:`u_k` in Algorithm in [1]_.
     v: npt.NDArray[np.float64]
         The current value of the eigenvectors :math:`v_k` (or :math:`w_k`) (not
         normalized) of dimensions :math:`m_1` (or :math:`m_2`). It corresponds
-        to :math:`v_k` (or :math:`w_k`) in Algorithm in [A]_.
+        to :math:`v_k` (or :math:`w_k`) in Algorithm in [1]_.
     alpha: np.float64
         The current value of the smoothing parameter for the other image
         direction (:math:`\alpha_w` if the optimization is performed with
         respect to the vector :math:`v_k` and :math:`\alpha_v` if the
         optimization is performed with respect to the vector :math:`w_k`),
         which is kept as fixed. It corresponds to :math:`\alpha_u` and
-        :math:`\alpha_v` in Equations (19) and (20) in [HSB]_.
+        :math:`\alpha_v` in Equations (19) and (20) in [4]_.
     penalty_matrix: npt.NDArray[np.float64], shape=(m, m)
         A matrix of dimension :math:`m \times m`, the penalty matrix for the
         other image direction. It corresponds to :math:`\Omega_v` and
-        :math:`\Omega_u` in Equations (17) and (18) in [HSB]_.
+        :math:`\Omega_u` in Equations (17) and (18) in [4]_.
     eigencomponents: Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]
         A tuple containing the eigenvalues and eigenvectors of the penalty
         matrix for the image direction for which the optimal smoothing
@@ -154,7 +158,7 @@ def _find_optimal_alpha(
         :math:`m` and the shape of the eigenvectors array is
         :math:`m \times m`. The eigenvalues corresponds to the Rayleight
         quotients :math:`\mathcal{R}_u(u)` and :math:`\mathcal{R}_v(v)` in
-        Equations (19) and (20) in [HSB]_.
+        Equations (19) and (20) in [4]_.
     dimension: np.int64, {2, 3}
         The direction to optimize. If ``dimension == 2``, the optimization is
         performed with respect to the first dimension of the images and if
@@ -167,51 +171,103 @@ def _find_optimal_alpha(
         The optimal smoothing parameter :math:`\alpha` found by optimizing the
         GCV criterion within the given range of possible values.
 
+    Notes
+    -----
+    The code has been tested for the version 1.10.0 of ``scipy``.
+
     References
     ----------
-    .. [A] Allen G., Multi-way Functional Principal Components Analysis (2013),
-    IEEE International Workshop on Computational Advances in Multi-Sensor
-    Adaptive Processing
-    .. [HSB] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
-    Functional Data Using Two-Way Regularized Singular Value Decomposition.
-    Journal of the American Statistical Association, Vol. 104, No. 488,
-    1609 -- 1620.
+    .. [1] Allen G., Multi-way Functional Principal Components Analysis (2013),
+        IEEE International Workshop on Computational Advances in Multi-Sensor
+        Adaptive Processing
+    .. [4] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
+        Functional Data Using Two-Way Regularized Singular Value Decomposition.
+        Journal of the American Statistical Association, Vol. 104, No. 488,
+        1609 -- 1620.
 
     """
-    evec, lamb = eigencomponents
+    eigenvectors, eigenvalues = eigencomponents
     if dimension == 2:
-        b = np.einsum('i, j, ikj', u, v, data)
+        temp = np.einsum('i, j, ikj', u, v, data)
     elif dimension == 3:
-        b = np.einsum('i, j, ijk', u, v, data)
+        temp = np.einsum('i, j, ijk', u, v, data)
     else:
         raise ValueError(f"The direction can not be {dimension}.")
 
-    z = np.dot(evec.T, b) / (norm(u) * norm(v))
-    vv = np.dot(v.T, np.dot(penalty_matrix, v))
-    eta = 1 / (1 + alpha * vv / norm(v))
+    vector = np.dot(eigenvectors.T, temp) / (norm(u) * norm(v))
+    vWv = np.dot(v.T, np.dot(penalty_matrix, v))
+    smoother = 1 / (1 + alpha * vWv / norm(v))
 
-    res = minimize_scalar(
+    results = minimize_scalar(
         _gcv,
-        args=(len(lamb), z, eta, lamb),
+        args=(len(eigenvalues), vector, smoother, eigenvalues),
         bounds=alpha_range
     )
-    return res.x
+    return results.x
 
 
 ##############################################################################
 # Class FCPTPA
 
 class FCPTPA():
-    """Functional Canonical Polyadic - Tensor Power Algorithm (FCP-TPA).
+    r"""Functional Canonical Polyadic - Tensor Power Algorithm (FCP-TPA).
 
-    Implement the Functional CP-TPA algorithm. This method computes an
-    eigendecomposition of image observations, which can be interpreted as
-    functions on a two-dimensional domain.
+    This module implements the Functional CP-TPA algorithm [1]_. This method
+    computes an eigendecomposition of image observations, which can be
+    interpreted as functions on a two-dimensional domain. We assume :math:`N`
+    observations of 2D images with dimension :math:`M_1 \times M_2`. The
+    results are given in a CANDECOMP/PARAFRAC (CP) model format
+
+    .. math::
+
+        X = \sum_{k = 1}^K c_k \cdot u_k \circ \phi_k \circ \psi_k
+
+    where :math:`\circ` stands for the outer product, :math:`c_k` is a
+    coefficient (scalar) and :math:`u_k, \phi_k, \psi_k` are eigenvectors for
+    each direction of the tensor. In  this representation, the outer product
+    :math:`\phi_k \circ \psi_k` can be regarded as the :math:`k`-th eigenimage,
+    while :math:`d_k \cdot u_k` represents the vector of individual scores for
+    this eigenimage and each observation.
+
+    The smoothness of the eigenvectors :math:`\phi_k, \psi_k` is induced by
+    penalty matrices for both image directions, that are weighted by
+    smoothing parameters :math:`\alpha_{\phi_k}, \alpha_{\psi_k}`. The
+    eigenvectors :math:`u_k` are not smoothed, hence the algorithm does not
+    induce smoothness along observations.
+
+    Optimal smoothing parameters are found via a nested generalized cross
+    validation [4]_. In each iteration of the TPA (tensor power algorithm),
+    the GCV criterion is optimized via ``scipy.optimize`` on the intervals
+    specified via ``alpha_range``.
+
+    The FCP-TPA algorithm is an iterative algorithm. Convergence is assumed if
+    the relative difference between the actual and the previous values are all
+    below the tolerance level ``tol``. The tolerance level is increased
+    automatically, if the algorithm has not converged after ``maxIter`` steps
+    and if ``adaptTol = TRUE``. If the algorithm did not converge after
+    ``maxIter`` steps steps, the function throws a warning. The code is
+    adapted from [2]_ and [3]_.
 
     Parameters
     ----------
     n_components: int, default=None
         Number of components to be calculated.
+
+    References
+    ----------
+    .. [1] Allen G., Multi-way Functional Principal Components Analysis (2013),
+        IEEE International Workshop on Computational Advances in Multi-Sensor
+        Adaptive Processing
+    .. [2] Happ C. & Greven S. (2018) Multivariate Functional Principal
+        Component Analysis for Data Observed on Different (Dimensional)
+        Domains, Journal of the American Statistical Association, 113:522,
+        649-659, DOI: 10.1080/01621459.2016.1273115
+    .. [3] Happ-Kurz C. (2020) Object-Oriented Software for Functional Data.
+        Journal of Statistical Software, 93(5): 1-38
+    .. [4] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
+        Functional Data Using Two-Way Regularized Singular Value Decomposition.
+        Journal of the American Statistical Association, Vol. 104, No. 488,
+        1609 -- 1620.
 
     """
 
