@@ -10,6 +10,8 @@ import numpy as np
 import numpy.typing as npt
 import scipy
 
+from numpy.linalg import eigh
+
 from typing import Dict, Optional, Tuple, Union
 
 
@@ -720,3 +722,42 @@ def _compute_covariance(
     """
     temp = np.dot(np.transpose(eigenfunctions), np.diag(eigenvalues))
     return np.dot(temp, eigenfunctions)
+
+
+##############################################################################
+# Array computation
+##############################################################################
+def _eigh(
+    matrix: npt.NDArray[np.float64],
+    UPLO: str = 'L'
+) -> Tuple[npt.NDArray, npt.NDArray]:
+    """Return the eigenvalues and eigenvectors of a real symmetrix matrix.
+
+    Returns two objects, a 1-D array containing the eigenvalues of `matrix`,
+    and a 2-D square array of the corresponding eigenvectors (in columns).
+    This function overrides ``numpy.linalg.eigh`` by returning the eigenvalues
+    in descending order.
+
+    Parameters
+    ----------
+    matrix: npt.NDArray[np.float64], shape=(M, M)
+        Hermitian or real symmetric matrices whose eigenvalues and eigenvectors
+        are to be computed.
+    UPLO: str, {'L', 'U'}, default='L'
+        Specifies whether the calculation is done with the lower triangular
+        part of a ('L', default) or the upper triangular part ('U').
+        Irrespective of this value only the real parts of the diagonal will be
+        considered in the computation to preserve the notion of a Hermitian
+        matrix. It therefore follows that the imaginary part of the diagonal
+        will always be treated as zero.
+
+    Returns
+    -------
+    Tuple[npt.NDArray, npt.NDArray]:
+        The first element represents the eigenvalues in descending order, each
+        repeated according to its multiplicity. The second element represents
+        the normalized eigenvectors. The column ``v[:, i]`` of the eigenvectors
+        matrix corresponds to the eigenvalue ``w[i]``.
+    """
+    eigenvalues, eigenvectors = eigh(matrix, UPLO)
+    return eigenvalues[::-1], np.fliplr(eigenvectors)

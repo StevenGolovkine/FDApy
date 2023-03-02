@@ -35,6 +35,7 @@ from scipy.optimize import minimize_scalar
 from typing import Dict, Optional, Tuple
 
 from ...representation.functional_data import DenseFunctionalData
+from ...misc.utils import _eigh
 
 
 ##############################################################################
@@ -55,6 +56,7 @@ def _initialize_vectors(
     Tuple[npt.NDArray, npt.NDArray, npt.NDArray]
         A tuple containing normed vectors for the initialization of the FCP-TPA
         algorithm.
+
     """
     vectors = [np.random.uniform(-1, 1, dimension) for dimension in shape]
     return tuple(vector / norm(vector) for vector in vectors)
@@ -62,12 +64,51 @@ def _initialize_vectors(
 
 def _initalize_output(
     shape: Tuple[np.int64, np.int64, np.int64],
-    n_components: int        
+    n_components: int
 ):
-    """Init coefficients and """
+    """Init coefficients and u, v and w eigenvectors matrices.
+
+    Parameters
+    ----------
+    shape: Tuple[np.int64, np.int64, np.int64]
+        Shape of the dataset. It should be in the format :math:`(N, M_1, M_2)`.
+    n_components: int
+        Number of components to retain.
+
+    Returns
+    -------
+    Tuple[npt.NDArray, npt.NDArray, npt.NDArray]
+        A tuple containing initialized matrices for the results of the FCP-TPA
+        algorithm.
+
+    """
     coefficients = np.zeros(n_components)
     matrices = [np.zeros((dimension, n_components)) for dimension in shape]
     return coefficients, *matrices
+
+
+def _eigendecomposition_penalty_matrices(
+    penalty_matrices: Dict[str, npt.NDArray[np.float64]]
+) -> Tuple[Tuple[npt.NDArray, npt.NDArray], Tuple[npt.NDArray, npt.NDArray]]:
+    """Compute eigendecomposition of penalty matrices in the FCP-TPA algorithm.
+
+    Parameters
+    ----------
+    penalty_matrices: Dict[str, npt.NDArray[np.float64]]
+        A dictionary with entries :math:`v` and :math:`w`, containing a
+        roughness penalty matrix for each direction of the image. The algorithm
+        does not induce smoothness along observations.
+
+    Returns
+    -------
+    Tuple[Tuple[npt.NDArray, npt.NDArray], Tuple[npt.NDArray, npt.NDArray]]
+        A tuple where each entry contains the eigenvalues and eigenvectors
+        of the penalty matrix for each dimension of the image. The eigenvalues
+        are sorted in descending order.
+
+    """
+    return tuple([_eigh(matrix) for matrix in penalty_matrices.values()])
+
 
 def _gcv(
     alpha: np.float64,
@@ -215,7 +256,7 @@ def _find_optimal_alpha(
         1609 -- 1620.
 
     """
-    eigenvectors, eigenvalues = eigencomponents
+    eigenvalues, eigenvectors = eigencomponents
     if dimension == 2:
         temp = np.einsum('i, j, ikj', u, v, data)
     elif dimension == 3:
@@ -386,8 +427,9 @@ class FCPTPA():
         # alpha_w = min(alpha_range['w'])
 
         # Eigendecomposition of penalty matrix
-        eigen_v = np.linalg.eigh(penal_mat['v'])
-        eigen_w = np.linalg.eigh(penal_mat['w'])
+        eigen_v, eigen_w = _eigendecomposition_penalty_matrices(penal_mat)
+        # eigen_v = np.linalg.eigh(penal_mat['v'])
+        # eigen_w = np.linalg.eigh(penal_mat['w'])
 
         # Initialization of diagonal matrices
         iden_v = np.identity(dimension[1])

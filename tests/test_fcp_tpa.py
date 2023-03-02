@@ -15,6 +15,8 @@ from FDApy.simulation.karhunen import KarhunenLoeve
 from FDApy.preprocessing.dim_reduction.fcp_tpa import (
     FCPTPA,
     _initialize_vectors,
+    _initalize_output,
+    _eigendecomposition_penalty_matrices,
     _gcv,
     _find_optimal_alpha
 )
@@ -49,6 +51,56 @@ class TestInitializeVectors(unittest.TestCase):
         np.testing.assert_array_less(np.abs(u), 1)
         np.testing.assert_array_less(np.abs(v), 1)
         np.testing.assert_array_less(np.abs(w), 1)
+
+
+class TestInitializeOutput(unittest.TestCase):
+    def test_initialize_output(self):
+        shape = (5, 10, 15)
+        n_components = 3
+        output = _initalize_output(shape, n_components)
+
+        # Check the shape of the matrices
+        np.testing.assert_equal(output[0].shape, (n_components,))
+        np.testing.assert_equal(output[1].shape, (shape[0], n_components))
+        np.testing.assert_equal(output[2].shape, (shape[1], n_components))
+        np.testing.assert_equal(output[3].shape, (shape[2], n_components))
+
+        # Check that the matrices are initialized to zeros
+        np.testing.assert_array_equal(output[0], np.zeros(n_components))
+        np.testing.assert_array_equal(output[1], np.zeros((shape[0], n_components)))
+        np.testing.assert_array_equal(output[2], np.zeros((shape[1], n_components)))
+        np.testing.assert_array_equal(output[3], np.zeros((shape[2], n_components)))
+
+
+class TestEigenDecompositionPenaltyMatrices(unittest.TestCase):
+    def test_eigendecomposition_penalty_matrices(self):
+        mat_v = np.diff(np.identity(3))
+        mat_w = np.diff(np.identity(5))
+        penal_mat = {'v': np.dot(mat_v, mat_v.T), 'w': np.dot(mat_w, mat_w.T)}
+
+        eigen_v, eigen_w = _eigendecomposition_penalty_matrices(penal_mat)
+
+        expected_val_v = np.array(
+            [3.00000000e+00, 1.00000000e+00, 2.56090598e-16]
+        )
+        expected_vec_v = np.array([
+            [4.08248290e-01, 7.07106781e-01, 5.77350269e-01],
+            [8.16496581e-01, 3.75646961e-17, 5.77350269e-01],
+            [4.08248290e-01, 7.07106781e-01, 5.77350269e-01]
+        ])
+        expected_val_w = np.array([3.61803399e+00, 2.61803399e+00, 1.38196601e+00, 3.81966011e-01, -4.08055791e-17])
+        expected_vec_w = np.array([
+            [ 1.95439508e-01, 3.71748034e-01, 5.11667274e-01, 6.01500955e-01, 4.47213595e-01],
+            [ 5.11667274e-01, 6.01500955e-01, 1.95439508e-01, 3.71748034e-01, 4.47213595e-01],
+            [ 6.32455532e-01, 1.84484383e-16, 6.32455532e-01, 1.65146213e-16, 4.47213595e-01],
+            [ 5.11667274e-01, 6.01500955e-01, 1.95439508e-01, 3.71748034e-01, 4.47213595e-01],
+            [ 1.95439508e-01, 3.71748034e-01, 5.11667274e-01, 6.01500955e-01, 4.47213595e-01]
+        ])
+
+        np.testing.assert_array_almost_equal(eigen_v[0], expected_val_v)
+        np.testing.assert_array_almost_equal(np.abs(eigen_v[1]), expected_vec_v)
+        np.testing.assert_array_almost_equal(eigen_w[0], expected_val_w)
+        np.testing.assert_array_almost_equal(np.abs(eigen_w[1]), expected_vec_w)
 
 
 class TestGCV(unittest.TestCase):
@@ -137,7 +189,7 @@ class TestFindOptimalAlpha(unittest.TestCase):
         output = _find_optimal_alpha(
            self.alpha_range, self.data, self.u, self.w,
            self.alpha, self.penalty_matrix,
-           (self.eigenvectors, self.eigenvalues), 2
+           (self.eigenvalues, self.eigenvectors), 2
         )
         np.testing.assert_almost_equal(output, expected_output, decimal=4)
 
@@ -146,7 +198,7 @@ class TestFindOptimalAlpha(unittest.TestCase):
         output = _find_optimal_alpha(
            self.alpha_range, self.data, self.u, self.v,
            self.alpha, self.eigenvectors,
-           (self.penalty_matrix, self.eigenvalues_2), 3
+           (self.eigenvalues_2, self.penalty_matrix), 3
         )
         np.testing.assert_almost_equal(output, expected_output, decimal=4)
 
@@ -155,5 +207,5 @@ class TestFindOptimalAlpha(unittest.TestCase):
             _find_optimal_alpha(
                 self.alpha_range, self.data, self.u, self.v,
                 self.alpha, self.eigenvectors,
-                (self.penalty_matrix, self.eigenvalues_2), 1
+                (self.eigenvalues_2, self.penalty_matrix), 1
             )

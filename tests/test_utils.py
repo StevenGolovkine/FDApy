@@ -13,6 +13,7 @@ from numpy import AxisError
 from FDApy.misc.utils import (
     _col_mean,
     _col_var,
+    _eigh,
     _compute_covariance,
     _get_axis_dimension,
     _get_dict_dimension,
@@ -515,3 +516,22 @@ class TestComputeCovariance(unittest.TestCase):
         )
         with self.assertRaises(ValueError):
             _compute_covariance(eigenvalues, eigenfunctions)
+
+
+class TestEigh(unittest.TestCase):
+    def test_eigh(self):
+        matrix = np.array([[26, 18], [18, 74]])
+        eig_val, eig_vec = _eigh(matrix)
+
+        expected_val = np.array([80., 20.])
+        expected_vec = np.array([
+            [0.31622777, 0.9486833],
+            [0.9486833 , 0.31622777]
+        ])
+
+        np.testing.assert_array_almost_equal(eig_val, expected_val)
+        np.testing.assert_array_almost_equal(np.abs(eig_vec), expected_vec)
+        np.testing.assert_array_almost_equal(
+            np.matmul(np.matmul(eig_vec, np.diag(eig_val)), eig_vec.T),
+            matrix
+        )
