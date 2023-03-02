@@ -43,17 +43,31 @@ from ...representation.functional_data import DenseFunctionalData
 def _initialize_vectors(
     shape: Tuple[np.int64, np.int64, np.int64]
 ) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
-    r"""Initalize u, v and w in the FCP-TPA algorithm.
-    
+    r"""Init u, v and w in the FCP-TPA algorithm.
+
     Parameters
     ----------
     shape: Tuple[np.int64, np.int64, np.int64]
         Shape of the dataset. It should be in the format :math:`(N, M_1, M_2)`.
 
+    Returns
+    -------
+    Tuple[npt.NDArray, npt.NDArray, npt.NDArray]
+        A tuple containing normed vectors for the initialization of the FCP-TPA
+        algorithm.
     """
     vectors = [np.random.uniform(-1, 1, dimension) for dimension in shape]
     return tuple(vector / norm(vector) for vector in vectors)
 
+
+def _initalize_output(
+    shape: Tuple[np.int64, np.int64, np.int64],
+    n_components: int        
+):
+    """Init coefficients and """
+    coefficients = np.zeros(n_components)
+    matrices = [np.zeros((dimension, n_components)) for dimension in shape]
+    return coefficients, *matrices
 
 def _gcv(
     alpha: np.float64,
@@ -353,7 +367,7 @@ class FCPTPA():
                                w = np.array([1e-4, 1e4]))
 
         """
-        # Get the values and dimension
+        # Get parameters
         values = data.values
         dimension = values.shape
 
@@ -366,9 +380,10 @@ class FCPTPA():
         # w = np.random.uniform(low=-1, high=1, size=dimension[2])
         # w = w / norm(w)
 
-        # Initialization smoothing parameters
-        alpha_v = min(alpha_range['v'])
-        alpha_w = min(alpha_range['w'])
+        # Initialize smoothing parameters
+        alpha_v, alpha_w = [minimum for (minimum, _) in alpha_range.values()]
+        # alpha_v = min(alpha_range['v'])
+        # alpha_w = min(alpha_range['w'])
 
         # Eigendecomposition of penalty matrix
         eigen_v = np.linalg.eigh(penal_mat['v'])
@@ -379,10 +394,13 @@ class FCPTPA():
         iden_w = np.identity(dimension[2])
 
         # Initialization of the output
-        coef = np.zeros(self.n_components)
-        mat_u = np.zeros((dimension[0], self.n_components))
-        mat_v = np.zeros((dimension[1], self.n_components))
-        mat_w = np.zeros((dimension[2], self.n_components))
+        coefficients, matrix_u, matrix_v, matrix_w = _initalize_output(
+            dimension, self.n_components
+        )
+        # coef = np.zeros(self.n_components)
+        # mat_u = np.zeros((dimension[0], self.n_components))
+        # mat_v = np.zeros((dimension[1], self.n_components))
+        # mat_w = np.zeros((dimension[2], self.n_components))
 
         # Loop over the number of wanted components
         for k in range(self.n_components):
@@ -473,18 +491,18 @@ class FCPTPA():
             w = w / norm(w)
 
             # Calculate results
-            coef[k] = np.einsum('i, j, k, ijk', u, v, w, values)
-            mat_u[:, k] = u
-            mat_v[:, k] = v
-            mat_w[:, k] = w
+            coefficients[k] = np.einsum('i, j, k, ijk', u, v, w, values)
+            matrix_u[:, k] = u
+            matrix_v[:, k] = v
+            matrix_w[:, k] = w
 
             # Update the values
-            values = values - coef[k] * np.multiply.outer(u, np.outer(v, w))
+            values = values - coefficients[k] * np.multiply.outer(u, np.outer(v, w))
 
         # Save the results
-        eigenimages = np.einsum('ik, jk -> kij', mat_v, mat_w)
-        self.eigenvalues = coef
-        self.scores = mat_u
+        eigenimages = np.einsum('ik, jk -> kij', matrix_v, matrix_w)
+        self.eigenvalues = coefficients
+        self.scores = matrix_u
         self.eigenfunctions = DenseFunctionalData(data.argvals,
                                                   eigenimages)
 

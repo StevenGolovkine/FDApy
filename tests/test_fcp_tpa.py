@@ -14,11 +14,41 @@ from FDApy.representation.functional_data import MultivariateFunctionalData
 from FDApy.simulation.karhunen import KarhunenLoeve
 from FDApy.preprocessing.dim_reduction.fcp_tpa import (
     FCPTPA,
+    _initialize_vectors,
     _gcv,
     _find_optimal_alpha
 )
 from numpy.linalg import norm
 from scipy.optimize import minimize_scalar
+
+
+class TestInitializeVectors(unittest.TestCase):
+    def test_initialize_vectors_shape(self):
+        shape = (5, 10, 15)
+        u, v, w = _initialize_vectors(shape)
+
+        # Check that the shape of each vector is correct
+        np.testing.assert_equal(u.shape, (5,))
+        np.testing.assert_equal(v.shape, (10,))
+        np.testing.assert_equal(w.shape, (15,))
+
+    def test_initialize_vectors_norm(self):
+        shape = (5, 10, 15)
+        u, v, w = _initialize_vectors(shape)
+
+        # Check that the norm of each vector is approximately 1
+        np.testing.assert_almost_equal(norm(u), 1)
+        np.testing.assert_almost_equal(norm(v), 1)
+        np.testing.assert_almost_equal(norm(w), 1)
+
+    def test_initialize_vectors_range(self):
+        shape = (5, 10, 15)
+        u, v, w = _initialize_vectors(shape)
+
+        # Check that each element of the vectors is between -1 and 1
+        np.testing.assert_array_less(np.abs(u), 1)
+        np.testing.assert_array_less(np.abs(v), 1)
+        np.testing.assert_array_less(np.abs(w), 1)
 
 
 class TestGCV(unittest.TestCase):
