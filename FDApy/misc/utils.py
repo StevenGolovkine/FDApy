@@ -758,6 +758,7 @@ def _eigh(
         repeated according to its multiplicity. The second element represents
         the normalized eigenvectors. The column ``v[:, i]`` of the eigenvectors
         matrix corresponds to the eigenvalue ``w[i]``.
+
     """
     eigenvalues, eigenvectors = eigh(matrix, UPLO)
     return eigenvalues[::-1], np.fliplr(eigenvectors)

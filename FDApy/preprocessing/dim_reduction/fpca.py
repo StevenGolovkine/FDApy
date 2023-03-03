@@ -604,12 +604,20 @@ class MFPCA():
                 mat_v = np.diff(np.identity(n_points['input_dim_0']))
                 mat_w = np.diff(np.identity(n_points['input_dim_1']))
                 ufpca = FCPTPA(n_components=n)
-                ufpca.fit(function, penal_mat={'v': np.dot(mat_v, mat_v.T),
-                                               'w': np.dot(mat_w, mat_w.T)},
-                          alpha_range={'v': np.array([1e-4, 1e4]),
-                                       'w': np.array([1e-4, 1e4])},
-                          tol=1e-4, max_iter=15,
-                          adapt_tol=True)
+                ufpca.fit(
+                    function,
+                    penalty_matrices={
+                        'v': np.dot(mat_v, mat_v.T),
+                        'w': np.dot(mat_w, mat_w.T)
+                    },
+                    alpha_range={
+                        'v': (1e-4, 1e4),
+                        'w': (1e-4, 1e4)
+                    },
+                    tolerance=1e-4,
+                    max_iteration=15,
+                    adapt_tolerance=True
+                )
                 scores_uni = ufpca.transform(function)
             ufpca_list.append(ufpca)
             scores.append(scores_uni)
