@@ -64,7 +64,7 @@ _  = plot_multivariate(data, titles=['1st', '2nd'])
 # decomposition of the covariance operator is based on the FCP-TPA algorithm
 # for 2-dimensional data, which is an iterative algorithm. The number of
 # components has thus to be prespecified.
-mfpca = MFPCA(n_components=[0.99, 3], method='covariance')
+mfpca = MFPCA(n_components=[0.99, 5], method='covariance')
 mfpca.fit(data)
 
 ###############################################################################
