@@ -18,10 +18,10 @@ from FDApy.preprocessing.dim_reduction.fcp_tpa import (
     _initalize_output,
     _eigendecomposition_penalty_matrices,
     _gcv,
-    _find_optimal_alpha
+    _find_optimal_alpha,
+    _compute_denominator
 )
 from numpy.linalg import norm
-from scipy.optimize import minimize_scalar
 
 
 class TestInitializeVectors(unittest.TestCase):
@@ -78,7 +78,7 @@ class TestEigenDecompositionPenaltyMatrices(unittest.TestCase):
         mat_w = np.diff(np.identity(5))
         penal_mat = {'v': np.dot(mat_v, mat_v.T), 'w': np.dot(mat_w, mat_w.T)}
 
-        eigen_v, eigen_w = _eigendecomposition_penalty_matrices(penal_mat)
+        eigen = _eigendecomposition_penalty_matrices(penal_mat)
 
         expected_val_v = np.array(
             [3.00000000e+00, 1.00000000e+00, 2.56090598e-16]
@@ -97,10 +97,10 @@ class TestEigenDecompositionPenaltyMatrices(unittest.TestCase):
             [ 1.95439508e-01, 3.71748034e-01, 5.11667274e-01, 6.01500955e-01, 4.47213595e-01]
         ])
 
-        np.testing.assert_array_almost_equal(eigen_v[0], expected_val_v)
-        np.testing.assert_array_almost_equal(np.abs(eigen_v[1]), expected_vec_v)
-        np.testing.assert_array_almost_equal(eigen_w[0], expected_val_w)
-        np.testing.assert_array_almost_equal(np.abs(eigen_w[1]), expected_vec_w)
+        np.testing.assert_array_almost_equal(eigen['v'][0], expected_val_v)
+        np.testing.assert_array_almost_equal(np.abs(eigen['v'][1]), expected_vec_v)
+        np.testing.assert_array_almost_equal(eigen['w'][0], expected_val_w)
+        np.testing.assert_array_almost_equal(np.abs(eigen['w'][1]), expected_vec_w)
 
 
 class TestGCV(unittest.TestCase):
@@ -209,3 +209,15 @@ class TestFindOptimalAlpha(unittest.TestCase):
                 self.alpha, self.eigenvectors,
                 (self.eigenvalues_2, self.penalty_matrix), 1
             )
+
+
+class TestComputeDenominator(unittest.TestCase):
+    def test_compute_denominator(self):
+        v = np.array([1.30486965422349,2.28664539270111,-1.38886070111234,-0.278788766817371,-0.133321336393658,0.635950398070074,-0.284252921416072,-2.65645542090478,-2.44046692857552,1.32011334573019,-0.306638594078475,-1.78130843398,-0.171917355759621,1.2146746991726,1.89519346126497,-0.4304691316062,-0.25726938276893,-1.76316308519478,0.460097354831271,-0.639994875960119])
+        alpha_v = 0.5
+        mat_v = np.diff(np.identity(len(v)))
+        penal_mat = np.dot(mat_v, mat_v.T)
+
+        output = _compute_denominator(v, alpha_v, penal_mat)
+        expected = 66.8605477690864
+        np.testing.assert_almost_equal(output, expected)

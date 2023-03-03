@@ -89,7 +89,7 @@ def _initalize_output(
 
 def _eigendecomposition_penalty_matrices(
     penalty_matrices: Dict[str, npt.NDArray[np.float64]]
-) -> Tuple[Tuple[npt.NDArray, npt.NDArray], Tuple[npt.NDArray, npt.NDArray]]:
+) -> Dict[str, Tuple[npt.NDArray, npt.NDArray]]:
     """Compute eigendecomposition of penalty matrices in the FCP-TPA algorithm.
 
     Parameters
@@ -101,13 +101,13 @@ def _eigendecomposition_penalty_matrices(
 
     Returns
     -------
-    Tuple[Tuple[npt.NDArray, npt.NDArray], Tuple[npt.NDArray, npt.NDArray]]
-        A tuple where each entry contains the eigenvalues and eigenvectors
+    Dict[str, Tuple[npt.NDArray, npt.NDArray]]
+        A dictionary where each entry contains the eigenvalues and eigenvectors
         of the penalty matrix for each dimension of the image. The eigenvalues
         are sorted in descending order.
 
     """
-    return tuple([_eigh(matrix) for matrix in penalty_matrices.values()])
+    return {name: _eigh(matrix) for name, matrix in penalty_matrices.items()}
 
 
 def _gcv(
@@ -276,6 +276,123 @@ def _find_optimal_alpha(
     return results.x
 
 
+def _compute_denominator(
+    a: npt.NDArray,
+    alpha: np.float64,
+    penalty_matrix: npt.NDArray
+) -> np.float64:
+    r"""Compute denominator of equations (17) and (18) in [4]_.
+    
+    This function computes the denominator of equations (17) and (18) in [4]_,
+    which is, for a vector :math:`a`:
+
+    .. math::
+
+        a^{\top} (\mathbf{I} + \alpha_{a}\Omega_a) a.
+
+    References
+    ----------
+    .. [4] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
+        Functional Data Using Two-Way Regularized Singular Value Decomposition.
+        Journal of the American Statistical Association, Vol. 104, No. 488,
+        1609 -- 1620.
+
+    """
+    return np.dot(a.T, a + alpha * np.dot(penalty_matrix, a))
+
+
+def _update_components(
+    data: npt.NDArray[np.float64],
+    vectors: Tuple[npt.NDArray, npt.NDArray, npt.NDArray],
+    penalty_matrices: Dict[str, npt.NDArray[np.float64]],
+    alphas: Tuple[np.float64, np.float64],
+    alpha_range: Dict[str, Tuple[np.float64, np.float64]],
+    eigens: Dict[str, Tuple[npt.NDArray, npt.NDArray]],
+    identities  # TO REMOVE
+) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
+    r"""Update the components in FCP-TPA.
+    
+    This function corresponds to one pass of the step (2.a) in the FCP-TPA
+    algorithm in [1]_. The vectors :math:`u, v` and :math:`w` are computed
+    using equations (17) and (18), and the smoothing parameters
+    :math:`\alpha_u` and :math:`\alpha_v` are updated using the GCV criteria
+    defined in equations (19) and (20).
+
+    Parameters
+    ----------
+    data: npt.NDArray[np.float64], shape=(N, M_1, M_2)
+        Data as an array of shape :math:`(N, M_1, M_2)`.
+    vectors: Tuple[npt.NDArray, npt.NDArray, npt.NDArray]
+        Vectors
+    penalty_matrices: Dict[str, npt.NDArray[np.float64]]
+        A dictionary with entries :math:`v` and :math:`w`, containing a
+        roughness penalty matrix for each direction of the image. The
+        algorithm does not induce smoothness along observations.
+    alphas: Tuple[np.float64, np.float64]
+        Smoothing parameters for both dimension of the images.
+    alpha_range: Dict[str, Tuple[np.float64, np.float64]]
+        A dictionary with entries :math:`v` and :math:`w`, containing the
+        range of smoothness parameters :math:`\alpha_{v_k}, \alpha_{w_k}`
+        as a tuple.
+    eigens: Dict[str, Tuple[npt.NDArray, npt.NDArray]]
+        Eigendecomposition of the penalty matrices.
+
+    Returns
+    -------
+    Tuple[npt.NDArray, npt.NDArray, npt.NDArray]
+        The updated parameters.
+
+    References
+    ----------
+    .. [1] Allen G., Multi-way Functional Principal Components Analysis (2013),
+        IEEE International Workshop on Computational Advances in Multi-Sensor
+        Adaptive Processing
+
+    """
+    u, v, w = vectors
+
+    # Update u
+    v_cross = _compute_denominator(v, alphas['v'], penalty_matrices['v'])
+    w_cross = _compute_denominator(w, alphas['w'], penalty_matrices['w'])
+    u = np.einsum('i, j, kij -> k', v, w, data) / (v_cross * w_cross)
+
+    # Update v
+    u_cross = np.dot(u.T, u)
+    a = identities[0] + alphas['v'] * penalty_matrices['v']
+    b = np.einsum('i, j, ikj', u, w, data)
+    v = np.linalg.solve(a, b) / (u_cross * w_cross)
+
+    # Update alpha_v
+    alpha_v = _find_optimal_alpha(
+        alpha_range=alpha_range['v'],
+        data=data,
+        u=u, v=w,
+        alpha=alphas['w'],
+        penalty_matrix=penalty_matrices['w'],
+        eigencomponents=eigens['v'],
+        dimension=2
+    )
+
+    # Update w
+    # v_cross = np.dot(v.T, v + alpha_v * np.dot(penalty_matrices['v'], v))
+    v_cross = _compute_denominator(v, alpha_v, penalty_matrices['v'])
+    a = identities[1] + alphas['w'] * penalty_matrices['w']
+    b = np.einsum('i, j, ijk', u, v, data)
+    w = np.linalg.solve(a, b) / (u_cross * v_cross)
+
+    # Update alpha_w
+    alpha_w = _find_optimal_alpha(
+        alpha_range=alpha_range['w'],
+        data=data,
+        u=u, v=v,
+        alpha=alphas['v'],
+        penalty_matrix=penalty_matrices['v'],
+        eigencomponents=eigens['w'],
+        dimension=3
+    )
+    return 0
+
+
 ##############################################################################
 # Class FCPTPA
 
@@ -361,11 +478,11 @@ class FCPTPA():
     def fit(
         self,
         data: DenseFunctionalData,
-        penal_mat: Dict[str, npt.NDArray[np.float64]],
+        penalty_matrices: Dict[str, npt.NDArray[np.float64]],
         alpha_range: Dict[str, Tuple[np.float64, np.float64]],
-        tol: np.float64 = 1e-4,
-        max_iter: np.int64 = 15,
-        adapt_tol: np.bool_ = True,
+        tolerance: np.float64 = 1e-4,
+        max_iteration: np.int64 = 15,
+        adapt_tolerance: np.bool_ = True,
         verbose: np.bool_ = False
     ) -> None:
         r"""Fit the model on data.
@@ -398,7 +515,7 @@ class FCPTPA():
             ``max_iter`` steps are allowed with the increased tolerance.
         verbose: np.bool_, default=False
             If True, computational details are given on the standard output
-            during the computation.
+            during the computation. Here for debug purpose.
 
         Example
         -------
@@ -412,68 +529,49 @@ class FCPTPA():
         values = data.values
         dimension = values.shape
 
-        # Initialization vectors
-        u, v, w = _initialize_vectors(dimension)
-        # u = np.random.uniform(low=-1, high=1, size=dimension[0])
-        # u = u / norm(u)
-        # v = np.random.uniform(low=-1, high=1, size=dimension[1])
-        # v = v / norm(v)
-        # w = np.random.uniform(low=-1, high=1, size=dimension[2])
-        # w = w / norm(w)
-
-        # Initialize smoothing parameters
+        # Initialization
+        vectors = _initialize_vectors(dimension)
         alpha_v, alpha_w = [minimum for (minimum, _) in alpha_range.values()]
-        # alpha_v = min(alpha_range['v'])
-        # alpha_w = min(alpha_range['w'])
+        identity_v, identity_w = [np.eye(shape) for shape in dimension[1:]]
 
         # Eigendecomposition of penalty matrix
-        eigen_v, eigen_w = _eigendecomposition_penalty_matrices(penal_mat)
-        # eigen_v = np.linalg.eigh(penal_mat['v'])
-        # eigen_w = np.linalg.eigh(penal_mat['w'])
-
-        # Initialization of diagonal matrices
-        iden_v = np.identity(dimension[1])
-        iden_w = np.identity(dimension[2])
-
+        eigen = _eigendecomposition_penalty_matrices(penalty_matrices)
+        
         # Initialization of the output
         coefficients, matrix_u, matrix_v, matrix_w = _initalize_output(
             dimension, self.n_components
         )
-        # coef = np.zeros(self.n_components)
-        # mat_u = np.zeros((dimension[0], self.n_components))
-        # mat_v = np.zeros((dimension[1], self.n_components))
-        # mat_w = np.zeros((dimension[2], self.n_components))
 
         # Loop over the number of wanted components
-        for k in range(self.n_components):
+        for n_component in range(self.n_components):
             if verbose:
-                print(f"\nk = {k}\n")
+                print(f"\nComponents = {n_component}\n")
 
             # Initialize old versions
-            u_old = np.zeros_like(u)
-            v_old = np.zeros_like(v)
-            w_old = np.zeros_like(w)
-            tol_old = tol
+            vectors_old = tuple([np.zeros_like(vector) for vector in vectors])
+            tolerance_old = tolerance
 
             # Number of iterations
-            it = 0
+            n_iter = 0
 
-            # Repeat until convergence
+            # Repeat until convergence (defined by tolerance)
             while (
-                (norm(u - u_old) / norm(u) > tol) or
-                (norm(v - v_old) / norm(v) > tol) or
-                (norm(w - w_old) / norm(w) > tol)
+                any(norm(vector - vector_old) / norm(vector) > tolerance
+                for vector, vector_old in zip(vectors, vectors_old))
             ):
+                u, v, w = vectors
+                vectors_old = vectors
+
                 # Update u
-                u_old = u
-                v_cross = np.dot(v.T, v + alpha_v * np.dot(penal_mat['v'], v))
-                w_cross = np.dot(w.T, w + alpha_w * np.dot(penal_mat['w'], w))
+                # u_old = u
+                v_cross = np.dot(v.T, v + alpha_v * np.dot(penalty_matrices['v'], v))
+                w_cross = np.dot(w.T, w + alpha_w * np.dot(penalty_matrices['w'], w))
                 u = np.einsum('i, j, kij', v, w, values) / (v_cross * w_cross)
 
                 # Update v
-                v_old = v
+                # v_old = v
                 u_cross = np.dot(u.T, u)
-                a = iden_v + alpha_v * penal_mat['v']
+                a = identity_v + alpha_v * penalty_matrices['v']
                 b = np.einsum('i, j, ikj', u, w, values)
                 v = np.linalg.solve(a, b) / (u_cross * w_cross)
 
@@ -483,14 +581,14 @@ class FCPTPA():
                     data=values,
                     u=u, v=w,
                     alpha=alpha_w,
-                    penalty_matrix=penal_mat['w'],
-                    eigencomponents=eigen_v,
+                    penalty_matrix=penalty_matrices['w'],
+                    eigencomponents=eigen['v'],
                     dimension=2
                 )
                 # Update w
-                w_old = w
-                v_cross = np.dot(v.T, v + alpha_v * np.dot(penal_mat['v'], v))
-                a = iden_w + alpha_w * penal_mat['w']
+                # w_old = w
+                v_cross = np.dot(v.T, v + alpha_v * np.dot(penalty_matrices['v'], v))
+                a = identity_w + alpha_w * penalty_matrices['w']
                 b = np.einsum('i, j, ijk', u, v, values)
                 w = np.linalg.solve(a, b) / (u_cross * v_cross)
 
@@ -500,53 +598,60 @@ class FCPTPA():
                     data=values,
                     u=u, v=v,
                     alpha=alpha_v,
-                    penalty_matrix=penal_mat['v'],
-                    eigencomponents=eigen_w,
+                    penalty_matrix=penalty_matrices['v'],
+                    eigencomponents=eigen['w'],
                     dimension=3
                 )
+                vectors = (u, v, w)
 
-                it = it + 1
-
-                if it > max_iter:
-                    if adapt_tol and (it < 2 * max_iter):
-                        tol = 10 * tol
+                n_iter = n_iter + 1
+                if n_iter > max_iteration:
+                    if adapt_tolerance and (n_iter < 2 * max_iteration):
+                        tolerance = 10 * tolerance
                     else:
-                        u_old, v_old, w_old = u, v, w
-                        warnings.warn(f"FCP-TPA algortihm did not converge; "
-                                      f"iteration {k} stopped.")
+                        vectors_old = vectors
+                        warnings.warn(
+                            f'FCP-TPA algorithm did not converge; iteration '
+                            f'for the component {n_component} stopped.'
+                        )
 
             if verbose:
-                print(f"Absolute error:\n"
-                      f"u: {norm(u - u_old)}, "
-                      f"v: {norm(v - v_old)}, "
-                      f"w: {norm(w - w_old)}, "
-                      f"alpha_v: {alpha_v}, "
-                      f"alpha_w: {alpha_w}.")
+                print(
+                    f'Absolute error:\n'
+                    f'u: {norm(vectors[0] - vectors_old[0])}, '
+                    f'v: {norm(vectors[1] - vectors_old[1])}, '
+                    f'w: {norm(vectors[2] - vectors_old[2])}, '
+                    f'alpha_v: {alpha_v}, '
+                    f'alpha_w: {alpha_w}.'
+                )
 
             # Reset tolerance if necessary
-            if adapt_tol and (it >= max_iter):
-                tol = tol_old
+            if adapt_tolerance and (n_iter >= max_iteration):
+                tolerance = tolerance_old
 
             # Scale vector to have norm one
-            u = u / norm(u)
-            v = v / norm(v)
-            w = w / norm(w)
+            vectors = tuple(vector / norm(vector) for vector in vectors)
 
             # Calculate results
-            coefficients[k] = np.einsum('i, j, k, ijk', u, v, w, values)
-            matrix_u[:, k] = u
-            matrix_v[:, k] = v
-            matrix_w[:, k] = w
+            coefficients[n_component] = np.einsum(
+                'i, j, k, ijk', vectors[0], vectors[1], vectors[2], values
+            )
+            matrix_u[:, n_component] = vectors[0]
+            matrix_v[:, n_component] = vectors[1]
+            matrix_w[:, n_component] = vectors[2]
 
             # Update the values
-            values = values - coefficients[k] * np.multiply.outer(u, np.outer(v, w))
+            values = values - (
+                coefficients[n_component] * np.multiply.outer(vectors[0], np.outer(vectors[1], vectors[2]))
+            )
 
         # Save the results
         eigenimages = np.einsum('ik, jk -> kij', matrix_v, matrix_w)
         self.eigenvalues = coefficients
         self.scores = matrix_u
-        self.eigenfunctions = DenseFunctionalData(data.argvals,
-                                                  eigenimages)
+        self.eigenfunctions = DenseFunctionalData(
+            data.argvals, eigenimages
+        )
 
     def transform(
         self,
