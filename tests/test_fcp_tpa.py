@@ -12,6 +12,7 @@ import inspect
 
 from FDApy.representation.functional_data import MultivariateFunctionalData
 from FDApy.simulation.karhunen import KarhunenLoeve
+from FDApy.misc.utils import _eigh
 from FDApy.preprocessing.dim_reduction.fcp_tpa import (
     FCPTPA,
     _initialize_vectors,
@@ -19,7 +20,8 @@ from FDApy.preprocessing.dim_reduction.fcp_tpa import (
     _eigendecomposition_penalty_matrices,
     _gcv,
     _find_optimal_alpha,
-    _compute_denominator
+    _compute_denominator,
+    _update_components
 )
 from numpy.linalg import norm
 
@@ -221,3 +223,56 @@ class TestComputeDenominator(unittest.TestCase):
         output = _compute_denominator(v, alpha_v, penal_mat)
         expected = 66.8605477690864
         np.testing.assert_almost_equal(output, expected)
+
+
+class TestUpdateComponents(unittest.TestCase):
+    def setUp(self):
+        a1 = np.linspace(0, 1, 10)
+        a2 = np.linspace(-1, 1, 20)
+        a3 = np.linspace(-np.pi, np.pi, 15)
+        self.data = np.outer(np.outer(a1, a2), a3).reshape((10, 20, 15))
+
+        S1 = self.data.shape[1]
+        S2 = self.data.shape[2]
+        self.alpha_range = {'v': (1e-4, 1e4), 'w': (1e-4, 1e4)}
+        self.alphas = {'v': 0.5, 'w': 0.5}
+
+        u = np.array([1.37095844714667,-0.564698171396089,0.363128411337339,0.63286260496104,0.404268323140999,-0.106124516091484,1.51152199743894,-0.0946590384130976,2.01842371387704,-0.062714099052421])
+        v = np.array([1.30486965422349,2.28664539270111,-1.38886070111234,-0.278788766817371,-0.133321336393658,0.635950398070074,-0.284252921416072,-2.65645542090478,-2.44046692857552,1.32011334573019,-0.306638594078475,-1.78130843398,-0.171917355759621,1.2146746991726,1.89519346126497,-0.4304691316062,-0.25726938276893,-1.76316308519478,0.460097354831271,-0.639994875960119])
+        w = np.array([0.455450123241219,0.704837337228819,1.03510352196992,-0.608926375407211,0.50495512329797,-1.71700867907334,-0.784459008379496,-0.850907594176518,-2.41420764994663,0.0361226068922556,0.205998600200254,-0.361057298548666,0.758163235699517,-0.726704827076575,-1.36828104441929])
+        self.vectors = (u, v, w)
+
+        mat_v = np.diff(np.identity(S1))
+        mat_w = np.diff(np.identity(S2))
+        self.penalty_matrices = {
+            'v': np.dot(mat_v, mat_v.T),
+            'w': np.dot(mat_w, mat_w.T)
+        }
+
+        self.eigens = {
+            'v': _eigh(self.penalty_matrices['v']),
+            'w': _eigh(self.penalty_matrices['w'])
+        }
+
+    def test_update_components(self):
+        results_vectors, results_alphas = _update_components(
+            self.data,
+            self.vectors,
+            self.penalty_matrices,
+            self.alphas,
+            self.alpha_range,
+            self.eigens
+        )
+
+        expected_u = np.array([0., 0.00127016, 0.00254032, 0.00381048, 0.00508064, 0.00635081, 0.00762097, 0.00889113, 0.01016129, 0.01143145])
+        expected_v = np.array([ 29.0754956 ,  26.74521322,  23.79053357,  20.66854716, 17.50173105,  14.32290286,  11.14085607,   7.95794693, 4.77480702,   1.59160639,  -1.59160639,  -4.77480702, -7.95794693, -11.14085607, -14.32290286, -17.50173105, -20.66854716, -23.79053357, -26.74521322, -29.0754956])
+        expected_w = np.array([ 7.80425621e+00,  6.94306630e+00,  5.85112128e+00,  4.69734572e+00, 3.52700313e+00,  2.35222294e+00,  1.17625939e+00, -3.52864950e-17, -1.17625939e+00, -2.35222294e+00, -3.52700313e+00, -4.69734572e+00, -5.85112128e+00, -6.94306630e+00, -7.80425621e+00])
+
+        expected_alpha_v = 4.33996708058391
+        expected_alpha_w = 3.366682373114449
+
+        np.testing.assert_array_almost_equal(results_vectors[0], expected_u)
+        np.testing.assert_array_almost_equal(results_vectors[1], expected_v)
+        np.testing.assert_array_almost_equal(results_vectors[2], expected_w)
+        np.testing.assert_almost_equal(results_alphas['v'], expected_alpha_v)
+        np.testing.assert_almost_equal(results_alphas['w'], expected_alpha_w)

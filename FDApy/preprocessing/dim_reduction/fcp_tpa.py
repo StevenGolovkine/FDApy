@@ -282,7 +282,7 @@ def _compute_denominator(
     penalty_matrix: npt.NDArray
 ) -> np.float64:
     r"""Compute denominator of equations (17) and (18) in [4]_.
-    
+
     This function computes the denominator of equations (17) and (18) in [4]_,
     which is, for a vector :math:`a`:
 
@@ -305,13 +305,12 @@ def _update_components(
     data: npt.NDArray[np.float64],
     vectors: Tuple[npt.NDArray, npt.NDArray, npt.NDArray],
     penalty_matrices: Dict[str, npt.NDArray[np.float64]],
-    alphas: Tuple[np.float64, np.float64],
+    alphas: Dict[str, Tuple[np.float64, np.float64]],
     alpha_range: Dict[str, Tuple[np.float64, np.float64]],
-    eigens: Dict[str, Tuple[npt.NDArray, npt.NDArray]],
-    identities  # TO REMOVE
+    eigens: Dict[str, Tuple[npt.NDArray, npt.NDArray]]
 ) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
     r"""Update the components in FCP-TPA.
-    
+
     This function corresponds to one pass of the step (2.a) in the FCP-TPA
     algorithm in [1]_. The vectors :math:`u, v` and :math:`w` are computed
     using equations (17) and (18), and the smoothing parameters
@@ -328,8 +327,9 @@ def _update_components(
         A dictionary with entries :math:`v` and :math:`w`, containing a
         roughness penalty matrix for each direction of the image. The
         algorithm does not induce smoothness along observations.
-    alphas: Tuple[np.float64, np.float64]
-        Smoothing parameters for both dimension of the images.
+    alphas: Dict[str, Tuple[np.float64, np.float64]]
+        A dictionary with entries :math:`v` and :math:`w`, containing the
+        smoothing parameters for both dimension of the images.
     alpha_range: Dict[str, Tuple[np.float64, np.float64]]
         A dictionary with entries :math:`v` and :math:`w`, containing the
         range of smoothness parameters :math:`\alpha_{v_k}, \alpha_{w_k}`
@@ -358,7 +358,7 @@ def _update_components(
 
     # Update v
     u_cross = np.dot(u.T, u)
-    a = identities[0] + alphas['v'] * penalty_matrices['v']
+    a = np.eye(len(v)) + alphas['v'] * penalty_matrices['v']
     b = np.einsum('i, j, ikj', u, w, data)
     v = np.linalg.solve(a, b) / (u_cross * w_cross)
 
@@ -374,9 +374,8 @@ def _update_components(
     )
 
     # Update w
-    # v_cross = np.dot(v.T, v + alpha_v * np.dot(penalty_matrices['v'], v))
     v_cross = _compute_denominator(v, alpha_v, penalty_matrices['v'])
-    a = identities[1] + alphas['w'] * penalty_matrices['w']
+    a = np.eye(len(w)) + alphas['w'] * penalty_matrices['w']
     b = np.einsum('i, j, ijk', u, v, data)
     w = np.linalg.solve(a, b) / (u_cross * v_cross)
 
@@ -385,12 +384,15 @@ def _update_components(
         alpha_range=alpha_range['w'],
         data=data,
         u=u, v=v,
-        alpha=alphas['v'],
+        alpha=alpha_v,
         penalty_matrix=penalty_matrices['v'],
         eigencomponents=eigens['w'],
         dimension=3
     )
-    return 0
+
+    alphas = {'v': alpha_v, 'w': alpha_w}
+    vectors = (u, v, w)
+    return vectors, alphas
 
 
 ##############################################################################
@@ -531,12 +533,11 @@ class FCPTPA():
 
         # Initialization
         vectors = _initialize_vectors(dimension)
-        alpha_v, alpha_w = [minimum for (minimum, _) in alpha_range.values()]
-        identity_v, identity_w = [np.eye(shape) for shape in dimension[1:]]
+        alphas = {idx: minimum for idx, (minimum, _) in alpha_range.items()}
 
         # Eigendecomposition of penalty matrix
-        eigen = _eigendecomposition_penalty_matrices(penalty_matrices)
-        
+        eigens = _eigendecomposition_penalty_matrices(penalty_matrices)
+
         # Initialization of the output
         coefficients, matrix_u, matrix_v, matrix_w = _initalize_output(
             dimension, self.n_components
@@ -556,53 +557,67 @@ class FCPTPA():
 
             # Repeat until convergence (defined by tolerance)
             while (
-                any(norm(vector - vector_old) / norm(vector) > tolerance
-                for vector, vector_old in zip(vectors, vectors_old))
+                any(
+                    norm(vector - vector_old) / norm(vector) > tolerance
+                    for vector, vector_old in zip(vectors, vectors_old)
+                )
             ):
-                u, v, w = vectors
                 vectors_old = vectors
 
-                # Update u
-                # u_old = u
-                v_cross = np.dot(v.T, v + alpha_v * np.dot(penalty_matrices['v'], v))
-                w_cross = np.dot(w.T, w + alpha_w * np.dot(penalty_matrices['w'], w))
-                u = np.einsum('i, j, kij', v, w, values) / (v_cross * w_cross)
-
-                # Update v
-                # v_old = v
-                u_cross = np.dot(u.T, u)
-                a = identity_v + alpha_v * penalty_matrices['v']
-                b = np.einsum('i, j, ikj', u, w, values)
-                v = np.linalg.solve(a, b) / (u_cross * w_cross)
-
-                # Update alpha_v
-                alpha_v = _find_optimal_alpha(
-                    alpha_range=alpha_range['v'],
-                    data=values,
-                    u=u, v=w,
-                    alpha=alpha_w,
-                    penalty_matrix=penalty_matrices['w'],
-                    eigencomponents=eigen['v'],
-                    dimension=2
+                # Update components
+                vectors, alphas = _update_components(
+                    values,
+                    vectors,
+                    penalty_matrices,
+                    alphas,
+                    alpha_range,
+                    eigens
                 )
-                # Update w
-                # w_old = w
-                v_cross = np.dot(v.T, v + alpha_v * np.dot(penalty_matrices['v'], v))
-                a = identity_w + alpha_w * penalty_matrices['w']
-                b = np.einsum('i, j, ijk', u, v, values)
-                w = np.linalg.solve(a, b) / (u_cross * v_cross)
 
-                # Update alpha_w
-                alpha_w = _find_optimal_alpha(
-                    alpha_range=alpha_range['w'],
-                    data=values,
-                    u=u, v=v,
-                    alpha=alpha_v,
-                    penalty_matrix=penalty_matrices['v'],
-                    eigencomponents=eigen['w'],
-                    dimension=3
-                )
-                vectors = (u, v, w)
+                # # Update u
+                # # u_old = u
+                # v_cross = np.dot(v.T, v + alpha_v *
+                # np.dot(penalty_matrices['v'], v))
+                # w_cross = np.dot(w.T, w + alpha_w *
+                # np.dot(penalty_matrices['w'], w))
+                # u = np.einsum('i, j, kij', v, w, values) /
+                # (v_cross * w_cross)
+
+                # # Update v
+                # # v_old = v
+                # u_cross = np.dot(u.T, u)
+                # a = identity_v + alpha_v * penalty_matrices['v']
+                # b = np.einsum('i, j, ikj', u, w, values)
+                # v = np.linalg.solve(a, b) / (u_cross * w_cross)
+
+                # # Update alpha_v
+                # alpha_v = _find_optimal_alpha(
+                #     alpha_range=alpha_range['v'],
+                #     data=values,
+                #     u=u, v=w,
+                #     alpha=alpha_w,
+                #     penalty_matrix=penalty_matrices['w'],
+                #     eigencomponents=eigen['v'],
+                #     dimension=2
+                # )
+                # # Update w
+                # # w_old = w
+                # v_cross = np.dot(v.T, v + alpha_v *
+                # np.dot(penalty_matrices['v'], v))
+                # a = identity_w + alpha_w * penalty_matrices['w']
+                # b = np.einsum('i, j, ijk', u, v, values)
+                # w = np.linalg.solve(a, b) / (u_cross * v_cross)
+
+                # # Update alpha_w
+                # alpha_w = _find_optimal_alpha(
+                #     alpha_range=alpha_range['w'],
+                #     data=values,
+                #     u=u, v=v,
+                #     alpha=alpha_v,
+                #     penalty_matrix=penalty_matrices['v'],
+                #     eigencomponents=eigen['w'],
+                #     dimension=3
+                # )
 
                 n_iter = n_iter + 1
                 if n_iter > max_iteration:
@@ -621,8 +636,8 @@ class FCPTPA():
                     f'u: {norm(vectors[0] - vectors_old[0])}, '
                     f'v: {norm(vectors[1] - vectors_old[1])}, '
                     f'w: {norm(vectors[2] - vectors_old[2])}, '
-                    f'alpha_v: {alpha_v}, '
-                    f'alpha_w: {alpha_w}.'
+                    f'alpha_v: {alphas[0]}, '
+                    f'alpha_w: {alphas[1]}.'
                 )
 
             # Reset tolerance if necessary
@@ -642,7 +657,8 @@ class FCPTPA():
 
             # Update the values
             values = values - (
-                coefficients[n_component] * np.multiply.outer(vectors[0], np.outer(vectors[1], vectors[2]))
+                coefficients[n_component] *
+                np.multiply.outer(vectors[0], np.outer(vectors[1], vectors[2]))
             )
 
         # Save the results
