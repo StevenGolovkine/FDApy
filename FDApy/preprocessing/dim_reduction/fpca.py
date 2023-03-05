@@ -596,7 +596,7 @@ class MFPCA():
         ufpca_list, scores = [], []
         for function, n in zip(data, self.n_components):
             if function.n_dim == 1:
-                ufpca = UFPCA(n_components=n, normalize=self.normalize)
+                ufpca = UFPCA(n_components=n, normalize=False)
                 ufpca.fit(data=function)
                 scores_uni = ufpca.transform(data=function, method='NumInt')
             elif function.n_dim == 2:
@@ -797,10 +797,7 @@ class MFPCA():
 
         # TODO: Add checkers
         if self.normalize:
-            data_new = MultivariateFunctionalData([
-                DenseFunctionalData(data.argvals, data.values / weights)
-                for data, weights in zip(data, self.weights)
-            ])
+            data_new, self.weights = data_new.normalize(use_argvals_stand=True)
             # values = data.values / self.weights
             # data = MultivariateFunctionalData(data.argvals, values)
 
