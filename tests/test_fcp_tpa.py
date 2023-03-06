@@ -10,7 +10,7 @@ import unittest
 import warnings
 import inspect
 
-from FDApy.representation.functional_data import MultivariateFunctionalData
+from FDApy.representation.functional_data import DenseFunctionalData
 from FDApy.simulation.karhunen import KarhunenLoeve
 from FDApy.misc.utils import _eigh
 from FDApy.preprocessing.dim_reduction.fcp_tpa import (
@@ -276,3 +276,83 @@ class TestUpdateComponents(unittest.TestCase):
         np.testing.assert_array_almost_equal(results_vectors[2], expected_w)
         np.testing.assert_almost_equal(results_alphas['v'], expected_alpha_v)
         np.testing.assert_almost_equal(results_alphas['w'], expected_alpha_w)
+
+
+class TestTransform(unittest.TestCase):
+    def setUp(self):
+        kl = KarhunenLoeve(
+            basis_name='bsplines',
+            n_functions=5,
+            dimension='2D',
+            argvals={'input_dim_0': np.linspace(0, 1, 10)},
+            random_state=42
+        )
+        kl.new(n_obs=50)
+        self.data = kl.data
+
+        n_points = self.data.n_points
+        mat_v = np.diff(np.identity(n_points['input_dim_0']))
+        mat_w = np.diff(np.identity(n_points['input_dim_1']))
+
+        self.fcptpa = FCPTPA(n_components=5)
+        self.fcptpa.fit(
+            self.data,
+            penalty_matrices={
+                'v': np.dot(mat_v, mat_v.T),
+                'w': np.dot(mat_w, mat_w.T)
+            },
+            alpha_range={
+                'v': (1e-2, 1e2),
+                'w': (1e-2, 1e2)
+            },
+            tolerance=1e-4,
+            max_iteration=15,
+            adapt_tolerance=True
+        )
+
+    def test_transform(self):
+        # We only test the shape of the output because the optimization step
+        # can lead to different solution
+        scores = self.fcptpa.transform(self.data)
+        expected_shape = (50, 5)
+
+        np.testing.assert_array_equal(scores.shape, expected_shape)
+
+
+class TestInverseTransform(unittest.TestCase):
+    def setUp(self):
+        kl = KarhunenLoeve(
+            basis_name='bsplines',
+            n_functions=5,
+            dimension='2D',
+            argvals={'input_dim_0': np.linspace(0, 1, 10)},
+            random_state=42
+        )
+        kl.new(n_obs=50)
+        self.data = kl.data
+
+        n_points = self.data.n_points
+        mat_v = np.diff(np.identity(n_points['input_dim_0']))
+        mat_w = np.diff(np.identity(n_points['input_dim_1']))
+
+        self.fcptpa = FCPTPA(n_components=5)
+        self.fcptpa.fit(
+            self.data,
+            penalty_matrices={
+                'v': np.dot(mat_v, mat_v.T),
+                'w': np.dot(mat_w, mat_w.T)
+            },
+            alpha_range={
+                'v': (1e-2, 1e2),
+                'w': (1e-2, 1e2)
+            },
+            tolerance=1e-4,
+            max_iteration=15,
+            adapt_tolerance=True
+        )
+        self.scores = self.fcptpa.transform(self.data)
+
+    def test_inverse_transform(self):
+        data_f = self.fcptpa.inverse_transform(self.scores)
+
+        self.assertIsInstance(data_f, DenseFunctionalData)

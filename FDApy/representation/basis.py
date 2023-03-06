@@ -307,7 +307,7 @@ class Basis(
     def __init__(
         self,
         name: str,
-        n_functions: int,
+        n_functions: int = 5,
         dimension: str = '1D',
         argvals: Optional[Dict[str, npt.NDArray[np.float64]]] = None,
         norm: bool = False,

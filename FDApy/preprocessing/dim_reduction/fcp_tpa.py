@@ -265,8 +265,8 @@ def _find_optimal_alpha(
         raise ValueError(f"The direction can not be {dimension}.")
 
     vector = np.dot(eigenvectors.T, temp) / (norm(u) * norm(v))
-    vWv = np.dot(v.T, np.dot(penalty_matrix, v))
-    smoother = 1 / (1 + alpha * vWv / norm(v))
+    v_w_v = np.dot(v.T, np.dot(penalty_matrix, v))
+    smoother = 1 / (1 + alpha * v_w_v / norm(v))
 
     results = minimize_scalar(
         _gcv,
@@ -574,51 +574,6 @@ class FCPTPA():
                     eigens
                 )
 
-                # # Update u
-                # # u_old = u
-                # v_cross = np.dot(v.T, v + alpha_v *
-                # np.dot(penalty_matrices['v'], v))
-                # w_cross = np.dot(w.T, w + alpha_w *
-                # np.dot(penalty_matrices['w'], w))
-                # u = np.einsum('i, j, kij', v, w, values) /
-                # (v_cross * w_cross)
-
-                # # Update v
-                # # v_old = v
-                # u_cross = np.dot(u.T, u)
-                # a = identity_v + alpha_v * penalty_matrices['v']
-                # b = np.einsum('i, j, ikj', u, w, values)
-                # v = np.linalg.solve(a, b) / (u_cross * w_cross)
-
-                # # Update alpha_v
-                # alpha_v = _find_optimal_alpha(
-                #     alpha_range=alpha_range['v'],
-                #     data=values,
-                #     u=u, v=w,
-                #     alpha=alpha_w,
-                #     penalty_matrix=penalty_matrices['w'],
-                #     eigencomponents=eigen['v'],
-                #     dimension=2
-                # )
-                # # Update w
-                # # w_old = w
-                # v_cross = np.dot(v.T, v + alpha_v *
-                # np.dot(penalty_matrices['v'], v))
-                # a = identity_w + alpha_w * penalty_matrices['w']
-                # b = np.einsum('i, j, ijk', u, v, values)
-                # w = np.linalg.solve(a, b) / (u_cross * v_cross)
-
-                # # Update alpha_w
-                # alpha_w = _find_optimal_alpha(
-                #     alpha_range=alpha_range['w'],
-                #     data=values,
-                #     u=u, v=v,
-                #     alpha=alpha_v,
-                #     penalty_matrix=penalty_matrices['v'],
-                #     eigencomponents=eigen['w'],
-                #     dimension=3
-                # )
-
                 n_iter = n_iter + 1
                 if n_iter > max_iteration:
                     if adapt_tolerance and (n_iter < 2 * max_iteration):
@@ -673,24 +628,29 @@ class FCPTPA():
         self,
         data: DenseFunctionalData,
         method: None = None
-    ) -> np.ndarray:
+    ) -> npt.NDArray[np.float64]:
         """Apply dimension reduction to the data.
 
         Parameters
         ----------
         data: DenseFunctionalData
-            Functional data object to be transformed.
+            Functional data object to be transformed. It has to be
+            2-dimensional data.
         method: None
             Not used. To be compliant with other methods.
 
         Returns
         -------
-        scores: np.array, shape=(n_obs, n_components)
+        npt.NDArray[np.float64], shape=(n_obs, n_components)
             An array representing the projection of the data onto the basis of
             functions defined by the eigenimages.
 
         """
-        return np.einsum('ikl, jkl', data.values, self.eigenfunctions.values)
+        return np.einsum(
+            'ikl, jkl -> ij',
+            data.values,
+            self.eigenfunctions.values
+        )
 
     def inverse_transform(
         self,
@@ -713,5 +673,9 @@ class FCPTPA():
 
         """
         argvals = self.eigenfunctions.argvals
-        values = np.einsum('ij, jkl', scores, self.eigenfunctions.values)
+        values = np.einsum(
+            'ij, jkl -> ikl',
+            scores,
+            self.eigenfunctions.values
+        )
         return DenseFunctionalData(argvals, values)
