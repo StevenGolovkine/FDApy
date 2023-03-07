@@ -159,7 +159,7 @@ def _find_optimal_alpha(
     alpha: np.float64,
     penalty_matrix: npt.NDArray[np.float64],
     eigencomponents: Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]],
-    dimension: np.int64
+    formula: str
 ) -> float:
     r"""Find the optimal smoothing parameters in FCP-TPA using GCV.
 
@@ -209,11 +209,9 @@ def _find_optimal_alpha(
         :math:`m \times m`. The eigenvalues corresponds to the Rayleight
         quotients :math:`\mathcal{R}_u(u)` and :math:`\mathcal{R}_v(v)` in
         Equations (19) and (20) in [4]_.
-    dimension: np.int64, {2, 3}
-        The direction to optimize. If ``dimension == 2``, the optimization is
-        performed with respect to the first dimension of the images and if
-        ``dimension == 3``, the optimization is performed with respect to the
-        second dimension of the images.
+    formula: str
+        The formula to be passed to the ``np.einsum`` function regarding the 
+        direction to optimize.
 
     Returns
     -------
@@ -237,13 +235,8 @@ def _find_optimal_alpha(
 
     """
     eigenvalues, eigenvectors = eigencomponents
-    if dimension == 2:
-        temp = np.einsum('i, j, ikj', u, v, data)
-    elif dimension == 3:
-        temp = np.einsum('i, j, ijk', u, v, data)
-    else:
-        raise ValueError(f"The direction can not be {dimension}.")
-
+    
+    temp = np.einsum(formula, u, v, data)
     vector = np.dot(eigenvectors.T, temp) / (norm(u) * norm(v))
     v_w_v = np.dot(v.T, np.dot(penalty_matrix, v))
     smoother = 1 / (1 + alpha * v_w_v / norm(v))
@@ -339,7 +332,7 @@ def _update_components(
     # Update v
     u_cross = np.dot(u.T, u)
     a = np.eye(len(v)) + alphas['v'] * penalty_matrices['v']
-    b = np.einsum('i, j, ikj', u, w, data)
+    b = np.einsum('i, j, ikj -> k', u, w, data)
     v = np.linalg.solve(a, b) / (u_cross * w_cross)
 
     # Update alpha_v
@@ -350,13 +343,13 @@ def _update_components(
         alpha=alphas['w'],
         penalty_matrix=penalty_matrices['w'],
         eigencomponents=eigens['v'],
-        dimension=2
+        formula='i, j, ikj -> k'
     )
 
     # Update w
     v_cross = _compute_denominator(v, alpha_v, penalty_matrices['v'])
     a = np.eye(len(w)) + alphas['w'] * penalty_matrices['w']
-    b = np.einsum('i, j, ijk', u, v, data)
+    b = np.einsum('i, j, ijk -> k', u, v, data)
     w = np.linalg.solve(a, b) / (u_cross * v_cross)
 
     # Update alpha_w
@@ -367,7 +360,7 @@ def _update_components(
         alpha=alpha_v,
         penalty_matrix=penalty_matrices['v'],
         eigencomponents=eigens['w'],
-        dimension=3
+        formula='i, j, ijk -> k'
     )
 
     alphas = {'v': alpha_v, 'w': alpha_w}

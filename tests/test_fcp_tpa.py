@@ -191,7 +191,7 @@ class TestFindOptimalAlpha(unittest.TestCase):
         output = _find_optimal_alpha(
            self.alpha_range, self.data, self.u, self.w,
            self.alpha, self.penalty_matrix,
-           (self.eigenvalues, self.eigenvectors), 2
+           (self.eigenvalues, self.eigenvectors), 'i, j, ikj -> k'
         )
         np.testing.assert_almost_equal(output, expected_output, decimal=4)
 
@@ -200,17 +200,9 @@ class TestFindOptimalAlpha(unittest.TestCase):
         output = _find_optimal_alpha(
            self.alpha_range, self.data, self.u, self.v,
            self.alpha, self.eigenvectors,
-           (self.eigenvalues_2, self.penalty_matrix), 3
+           (self.eigenvalues_2, self.penalty_matrix), 'i, j, ijk -> k'
         )
         np.testing.assert_almost_equal(output, expected_output, decimal=4)
-
-    def test_find_optimal_alpha_error(self):
-        with self.assertRaises(ValueError):
-            _find_optimal_alpha(
-                self.alpha_range, self.data, self.u, self.v,
-                self.alpha, self.eigenvectors,
-                (self.eigenvalues_2, self.penalty_matrix), 1
-            )
 
 
 class TestComputeDenominator(unittest.TestCase):
