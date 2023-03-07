@@ -3,6 +3,7 @@ matplotlib
 mpldatacursor
 networkx
 numpy
+numpydoc
 pandas
 patsy
 pillow

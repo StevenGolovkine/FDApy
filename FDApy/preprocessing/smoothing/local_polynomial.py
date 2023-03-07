@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*-coding:utf8 -*
 
-"""Module for LocalPolynomial classes.
+"""
+Local Polynomials
+-----------------
 
-This module is used to fit local polynomial regression.
 """
 from __future__ import annotations
 

@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*-coding:utf8 -*
 
-"""Module for SmoothingSplines classes.
+"""
+Smoothing Splines
+-----------------
 
-This module is used to perform smoothing spline. It is a wrapper around the
-package csaps (https://csaps.readthedocs.io/en/latest/index.html).
 """
 from __future__ import annotations
 

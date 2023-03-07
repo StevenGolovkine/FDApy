@@ -5,26 +5,6 @@
 Functional Canonical Polyadic-Tensor Power Algorithm
 ----------------------------------------------------
 
-This module is used to implement the Functional CP-TPA algorithm [1]_. This
-method computes an eigendecomposition of image observations, which can be
-interpreted as functions on a two-dimensional domain.
-
-References
-----------
-.. [1] Allen G., Multi-way Functional Principal Components Analysis (2013),
-    IEEE International Workshop on Computational Advances in Multi-Sensor
-    Adaptive Processing
-.. [2] Happ C. & Greven S. (2018) Multivariate Functional Principal Component
-    Analysis for Data Observed on Different (Dimensional) Domains, Journal of
-    the American Statistical Association, 113:522, 649-659,
-    DOI: 10.1080/01621459.2016.1273115
-.. [3] Happ-Kurz C. (2020) Object-Oriented Software for Functional Data.
-    Journal of Statistical Software, 93(5): 1-38
-.. [4] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
-    Functional Data Using Two-Way Regularized Singular Value Decomposition.
-    Journal of the American Statistical Association, Vol. 104, No. 488,
-    1609 -- 1620.
-
 """
 import numpy as np
 import numpy.typing as npt
@@ -432,14 +412,14 @@ class FCPTPA():
     The FCP-TPA algorithm is an iterative algorithm. Convergence is assumed if
     the relative difference between the actual and the previous values are all
     below the tolerance level ``tolerance``. The tolerance level is increased
-    automatically, if the algorithm has not converged after ``maxIter`` steps
-    and if ``adaptTol = TRUE``. If the algorithm did not converge after
-    ``maxIter`` steps steps, the function throws a warning. The code is
-    adapted from [2]_ and [3]_.
+    automatically, if the algorithm has not converged after ``max_iteration``
+    steps and if ``adapt_tolerance = TRUE``. If the algorithm did not converge
+    after ``max_iteration`` steps steps, the function throws a warning. The
+    code is adapted from [2]_ and [3]_.
 
     Parameters
     ----------
-    n_components: np.int64, default=None
+    n_components: np.int64, default=5
         Number of components to be calculated.
 
     Attributes
@@ -457,7 +437,7 @@ class FCPTPA():
     .. [1] Allen G., Multi-way Functional Principal Components Analysis (2013),
         IEEE International Workshop on Computational Advances in Multi-Sensor
         Adaptive Processing
-    .. [2] Happ C. & Greven S. (2018) Multivariate Functional Principal
+    .. [2] Happ C. and Greven S. (2018) Multivariate Functional Principal
         Component Analysis for Data Observed on Different (Dimensional)
         Domains, Journal of the American Statistical Association, 113:522,
         649-659, DOI: 10.1080/01621459.2016.1273115
@@ -472,7 +452,7 @@ class FCPTPA():
 
     def __init__(
         self,
-        n_components: Optional[int] = None
+        n_components: np.int64 = 5
     ) -> None:
         """Initialize FCPTPA object."""
         self.n_components = n_components
@@ -580,10 +560,10 @@ class FCPTPA():
                         tolerance = 10 * tolerance
                     else:
                         vectors_old = vectors
-                        warnings.warn(
+                        warnings.warn((
                             f'FCP-TPA algorithm did not converge; iteration '
                             f'for the component {n_component} stopped.'
-                        )
+                        ), UserWarning)
 
             if verbose:
                 print(
@@ -654,21 +634,22 @@ class FCPTPA():
 
     def inverse_transform(
         self,
-        scores: np.ndarray
+        scores: npt.NDArray[np.float64]
     ) -> DenseFunctionalData:
         """Transform the data back to its original space.
 
-        Return a DenseFunctionalData whose transform would be `scores`.
+        Return a DenseFunctionalData whose transform would be ``scores``.
 
         Parameters
         ----------
-        scores: np.ndarray, shape=(n_obs, n_components)
-            New_data, where `n_obs` is the number of observations and
-            `n_components` is the number of components.
+        scores: npt.NDArray[np.float64], shape=(n_obs, n_components)
+            A set of coefficients to generate new data, where ``n_obs`` is the
+            number of observations and ``n_components`` is the number of
+            components.
 
         Returns
         -------
-        data: DenseFunctionalData object
+        DenseFunctionalData
             The transformation of the scores into the original space.
 
         """
