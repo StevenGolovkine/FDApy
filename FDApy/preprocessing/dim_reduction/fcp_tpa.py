@@ -591,8 +591,8 @@ class FCPTPA():
                     f'u: {norm(vectors[0] - vectors_old[0])}, '
                     f'v: {norm(vectors[1] - vectors_old[1])}, '
                     f'w: {norm(vectors[2] - vectors_old[2])}, '
-                    f'alpha_v: {alphas[0]}, '
-                    f'alpha_w: {alphas[1]}.'
+                    f'alpha_v: {alphas["v"]}, '
+                    f'alpha_w: {alphas["w"]}.'
                 )
 
             # Reset tolerance if necessary

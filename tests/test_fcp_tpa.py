@@ -278,6 +278,49 @@ class TestUpdateComponents(unittest.TestCase):
         np.testing.assert_almost_equal(results_alphas['w'], expected_alpha_w)
 
 
+class TestFit(unittest.TestCase):
+    def setUp(self):
+        kl = KarhunenLoeve(
+            basis_name='bsplines',
+            n_functions=5,
+            dimension='2D',
+            argvals={'input_dim_0': np.linspace(0, 1, 10)},
+            random_state=42
+        )
+        kl.new(n_obs=50)
+        self.data = kl.data
+
+        n_points = self.data.n_points
+        mat_v = np.diff(np.identity(n_points['input_dim_0']))
+        mat_w = np.diff(np.identity(n_points['input_dim_1']))
+        self.penalty_matrices={
+            'v': np.dot(mat_v, mat_v.T),
+            'w': np.dot(mat_w, mat_w.T)
+        }
+        self.fcptpa = FCPTPA(n_components=5)
+
+    def test_fit(self):
+        self.fcptpa.fit(
+            self.data,
+            penalty_matrices=self.penalty_matrices,
+            alpha_range={'v': (1e-2, 1e2), 'w': (1e-2, 1e2)},
+            tolerance=1e-4,
+            max_iteration=15,
+            adapt_tolerance=True,
+            verbose=True
+        )
+
+    def test_fit_warnings_convergence(self):
+        with self.assertWarns(UserWarning):
+            self.fcptpa.fit(
+                self.data,
+                penalty_matrices=self.penalty_matrices,
+                alpha_range={'v': (1e-2, 1e2), 'w': (1e-2, 1e2)},
+                tolerance=1e-10,
+                max_iteration=1,
+                adapt_tolerance=True
+            )
+
 class TestTransform(unittest.TestCase):
     def setUp(self):
         kl = KarhunenLoeve(
@@ -297,14 +340,8 @@ class TestTransform(unittest.TestCase):
         self.fcptpa = FCPTPA(n_components=5)
         self.fcptpa.fit(
             self.data,
-            penalty_matrices={
-                'v': np.dot(mat_v, mat_v.T),
-                'w': np.dot(mat_w, mat_w.T)
-            },
-            alpha_range={
-                'v': (1e-2, 1e2),
-                'w': (1e-2, 1e2)
-            },
+            penalty_matrices={'v': np.dot(mat_v, mat_v.T), 'w': np.dot(mat_w, mat_w.T)},
+            alpha_range={'v': (1e-2, 1e2), 'w': (1e-2, 1e2)},
             tolerance=1e-4,
             max_iteration=15,
             adapt_tolerance=True
@@ -338,14 +375,8 @@ class TestInverseTransform(unittest.TestCase):
         self.fcptpa = FCPTPA(n_components=5)
         self.fcptpa.fit(
             self.data,
-            penalty_matrices={
-                'v': np.dot(mat_v, mat_v.T),
-                'w': np.dot(mat_w, mat_w.T)
-            },
-            alpha_range={
-                'v': (1e-2, 1e2),
-                'w': (1e-2, 1e2)
-            },
+            penalty_matrices={'v': np.dot(mat_v, mat_v.T), 'w': np.dot(mat_w, mat_w.T)},
+            alpha_range={'v': (1e-2, 1e2), 'w': (1e-2, 1e2)},
             tolerance=1e-4,
             max_iteration=15,
             adapt_tolerance=True
@@ -354,5 +385,4 @@ class TestInverseTransform(unittest.TestCase):
 
     def test_inverse_transform(self):
         data_f = self.fcptpa.inverse_transform(self.scores)
-
         self.assertIsInstance(data_f, DenseFunctionalData)
