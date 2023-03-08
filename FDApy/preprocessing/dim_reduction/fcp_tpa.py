@@ -159,7 +159,7 @@ def _find_optimal_alpha(
     alpha: np.float64,
     penalty_matrix: npt.NDArray[np.float64],
     eigencomponents: Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]],
-    formula: str
+    formula: np.str_
 ) -> float:
     r"""Find the optimal smoothing parameters in FCP-TPA using GCV.
 
@@ -209,7 +209,7 @@ def _find_optimal_alpha(
         :math:`m \times m`. The eigenvalues corresponds to the Rayleight
         quotients :math:`\mathcal{R}_u(u)` and :math:`\mathcal{R}_v(v)` in
         Equations (19) and (20) in [4]_.
-    formula: str
+    formula: np.str_
         The formula to be passed to the ``np.einsum`` function regarding the 
         direction to optimize.
 
@@ -254,7 +254,7 @@ def _compute_denominator(
     alpha: np.float64,
     penalty_matrix: npt.NDArray
 ) -> np.float64:
-    r"""Compute denominator of equations (17) and (18) in [4]_.
+    r"""Compute denominator of equations (17) and (18) in [2]_.
 
     This function computes the denominator of equations (17) and (18) in [4]_,
     which is, for a vector :math:`a`:
@@ -265,13 +265,65 @@ def _compute_denominator(
 
     References
     ----------
-    .. [4] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
+    .. [2] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
         Functional Data Using Two-Way Regularized Singular Value Decomposition.
         Journal of the American Statistical Association, Vol. 104, No. 488,
         1609 -- 1620.
 
     """
     return np.dot(a.T, a + alpha * np.dot(penalty_matrix, a))
+
+
+def _update_vector(
+    data: npt.NDArray,
+    vectors: Tuple[npt.NDArray, npt.NDArray, npt.NDArray],
+    penalty_matrix: npt.NDArray,
+    alpha: np.float64,
+    denominator: np.float64,
+    formula: np.str_
+):
+    r"""Update individual vector in FCP-TPA.
+
+    This function is used to compute the step (2.a.i), (2.a.ii) and (2.a.iii)
+    in the FCP-TPA algortihm in [1]_. The vectors :math:`u, v` and :math:`w`
+    are computed using equations (17) and (18) in [2]_.
+    
+    Parameters
+    ----------
+    data: npt.NDArray[np.float64], shape=(n_obs, m_1, m_2)
+        Data as an array of shape :math:`(n_obs, m_1, m_2)`.
+    vectors: Tuple[npt.NDArray, npt.NDArray, npt.NDArray]
+        Vectors. The first element of the tuple is the vector to update, the
+        other two are the remaining dimensions of the tensor.
+    penalty_matrix: npt.NDArray[np.float64]
+        A roughness penalty matrix for the direction of the image to update.
+    alpha: np.float64
+        The smoothing parameter for the dimension to be updated.
+    denominator: np.float64
+        The denominator of equations (17) and (18).
+    formula: np.str_
+        The formula to be passed to the ``np.einsum`` function regarding the 
+        direction to optimize.
+
+    Returns
+    -------
+    npt.NDArray
+        The updated vector.
+
+    References
+    ----------
+    .. [1] Allen G., Multi-way Functional Principal Components Analysis (2013),
+        IEEE International Workshop on Computational Advances in Multi-Sensor
+        Adaptive Processing
+    .. [2] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
+        Functional Data Using Two-Way Regularized Singular Value Decomposition.
+        Journal of the American Statistical Association, Vol. 104, No. 488,
+        1609 -- 1620.
+
+    """
+    a = np.eye(len(vectors[0])) + alpha * penalty_matrix
+    b = np.einsum(formula, vectors[1], vectors[2], data)
+    return np.linalg.solve(a, b) / denominator
 
 
 def _update_components(
@@ -288,12 +340,12 @@ def _update_components(
     algorithm in [1]_. The vectors :math:`u, v` and :math:`w` are computed
     using equations (17) and (18), and the smoothing parameters
     :math:`\alpha_u` and :math:`\alpha_v` are updated using the GCV criteria
-    defined in equations (19) and (20).
+    defined in equations (19) and (20) in [2]_.
 
     Parameters
     ----------
-    data: npt.NDArray[np.float64], shape=(N, M_1, M_2)
-        Data as an array of shape :math:`(N, M_1, M_2)`.
+    data: npt.NDArray[np.float64], shape=(n_obs, m_1, m_2)
+        Data as an array of shape :math:`(n_obs, m_1, m_2)`.
     vectors: Tuple[npt.NDArray, npt.NDArray, npt.NDArray]
         Vectors
     penalty_matrices: Dict[str, npt.NDArray[np.float64]]
@@ -320,6 +372,10 @@ def _update_components(
     .. [1] Allen G., Multi-way Functional Principal Components Analysis (2013),
         IEEE International Workshop on Computational Advances in Multi-Sensor
         Adaptive Processing
+    .. [2] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
+        Functional Data Using Two-Way Regularized Singular Value Decomposition.
+        Journal of the American Statistical Association, Vol. 104, No. 488,
+        1609 -- 1620.
 
     """
     u, v, w = vectors
@@ -327,40 +383,42 @@ def _update_components(
     # Update u
     v_cross = _compute_denominator(v, alphas['v'], penalty_matrices['v'])
     w_cross = _compute_denominator(w, alphas['w'], penalty_matrices['w'])
-    u = np.einsum('i, j, kij -> k', v, w, data) / (v_cross * w_cross)
+    u = _update_vector(
+        data, (u, v, w),
+        penalty_matrix=0, alpha=0,  # No smoothing for u.
+        denominator=v_cross * w_cross, formula='i, j, kij -> k'
+    )
 
     # Update v
-    u_cross = np.dot(u.T, u)
-    a = np.eye(len(v)) + alphas['v'] * penalty_matrices['v']
-    b = np.einsum('i, j, ikj -> k', u, w, data)
-    v = np.linalg.solve(a, b) / (u_cross * w_cross)
+    u_cross = _compute_denominator(u, 0, 0)
+    v = _update_vector(
+        data, (v, u, w),
+        penalty_matrix=penalty_matrices['v'], alpha=alphas['v'],
+        denominator=u_cross * w_cross, formula='i, j, ikj -> k'
+    )
 
     # Update alpha_v
     alpha_v = _find_optimal_alpha(
         alpha_range=alpha_range['v'],
-        data=data,
-        u=u, v=w,
-        alpha=alphas['w'],
-        penalty_matrix=penalty_matrices['w'],
-        eigencomponents=eigens['v'],
-        formula='i, j, ikj -> k'
+        data=data, u=u, v=w,
+        alpha=alphas['w'], penalty_matrix=penalty_matrices['w'],
+        eigencomponents=eigens['v'], formula='i, j, ikj -> k'
     )
 
     # Update w
     v_cross = _compute_denominator(v, alpha_v, penalty_matrices['v'])
-    a = np.eye(len(w)) + alphas['w'] * penalty_matrices['w']
-    b = np.einsum('i, j, ijk -> k', u, v, data)
-    w = np.linalg.solve(a, b) / (u_cross * v_cross)
+    w = _update_vector(
+        data, (w, u, v),
+        alpha=alphas['w'], penalty_matrix=penalty_matrices['w'],
+        denominator=u_cross * v_cross, formula='i, j, ijk -> k'
+    )
 
     # Update alpha_w
     alpha_w = _find_optimal_alpha(
         alpha_range=alpha_range['w'],
-        data=data,
-        u=u, v=v,
-        alpha=alpha_v,
-        penalty_matrix=penalty_matrices['v'],
-        eigencomponents=eigens['w'],
-        formula='i, j, ijk -> k'
+        data=data, u=u, v=v,
+        alpha=alpha_v, penalty_matrix=penalty_matrices['v'],
+        eigencomponents=eigens['w'], formula='i, j, ijk -> k'
     )
 
     alphas = {'v': alpha_v, 'w': alpha_w}
