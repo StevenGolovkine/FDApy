@@ -649,10 +649,13 @@ class FCPTPA():
 
         # Save the results
         eigenimages = np.einsum('ik, jk -> kij', matrix_v, matrix_w)
-        self.eigenvalues = coefficients
-        self.scores = matrix_u
+        
+        # The eigenvalues are not sorted.
+        idx = np.argsort(coefficients)[::-1]
+        self.eigenvalues = coefficients[idx]
+        self.scores = matrix_u[:, idx]
         self.eigenfunctions = DenseFunctionalData(
-            data.argvals, eigenimages
+            data.argvals, eigenimages[idx]
         )
 
     def transform(
