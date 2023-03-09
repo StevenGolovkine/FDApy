@@ -12,7 +12,7 @@ import warnings
 
 from numpy.linalg import norm
 from scipy.optimize import minimize_scalar
-from typing import Dict, Optional, Tuple
+from typing import Dict, Tuple
 
 from ...representation.functional_data import DenseFunctionalData
 from ...misc.utils import _eigh
@@ -210,7 +210,7 @@ def _find_optimal_alpha(
         quotients :math:`\mathcal{R}_u(u)` and :math:`\mathcal{R}_v(v)` in
         Equations (19) and (20) in [4]_.
     formula: np.str_
-        The formula to be passed to the ``np.einsum`` function regarding the 
+        The formula to be passed to the ``np.einsum`` function regarding the
         direction to optimize.
 
     Returns
@@ -235,7 +235,7 @@ def _find_optimal_alpha(
 
     """
     eigenvalues, eigenvectors = eigencomponents
-    
+
     temp = np.einsum(formula, u, v, data)
     vector = np.dot(eigenvectors.T, temp) / (norm(u) * norm(v))
     v_w_v = np.dot(v.T, np.dot(penalty_matrix, v))
@@ -287,7 +287,7 @@ def _update_vector(
     This function is used to compute the step (2.a.i), (2.a.ii) and (2.a.iii)
     in the FCP-TPA algortihm in [1]_. The vectors :math:`u, v` and :math:`w`
     are computed using equations (17) and (18) in [2]_.
-    
+
     Parameters
     ----------
     data: npt.NDArray[np.float64], shape=(n_obs, m_1, m_2)
@@ -302,7 +302,7 @@ def _update_vector(
     denominator: np.float64
         The denominator of equations (17) and (18).
     formula: np.str_
-        The formula to be passed to the ``np.einsum`` function regarding the 
+        The formula to be passed to the ``np.einsum`` function regarding the
         direction to optimize.
 
     Returns
@@ -649,7 +649,7 @@ class FCPTPA():
 
         # Save the results
         eigenimages = np.einsum('ik, jk -> kij', matrix_v, matrix_w)
-        
+
         # The eigenvalues are not sorted.
         idx = np.argsort(coefficients)[::-1]
         self.eigenvalues = coefficients[idx]
