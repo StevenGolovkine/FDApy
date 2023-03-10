@@ -64,7 +64,7 @@ def _initalize_output(
     """
     coefficients = np.zeros(n_components)
     matrices = [np.zeros((dimension, n_components)) for dimension in shape]
-    return coefficients, *matrices
+    return coefficients, matrices
 
 
 def _eigendecomposition_penalty_matrices(
@@ -550,12 +550,43 @@ class FCPTPA():
             If True, computational details are given on the standard output
             during the computation. Here for debug purpose.
 
-        Example
-        -------
-        >>> penal_mat = dict(v = np.array(...),
-                                 w = np.array(...))
-        >>> alpha_range = dict(v = np.array([1e-4, 1e4]),
-                               w = np.array([1e-4, 1e4]))
+        Examples
+        --------
+        Simulate some data.
+
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines',
+        ...     n_functions=5,
+        ...     dimension='2D',
+        ...     argvals={'input_dim_0': np.linspace(0, 1, 101)},
+        ...     random_state=42
+        ... )
+        >>> kl.new(n_obs=50)
+        >>> data = kl.data
+
+        Define some parameters.
+
+        >>> n_points = data.n_points
+        >>> mat_v = np.diff(np.identity(n_points['input_dim_0']))
+        >>> mat_w = np.diff(np.identity(n_points['input_dim_1']))
+
+        Fit the FCP-TPA algorithm.
+
+        >>> fcptpa = FCPTPA(n_components=10)
+        >>> fcptpa.fit(
+        ...     data,
+        ...     penalty_matrices={
+        ...         'v': np.dot(mat_v, mat_v.T),
+        ...         'w': np.dot(mat_w, mat_w.T)
+        ...     },
+        ...     alpha_range={
+        ...         'v': (1e-2, 1e2),
+        ...         'w': (1e-2, 1e2)
+        ...     },
+        ...     tolerance=1e-4,
+        ...     max_iteration=15,
+        ...     adapt_tolerance=True
+        ... )
 
         """
         # Get parameters
@@ -570,7 +601,7 @@ class FCPTPA():
         eigens = _eigendecomposition_penalty_matrices(penalty_matrices)
 
         # Initialization of the output
-        coefficients, matrix_u, matrix_v, matrix_w = _initalize_output(
+        coefficients, matrices = _initalize_output(
             dimension, self.n_components
         )
 
@@ -635,25 +666,26 @@ class FCPTPA():
 
             # Calculate results
             coefficients[n_component] = np.einsum(
-                'i, j, k, ijk', vectors[0], vectors[1], vectors[2], values
+                'ijk, i, j, k -> ...', values, *vectors
             )
-            matrix_u[:, n_component] = vectors[0]
-            matrix_v[:, n_component] = vectors[1]
-            matrix_w[:, n_component] = vectors[2]
+            # Assign the vectors to the right matrix
+            for matrix, vector in zip(matrices, vectors):
+                matrix[:, n_component] = vector
 
             # Update the values
             values = values - (
                 coefficients[n_component] *
-                np.multiply.outer(vectors[0], np.outer(vectors[1], vectors[2]))
+                np.einsum('i, j, k -> ijk', *vectors)
             )
 
         # Save the results
-        eigenimages = np.einsum('ik, jk -> kij', matrix_v, matrix_w)
+        eigenimages = np.einsum('ik, jk -> kij', *matrices[1:])
 
-        # The eigenvalues are not sorted.
+        # The eigenvalues are not sorted by default
         idx = np.argsort(coefficients)[::-1]
+
+        self._scores = matrices[0][:, idx]
         self.eigenvalues = coefficients[idx]
-        self.scores = matrix_u[:, idx]
         self.eigenfunctions = DenseFunctionalData(
             data.argvals, eigenimages[idx]
         )
@@ -678,6 +710,12 @@ class FCPTPA():
         npt.NDArray[np.float64], shape=(n_obs, n_components)
             An array representing the projection of the data onto the basis of
             functions defined by the eigenimages.
+
+        Examples
+        --------
+        Using the model fitted using the ``fit`` function.
+
+        >>> scores = fcptpa.transform(data)
 
         """
         return np.einsum(
@@ -705,6 +743,12 @@ class FCPTPA():
         -------
         DenseFunctionalData
             The transformation of the scores into the original space.
+
+        Examples
+        --------
+        Using the model fitted using the ``fit`` function.
+
+        >>> data_f = fcptpa.inverse_transform(scores)
 
         """
         argvals = self.eigenfunctions.argvals

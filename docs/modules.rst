@@ -3,7 +3,7 @@ API References
 
 .. toctree::
 	:includehidden:
-	:maxdepth: 3
+	:maxdepth: 0
 	:titlesonly:
 
 	modules/representation
