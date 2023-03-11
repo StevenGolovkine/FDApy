@@ -101,31 +101,31 @@ def _gcv(
 
     This function calculates the generalized cross-validation criterion for the
     smoothing parameters alpha that is used in the FCP-TPA algorithm [1]_. The
-    code is adapted from [3]_. It corresponds to Equations (19) and (20) in
-    [4]_.
+    code is adapted from [2]_. It corresponds to Equations (19) and (20) in
+    [3]_.
 
     Parameters
     ----------
     alpha: np.float64
         The current value of the smoothing parameter. It corresponds to
         :math:`\alpha_u` and :math:`\alpha_v` in Equations (19) and (20) in
-        [4]_.
+        [3]_.
     dimension_length: np.int64
         The length of the dimension, for which the smoothing parameter is to
         be optimized. It corresponds to :math:`m` and :math:`n` in Equations
-        (19) and (20) in [4]_.
+        (19) and (20) in [3]_.
     vector: npt.NDArray[np.float64], shape=(dimension_length,)
         Solutions to the least square problem. It corresponds to
         :math:`Xv / ||v||^2` and :math:`X^\top u / ||u||^2` in Equations (19)
-        and (20) in [4]_.
+        and (20) in [3]_.
     smoother: np.float64
         Nornalization parameter. It corresponds to :math:`S_u` and :math:`S_v`
-        in Equations (19) and (20) in [4]_.
+        in Equations (19) and (20) in [3]_.
     rayleigh: npt.NDArray[np.float64], shape=(dimension_length,)
         A vector containing the eigenvalues of the penalty matrix corresponding
         to the current image direction. It corresponds to the Rayleight
         quotients :math:`\mathcal{R}_u(u)` and :math:`\mathcal{R}_v(v)` in
-        Equations (19) and (20) in [4]_.
+        Equations (19) and (20) in [3]_.
 
     Returns
     -------
@@ -137,9 +137,9 @@ def _gcv(
     .. [1] Allen G., Multi-way Functional Principal Components Analysis (2013),
         IEEE International Workshop on Computational Advances in Multi-Sensor
         Adaptive Processing
-    .. [3] Happ-Kurz C. (2020) Object-Oriented Software for Functional Data.
+    .. [2] Happ-Kurz C. (2020) Object-Oriented Software for Functional Data.
         Journal of Statistical Software, 93(5): 1-38
-    .. [4] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
+    .. [3] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
         Functional Data Using Two-Way Regularized Singular Value Decomposition.
         Journal of the American Statistical Association, Vol. 104, No. 488,
         1609 -- 1620.
@@ -169,7 +169,7 @@ def _find_optimal_alpha(
     the tensor power algorithm. Given a range of possible values of
     :math:`\alpha_v` (or :math:`\alpha_w`, respectively), the minimum is found
     by optimizing the GCV criterion using the function ``minimize_scalar`` from
-    the module ``scipy.optimize``. The code is adapted from [3]_.
+    the module ``scipy.optimize``. The code is adapted from [2]_.
 
     Parameters
     ----------
@@ -177,7 +177,7 @@ def _find_optimal_alpha(
         A tuple with two elements, containing the minimal and maximal
         values for the smoothing parameter that is to be optimized. It
         corresponds to minimal and maximal values of :math:`\alpha_u` and
-        :math:`\alpha_v` in Equations (19) and (20) in [4]_.
+        :math:`\alpha_v` in Equations (19) and (20) in [3]_.
     data: npt.NDArray[np.float64], shape=(n_obs, m_1, m_2)
         The tensor containing the data of dimension
         :math:`n_{obs} \times m_1 \times m_2`. It corresponds to
@@ -196,11 +196,11 @@ def _find_optimal_alpha(
         respect to the vector :math:`v_k` and :math:`\alpha_v` if the
         optimization is performed with respect to the vector :math:`w_k`),
         which is kept as fixed. It corresponds to :math:`\alpha_u` and
-        :math:`\alpha_v` in Equations (19) and (20) in [4]_.
+        :math:`\alpha_v` in Equations (19) and (20) in [3]_.
     penalty_matrix: npt.NDArray[np.float64], shape=(m, m)
         A matrix of dimension :math:`m \times m`, the penalty matrix for the
         other image direction. It corresponds to :math:`\Omega_v` and
-        :math:`\Omega_u` in Equations (17) and (18) in [4]_.
+        :math:`\Omega_u` in Equations (17) and (18) in [3]_.
     eigencomponents: Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]
         A tuple containing the eigenvalues and eigenvectors of the penalty
         matrix for the image direction for which the optimal smoothing
@@ -208,7 +208,7 @@ def _find_optimal_alpha(
         :math:`m` and the shape of the eigenvectors array is
         :math:`m \times m`. The eigenvalues corresponds to the Rayleight
         quotients :math:`\mathcal{R}_u(u)` and :math:`\mathcal{R}_v(v)` in
-        Equations (19) and (20) in [4]_.
+        Equations (19) and (20) in [3]_.
     formula: np.str_
         The formula to be passed to the ``np.einsum`` function regarding the
         direction to optimize.
@@ -228,7 +228,9 @@ def _find_optimal_alpha(
     .. [1] Allen G., Multi-way Functional Principal Components Analysis (2013),
         IEEE International Workshop on Computational Advances in Multi-Sensor
         Adaptive Processing
-    .. [4] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
+    .. [2] Happ-Kurz C. (2020) Object-Oriented Software for Functional Data.
+        Journal of Statistical Software, 93(5): 1-38
+    .. [3] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
         Functional Data Using Two-Way Regularized Singular Value Decomposition.
         Journal of the American Statistical Association, Vol. 104, No. 488,
         1609 -- 1620.
@@ -254,9 +256,9 @@ def _compute_denominator(
     alpha: np.float64,
     penalty_matrix: npt.NDArray
 ) -> np.float64:
-    r"""Compute denominator of equations (17) and (18) in [2]_.
+    r"""Compute denominator of equations (17) and (18) in [1]_.
 
-    This function computes the denominator of equations (17) and (18) in [4]_,
+    This function computes the denominator of equations (17) and (18) in [1]_,
     which is, for a vector :math:`a`:
 
     .. math::
@@ -265,7 +267,7 @@ def _compute_denominator(
 
     References
     ----------
-    .. [2] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
+    .. [1] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
         Functional Data Using Two-Way Regularized Singular Value Decomposition.
         Journal of the American Statistical Association, Vol. 104, No. 488,
         1609 -- 1620.
@@ -300,7 +302,7 @@ def _update_vector(
     alpha: np.float64
         The smoothing parameter for the dimension to be updated.
     denominator: np.float64
-        The denominator of equations (17) and (18).
+        The denominator of equations (17) and (18) in [2]_.
     formula: np.str_
         The formula to be passed to the ``np.einsum`` function regarding the
         direction to optimize.
@@ -338,7 +340,7 @@ def _update_components(
 
     This function corresponds to one pass of the step (2.a) in the FCP-TPA
     algorithm in [1]_. The vectors :math:`u, v` and :math:`w` are computed
-    using equations (17) and (18), and the smoothing parameters
+    using equations (17) and (18) in [2]_, and the smoothing parameters
     :math:`\alpha_u` and :math:`\alpha_v` are updated using the GCV criteria
     defined in equations (19) and (20) in [2]_.
 
@@ -444,7 +446,7 @@ class FCPTPA():
 
     where :math:`\circ` stands for the outer product, :math:`c_k` is a
     coefficient (scalar) and :math:`u_k, v_k, w_k` are eigenvectors for
-    each direction of the tensor. In  this representation, the outer product
+    each direction of the tensor. In this representation, the outer product
     :math:`v_k \circ w_k` can be regarded as the :math:`k`-th eigenimage,
     while :math:`d_k \cdot u_k` represents the vector of individual scores for
     this eigenimage and each observation.
@@ -682,12 +684,12 @@ class FCPTPA():
         eigenimages = np.einsum('ik, jk -> kij', *matrices[1:])
 
         # The eigenvalues are not sorted by default
-        idx = np.argsort(coefficients)[::-1]
+        #idx = np.argsort(coefficients)[::-1]
 
-        self._scores = matrices[0][:, idx]
-        self.eigenvalues = coefficients[idx]
+        self._scores = np.einsum('j, ij -> ij', coefficients, matrices[0])
+        self.eigenvalues = np.var(self._scores, axis=0)
         self.eigenfunctions = DenseFunctionalData(
-            data.argvals, eigenimages[idx]
+            data.argvals, eigenimages
         )
 
     def transform(

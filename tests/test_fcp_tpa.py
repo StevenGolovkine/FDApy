@@ -64,15 +64,15 @@ class TestInitializeOutput(unittest.TestCase):
 
         # Check the shape of the matrices
         np.testing.assert_equal(output[0].shape, (n_components,))
-        np.testing.assert_equal(output[1].shape, (shape[0], n_components))
-        np.testing.assert_equal(output[2].shape, (shape[1], n_components))
-        np.testing.assert_equal(output[3].shape, (shape[2], n_components))
+        np.testing.assert_equal(output[1][0].shape, (shape[0], n_components))
+        np.testing.assert_equal(output[1][1].shape, (shape[1], n_components))
+        np.testing.assert_equal(output[1][2].shape, (shape[2], n_components))
 
         # Check that the matrices are initialized to zeros
         np.testing.assert_array_equal(output[0], np.zeros(n_components))
-        np.testing.assert_array_equal(output[1], np.zeros((shape[0], n_components)))
-        np.testing.assert_array_equal(output[2], np.zeros((shape[1], n_components)))
-        np.testing.assert_array_equal(output[3], np.zeros((shape[2], n_components)))
+        np.testing.assert_array_equal(output[1][0], np.zeros((shape[0], n_components)))
+        np.testing.assert_array_equal(output[1][1], np.zeros((shape[1], n_components)))
+        np.testing.assert_array_equal(output[1][2], np.zeros((shape[2], n_components)))
 
 
 class TestEigenDecompositionPenaltyMatrices(unittest.TestCase):
@@ -110,11 +110,11 @@ class TestGCV(unittest.TestCase):
     def setUp(self):
         self.alpha = 2
         self.vector = np.array([
-                0.0128771, -0.18092739, -0.04849094, 0.03192246, -0.01771499,
-                -0.00348176, -0.05193259, 0.00363752, -0.03085957, 0.04653336,
-                -0.15876299, -0.02367582, 0.10633316, -0.13322367, -0.06599965,
-                -0.13597547, 0.08641482, 0.00676493, -0.03432828, 0.03044963
-            ])
+            0.0128771, -0.18092739, -0.04849094, 0.03192246, -0.01771499,
+            -0.00348176, -0.05193259, 0.00363752, -0.03085957, 0.04653336,
+            -0.15876299, -0.02367582, 0.10633316, -0.13322367, -0.06599965,
+            -0.13597547, 0.08641482, 0.00676493, -0.03432828, 0.03044963
+        ])
         self.smoother = 1.531051200361189
         self.rayleigh = np.array([
             -0.66788406, -1.36231223, -1.03999022, 0.95202651, -0.21907907,
