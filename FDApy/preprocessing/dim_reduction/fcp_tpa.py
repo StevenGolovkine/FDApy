@@ -684,7 +684,7 @@ class FCPTPA():
         eigenimages = np.einsum('ik, jk -> kij', *matrices[1:])
 
         # The eigenvalues are not sorted by default
-        #idx = np.argsort(coefficients)[::-1]
+        # idx = np.argsort(coefficients)[::-1]
 
         self._scores = np.einsum('j, ij -> ij', coefficients, matrices[0])
         self.eigenvalues = np.var(self._scores, axis=0)
@@ -695,7 +695,7 @@ class FCPTPA():
     def transform(
         self,
         data: DenseFunctionalData,
-        method: None = None
+        method: str = 'NumInt'
     ) -> npt.NDArray[np.float64]:
         """Apply dimension reduction to the data.
 
@@ -704,7 +704,7 @@ class FCPTPA():
         data: DenseFunctionalData
             Functional data object to be transformed. It has to be
             2-dimensional data.
-        method: None
+        method: str, {'NumInt', 'FCPTPA'}
             Not used. To be compliant with other methods.
 
         Returns
@@ -720,11 +720,18 @@ class FCPTPA():
         >>> scores = fcptpa.transform(data)
 
         """
-        return np.einsum(
-            'ikl, jkl -> ij',
-            data.values,
-            self.eigenfunctions.values
-        )
+        if method == 'NumInt':
+            return np.einsum(
+                'ikl, jkl -> ij',
+                data.values,
+                self.eigenfunctions.values
+            )
+        elif method == 'FCPTPA':
+            return self._scores
+        else:
+            raise ValueError(
+                f"Method {method} not implemented."
+            )
 
     def inverse_transform(
         self,

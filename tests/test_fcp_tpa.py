@@ -323,22 +323,28 @@ class TestFit(unittest.TestCase):
             'v': np.dot(mat_v, mat_v.T),
             'w': np.dot(mat_w, mat_w.T)
         }
-        self.fcptpa = FCPTPA(n_components=5)
+        self.alpha_range = {'v': (1e-2, 1e2), 'w': (1e-2, 1e2)}
 
     def test_fit(self):
-        self.fcptpa.fit(
+        fcptpa = FCPTPA(n_components=5)
+        fcptpa.fit(
             self.data,
             penalty_matrices=self.penalty_matrices,
-            alpha_range={'v': (1e-2, 1e2), 'w': (1e-2, 1e2)},
+            alpha_range=self.alpha_range,
             tolerance=1e-4,
             max_iteration=15,
             adapt_tolerance=True,
             verbose=True
         )
 
+        np.testing.assert_equal(fcptpa._scores.shape, (50, 5))
+        np.testing.assert_equal(fcptpa.eigenvalues.shape, (5,))
+        self.assertIsInstance(fcptpa.eigenfunctions, DenseFunctionalData)
+
     def test_fit_warnings_convergence(self):
+        fcptpa = FCPTPA(n_components=5)
         with self.assertWarns(UserWarning):
-            self.fcptpa.fit(
+            fcptpa.fit(
                 self.data,
                 penalty_matrices=self.penalty_matrices,
                 alpha_range={'v': (1e-2, 1e2), 'w': (1e-2, 1e2)},
@@ -374,13 +380,23 @@ class TestTransform(unittest.TestCase):
             adapt_tolerance=True
         )
 
-    def test_transform(self):
+    def test_transform_numint(self):
         # We only test the shape of the output because the optimization step
         # can lead to different solution
-        scores = self.fcptpa.transform(self.data)
+        scores = self.fcptpa.transform(self.data, method='NumInt')
         expected_shape = (50, 5)
-
         np.testing.assert_array_equal(scores.shape, expected_shape)
+
+    def test_transform_fcptpa(self):
+        # We only test the shape of the output because the optimization step
+        # can lead to different solution
+        scores = self.fcptpa.transform(self.data, method='FCPTPA')
+        expected_shape = (50, 5)
+        np.testing.assert_array_equal(scores.shape, expected_shape)
+
+    def test_transform_error(self):
+        with self.assertRaises(ValueError):
+            self.fcptpa.transform(self.data, method='error')
 
 
 class TestInverseTransform(unittest.TestCase):
