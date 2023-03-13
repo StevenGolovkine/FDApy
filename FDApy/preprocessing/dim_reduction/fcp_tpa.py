@@ -717,7 +717,7 @@ class FCPTPA():
         --------
         Using the model fitted using the ``fit`` function.
 
-        >>> scores = fcptpa.transform(data)
+        >>> scores = fcptpa.transform(data, 'NumInt')
 
         """
         if method == 'NumInt':

@@ -429,3 +429,5 @@ class TestInverseTransform(unittest.TestCase):
     def test_inverse_transform(self):
         data_f = self.fcptpa.inverse_transform(self.scores)
         self.assertIsInstance(data_f, DenseFunctionalData)
+        np.testing.assert_equal(self.data.argvals, data_f.argvals)
+        np.testing.assert_equal(self.data.values.shape, data_f.values.shape)
