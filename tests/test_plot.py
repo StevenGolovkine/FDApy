@@ -19,7 +19,9 @@ from FDApy.representation.functional_data import (
 from FDApy.visualization.plot import (
     _init_ax,
     _plot_1d,
-    _plot_2d
+    _plot_2d,
+    plot,
+    plot_multivariate
 )
 
 
@@ -131,7 +133,7 @@ class TestPlot2D(unittest.TestCase):
         }
         self.data_irreg = IrregularFunctionalData(self.arg_irr, self.val_irr)
 
-        self.labels = np.array([0, 0])
+        self.labels = np.array([0, 1])
 
     def test_plot_2d_error_type(self):
         with self.assertRaises(TypeError):
@@ -155,17 +157,14 @@ class TestPlot2D(unittest.TestCase):
         )
 
         self.assertIsInstance(ax, Axes)
+        for idx in np.arange(len(ax.collections)):
+            # For the vertices
+            for idx_sub in np.arange(len(ax.collections[idx].get_paths())):
+                np.testing.assert_array_equal(
+                    ax.collections[idx].get_paths()[idx_sub].vertices,
+                    ax_expected.collections[idx].get_paths()[idx_sub].vertices
+                )
 
-        # Compare the generated plot with the expected plot
-        np.testing.assert_array_equal(
-            ax.collections[0].get_paths()[0].vertices,
-            ax_expected.collections[0].get_paths()[0].vertices
-        )
-        np.testing.assert_array_equal(
-            ax.collections[1].get_paths()[0].vertices,
-            ax_expected.collections[1].get_paths()[0].vertices
-        )
-    
     def test_plot_2d_dense_multiple(self):
         ax = _init_ax(projection='3d')
         ax = _plot_2d(
@@ -176,40 +175,168 @@ class TestPlot2D(unittest.TestCase):
         # Generate the expected plot
         ax_expected = _init_ax(projection='3d')
         x, y = np.meshgrid(
-                self.data_dense.argvals['input_dim_0'],
-                self.data_dense.argvals['input_dim_1'],
-                indexing='ij'
-            )
+            self.data_dense.argvals['input_dim_0'],
+            self.data_dense.argvals['input_dim_1'],
+            indexing='ij'
+        )
         ax_expected.plot_surface(x, y, self.data_dense.values[0], color='r')
         ax_expected.plot_surface(x, y, self.data_dense.values[1], color='y')
 
         self.assertIsInstance(ax, Axes)
+        for idx in np.arange(len(ax.collections)):
+            # For the vertices
+            for idx_sub in np.arange(len(ax.collections[idx].get_paths())):
+                np.testing.assert_array_equal(
+                    ax.collections[idx].get_paths()[idx_sub].vertices,
+                    ax_expected.collections[idx].get_paths()[idx_sub].vertices
+                )
+            # For the colors
+            np.testing.assert_equal(
+                ax.collections[idx]._facecolors,
+                ax_expected.collections[idx]._facecolors
+            )
 
-        print(dir(ax))
-        print(dir(ax_expected))        
 
-        # Compare the generated plot with the expected plot
-        # np.testing.assert_array_equal(
-        #     ax.collections[0].get_paths()[0].vertices,
-        #     ax_expected.collections[0].get_paths()[0].vertices
-        # )
-        # np.testing.assert_array_equal(
-        #     ax.collections[1].get_paths()[0].vertices,
-        #     ax_expected.collections[1].get_paths()[0].vertices
-        # )
+class TestPlot(unittest.TestCase):
+    def setUp(self):
+        self.arg_den_1d = np.linspace(0, 1, 100)
+        self.val_den_1d = np.sin(2 * np.pi * self.arg_den_1d)
+        self.data_dense_1d = DenseFunctionalData({'input_dim_0': self.arg_den_1d}, self.val_den_1d[np.newaxis])
 
-        # np.testing.assert_array_equal(
-        #     ax.collections[0].get_facecolor()[0],
-        #     np.array([0.40251269, 0., 0., 1.])
-        # )
-        # np.testing.assert_array_equal(
-        #     ax.collections[1].get_facecolor()[0],
-        #     ax_expected.collections[1].get_facecolor()[0]
-        # )
+        self.arg_den_2d = {'input_dim_0': np.array([1, 2, 3, 4]), 'input_dim_1': np.array([5, 6, 7])}
+        self.val_den_2d = np.array([[[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]], [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]]])
+        self.data_dense_2d = DenseFunctionalData(self.arg_den_2d, self.val_den_2d)
 
-    # def test_plot_2d_with_colors(self):
-    #     # Plot the data with specified colors
-    #     _, ax = plt.subplots()
-    #     _plot_1d(self.data_dense, self.labels, colors='r', ax=ax)
+    def test_plot_error(self):
+        arg_den_3d = {'input_dim_0': np.array([1, 2]), 'input_dim_1': np.array([5, 6]), 'input_dim_2': np.array([3, 4])}
+        val_den_3d = np.array([[[[1, 2], [1, 2]], [[1, 2], [1, 2]]], [[[5, 6], [5, 6]], [[5, 6], [5, 6]]]])
+        data_dense_3d = DenseFunctionalData(arg_den_3d, val_den_3d)
+        with self.assertRaises(ValueError):
+            plot(data_dense_3d)
 
-    #     np.testing.assert_equal(ax.get_lines()[0].get_color(), 'r')
+    def test_plot_1d(self):
+        ax = plot(self.data_dense_1d, labels=np.array([0]))
+        np.testing.assert_array_equal(ax.get_lines()[0].get_xdata(), self.arg_den_1d)
+        np.testing.assert_array_equal(ax.get_lines()[0].get_ydata(), self.val_den_1d)
+
+    def test_plot_2d_nobs(self):
+        ax = plot(self.data_dense_2d, labels=np.array([0, 0]))
+        
+        # Generate the expected plot
+        ax_expected = _init_ax(projection='3d')
+        x, y = np.meshgrid(
+            self.data_dense_2d.argvals['input_dim_0'],
+            self.data_dense_2d.argvals['input_dim_1'],
+            indexing='ij'
+        )
+        ax_expected.plot_surface(x, y, self.data_dense_2d.values[0])
+        ax_expected.plot_surface(x, y, self.data_dense_2d.values[1])
+
+        self.assertIsInstance(ax, Axes)
+        for idx in np.arange(len(ax.collections)):
+            # For the vertices
+            for idx_sub in np.arange(len(ax.collections[idx].get_paths())):
+                np.testing.assert_array_equal(
+                    ax.collections[idx].get_paths()[idx_sub].vertices,
+                    ax_expected.collections[idx].get_paths()[idx_sub].vertices
+                )
+    
+    def test_plot_2d_unique_obs(self):
+        ax = plot(self.data_dense_2d[0], labels=np.array([0]))
+        
+        # Generate the expected plot
+        ax_expected = _init_ax(projection='rectilinear')
+        ax_expected.contourf(
+            self.arg_den_2d['input_dim_1'],
+            self.arg_den_2d['input_dim_0'],
+            self.val_den_2d[0]
+        )
+
+        self.assertIsInstance(ax, Axes)
+        for idx in np.arange(len(ax.collections)):
+            # For the vertices
+            for idx_sub in np.arange(len(ax.collections[idx].get_paths())):
+                np.testing.assert_array_equal(
+                    ax.collections[idx].get_paths()[idx_sub].vertices,
+                    ax_expected.collections[idx].get_paths()[idx_sub].vertices
+                )
+
+    def test_plot_label_none(self):
+        ax = plot(self.data_dense_2d, labels=None)
+    
+        np.testing.assert_array_almost_equal(
+            ax.collections[0]._facecolors,
+            np.array([[0., 0., 0.20125634, 1.],[0., 0., 0.20125634, 1.],[0., 0., 0.20125634, 1.],[0., 0., 0.20125634, 1.],[0., 0., 0.20125634, 1.],[0., 0., 0.20125634, 1.]])
+        )
+        np.testing.assert_array_almost_equal(
+            ax.collections[1]._facecolors,
+            np.array([[0.20125634, 0., 0., 1.],[0.20125634, 0., 0., 1.],[0.20125634, 0., 0., 1.],[0.20125634, 0., 0., 1.],[0.20125634, 0., 0., 1.],[0.20125634, 0., 0., 1.]])
+        )
+
+
+class TestPlotMultivariate(unittest.TestCase):
+    def setUp(self):
+        self.arg_den_1d = np.linspace(0, 1, 100)
+        self.val_den_1d = np.stack([np.sin(2 * np.pi * self.arg_den_1d),np.sin(-2 * np.pi * self.arg_den_1d)])
+        self.data_dense_1d = DenseFunctionalData({'input_dim_0': self.arg_den_1d}, self.val_den_1d)
+
+        self.arg_den_2d = {'input_dim_0': np.array([1, 2, 3, 4]), 'input_dim_1': np.array([5, 6, 7])}
+        self.val_den_2d = np.array([[[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]], [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]]])
+        self.data_dense_2d = DenseFunctionalData(self.arg_den_2d, self.val_den_2d)
+
+        self.data = MultivariateFunctionalData([self.data_dense_1d, self.data_dense_2d])
+
+    def test_plot_multivariate(self):
+        ax = plot_multivariate(self.data)
+
+        # Generate the expected plot for 1D
+        _, ax_expected_1d = plt.subplots()
+        ax_expected_1d.plot(self.arg_den_1d, self.val_den_1d[0,:])
+        ax_expected_1d.plot(self.arg_den_1d, self.val_den_1d[1,:])
+
+        np.testing.assert_array_equal(
+            ax[0].get_lines()[0].get_xdata(),
+            ax_expected_1d.get_lines()[0].get_xdata()
+        )
+        np.testing.assert_array_equal(
+            ax[0].get_lines()[0].get_ydata(),
+            ax_expected_1d.get_lines()[0].get_ydata()
+        )
+        np.testing.assert_array_equal(
+            ax[0].get_lines()[1].get_xdata(),
+            ax_expected_1d.get_lines()[1].get_xdata()
+        )
+        np.testing.assert_array_equal(
+            ax[0].get_lines()[1].get_ydata(),
+            ax_expected_1d.get_lines()[1].get_ydata()
+        )
+
+        # Generate the expected plot for 2D
+        ax_expected_2d = _init_ax(projection='rectilinear')
+        ax_expected_2d.contourf(
+            self.arg_den_2d['input_dim_1'],
+            self.arg_den_2d['input_dim_0'],
+            self.val_den_2d[0]
+        )
+
+        self.assertIsInstance(ax[1], Axes)
+        for idx in np.arange(len(ax[1].collections)):
+            # For the vertices
+            for idx_sub in np.arange(len(ax[1].collections[idx].get_paths())):
+                np.testing.assert_array_equal(
+                    ax[1].collections[idx].get_paths()[idx_sub].vertices,
+                    ax_expected_2d.collections[idx].get_paths()[idx_sub].vertices
+                )
+
+        # Get the title
+        np.testing.assert_equal(ax[0].title.get_text(), '')
+        np.testing.assert_equal(ax[1].title.get_text(), '')
+
+    def test_plot_multivariate_error(self):
+        arg_den_3d = {'input_dim_0': np.array([1, 2]), 'input_dim_1': np.array([5, 6]), 'input_dim_2': np.array([3, 4])}
+        val_den_3d = np.array([[[[1, 2], [1, 2]], [[1, 2], [1, 2]]], [[[5, 6], [5, 6]], [[5, 6], [5, 6]]]])
+        data_dense_3d = DenseFunctionalData(arg_den_3d, val_den_3d)
+
+        data = MultivariateFunctionalData([self.data_dense_1d, data_dense_3d])
+        with self.assertRaises(ValueError):
+            plot_multivariate(data)
