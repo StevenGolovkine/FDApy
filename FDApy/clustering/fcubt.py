@@ -86,12 +86,20 @@ def joining_step(
                 pv = np.diff(np.identity(n_points['input_dim_0']))
                 pw = np.diff(np.identity(n_points['input_dim_1']))
                 fcptpa = FCPTPA(n_components=n_components)
-                fcptpa.fit(new_data, penal_mat={'v': np.dot(pv, pv.T),
-                                                'w': np.dot(pw, pw.T)},
-                           alpha_range={'v': np.array([1e-4, 1e4]),
-                                        'w': np.array([1e-4, 1e4])},
-                           tol=1e-4, max_iter=15,
-                           adapt_tol=True)
+                fcptpa.fit(
+                    new_data,
+                    penalty_matrices={
+                        'v': np.dot(pv, pv.T),
+                        'w': np.dot(pw, pw.T)
+                    },
+                    alpha_range={
+                        'v': np.array([1e-4, 1e4]),
+                        'w': np.array([1e-4, 1e4])
+                    },
+                    tolerance=1e-4,
+                    max_iteration=15,
+                    adapt_tolerance=True
+                )
                 scores = fcptpa.transform(new_data)
             else:
                 raise ValueError("The dimension of the input data should "
@@ -344,13 +352,20 @@ class Node():
                     mat_v = np.diff(np.identity(n_points['input_dim_0']))
                     mat_w = np.diff(np.identity(n_points['input_dim_1']))
                     fcptpa = FCPTPA(n_components=n_components)
-                    fcptpa.fit(self.data,
-                               penal_mat={'v': np.dot(mat_v, mat_v.T),
-                                          'w': np.dot(mat_w, mat_w.T)},
-                               alpha_range={'v': np.array([1e-4, 1e4]),
-                                            'w': np.array([1e-4, 1e4])},
-                               tol=1e-4, max_iter=15,
-                               adapt_tol=True)
+                    fcptpa.fit(
+                        self.data,
+                        penalty_matrices={
+                            'v': np.dot(mat_v, mat_v.T),
+                            'w': np.dot(mat_w, mat_w.T)
+                        },
+                        alpha_range={
+                            'v': np.array([1e-4, 1e4]),
+                            'w': np.array([1e-4, 1e4])
+                        },
+                        tolerance=1e-4,
+                        max_iteration=15,
+                        adapt_tolerance=True
+                    )
                     scores = fcptpa.transform(self.data)
                     self.fpca = fcptpa
                 else:

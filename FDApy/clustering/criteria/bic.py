@@ -32,6 +32,7 @@ class _BICResult(NamedTuple):
         Value of the BIC.
 
     """
+
     n_cluster: np.int64
     value: np.float64
 
