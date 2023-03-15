@@ -7,8 +7,6 @@ Written with the help of ChatGPT.
 """
 import numpy as np
 import unittest
-import warnings
-import inspect
 
 from FDApy.representation.functional_data import DenseFunctionalData
 from FDApy.simulation.karhunen import KarhunenLoeve

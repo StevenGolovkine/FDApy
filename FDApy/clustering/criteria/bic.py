@@ -10,12 +10,12 @@ import pandas as pd
 import numpy as np
 import numpy.typing as npt
 
+from typing import Iterable, NamedTuple, Optional
+
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from multiprocessing import cpu_count
 
 from sklearn.mixture import GaussianMixture
-
-from typing import Iterable, NamedTuple
 
 
 ###############################################################################
@@ -46,7 +46,8 @@ class _BICResult(NamedTuple):
 
 def _compute_bic(
     data: npt.NDArray[np.float64],
-    n_clusters: np.int64
+    n_clusters: np.int64,
+    random_state: Optional[np.int64] = None
 ) -> _BICResult:
     """Compute the BIC statistic.
 
@@ -60,6 +61,9 @@ def _compute_bic(
         The data to be clustered.
     n_clusters: np.int64
         Number of clusters.
+    random_state: Optional[np.int64], default=None
+        Controls the random seed given to the ``GaussianMixture`` method chosen
+        to initialize the parameters.
 
     Returns
     -------
@@ -72,7 +76,7 @@ def _compute_bic(
         Statistics, 6(2), 461--464.
 
     """
-    model = GaussianMixture(n_clusters)
+    model = GaussianMixture(n_clusters, random_state=random_state)
     model.fit(data)
     return _BICResult(n_clusters, model.bic(data))
 
@@ -94,9 +98,17 @@ class BIC():
     is the number of parameters of the model and :math:`N` is the number of
     samples.
 
+    Parameters
+    ----------
+    n_jobs: np.int64, default=-1
+        Number of cores to use in case of multiprocessing. If ``n_jobs==-1``,
+        all the available cores are used.
+    parallel_backend: np.str_, default='multiprocessing'
+        Parallel backend used for the computation.
+
     Attributes
     ----------
-    n_clusters: int
+    n_clusters: np.int64
         Best number of clusters found
     bic_df: pd.DataFrame
         BIC value for different values of n_clusters.
@@ -115,20 +127,10 @@ class BIC():
 
     def __init__(
         self,
-        n_jobs: int = -1,
-        parallel_backend: str = "multiprocessing"
+        n_jobs: np.int64 = -1,
+        parallel_backend: np.str_ = 'multiprocessing'
     ) -> None:
-        """Initialize BIC object.
-
-        Parameters
-        ----------
-        n_jobs: int, default=-1
-            Number of cores to use in case of multiprocessing. If -1, it will
-            use all the cores.
-        parallel_backend: str, default='multiprocessing'
-            Parallel backend used for the computation.
-
-        """
+        """Initialize BIC object."""
         self.parallel_backend = (parallel_backend
                                  if parallel_backend == 'multiprocessing'
                                  else None)
@@ -137,8 +139,10 @@ class BIC():
 
     def __str__(self) -> str:
         """Override __str__ function."""
-        return (f"BIC(n_jobs={self.n_jobs}, parallel_backend="
-                f"{self.parallel_backend})")
+        return (
+            f'BIC(n_jobs={self.n_jobs}, parallel_backend='
+            f'{self.parallel_backend})'
+        )
 
     def __repr__(self) -> str:
         """Override __repr__ function."""

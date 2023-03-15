@@ -27,7 +27,6 @@ from ...misc.utils import (
     _integration_weights,
     _select_number_eigencomponents
 )
-
 from .fcp_tpa import FCPTPA
 
 

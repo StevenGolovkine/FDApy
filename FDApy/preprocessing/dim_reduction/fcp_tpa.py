@@ -10,9 +10,10 @@ import numpy as np
 import numpy.typing as npt
 import warnings
 
+from typing import Dict, List, Tuple
+
 from numpy.linalg import norm
 from scipy.optimize import minimize_scalar
-from typing import Dict, List, Tuple
 
 from ...representation.functional_data import DenseFunctionalData
 from ...misc.utils import _eigh
