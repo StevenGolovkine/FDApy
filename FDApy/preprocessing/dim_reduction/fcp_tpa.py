@@ -12,7 +12,7 @@ import warnings
 
 from numpy.linalg import norm
 from scipy.optimize import minimize_scalar
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 
 from ...representation.functional_data import DenseFunctionalData
 from ...misc.utils import _eigh
@@ -45,7 +45,7 @@ def _initialize_vectors(
 def _initalize_output(
     shape: Tuple[np.int64, np.int64, np.int64],
     n_components: int
-):
+) -> Tuple[npt.NDArray, List[npt.NDArray]]:
     """Init coefficients and u, v and w eigenvectors matrices.
 
     Parameters
@@ -57,7 +57,7 @@ def _initalize_output(
 
     Returns
     -------
-    Tuple[npt.NDArray, npt.NDArray, npt.NDArray]
+    Tuple[npt.NDArray, List[npt.NDArray]]
         A tuple containing initialized matrices for the results of the FCP-TPA
         algorithm.
 
@@ -134,15 +134,14 @@ def _gcv(
 
     References
     ----------
-    .. [1] Allen G., Multi-way Functional Principal Components Analysis (2013),
+    .. [1] Allen G. (2013), Multi-way Functional Principal Components Analysis,
         IEEE International Workshop on Computational Advances in Multi-Sensor
-        Adaptive Processing
+        Adaptive Processing.
     .. [2] Happ-Kurz C. (2020) Object-Oriented Software for Functional Data.
-        Journal of Statistical Software, 93(5): 1-38
+        Journal of Statistical Software, 93(5): 1--38.
     .. [3] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
         Functional Data Using Two-Way Regularized Singular Value Decomposition.
-        Journal of the American Statistical Association, Vol. 104, No. 488,
-        1609 -- 1620.
+        Journal of the American Statistical Association, 104(488): 1609--1620.
 
     """
     shrinking = smoother / (1 + alpha * rayleigh)
@@ -225,15 +224,14 @@ def _find_optimal_alpha(
 
     References
     ----------
-    .. [1] Allen G., Multi-way Functional Principal Components Analysis (2013),
+    .. [1] Allen G. (2013), Multi-way Functional Principal Components Analysis,
         IEEE International Workshop on Computational Advances in Multi-Sensor
-        Adaptive Processing
+        Adaptive Processing.
     .. [2] Happ-Kurz C. (2020) Object-Oriented Software for Functional Data.
-        Journal of Statistical Software, 93(5): 1-38
+        Journal of Statistical Software, 93(5): 1--38.
     .. [3] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
         Functional Data Using Two-Way Regularized Singular Value Decomposition.
-        Journal of the American Statistical Association, Vol. 104, No. 488,
-        1609 -- 1620.
+        Journal of the American Statistical Association, 104(488): 1609--1620.
 
     """
     eigenvalues, eigenvectors = eigencomponents
@@ -269,8 +267,7 @@ def _compute_denominator(
     ----------
     .. [1] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
         Functional Data Using Two-Way Regularized Singular Value Decomposition.
-        Journal of the American Statistical Association, Vol. 104, No. 488,
-        1609 -- 1620.
+        Journal of the American Statistical Association, 104(488): 1609--1620.
 
     """
     return np.dot(a.T, a + alpha * np.dot(penalty_matrix, a))
@@ -283,7 +280,7 @@ def _update_vector(
     alpha: np.float64,
     denominator: np.float64,
     formula: np.str_
-):
+) -> npt.NDArray:
     r"""Update individual vector in FCP-TPA.
 
     This function is used to compute the step (2.a.i), (2.a.ii) and (2.a.iii)
@@ -314,13 +311,12 @@ def _update_vector(
 
     References
     ----------
-    .. [1] Allen G., Multi-way Functional Principal Components Analysis (2013),
+    .. [1] Allen G. (2013), Multi-way Functional Principal Components Analysis,
         IEEE International Workshop on Computational Advances in Multi-Sensor
-        Adaptive Processing
+        Adaptive Processing.
     .. [2] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
         Functional Data Using Two-Way Regularized Singular Value Decomposition.
-        Journal of the American Statistical Association, Vol. 104, No. 488,
-        1609 -- 1620.
+        Journal of the American Statistical Association, 104(488): 1609--1620.
 
     """
     a = np.eye(len(vectors[0])) + alpha * penalty_matrix
@@ -335,7 +331,7 @@ def _update_components(
     alphas: Dict[str, Tuple[np.float64, np.float64]],
     alpha_range: Dict[str, Tuple[np.float64, np.float64]],
     eigens: Dict[str, Tuple[npt.NDArray, npt.NDArray]]
-) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
+) -> Tuple[Tuple[npt.NDArray], Dict[str, np.float64]]:
     r"""Update the components in FCP-TPA.
 
     This function corresponds to one pass of the step (2.a) in the FCP-TPA
@@ -366,18 +362,17 @@ def _update_components(
 
     Returns
     -------
-    Tuple[npt.NDArray, npt.NDArray, npt.NDArray]
+    Tuple[Tuple[npt.NDArray], Dict[str, np.float64]]
         The updated parameters.
 
     References
     ----------
-    .. [1] Allen G., Multi-way Functional Principal Components Analysis (2013),
+    .. [1] Allen G. (2013), Multi-way Functional Principal Components Analysis,
         IEEE International Workshop on Computational Advances in Multi-Sensor
-        Adaptive Processing
+        Adaptive Processing.
     .. [2] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
         Functional Data Using Two-Way Regularized Singular Value Decomposition.
-        Journal of the American Statistical Association, Vol. 104, No. 488,
-        1609 -- 1620.
+        Journal of the American Statistical Association, 104(488): 1609--1620.
 
     """
     u, v, w = vectors
@@ -487,19 +482,18 @@ class FCPTPA():
 
     References
     ----------
-    .. [1] Allen G., Multi-way Functional Principal Components Analysis (2013),
+    .. [1] Allen G. (2013), Multi-way Functional Principal Components Analysis,
         IEEE International Workshop on Computational Advances in Multi-Sensor
-        Adaptive Processing
+        Adaptive Processing.
     .. [2] Happ C. and Greven S. (2018) Multivariate Functional Principal
         Component Analysis for Data Observed on Different (Dimensional)
-        Domains, Journal of the American Statistical Association, 113:522,
-        649-659, DOI: 10.1080/01621459.2016.1273115
+        Domains, Journal of the American Statistical Association, 113(522),
+        649--659, DOI: 10.1080/01621459.2016.1273115.
     .. [3] Happ-Kurz C. (2020) Object-Oriented Software for Functional Data.
-        Journal of Statistical Software, 93(5): 1-38
+        Journal of Statistical Software, 93(5): 1--38.
     .. [4] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
         Functional Data Using Two-Way Regularized Singular Value Decomposition.
-        Journal of the American Statistical Association, Vol. 104, No. 488,
-        1609 -- 1620.
+        Journal of the American Statistical Association, 104(488): 1609--1620.
 
     """
 

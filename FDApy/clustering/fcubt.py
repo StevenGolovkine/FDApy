@@ -20,8 +20,8 @@ from ..representation.functional_data import (DenseFunctionalData,
                                               MultivariateFunctionalData)
 from ..preprocessing.dim_reduction.fpca import UFPCA, MFPCA
 from ..preprocessing.dim_reduction.fcp_tpa import FCPTPA
-from .optimalK.gap import Gap
-from .optimalK.bic import BIC
+from .criteria.gap import Gap
+from .criteria.bic import BIC
 
 from sklearn.mixture import GaussianMixture
 

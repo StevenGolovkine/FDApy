@@ -4,8 +4,8 @@ Clustering
 .. automodule:: FDApy.clustering.fcubt
 	:members:
 
-.. automodule:: FDApy.clustering.optimalK.bic
+.. automodule:: FDApy.clustering.criteria.bic
 	:members:
 
-.. automodule:: FDApy.clustering.optimalK.gap
+.. automodule:: FDApy.clustering.criteria.gap
     :members:

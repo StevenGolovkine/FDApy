@@ -1,19 +1,14 @@
 #!/usr/bin/env python
 # -*-coding:utf8 -*
 
-"""Module for the representation of the BIC statistic.
-
-This module is used to represented the BIC statistic as an object.
-
-References
-----------
-    Gideon E. Schwarz, « Estimating the dimension of a model », Annals of
-    Statistics, vol. 6, no 2,‎ 1978, p. 461-464
+"""
+Bayesian Information Criterion
+------------------------------
 
 """
-
 import pandas as pd
 import numpy as np
+import numpy.typing as npt
 
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from multiprocessing import cpu_count
@@ -26,52 +21,77 @@ from typing import Iterable, NamedTuple
 ###############################################################################
 # Class BICResult
 
-class BICResult(NamedTuple):
-    """An object containing the BIC statistic for given dataset and k."""
+class _BICResult(NamedTuple):
+    """Class that contains BIC results.
 
-    value: float
-    k: int
+    Attributes
+    ----------
+    n_cluster: np.int64
+        Number of clusters for which the BIC is computed.
+    value: np.float64
+        Value of the BIC.
+
+    """
+    n_cluster: np.int64
+    value: np.float64
 
     def __repr__(self) -> str:
         """Override print function."""
-        return (f"For {self.k} clusters considered, the BIC statistic is"
-                f" {self.value}.")
+        return f"Number of clusters: {self.n_cluster} - BIC: {self.value}"
 
 
 ###############################################################################
 # Utility functions
+
 def _compute_bic(
-    data: np.array,
-    n_clusters: int
-) -> BICResult:
+    data: npt.NDArray[np.float64],
+    n_clusters: np.int64
+) -> _BICResult:
     """Compute the BIC statistic.
+
+    The BIC is computed after fitting a Gaussian mixture model of the dataset.
+    It uses the implementation of ``sklearn.mixture.Gaussian`` to do so. The
+    BIC is defined in [1]_.
 
     Parameters
     ----------
-    data: np.array
-        The data to cluster.
-    n_clusters: int
-        Number of clusters to test.
+    data: npt.NDArray[np.float64]
+        The data to be clustered.
+    n_clusters: np.int64
+        Number of clusters.
 
     Returns
     -------
-    results: BICResult
-        The results as a BICResult object.
+    _BICResult
+        An estimation of the BIC.
+
+    References
+    ----------
+    .. [1] Schwarz G. (1978), Estimating the dimension of a model, Annals of
+        Statistics, 6(2), 461--464.
 
     """
-    gm = GaussianMixture(n_clusters)
-    gm.fit(data)
-    return BICResult(gm.bic(data), n_clusters)
+    model = GaussianMixture(n_clusters)
+    model.fit(data)
+    return _BICResult(n_clusters, model.bic(data))
 
 
 ###############################################################################
 # Class BIC
 
 class BIC():
-    """A module for the computation of the BIC statistic.
+    r"""Bayesian Information Criterion (BIC).
 
-    This module is used to compute the BIC statistic for a given dataset and
-    a given number of cluster k.
+    This module computes the BIC [1]_ for a given dataset and number of
+    clusters ``n_clusters``. The BIC is given by
+
+    .. math::
+
+        BIC = -2\log(L) + \log(N)d,
+
+    where :math:`L` is an estimation of the likelihood of the model, :math:`d`
+    is the number of parameters of the model and :math:`N` is the number of
+    samples.
 
     Attributes
     ----------
@@ -79,6 +99,16 @@ class BIC():
         Best number of clusters found
     bic_df: pd.DataFrame
         BIC value for different values of n_clusters.
+
+    Notes
+    -----
+    It uses the implementation of the BIC in the module
+    ``sklearn.mixture.GaussianMixture``.
+
+    References
+    ----------
+    .. [1] Schwarz G. (1978), Estimating the dimension of a model, Annals of
+        Statistics, 6(2), 461--464.
 
     """
 
@@ -160,7 +190,7 @@ class BIC():
         self,
         data: np.array,
         cluster_array: Iterable[int]
-    ) -> BICResult:
+    ) -> _BICResult:
         """Compute BIC stat with multiprocessing parallelization."""
         with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
             jobs = [executor.submit(
@@ -174,7 +204,7 @@ class BIC():
         self,
         data: np.array,
         cluster_array: Iterable[int]
-    ) -> BICResult:
+    ) -> _BICResult:
         """Compute BIC stat without parallelization."""
         if self.parallel_backend is not None:
             raise ValueError('Parallel backend have to be None.')
