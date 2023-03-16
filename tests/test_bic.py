@@ -6,6 +6,7 @@ Written with the help of ChatGPT.
 
 """
 import numpy as np
+import pandas as pd
 import unittest
 import warnings
 
@@ -88,3 +89,45 @@ class TestBICPrint(unittest.TestCase):
         
         bic = BIC(n_jobs=2, parallel_backend=None)
         self.assertEqual(repr(bic), 'BIC(n_jobs=1, parallel_backend=None)')
+
+
+class TestParallel(unittest.TestCase):
+    def test_process_parallel(self):
+        data = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+        cluster_array = [1, 2, 3]
+        bic = BIC(n_jobs=1, parallel_backend='multiprocessing')
+
+        bic_results = list(bic._process_with_multiprocessing(data, cluster_array))
+        self.assertEqual(len(bic_results), 3)
+        self.assertIsInstance(bic_results[0], _BICResult)
+
+
+class TestNonParallel(unittest.TestCase):
+    def test_process_non_parallel(self):
+        data = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+        cluster_array = [1, 2, 3]
+        bic = BIC(n_jobs=1, parallel_backend=None)
+
+        bic_results = list(bic._process_non_parallel(data, cluster_array))
+        self.assertEqual(len(bic_results), 3)
+        self.assertIsInstance(bic_results[0], _BICResult)
+
+
+class TestBIC(unittest.TestCase):
+    def setUp(self):
+        self.data = np.random.rand(100, 5)
+        self.n_clusters = np.arange(1, 6)
+        self.bic = BIC(n_jobs=-1, parallel_backend='multiprocessing')
+
+    def test_call_method(self) -> None:
+        self.assertIsInstance(self.bic(self.data, self.n_clusters), np.int_)
+
+    def test_bic_df_attr(self) -> None:
+        self.bic(self.data, self.n_clusters)
+        self.assertIsInstance(self.bic.bic, pd.DataFrame)
+        self.assertEqual(self.bic.bic.shape[0], len(self.n_clusters))
+
+    def test_n_clusters_attr(self) -> None:
+        self.bic(self.data, self.n_clusters)
+        self.assertIsInstance(self.bic.n_clusters, np.int_)
+        self.assertGreater(self.bic.n_clusters, 0)

@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 import numpy.typing as npt
 
-from typing import Iterable, NamedTuple, Optional
+from typing import Generator, Iterable, NamedTuple, Optional
 
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from multiprocessing import cpu_count
@@ -113,8 +113,8 @@ class BIC():
     n_clusters: np.int64
         Best number of clusters found. It is defined as the number of clusters
         that minimize the value of the BIC (according to the definition).
-    bic_df: pd.DataFrame
-        BIC value for different values of n_clusters.
+    bic: pd.DataFrame
+        BIC values for different values of n_clusters.
 
     Notes
     -----
@@ -157,23 +157,22 @@ class BIC():
 
     def __call__(
         self,
-        data: np.array,
-        cluster_array: Iterable[int] = ()
+        data: npt.NDArray[np.float64],
+        n_clusters: Iterable[int]
     ) -> int:
         """Compute the BIC statistic.
 
         Parameters
         ----------
-        data: np.array, shape=(n, p)
-            The data as an array of shape (n, p).
-        cluster_array: Iterable[int]
-            Represents the number of clusters to try on the data.
+        data: npt.NDArray[np.float64], shape=(n_obs, n_components)
+            Data as an array of shape (n_obs, n_components).
+        n_clusters: Iterable[int]
+            The different number of clusters to try.
 
         Returns
         -------
-        n_clusters: int
-            Best number of clusters found in the data according to the BIC
-            statistic.
+        np.int_
+            Returns the number of clusters that minimizes the BIC.
 
         """
         if self.parallel_backend == 'multiprocessing':
@@ -182,44 +181,59 @@ class BIC():
             engine = self._process_non_parallel
 
         # Compute BIC stat for each cluster count
-        bic_df = pd.DataFrame({'n_clusters': [],
-                               'bic_value': []})
-        for bic_results in engine(data, cluster_array):
-            bic_df = bic_df.append(
-                {
-                    'n_clusters': int(bic_results.k),
-                    'bic_value': bic_results.value
-                }, ignore_index=True)
-
-        self.bic_df = bic_df.sort_values(by="n_clusters", ascending=True).\
-            reset_index(drop=True)
-        self.n_clusters = int(
-            self.bic_df.loc[np.argmin(self.bic_df.bic_value.values)].n_clusters
+        bic_df = pd.DataFrame.from_records(
+            engine(data, n_clusters), columns=['n_clusters', 'value']
         )
+
+        self.bic = bic_df.sort_values(by='n_clusters')
+        self.n_clusters = bic_df.loc[bic_df['value'].idxmin(), 'n_clusters']
         return self.n_clusters
 
     def _process_with_multiprocessing(
         self,
-        data: np.array,
-        cluster_array: Iterable[int]
-    ) -> _BICResult:
-        """Compute BIC stat with multiprocessing parallelization."""
+        data: npt.NDArray[np.float64],
+        cluster_array: Iterable[np.int64]
+    ) -> Generator[_BICResult, None, None]:
+        """Compute BIC stat with multiprocessing parallelization.
+
+        Parameters
+        ----------
+        data: npt.NDArray[np.float64], shape=(n_obs, n_components)
+            Data as an array of shape (n_obs, n_components).
+        n_clusters: Iterable[int]
+            The different number of clusters to try.
+
+        Returns
+        -------
+        Generator[_BICResult]
+            Generator that contains the BIC for each number of clusters.
+
+        """
         with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
-            jobs = [executor.submit(
-                    _compute_bic, data, n_clusters)
-                    for n_clusters in cluster_array
-                    ]
-            for future in as_completed(jobs):
-                yield future.result()
+            jobs = [
+                executor.submit(_compute_bic, data, n_clusters)
+                for n_clusters in cluster_array
+            ]
+        return (future.result() for future in as_completed(jobs))
 
     def _process_non_parallel(
         self,
         data: npt.NDArray[np.float64],
         cluster_array: Iterable[np.int_]
-    ) -> _BICResult:
-        """Compute BIC stat without parallelization."""
-        for bic_results in [
-            _compute_bic(data, n_clusters)
-            for n_clusters in cluster_array
-        ]:
-            yield bic_results
+    ) -> Generator[_BICResult, None, None]:
+        """Compute BIC stat without parallelization.
+
+        Parameters
+        ----------
+        data: npt.NDArray[np.float64], shape=(n_obs, n_components)
+            Data as an array of shape (n_obs, n_components).
+        n_clusters: Iterable[int]
+            The different number of clusters to try.
+
+        Returns
+        -------
+        Generator[_BICResult]
+            Generator that contains the BIC for each number of clusters.
+
+        """
+        return (_compute_bic(data, n_clusters) for n_clusters in cluster_array)
