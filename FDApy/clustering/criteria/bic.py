@@ -180,7 +180,7 @@ class BIC():
         else:
             engine = self._process_non_parallel
 
-        # Compute BIC stat for each cluster count
+        # Compute BIC for each cluster count
         bic_df = pd.DataFrame.from_records(
             engine(data, n_clusters), columns=['n_clusters', 'value']
         )
