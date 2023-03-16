@@ -100,16 +100,19 @@ class BIC():
 
     Parameters
     ----------
-    n_jobs: np.int64, default=-1
-        Number of cores to use in case of multiprocessing. If ``n_jobs==-1``,
-        all the available cores are used.
+    n_jobs: np.int64, default=multiprocessing.cpu_count()
+        Number of cores to use in case of multiprocessing. The default is the
+        number of available cores, determined by
+        ``multiprocessing.cpu_count()``. If ``n_jobs < 1``, it will be set to 1
+        and if ``n_jobs > cpu_count()``, it will be set to ``cpu_count()``.
     parallel_backend: np.str_, default='multiprocessing'
         Parallel backend used for the computation.
 
     Attributes
     ----------
     n_clusters: np.int64
-        Best number of clusters found
+        Best number of clusters found. It is defined as the number of clusters
+        that minimize the value of the BIC (according to the definition).
     bic_df: pd.DataFrame
         BIC value for different values of n_clusters.
 
@@ -127,15 +130,19 @@ class BIC():
 
     def __init__(
         self,
-        n_jobs: np.int64 = -1,
+        n_jobs: np.int64 = cpu_count(),
         parallel_backend: np.str_ = 'multiprocessing'
     ) -> None:
         """Initialize BIC object."""
-        self.parallel_backend = (parallel_backend
-                                 if parallel_backend == 'multiprocessing'
-                                 else None)
-        self.n_jobs = n_jobs if 1 <= n_jobs <= cpu_count() else cpu_count()
-        self.n_jobs = 1 if self.parallel_backend is None else self.n_jobs
+        if parallel_backend is None:
+            self.parallel_backend, self.n_jobs = parallel_backend, 1
+        elif parallel_backend == 'multiprocessing':
+            self.parallel_backend = parallel_backend
+            self.n_jobs = min(max(1, n_jobs), cpu_count())
+        else:
+            raise ValueError(
+                "The parallel backend has to be 'multiprocessing' or None."
+            )
 
     def __str__(self) -> str:
         """Override __str__ function."""
@@ -207,14 +214,12 @@ class BIC():
 
     def _process_non_parallel(
         self,
-        data: np.array,
-        cluster_array: Iterable[int]
+        data: npt.NDArray[np.float64],
+        cluster_array: Iterable[np.int_]
     ) -> _BICResult:
         """Compute BIC stat without parallelization."""
-        if self.parallel_backend is not None:
-            raise ValueError('Parallel backend have to be None.')
-        for gap_results in [
+        for bic_results in [
             _compute_bic(data, n_clusters)
             for n_clusters in cluster_array
         ]:
-            yield gap_results
+            yield bic_results

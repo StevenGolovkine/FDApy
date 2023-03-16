@@ -9,9 +9,12 @@ import numpy as np
 import unittest
 import warnings
 
+from multiprocessing import cpu_count
+
 from FDApy.clustering.criteria.bic import (
     _BICResult,
-    _compute_bic
+    _compute_bic,
+    BIC
 )
 
 
@@ -40,3 +43,48 @@ class TestComputeBIC(unittest.TestCase):
         self.assertIsInstance(bic, _BICResult)
         self.assertEqual(bic.n_cluster, 5)
         self.assertAlmostEqual(bic.value, 606.5293291803285)
+
+
+class TestBICInit(unittest.TestCase):
+    def test_init_default(self):
+        # Test initialization with default values
+        bic = BIC()
+        self.assertEqual(bic.n_jobs, cpu_count())
+        self.assertEqual(bic.parallel_backend, 'multiprocessing')
+        
+    def test_init_non_default(self):
+        # Test initialization with non-default values
+        bic = BIC(n_jobs=2, parallel_backend='multiprocessing')
+        self.assertEqual(bic.n_jobs, 2)
+        self.assertEqual(bic.parallel_backend, 'multiprocessing')
+        
+    def test_init_error(self):
+        # Test initialization with invalid parallel_backend value
+        with self.assertRaises(ValueError):
+            BIC(parallel_backend='invalid_backend')
+    
+    def test_init_n_jobs(self):
+        # Test initialization with outside range n_jobs value
+        bic = BIC(n_jobs=0)
+        self.assertEqual(bic.n_jobs, 1)
+
+        bic = BIC(n_jobs=cpu_count() + 5)
+        self.assertEqual(bic.n_jobs, cpu_count())
+
+
+class TestBICPrint(unittest.TestCase):
+    def test_str(self):
+        n_jobs = cpu_count()
+        bic = BIC()
+        self.assertEqual(str(bic), f'BIC(n_jobs={n_jobs}, parallel_backend=multiprocessing)')
+        
+        bic = BIC(n_jobs=2, parallel_backend=None)
+        self.assertEqual(str(bic), 'BIC(n_jobs=1, parallel_backend=None)')
+    
+    def test_repr(self):
+        n_jobs = cpu_count()
+        bic = BIC()
+        self.assertEqual(repr(bic), f'BIC(n_jobs={n_jobs}, parallel_backend=multiprocessing)')
+        
+        bic = BIC(n_jobs=2, parallel_backend=None)
+        self.assertEqual(repr(bic), 'BIC(n_jobs=1, parallel_backend=None)')
