@@ -1,25 +1,15 @@
 #!/usr/bin/env python
 # -*-coding:utf8 -*
 
-"""Module for the representation of the Gap statistic.
-
-This module is used to represent the Gap statistic as an object.
-
-References
-----------
-    Estimating the number of clusters in a data setp via the gap statistic,
-    Tibshirani R., Walther G., and Hastie T., J. R. Statist. Soc. B (2001)
-    63, Part 2, pp.411-423
-
-    A comparison of Gap statistic definitions with and without logarithm
-    function, Mohajer M., Englmeier K.-H., Schmid V. J., 2010
-
-    Granger M. - https://github.com/milesgranger/gap_statistic
+"""
+Gap Statistic
+-------------
 
 """
 
 import pandas as pd
 import numpy as np
+import numpy.typing as npt
 import matplotlib.pyplot as plt
 
 from matplotlib.axes import Axes
@@ -33,12 +23,39 @@ from sklearn.metrics import pairwise_distances
 from typing import Callable, Dict, Optional, Iterable, NamedTuple
 
 
+##############################################################################
+# Class GapResult
+
+class _GapResult(NamedTuple):
+    """Class that contains Gap statistics.
+    
+    Attributes
+    ----------
+    value: np.float64
+    k: np.int_
+    sk: np.float64
+    value_star: np.float64
+    sk_star: np.float64
+
+    """
+
+    n_clusters: np.int_
+    value: np.float64
+    sk: np.float64 = 0
+    value_star: np.float64 = 0
+    sk_star: np.float64 = 0
+
+    def __repr__(self) -> str:
+        """Override print function."""
+        return f"Number of clusters: {self.n_clusters} - Gap: {self.value}"
+
+
 ###############################################################################
 # Utility functions
 def _compute_dispersion(
-        data: np.ndarray,
-        labels: np.ndarray,
-        metric: str = 'euclidean'
+        data: npt.NDArray[np.float64],
+        labels: npt.NDArray[np.float64],
+        metric: np.str_ = 'euclidean'
 ) -> float:
     r"""Compute the dispersion of a given dataset.
 
@@ -106,24 +123,6 @@ def _clustering(
 
 
 ##############################################################################
-# Class GapResult
-
-class GapResult(NamedTuple):
-    """An object containing the Gap statistic for given dataset and k."""
-
-    value: float
-    k: int
-    sk: float
-    value_star: float
-    sk_star: float
-
-    def __repr__(self) -> str:
-        """Override print function."""
-        return (f"For {self.k} clusters considered, the Gap statistic is"
-                f" {self.value} ({self.sk}).")
-
-
-##############################################################################
 # Class Gap
 
 class Gap():
@@ -172,6 +171,17 @@ class Gap():
             of `uniform` or `pca`.
         metric: str, default='euclidean'
             The metric used to compute distance between the observations.
+
+        References
+        ----------
+        Estimating the number of clusters in a data setp via the gap statistic,
+            Tibshirani R., Walther G., and Hastie T., J. R. Statist. Soc. B (2001)
+            63, Part 2, pp.411-423
+
+        A comparison of Gap statistic definitions with and without logarithm
+            function, Mohajer M., Englmeier K.-H., Schmid V. J., 2010
+
+        Granger M. - https://github.com/milesgranger/gap_statistic
 
         """
         self.parallel_backend = (parallel_backend
@@ -341,7 +351,7 @@ class Gap():
         n_clusters: int,
         n_refs: int,
         metric: str = 'euclidean'
-    ) -> GapResult:
+    ) -> _GapResult:
         """Compute the Gap statistic.
 
         Parameters
@@ -387,14 +397,14 @@ class Gap():
         gap_star_value = np.mean(ref_dispersions) - dispersion
         sk_star = np.sqrt(1 + 1 / n_refs) * np.std(ref_dispersions)
 
-        return GapResult(gap_value, n_clusters, sk, gap_star_value, sk_star)
+        return _GapResult(gap_value, n_clusters, sk, gap_star_value, sk_star)
 
     def _process_with_multiprocessing(
         self,
         data: np.ndarray,
         n_refs,
         cluster_array: Iterable[int]
-    ) -> GapResult:
+    ) -> _GapResult:
         """Compute Gap stat with multiprocessing parallelization."""
         with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
             jobs = [executor.submit(
@@ -409,7 +419,7 @@ class Gap():
         data: np.ndarray,
         n_refs: int,
         cluster_array: Iterable[int]
-    ) -> GapResult:
+    ) -> _GapResult:
         """Compute Gap stat without parallelization."""
         for gap_results in [
             self._compute_gap(data, n_clusters, n_refs, self.metric)

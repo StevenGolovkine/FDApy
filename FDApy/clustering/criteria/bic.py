@@ -33,12 +33,12 @@ class _BICResult(NamedTuple):
 
     """
 
-    n_cluster: np.int64
+    n_clusters: np.int64
     value: np.float64
 
     def __repr__(self) -> str:
         """Override print function."""
-        return f"Number of clusters: {self.n_cluster} - BIC: {self.value}"
+        return f"Number of clusters: {self.n_clusters} - BIC: {self.value}"
 
 
 ###############################################################################
