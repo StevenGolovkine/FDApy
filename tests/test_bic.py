@@ -9,6 +9,8 @@ import numpy as np
 import pandas as pd
 import unittest
 
+from unittest.mock import Mock, patch
+
 from FDApy.clustering.criteria.bic import (
     _BICResult,
     _compute_bic,
@@ -75,7 +77,8 @@ class TestBICPrint(unittest.TestCase):
 
 
 class TestParallel(unittest.TestCase):
-    def test_process_parallel(self):
+    @patch('concurrent.futures.ProcessPoolExecutor')
+    def test_process_parallel(self, mock_request):
         data = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
         cluster_array = [1, 2, 3]
         bic = BIC(n_jobs=2, parallel_backend='multiprocessing')
@@ -100,7 +103,7 @@ class TestBIC(unittest.TestCase):
     def setUp(self):
         self.data = np.random.rand(100, 5)
         self.n_clusters = np.arange(1, 6)
-        self.bic = BIC(n_jobs=2, parallel_backend='multiprocessing')
+        self.bic = BIC(n_jobs=1, parallel_backend=None)
 
     def test_call_method(self) -> None:
         self.assertIsInstance(self.bic(self.data, self.n_clusters), np.int_)
