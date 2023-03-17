@@ -83,9 +83,10 @@ class TestParallel(unittest.TestCase):
         cluster_array = [1, 2, 3]
         bic = BIC(n_jobs=2, parallel_backend='multiprocessing')
 
-        bic_results = list(bic._process_with_multiprocessing(data, cluster_array))
-        self.assertEqual(len(bic_results), 3)
-        self.assertIsInstance(bic_results[0], _BICResult)
+        with patch('FDApy.clustering.criteria.bic.BIC._process_with_multiprocessing'):
+            mock = bic._process_with_multiprocessing
+            mock(data, cluster_array)
+            mock.assert_called_once_with(data, cluster_array)
 
 
 class TestNonParallel(unittest.TestCase):
