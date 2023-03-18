@@ -56,7 +56,7 @@ def _compute_dispersion(
         data: npt.NDArray[np.float64],
         labels: npt.NDArray[np.float64],
         metric: np.str_ = 'euclidean'
-) -> float:
+) -> np.float64:
     r"""Compute the dispersion of a given dataset.
 
     Notes
@@ -68,13 +68,13 @@ def _compute_dispersion(
 
     Parameters
     ----------
-    data: np.ndarray, shape=(n, p)
-        The data
-    labels: np.ndarray, shape=(n,)
-        The label of each observation
-    metric: str, default='euclidean'
+    data: npt.NDArray[np.float64], shape=(n_obs, n_features)
+        Data.
+    labels: npt.NDArray[np.float64], shape=(n_obs,)
+        Label for each observation.
+    metric: np.str_, default='euclidean'
         The metric used for the computation of the distance between the
-        observations. See `sklearn.metrics.pairwise_distance` documentation
+        observations. See ``sklearn.metrics.pairwise_distance`` documentation
         for the list of available metric function.
 
     Returns
@@ -133,6 +133,27 @@ class Gap():
     of Tibshirani, Walther and Hastie - Estimating the number of clusters in a
     data set via the gap statistic.
 
+    Parameters
+    ----------
+    n_jobs: np.int64, default=multiprocessing.cpu_count()
+        Number of cores to use in case of multiprocessing. The default is the
+        number of available cores, determined by
+        ``multiprocessing.cpu_count()``. If ``n_jobs < 1``, it will be set to 1
+        and if ``n_jobs > cpu_count()``, it will be set to ``cpu_count()``.
+    parallel_backend: np.str_, default='multiprocessing'
+        Parallel backend used for the computation.
+    clusterer: Callable, default=None
+        An user-provided function for the clustering of the dataset. The
+        function has to be compliant with sklearn clutering class and
+        return only the labels such as the `predict` function.
+    clusterer_kwargs: Dict, default=None
+        The parameters to be used by the clustering function.
+    generating_process: np.str_, default='pca'
+        The generating process of the data for the reference datasets. One
+        of `uniform` or `pca`.
+    metric: np.str_, default='euclidean'
+        The metric used to compute distance between the observations.
+
     Attributes
     ----------
     n_clusters: int
@@ -140,55 +161,38 @@ class Gap():
     gap_df: pd.DataFrame
         Gap value for different values of n_clusters.
 
+    References
+    ----------
+    Estimating the number of clusters in a data setp via the gap statistic,
+        Tibshirani R., Walther G., and Hastie T., J. R. Statist. Soc. B
+        (2001) 63, Part 2, pp.411-423
+    A comparison of Gap statistic definitions with and without logarithm
+        function, Mohajer M., Englmeier K.-H., Schmid V. J., 2010
+
+    Granger M. - https://github.com/milesgranger/gap_statistic
+
     """
 
     def __init__(
         self,
-        n_jobs: int = -1,
-        parallel_backend: str = "multiprocessing",
+        n_jobs: np.int64 = -1,
+        parallel_backend: np.str_ = "multiprocessing",
         clusterer: Callable = None,
-        clusterer_kwargs: dict = None,
-        generating_process: str = 'pca',
-        metric: str = 'euclidean'
+        clusterer_kwargs: Dict = None,
+        generating_process: np.str_ = 'pca',
+        metric: np.str_ = 'euclidean'
     ) -> None:
-        """Initialize Gap object.
+        """Initialize Gap object."""
+        if parallel_backend is None:
+            self.parallel_backend, self.n_jobs = parallel_backend, 1
+        elif parallel_backend == 'multiprocessing':
+            self.parallel_backend = parallel_backend
+            self.n_jobs = min(max(1, n_jobs), cpu_count())
+        else:
+            raise ValueError(
+                "The parallel backend has to be 'multiprocessing' or None."
+            )
 
-        Parameters
-        ----------
-        n_jobs: int, default=-1
-            Number of cores to use in case of multiprocessing. If -1, it will
-            use all the cores.
-        parallel_backend: str, default='multiprocessing'
-            Parallel backend used for the computation.
-        clusterer: Callable, default=None
-            An user-provided function for the clustering of the dataset. The
-            function has to be compliant with sklearn clutering class and
-            return only the labels such as the `predict` function.
-        clusterer_kwargs: dict, default=None
-            The parameters to be used by the clustering function.
-        generating_process: str, default='pca'
-            The generating process of the data for the reference datasets. One
-            of `uniform` or `pca`.
-        metric: str, default='euclidean'
-            The metric used to compute distance between the observations.
-
-        References
-        ----------
-        Estimating the number of clusters in a data setp via the gap statistic,
-            Tibshirani R., Walther G., and Hastie T., J. R. Statist. Soc. B
-            (2001) 63, Part 2, pp.411-423
-
-        A comparison of Gap statistic definitions with and without logarithm
-            function, Mohajer M., Englmeier K.-H., Schmid V. J., 2010
-
-        Granger M. - https://github.com/milesgranger/gap_statistic
-
-        """
-        self.parallel_backend = (parallel_backend
-                                 if parallel_backend == 'multiprocessing'
-                                 else None)
-        self.n_jobs = n_jobs if 1 <= n_jobs <= cpu_count() else cpu_count()
-        self.n_jobs = 1 if self.parallel_backend is None else self.n_jobs
         self.clusterer = clusterer if clusterer is not None else _clustering
         self.clusterer_kwargs = (
             clusterer_kwargs or dict()
@@ -206,8 +210,10 @@ class Gap():
 
     def __str__(self) -> str:
         """Override __str__ function."""
-        return (f'Gap(n_jobs={self.n_jobs}, parallel'
-                f' backend={self.parallel_backend})')
+        return (
+            f'Gap(n_jobs={self.n_jobs}, parallel_backend='
+            f'{self.parallel_backend})'
+        )
 
     def __repr__(self) -> str:
         """Override __repr__ function."""
