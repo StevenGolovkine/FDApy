@@ -108,11 +108,10 @@ class TestBIC(unittest.TestCase):
     def test_call_method(self) -> None:
         self.assertIsInstance(self.bic(self.data, self.n_clusters), np.int_)
 
-    def test_call_multiprocessing(self) -> None:
-        with patch('FDApy.clustering.criteria.bic.BIC.__call__'):
-            mock = BIC(n_jobs=2, parallel_backend='multiprocessing')
-            mock.__call__(self.data, self.n_clusters)
-            mock.__call__.assert_called_once_with(self.data, self.n_clusters)
+    @patch('concurrent.futures.ProcessPoolExecutor')
+    def test_call_multiprocessing(self, mock):
+        bic = BIC(n_jobs=2, parallel_backend='multiprocessing')
+        bic.__call__(self.data, self.n_clusters)
 
     def test_bic_df_attr(self) -> None:
         self.bic(self.data, self.n_clusters)
