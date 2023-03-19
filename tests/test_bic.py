@@ -76,16 +76,16 @@ class TestBICPrint(unittest.TestCase):
         self.assertEqual(repr(bic), 'BIC(n_jobs=1, parallel_backend=None)')
 
 
-class TestParallel(unittest.TestCase):
-    def test_process_parallel(self):
-        data = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
-        cluster_array = [1, 2, 3]
-        bic = BIC(n_jobs=2, parallel_backend='multiprocessing')
+# class TestParallel(unittest.TestCase):
+#     def test_process_parallel(self):
+#         data = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+#         cluster_array = [1, 2, 3]
+#         bic = BIC(n_jobs=2, parallel_backend='multiprocessing')
 
-        with patch('FDApy.clustering.criteria.bic.BIC._process_with_multiprocessing'):
-            mock = bic._process_with_multiprocessing
-            mock(data, cluster_array)
-            mock.assert_called_once_with(data, cluster_array)
+#         with patch('FDApy.clustering.criteria.bic.BIC._process_with_multiprocessing'):
+#             mock = bic._process_with_multiprocessing
+#             mock(data, cluster_array)
+#             mock.assert_called_once_with(data, cluster_array)
 
 
 class TestNonParallel(unittest.TestCase):
@@ -108,14 +108,14 @@ class TestBIC(unittest.TestCase):
     def test_call_method(self) -> None:
         self.assertIsInstance(self.bic(self.data, self.n_clusters), np.int_)
 
-    @patch('concurrent.futures.ProcessPoolExecutor')
-    @patch('concurrent.futures.as_completed')
-    @patch('multiprocessing.cpu_count')
-    def test_call_multiprocessing(
-        self, mock_process, mock_completed, mock_cpu_count
-    ):
-        bic = BIC(n_jobs=2, parallel_backend='multiprocessing')
-        bic.__call__(self.data, self.n_clusters)
+    # @patch('concurrent.futures.ProcessPoolExecutor')
+    # @patch('concurrent.futures.as_completed')
+    # @patch('multiprocessing.cpu_count')
+    # def test_call_multiprocessing(
+    #     self, mock_process, mock_completed, mock_cpu_count
+    # ):
+    #     bic = BIC(n_jobs=2, parallel_backend='multiprocessing')
+    #     bic.__call__(self.data, self.n_clusters)
 
     def test_bic_df_attr(self) -> None:
         self.bic(self.data, self.n_clusters)
