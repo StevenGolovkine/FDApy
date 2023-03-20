@@ -49,6 +49,7 @@ docs/backreferences/*
 # Test files
 .junit/*
 .pytest_cache/*
+tests/__pycache__/*
 
 # Coverage files
 htmlcov/*
