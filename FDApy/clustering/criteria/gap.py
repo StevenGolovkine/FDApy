@@ -31,7 +31,7 @@ class _GapResult(NamedTuple):
 
     Attributes
     ----------
-    k: np.int_
+    n_clusters: np.int64
         Number of clusters for which the Gap is computed.
     value: np.float64
         Value of the Gap statistic.
@@ -41,7 +41,7 @@ class _GapResult(NamedTuple):
 
     """
 
-    n_clusters: np.int_
+    n_clusters: np.int64
     value: np.float64
     sk: np.float64 = 0
     value_star: np.float64 = 0
@@ -96,7 +96,7 @@ def _generate_uniform(
     runif: Callable = np.random.uniform
 ) -> npt.NDArray:
     """Generate data according to a uniform distribution.
-    
+
     Parameters
     ----------
     data: npt.NDArray[np.float64], shape=(n_obs, n_features)
@@ -122,10 +122,10 @@ def _generate_uniform(
 
 
 def _generate_pca(
-    data: np.ndarray,
-    n_obs: int,
-    a: float = 0.,
-    b: float = 1.
+    data: npt.NDArray[np.float64],
+    n_obs: np.int64,
+    a: np.float64 = 0.,
+    b: np.float64 = 1.
 ) -> np.ndarray:
     """Generate data according to a uniform distribution after PCA."""
     data_centered = data - np.mean(data, axis=0)
@@ -137,12 +137,12 @@ def _generate_pca(
 
 
 def _clustering(
-    data: npt.NDArray,
+    data: npt.NDArray[np.float64],
     n_clusters: np.int64,
     **clusterer_kwargs: Optional[Dict]
-) -> npt.NDArray:
+) -> npt.NDArray[np.float64]:
     """Cluster algorithm for Gap computation.
-    
+
     This function uses the ``KMeans`` function from the ``sklearn`` library.
 
     Parameters
@@ -264,27 +264,26 @@ class Gap():
 
     def __call__(
         self,
-        data: np.ndarray,
-        cluster_array: Iterable[int] = (),
-        n_refs: int = 3
+        data: npt.NDArray[np.float64],
+        n_clusters: Iterable[np.int64],
+        n_refs: np.int64 = 3
     ) -> int:
         """Compute the Gap statistic.
 
         Parameters
         ----------
-        data: np.ndarray, shape=(n, p)
-            The data as an array of shape (n, p).
-        cluster_array: Iterable[int]
-            Represents the number of clusters to try on the data.
-        n_refs: int, default=3
+        data: npt.NDArray[np.float64], shape=(n_obs, n_components)
+            Data as an array of shape (n_obs, n_components).
+        cluster_array: Iterable[np.int64]
+            The different number of clusters to try.
+        n_refs: np.int64, default=3
             Number of random reference data sets used as inertia reference to
             actual data.
 
         Returns
         -------
-        n_clusters: int
-            Best number of clusters found in the data according to the Gap
-            statistic.
+        np.int_
+            Returns the number of clusters that maximizes the Gap statistic.
 
         """
         if self.parallel_backend == 'multiprocessing':
@@ -298,7 +297,7 @@ class Gap():
                                'sk': [],
                                'gap_value_star': [],
                                'sk_star': []})
-        for gap_results in engine(data, n_refs, cluster_array):
+        for gap_results in engine(data, n_refs, n_clusters):
             gap_df = gap_df.append(
                 {
                     'n_clusters': int(gap_results.k),
@@ -333,7 +332,7 @@ class Gap():
     def plot(
         self,
         axes: Optional[Axes] = None,
-        scatter_args: Dict = None,
+        scatter_args: Optional[Dict] = None,
         **plt_kwargs
     ) -> Axes:
         """Plot the results of the Gap computation.
@@ -342,7 +341,7 @@ class Gap():
         ----------
         axes: matplotlib.axes._subplots.AxesSubplot
             Axes object onto which the objects are plotted.
-        scatter_args: dict
+        scatter_args: Optional[Dict]
             Keywords scatter plot arguments
         **plt_kwargs:
             Keywords plotting arguments
@@ -397,28 +396,28 @@ class Gap():
 
     def _compute_gap(
         self,
-        data: np.ndarray,
-        n_clusters: int,
-        n_refs: int,
-        metric: str = 'euclidean'
+        data: npt.NDArray[np.float64],
+        n_clusters: np.int64,
+        n_refs: np.int64,
+        metric: np.str_ = 'euclidean'
     ) -> _GapResult:
         """Compute the Gap statistic.
 
         Parameters
         ----------
-        data: np.ndarray
+        data: npt.NDArray[np.float64]
             The data to cluster.
-        n_clusters: int
+        n_clusters: np.int64
             Number of clusters to test.
-        n_refs: int
+        n_refs: np.int64
             Number of random reference data sets used as inertia reference to
             actual data.
-        metric: str, default='euclidean'
+        metric: np.str_, default='euclidean'
             The metric used to compute the Gap statistic.
 
         Returns
         -------
-        results: GapResult
+        _GapResult
             The results as a GapResult object.
 
         """
@@ -465,7 +464,7 @@ class Gap():
         n_refs: np.int64
             Number of random reference data sets used as inertia reference to
             actual data.
-        cluster_array: Iterable[int]
+        cluster_array: Iterable[np.int64]
             The different number of clusters to try.
 
         Returns
@@ -497,7 +496,7 @@ class Gap():
         n_refs: np.int64
             Number of random reference data sets used as inertia reference to
             actual data.
-        cluster_array: Iterable[int]
+        cluster_array: Iterable[np.int64]
             The different number of clusters to try.
 
         Returns

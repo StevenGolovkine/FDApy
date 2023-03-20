@@ -144,29 +144,29 @@ class BIC():
                 "The parallel backend has to be 'multiprocessing' or None."
             )
 
-    def __str__(self) -> str:
+    def __str__(self) -> np.str_:
         """Override __str__ function."""
         return (
             f'BIC(n_jobs={self.n_jobs}, parallel_backend='
             f'{self.parallel_backend})'
         )
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> np.str_:
         """Override __repr__ function."""
         return self.__str__()
 
     def __call__(
         self,
         data: npt.NDArray[np.float64],
-        n_clusters: Iterable[int]
-    ) -> int:
+        n_clusters: Iterable[np.int64]
+    ) -> np.int64:
         """Compute the BIC statistic.
 
         Parameters
         ----------
         data: npt.NDArray[np.float64], shape=(n_obs, n_components)
             Data as an array of shape (n_obs, n_components).
-        n_clusters: Iterable[int]
+        n_clusters: Iterable[np.int64]
             The different number of clusters to try.
 
         Returns
@@ -200,7 +200,7 @@ class BIC():
         ----------
         data: npt.NDArray[np.float64], shape=(n_obs, n_components)
             Data as an array of shape (n_obs, n_components).
-        cluster_array: Iterable[int]
+        cluster_array: Iterable[np.int64]
             The different number of clusters to try.
 
         Returns
@@ -227,7 +227,7 @@ class BIC():
         ----------
         data: npt.NDArray[np.float64], shape=(n_obs, n_components)
             Data as an array of shape (n_obs, n_components).
-        cluster_array: Iterable[int]
+        cluster_array: Iterable[np.int64]
             The different number of clusters to try.
 
         Returns
