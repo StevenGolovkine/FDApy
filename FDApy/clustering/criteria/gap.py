@@ -14,13 +14,13 @@ import matplotlib.pyplot as plt
 
 from matplotlib.axes import Axes
 
+from typing import Callable, Dict, Generator, Optional, Iterable, NamedTuple
+
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from multiprocessing import cpu_count
 
 from sklearn.cluster import KMeans
 from sklearn.metrics import pairwise_distances
-
-from typing import Callable, Dict, Optional, Iterable, NamedTuple
 
 
 ##############################################################################
@@ -31,8 +31,10 @@ class _GapResult(NamedTuple):
 
     Attributes
     ----------
-    value: np.float64
     k: np.int_
+        Number of clusters for which the Gap is computed.
+    value: np.float64
+        Value of the Gap statistic.
     sk: np.float64
     value_star: np.float64
     sk_star: np.float64
@@ -59,8 +61,6 @@ def _compute_dispersion(
 ) -> np.float64:
     r"""Compute the dispersion of a given dataset.
 
-    Notes
-    -----
     ..math::
 
         W_k = \sum_{r=1}^k \frac{1}{2n_r}\sum_{i, i^\prime \in C_r}
@@ -79,7 +79,7 @@ def _compute_dispersion(
 
     Returns
     -------
-    result: np.ndarray
+    np.float64
         The dispersion of the points in their cluster.
 
     """
@@ -89,13 +89,36 @@ def _compute_dispersion(
 
 
 def _generate_uniform(
-    data: np.ndarray,
-    n_obs: int,
-    a: float = 0.0,
-    b: float = 1.0
-) -> np.ndarray:
-    """Generate `n_obs` data according to a uniform distribution."""
-    return np.random.uniform(a, b, (n_obs, data.ndim))
+    data: npt.NDArray[np.float64],
+    n_obs: np.int64,
+    low: np.float64 = 0.0,
+    high: np.float64 = 1.0,
+    runif: Callable = np.random.uniform
+) -> npt.NDArray:
+    """Generate data according to a uniform distribution.
+    
+    Parameters
+    ----------
+    data: npt.NDArray[np.float64], shape=(n_obs, n_features)
+        Data.
+    n_obs: np.int64
+        Number of observations to be generated.
+    low: np.float64, default=0.0
+        Lower boundary of the output interval. All values generated will be
+        greater than or equal to ``low``.
+    high: np.float64, default=1.0
+        Upper boundary of the output interval. All values generated will be
+        less than or equal to high.
+    runif: Callable, default=np.random.uniform
+        Random data generator.
+
+    Returns
+    -------
+    npt.NDArray
+        Generated samples.
+
+    """
+    return runif(low, high, (n_obs, data.ndim))
 
 
 def _generate_pca(
@@ -104,7 +127,7 @@ def _generate_pca(
     a: float = 0.,
     b: float = 1.
 ) -> np.ndarray:
-    """Generate data sccording to a uniform distribution after PCA."""
+    """Generate data according to a uniform distribution after PCA."""
     data_centered = data - np.mean(data, axis=0)
     _, _, eigenvec = np.linalg.svd(data_centered)
     data_prime = np.matmul(data_centered, eigenvec)
@@ -114,11 +137,30 @@ def _generate_pca(
 
 
 def _clustering(
-    data: np.ndarray,
-    n_clusters: int,
-    **clusterer_kwargs
-):
-    """Cluster algorithm for Gap computation."""
+    data: npt.NDArray,
+    n_clusters: np.int64,
+    **clusterer_kwargs: Optional[Dict]
+) -> npt.NDArray:
+    """Cluster algorithm for Gap computation.
+    
+    This function uses the ``KMeans`` function from the ``sklearn`` library.
+
+    Parameters
+    ----------
+    data: npt.NDArray
+        Data.
+    n_clusters: np.int64
+        The number of clusters to form.
+    **clusterer_kwargs: Optional[Dict]
+        See ``sklearn.cluster.KMeans`` documentation for the list of available
+        parameters.
+
+    Returns
+    -------
+    npt.NDArray
+        Index of the cluster each sample belongs to.
+
+    """
     return KMeans(n_clusters=n_clusters, **clusterer_kwargs).fit_predict(data)
 
 
@@ -163,13 +205,14 @@ class Gap():
 
     References
     ----------
-    Estimating the number of clusters in a data setp via the gap statistic,
-        Tibshirani R., Walther G., and Hastie T., J. R. Statist. Soc. B
-        (2001) 63, Part 2, pp.411-423
-    A comparison of Gap statistic definitions with and without logarithm
-        function, Mohajer M., Englmeier K.-H., Schmid V. J., 2010
-
-    Granger M. - https://github.com/milesgranger/gap_statistic
+    .. [1] Tibshirani R., Walther G., and Hastie T. (2001), Estimating the
+        number of clusters in a data setp via the gap statistic, Journal of the
+        Royal Statistical Society, Series B, 63(2), 411--423.
+    .. [2] Mohajer M., Englmeier K.-H., and Schmid V. J., (2010), A comparison
+        of Gap statistic definitions with and without logarithm function,
+        Technical Report Number 096, Department of Statistics, University of
+        Munich.
+    .. [3] Granger M., https://github.com/milesgranger/gap_statistic
 
     """
 
@@ -234,7 +277,8 @@ class Gap():
         cluster_array: Iterable[int]
             Represents the number of clusters to try on the data.
         n_refs: int, default=3
-            Number of random reference datasets to consider.
+            Number of random reference data sets used as inertia reference to
+            actual data.
 
         Returns
         -------
@@ -367,7 +411,8 @@ class Gap():
         n_clusters: int
             Number of clusters to test.
         n_refs: int
-            Number of reference dataset to generate.
+            Number of random reference data sets used as inertia reference to
+            actual data.
         metric: str, default='euclidean'
             The metric used to compute the Gap statistic.
 
@@ -407,11 +452,28 @@ class Gap():
 
     def _process_with_multiprocessing(
         self,
-        data: np.ndarray,
-        n_refs,
+        data: npt.NDArray[np.float64],
+        n_refs: np.int64,
+        cluster_array: Iterable[np.int64]
+    ) -> Generator[_GapResult, None, None]:
+        """Compute Gap statistics with multiprocessing parallelization.
+
+        Parameters
+        ----------
+        data: npt.NDArray[np.float64], shape=(n_obs, n_components)
+            Data as an array of shape (n_obs, n_components).
+        n_refs: np.int64
+            Number of random reference data sets used as inertia reference to
+            actual data.
         cluster_array: Iterable[int]
-    ) -> _GapResult:
-        """Compute Gap stat with multiprocessing parallelization."""
+            The different number of clusters to try.
+
+        Returns
+        -------
+        Generator[_GapResult]
+            Generator that contains the BIC for each number of clusters.
+
+        """
         with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
             jobs = [executor.submit(
                     self._compute_gap, data, n_clusters, n_refs, self.metric)
@@ -422,11 +484,28 @@ class Gap():
 
     def _process_non_parallel(
         self,
-        data: np.ndarray,
-        n_refs: int,
+        data: npt.NDArray[np.float64],
+        n_refs: np.int64,
+        cluster_array: Iterable[np.int64]
+    ) -> Generator[_GapResult, None, None]:
+        """Compute Gap statistics without parallelization.
+
+        Parameters
+        ----------
+        data: npt.NDArray[np.float64], shape=(n_obs, n_components)
+            Data as an array of shape (n_obs, n_components).
+        n_refs: np.int64
+            Number of random reference data sets used as inertia reference to
+            actual data.
         cluster_array: Iterable[int]
-    ) -> _GapResult:
-        """Compute Gap stat without parallelization."""
+            The different number of clusters to try.
+
+        Returns
+        -------
+        Generator[_GapResult]
+            Generator that contains the BIC for each number of clusters.
+
+        """
         for gap_results in [
             self._compute_gap(data, n_clusters, n_refs, self.metric)
             for n_clusters in cluster_array

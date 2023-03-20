@@ -194,13 +194,13 @@ class BIC():
         data: npt.NDArray[np.float64],
         cluster_array: Iterable[np.int64]
     ) -> Generator[_BICResult, None, None]:
-        """Compute BIC stat with multiprocessing parallelization.
+        """Compute BIC with multiprocessing parallelization.
 
         Parameters
         ----------
         data: npt.NDArray[np.float64], shape=(n_obs, n_components)
             Data as an array of shape (n_obs, n_components).
-        n_clusters: Iterable[int]
+        cluster_array: Iterable[int]
             The different number of clusters to try.
 
         Returns
@@ -219,15 +219,15 @@ class BIC():
     def _process_non_parallel(
         self,
         data: npt.NDArray[np.float64],
-        cluster_array: Iterable[np.int_]
+        cluster_array: Iterable[np.int64]
     ) -> Generator[_BICResult, None, None]:
-        """Compute BIC stat without parallelization.
+        """Compute BIC without parallelization.
 
         Parameters
         ----------
         data: npt.NDArray[np.float64], shape=(n_obs, n_components)
             Data as an array of shape (n_obs, n_components).
-        n_clusters: Iterable[int]
+        cluster_array: Iterable[int]
             The different number of clusters to try.
 
         Returns
