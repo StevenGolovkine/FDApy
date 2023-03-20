@@ -10,6 +10,7 @@ import pandas as pd
 import unittest
 
 from unittest.mock import patch
+from multiprocessing import cpu_count
 
 from FDApy.clustering.criteria.bic import (
     _BICResult,
@@ -49,7 +50,7 @@ class TestBICInit(unittest.TestCase):
     def test_init_non_default(self):
         # Test initialization with non-default values
         bic = BIC(n_jobs=2, parallel_backend='multiprocessing')
-        self.assertEqual(bic.n_jobs, 2)
+        self.assertEqual(bic.n_jobs, min(2, cpu_count()))
         self.assertEqual(bic.parallel_backend, 'multiprocessing')
         
     def test_init_error(self):
@@ -63,7 +64,7 @@ class TestBICInit(unittest.TestCase):
         self.assertEqual(bic.n_jobs, 1)
 
         bic = BIC(n_jobs=2)
-        self.assertEqual(bic.n_jobs, 2)
+        self.assertEqual(bic.n_jobs, min(2, cpu_count()))
 
 
 class TestBICPrint(unittest.TestCase):
