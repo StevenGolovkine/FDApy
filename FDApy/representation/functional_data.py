@@ -1133,35 +1133,35 @@ class IrregularFunctionalData(FunctionalData):
     For 1-dimensional irregular data:
 
     >>> argvals = {
-    >>>     'input_dim_0': {
-    >>>         0: np.array([0, 1, 2, 3, 4]),
-    >>>         1: np.array([0, 2, 4]),
-    >>>         2: np.array([2, 4]),
-    >>>     }
-    >>> }
+    ...     'input_dim_0': {
+    ...         0: np.array([0, 1, 2, 3, 4]),
+    ...         1: np.array([0, 2, 4]),
+    ...         2: np.array([2, 4]),
+    ...     }
+    ... }
     >>> values = {
-    >>>     0: np.array([1, 2, 3, 4, 5]),
-    >>>     1: np.array([2, 5, 6]),
-    >>>     2: np.array([4, 7]),
-    >>> }
+    ...     0: np.array([1, 2, 3, 4, 5]),
+    ...     1: np.array([2, 5, 6]),
+    ...     2: np.array([4, 7]),
+    ... }
     >>> IrregularFunctionalData(argvals, values)
 
     For 2-dimensional irregular data:
 
     >>> argvals = {
-    >>>     'input_dim_0': {
-    >>>         0: np.array([1, 2, 3, 4]),
-    >>>         1: np.array([2, 4])
-    >>>     },
-    >>>     'input_dim_1': {
-    >>>         0: np.array([5, 6, 7]),
-    >>>         1: np.array([1, 2, 3])
-    >>>     }
-    >>> }
+    ...     'input_dim_0': {
+    ...         0: np.array([1, 2, 3, 4]),
+    ...         1: np.array([2, 4])
+    ...     },
+    ...     'input_dim_1': {
+    ...         0: np.array([5, 6, 7]),
+    ...         1: np.array([1, 2, 3])
+    ...     }
+    ... }
     >>> values = {
-    >>>     0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
-    >>>     1: np.array([[1, 2, 3], [1, 2, 3]])
-    >>> }
+    ...     0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
+    ...     1: np.array([[1, 2, 3], [1, 2, 3]])
+    ... }
     >>> IrregularFunctionalData(argvals, values)
 
     """
