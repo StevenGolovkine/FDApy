@@ -17,7 +17,7 @@ from ..representation.functional_data import (
     DenseFunctionalData,
     IrregularFunctionalData
 )
-from ..misc.utils import integration_weights_
+from ..misc.utils import _integration_weights
 
 ###############################################################################
 # Checkers for parameters
@@ -226,7 +226,7 @@ class FLMM():
         ll = argvals[len(argvals) - 1] - argvals[0]
         lower = np.sum(~(argvals >= (argvals[0] + 0.25 * ll)))
         upper = np.sum((argvals <= (argvals[len(argvals) - 1] - 0.25 * ll)))
-        weights = integration_weights_(argvals[lower:upper], method='trapz')
+        weights = _integration_weights(argvals[lower:upper], method='trapz')
         nume = np.dot(weights, (var_hat - cov_diag)[lower:upper])
         var_noise = np.maximum(nume / argvals[upper] - argvals[lower], 0)
 
