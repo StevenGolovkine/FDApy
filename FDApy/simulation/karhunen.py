@@ -71,10 +71,10 @@ def _eigenvalues_exponential(
     Example
     -------
     >>> _eigenvalues_exponential(n=3)
-    array([0.36787944117144233, 0.22313016014842982, 0.1353352832366127])
+    array([1., 0.60653066, 0.36787944])
 
     """
-    return np.exp(-(np.arange(1, n + 1) + 1) / 2)
+    return np.exp(-(np.arange(0, n)) / 2)
 
 
 def _eigenvalues_wiener(

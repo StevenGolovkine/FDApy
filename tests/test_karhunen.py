@@ -50,20 +50,20 @@ class TestEigenvaluesLinear(unittest.TestCase):
 class TestEigenvaluesExponential(unittest.TestCase):
     def test_eigenvalues_exponential_default(self):
         expected_output = np.array(
-            [0.36787944117144233, 0.22313016014842982, 0.1353352832366127]
+            [1., 0.60653066, 0.36787944]
         )
         result = _eigenvalues_exponential()
         np.testing.assert_allclose(result, expected_output)
 
     def test_eigenvalues_exponential_n4(self):
         expected_output = np.array(
-            [0.36787944, 0.22313016, 0.13533528, 0.082085]
+            [1., 0.60653066, 0.36787944, 0.22313016]
         )
         result = _eigenvalues_exponential(n=4)
         np.testing.assert_allclose(result, expected_output)
 
     def test_eigenvalues_exponential_n1(self):
-        expected_output = np.array([0.36787944117144233])
+        expected_output = np.array([1.])
         result = _eigenvalues_exponential(n=1)
         np.testing.assert_allclose(result, expected_output)
 
@@ -103,7 +103,7 @@ class TestSimulateEigenvalues(unittest.TestCase):
 
     def test_exponential_eigenvalues(self):
         expected_output = np.array(
-            [0.36787944117144233, 0.22313016014842982, 0.1353352832366127]
+            [1., 0.60653066, 0.36787944]
         )
         output = _simulate_eigenvalues('exponential', n=3)
         np.testing.assert_allclose(output, expected_output)
@@ -206,8 +206,8 @@ class TestInitializeClusterStd(unittest.TestCase):
         n_features = 2
         n_clusters = 3
         expected = np.array([
-            [0.36787944, 0.36787944, 0.36787944],
-            [0.22313016, 0.22313016, 0.22313016]
+            [1., 1., 1.],
+            [0.60653066, 0.60653066, 0.60653066]
         ])
         result = _initialize_clusters_std(
             n_features, n_clusters, clusters_std='exponential'
