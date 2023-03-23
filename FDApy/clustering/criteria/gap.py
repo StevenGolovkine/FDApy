@@ -274,7 +274,7 @@ class Gap():
         ----------
         data: npt.NDArray[np.float64], shape=(n_obs, n_components)
             Data as an array of shape (n_obs, n_components).
-        cluster_array: Iterable[np.int64]
+        n_clusters: Iterable[np.int64]
             The different number of clusters to try.
         n_refs: np.int64, default=3
             Number of random reference data sets used as inertia reference to
