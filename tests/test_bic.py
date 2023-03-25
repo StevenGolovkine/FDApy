@@ -109,14 +109,14 @@ class TestBIC(unittest.TestCase):
     def test_call_method(self) -> None:
         self.assertIsInstance(self.bic(self.data, self.n_clusters), np.int_)
 
-    # @patch('concurrent.futures.ProcessPoolExecutor')
-    # @patch('concurrent.futures.as_completed')
-    # @patch('multiprocessing.cpu_count')
-    # def test_call_multiprocessing(
-    #     self, mock_process, mock_completed, mock_cpu_count
-    # ):
-    #     bic = BIC(n_jobs=2, parallel_backend='multiprocessing')
-    #     bic.__call__(self.data, self.n_clusters)
+    #@patch('concurrent.futures.ProcessPoolExecutor')
+    #@patch('concurrent.futures.as_completed')
+    def test_call_multiprocessing(
+        self # , mock_process, mock_completed
+    ):
+        bic = BIC(n_jobs=2, parallel_backend='multiprocessing')
+        bic.__call__(self.data, self.n_clusters)
+        print(bic.bic)
 
     def test_bic_df_attr(self) -> None:
         self.bic(self.data, self.n_clusters)
