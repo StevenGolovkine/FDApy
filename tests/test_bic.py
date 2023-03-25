@@ -100,7 +100,8 @@ class TestBIC(unittest.TestCase):
     def test_call_multiprocessing(self):
         bic = BIC(n_jobs=2, parallel_backend='multiprocessing')
         bic.__call__(self.data, self.n_clusters)
-        print(bic.bic)
+        self.assertIsInstance(bic.n_clusters, np.int_)
+        self.assertGreater(bic.n_clusters, 0)
 
     def test_bic_df_attr(self) -> None:
         self.bic(self.data, self.n_clusters)
