@@ -11,8 +11,6 @@ import numpy as np
 import numpy.typing as npt
 
 from typing import Generator, Iterable, NamedTuple, Optional
-
-from concurrent.futures import ProcessPoolExecutor, as_completed
 from joblib import Parallel, delayed
 from multiprocessing import cpu_count
 
@@ -210,19 +208,10 @@ class BIC():
             Generator that contains the BIC for each number of clusters.
 
         """
-        print('Coucou, I am running multiprocessing!')
         for result in Parallel(n_jobs=self.n_jobs)(delayed(_compute_bic)(
             data, n_clusters) for n_clusters in cluster_array
         ):
             yield result
-        #with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
-        #    jobs = [
-        #        executor.submit(_compute_bic, data, n_clusters)
-        #        for n_clusters in cluster_array
-        #    ]
-        #    print(jobs)
-        #print(jobs)
-        #return (future.result() for future in as_completed(jobs))
 
     def _process_non_parallel(
         self,
