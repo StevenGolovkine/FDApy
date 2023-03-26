@@ -77,6 +77,16 @@ class TestBICPrint(unittest.TestCase):
         self.assertEqual(repr(bic), 'BIC(n_jobs=1, parallel_backend=None)')
 
 
+class TestParallel(unittest.TestCase):
+    def test_process_parallel(self):
+        data = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+        cluster_array = [1, 2, 3]
+        bic = BIC(n_jobs=2, parallel_backend='multiprocessing')
+
+        bic_results = list(bic._process_with_multiprocessing(data, cluster_array))
+        self.assertEqual(len(bic_results), 3)
+        self.assertIsInstance(bic_results[0], _BICResult)
+
 class TestNonParallel(unittest.TestCase):
     def test_process_non_parallel(self):
         data = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])

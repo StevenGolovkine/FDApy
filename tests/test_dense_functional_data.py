@@ -89,7 +89,6 @@ class TestDenseFunctionalData(unittest.TestCase):
 
     def test_as_irregular(self):
         irreg_data = self.func_data.as_irregular()
-        print(irreg_data.argvals)
         expected_argvals = {'input_dim_0': {
             0: np.array([1, 2, 3, 4, 5]),
             1: np.array([1, 2, 3, 4, 5]),
