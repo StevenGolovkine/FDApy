@@ -157,7 +157,7 @@ class BIC():
     def __call__(
         self,
         data: npt.NDArray[np.float64],
-        n_clusters: Iterable[np.int64]
+        cluster_array: Iterable[np.int64]
     ) -> np.int64:
         """Compute the BIC statistic.
 
@@ -165,7 +165,7 @@ class BIC():
         ----------
         data: npt.NDArray[np.float64], shape=(n_obs, n_components)
             Data as an array of shape (n_obs, n_components).
-        n_clusters: Iterable[np.int64]
+        cluster_array: Iterable[np.int64]
             The different number of clusters to try.
 
         Returns
@@ -181,7 +181,7 @@ class BIC():
 
         # Compute BIC for each cluster count
         bic_df = pd.DataFrame.from_records(
-            engine(data, n_clusters), columns=['n_clusters', 'value']
+            engine(data, cluster_array), columns=['n_clusters', 'value']
         )
 
         self.bic = bic_df.sort_values(by='n_clusters')
