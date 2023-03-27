@@ -87,6 +87,7 @@ class TestParallel(unittest.TestCase):
         self.assertEqual(len(bic_results), 3)
         self.assertIsInstance(bic_results[0], _BICResult)
 
+
 class TestNonParallel(unittest.TestCase):
     def test_process_non_parallel(self):
         data = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])

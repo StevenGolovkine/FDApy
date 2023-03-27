@@ -95,7 +95,9 @@ class BIC():
 
     where :math:`L` is an estimation of the likelihood of the model, :math:`d`
     is the number of parameters of the model and :math:`N` is the number of
-    samples.
+    samples. The estimation of the number of clusters in the dataset in then
+    given as the value that minimise the BIC. Considering looking at the
+    paper [1]_ for detailled information.
 
     Parameters
     ----------
@@ -208,8 +210,9 @@ class BIC():
             Generator that contains the BIC for each number of clusters.
 
         """
-        for result in Parallel(n_jobs=self.n_jobs)(delayed(_compute_bic)(
-            data, n_clusters) for n_clusters in cluster_array
+        for result in Parallel(n_jobs=self.n_jobs)(
+            delayed(_compute_bic)(data, n_clusters)
+            for n_clusters in cluster_array
         ):
             yield result
 

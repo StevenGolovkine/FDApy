@@ -15,8 +15,7 @@ import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 
 from typing import Callable, Dict, Generator, Optional, Iterable, NamedTuple
-
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from joblib import Parallel, delayed
 from multiprocessing import cpu_count
 
 from sklearn.cluster import KMeans
@@ -147,7 +146,7 @@ def _clustering(
 
     Parameters
     ----------
-    data: npt.NDArray
+    data: npt.NDArray[np.float64]
         Data.
     n_clusters: np.int64
         The number of clusters to form.
@@ -168,12 +167,23 @@ def _clustering(
 # Class Gap
 
 class Gap():
-    """A module for the computation of the Gap statistic.
+    r"""Gap Statistic
 
-    This module is used to compute the Gap statistic for a given dataset and
-    a given number of cluster k. The Gap statistic is defined in the article
-    of Tibshirani, Walther and Hastie - Estimating the number of clusters in a
-    data set via the gap statistic.
+    This module computes the Gap statistic [2]_ for a given dataset and number
+    of clusters ``n_clusters``. Assuming the Euclidean distance as a measure of
+    proximity between two observations, we note :math:`W_k` the pooled
+    within-cluster sum of squares around the cluster means of the cluster
+    :math:`k`. The Gap statistic is then given by
+
+    ..math::
+
+        Gap(k) = \mathbb{E}(\log W_k) - \log W_k,
+
+    where :math:`\mathbb{E}` denotes the expectation under a sample of size
+    :math:`n` from the reference distribution. The estimation of the number of
+    clusters in the dataset in then given as the value that maximise the Gap
+    statistics. Considering looking at the paper [2]_ for detailled
+    information.
 
     Parameters
     ----------
@@ -205,13 +215,13 @@ class Gap():
 
     References
     ----------
-    .. [1] Tibshirani R., Walther G., and Hastie T. (2001), Estimating the
-        number of clusters in a data setp via the gap statistic, Journal of the
-        Royal Statistical Society, Series B, 63(2), 411--423.
-    .. [2] Mohajer M., Englmeier K.-H., and Schmid V. J., (2010), A comparison
+    .. [1] Mohajer M., Englmeier K.-H., and Schmid V. J., (2010), A comparison
         of Gap statistic definitions with and without logarithm function,
         Technical Report Number 096, Department of Statistics, University of
         Munich.
+    .. [2] Tibshirani R., Walther G., and Hastie T. (2001), Estimating the
+        number of clusters in a data setp via the gap statistic, Journal of the
+        Royal Statistical Society, Series B, 63(2), 411--423.
     .. [3] Granger M., https://github.com/milesgranger/gap_statistic
 
     """
@@ -297,7 +307,7 @@ class Gap():
                                'sk': [],
                                'gap_value_star': [],
                                'sk_star': []})
-        for gap_results in engine(data, n_refs, n_clusters):
+        for gap_results in engine(data, n_clusters, n_refs):
             gap_df = gap_df.append(
                 {
                     'n_clusters': int(gap_results.k),
@@ -452,8 +462,8 @@ class Gap():
     def _process_with_multiprocessing(
         self,
         data: npt.NDArray[np.float64],
-        n_refs: np.int64,
-        cluster_array: Iterable[np.int64]
+        cluster_array: Iterable[np.int64],
+        n_refs: np.int64 = 5
     ) -> Generator[_GapResult, None, None]:
         """Compute Gap statistics with multiprocessing parallelization.
 
@@ -461,11 +471,11 @@ class Gap():
         ----------
         data: npt.NDArray[np.float64], shape=(n_obs, n_components)
             Data as an array of shape (n_obs, n_components).
-        n_refs: np.int64
-            Number of random reference data sets used as inertia reference to
-            actual data.
         cluster_array: Iterable[np.int64]
             The different number of clusters to try.
+        n_refs: np.int64, default=5
+            Number of random reference data sets used as inertia reference to
+            actual data.
 
         Returns
         -------
@@ -473,19 +483,17 @@ class Gap():
             Generator that contains the BIC for each number of clusters.
 
         """
-        with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
-            jobs = [executor.submit(
-                    self._compute_gap, data, n_clusters, n_refs, self.metric)
-                    for n_clusters in cluster_array
-                    ]
-            for future in as_completed(jobs):
-                yield future.result()
+        for result in Parallel(n_jobs=self.n_jobs)(
+            delayed(self._compute_gap)(data, n_clusters, n_refs, self.metric)
+            for n_clusters in cluster_array
+        ):
+            yield result
 
     def _process_non_parallel(
         self,
         data: npt.NDArray[np.float64],
-        n_refs: np.int64,
-        cluster_array: Iterable[np.int64]
+        cluster_array: Iterable[np.int64],
+        n_refs: np.int64 = 5
     ) -> Generator[_GapResult, None, None]:
         """Compute Gap statistics without parallelization.
 
@@ -493,11 +501,11 @@ class Gap():
         ----------
         data: npt.NDArray[np.float64], shape=(n_obs, n_components)
             Data as an array of shape (n_obs, n_components).
-        n_refs: np.int64
-            Number of random reference data sets used as inertia reference to
-            actual data.
         cluster_array: Iterable[np.int64]
             The different number of clusters to try.
+        n_refs: np.int64, default=5
+            Number of random reference datasets used as inertia reference to
+            actual data.
 
         Returns
         -------
@@ -505,8 +513,7 @@ class Gap():
             Generator that contains the BIC for each number of clusters.
 
         """
-        for gap_results in [
+        return (
             self._compute_gap(data, n_clusters, n_refs, self.metric)
             for n_clusters in cluster_array
-        ]:
-            yield gap_results
+        )
