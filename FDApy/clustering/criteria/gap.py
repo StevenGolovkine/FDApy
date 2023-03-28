@@ -82,8 +82,10 @@ def _compute_dispersion(
         The dispersion of the points in their cluster.
 
     """
-    distances = [pairwise_distances(data[labels == i], metric=metric)
-                 for i in np.unique(labels)]
+    distances = [
+        pairwise_distances(data[labels == label], metric=metric)
+        for label in np.unique(labels)
+    ]
     return np.sum([np.sum(d) / (2 * d.shape[0]) for d in distances])
 
 
@@ -93,7 +95,7 @@ def _generate_uniform(
     low: np.float64 = 0.0,
     high: np.float64 = 1.0,
     runif: Callable = np.random.uniform
-) -> npt.NDArray:
+) -> npt.NDArray[np.float64]:
     """Generate data according to a uniform distribution.
 
     Parameters
@@ -113,7 +115,7 @@ def _generate_uniform(
 
     Returns
     -------
-    npt.NDArray
+    npt.NDArray[np.float64]
         Generated samples.
 
     """
@@ -123,14 +125,37 @@ def _generate_uniform(
 def _generate_pca(
     data: npt.NDArray[np.float64],
     n_obs: np.int64,
-    a: np.float64 = 0.,
-    b: np.float64 = 1.
-) -> np.ndarray:
-    """Generate data according to a uniform distribution after PCA."""
+    low: np.float64 = 0.,
+    high: np.float64 = 1.,
+    runif: Callable = np.random.uniform
+) -> npt.NDArray[np.float64]:
+    """Generate data according to a uniform distribution after PCA.
+
+    Parameters
+    ----------
+    data: npt.NDArray[np.float64], shape=(n_obs, n_features)
+        Data.
+    n_obs: np.int64
+        Number of observations to be generated.
+    low: np.float64, default=0.0
+        Lower boundary of the output interval. All values generated will be
+        greater than or equal to ``low``.
+    high: np.float64, default=1.0
+        Upper boundary of the output interval. All values generated will be
+        less than or equal to high.
+    runif: Callable, default=np.random.uniform
+        Random data generator.
+
+    Returns
+    -------
+    npt.NDArray[np.float64]
+        Generated samples.
+
+    """
     data_centered = data - np.mean(data, axis=0)
     _, _, eigenvec = np.linalg.svd(data_centered)
     data_prime = np.matmul(data_centered, eigenvec)
-    data_transfo_prime = _generate_uniform(data_prime, n_obs, a, b)
+    data_transfo_prime = _generate_uniform(data_prime, n_obs, low, high, runif)
     data_transfo = np.matmul(data_transfo_prime, eigenvec.transpose())
     return data_transfo + np.mean(data, axis=0)
 
@@ -194,11 +219,11 @@ class Gap():
         and if ``n_jobs > cpu_count()``, it will be set to ``cpu_count()``.
     parallel_backend: np.str_, default='multiprocessing'
         Parallel backend used for the computation.
-    clusterer: Callable, default=None
+    clusterer: Optional[Callable], default=None
         An user-provided function for the clustering of the dataset. The
         function has to be compliant with sklearn clutering class and
         return only the labels such as the `predict` function.
-    clusterer_kwargs: Dict, default=None
+    clusterer_kwargs: Optional[Dict], default=None
         The parameters to be used by the clustering function.
     generating_process: np.str_, default='pca'
         The generating process of the data for the reference datasets. One
@@ -209,9 +234,10 @@ class Gap():
     Attributes
     ----------
     n_clusters: int
-        Best number of clusters found
-    gap_df: pd.DataFrame
-        Gap value for different values of n_clusters.
+        Best number of clusters found. It is defined as the number of clusters
+        that maximise the value of the Gap (according to the definition).
+    gap: pd.DataFrame
+        Gap value for different values of ``n_clusters``.
 
     References
     ----------
@@ -230,8 +256,8 @@ class Gap():
         self,
         n_jobs: np.int64 = -1,
         parallel_backend: np.str_ = "multiprocessing",
-        clusterer: Callable = None,
-        clusterer_kwargs: Dict = None,
+        clusterer: Optional[Callable] = None,
+        clusterer_kwargs: Optional[Dict] = None,
         generating_process: np.str_ = 'pca',
         metric: np.str_ = 'euclidean'
     ) -> None:
@@ -257,8 +283,10 @@ class Gap():
         elif generating_process == 'pca':
             self.generate_process = _generate_pca
         else:
-            raise ValueError("The generating process for the reference data"
-                             " have to be 'uniform' or 'pca'.")
+            raise ValueError(
+                "The generating process for the reference data "
+                "have to be 'uniform' or 'pca'."
+            )
         self.metric = metric if metric is not None else 'euclidean'
 
     def __str__(self) -> str:
@@ -275,7 +303,7 @@ class Gap():
     def __call__(
         self,
         data: npt.NDArray[np.float64],
-        n_clusters: Iterable[np.int64],
+        cluster_array: Iterable[np.int64],
         n_refs: np.int64 = 3
     ) -> int:
         """Compute the Gap statistic.
@@ -284,7 +312,7 @@ class Gap():
         ----------
         data: npt.NDArray[np.float64], shape=(n_obs, n_components)
             Data as an array of shape (n_obs, n_components).
-        n_clusters: Iterable[np.int64]
+        cluster_array: Iterable[np.int64]
             The different number of clusters to try.
         n_refs: np.int64, default=3
             Number of random reference data sets used as inertia reference to
@@ -307,7 +335,7 @@ class Gap():
                                'sk': [],
                                'gap_value_star': [],
                                'sk_star': []})
-        for gap_results in engine(data, n_clusters, n_refs):
+        for gap_results in engine(data, cluster_array, n_refs):
             gap_df = gap_df.append(
                 {
                     'n_clusters': int(gap_results.k),
@@ -463,7 +491,7 @@ class Gap():
         self,
         data: npt.NDArray[np.float64],
         cluster_array: Iterable[np.int64],
-        n_refs: np.int64 = 5
+        n_refs: np.int64 = 3
     ) -> Generator[_GapResult, None, None]:
         """Compute Gap statistics with multiprocessing parallelization.
 
@@ -473,7 +501,7 @@ class Gap():
             Data as an array of shape (n_obs, n_components).
         cluster_array: Iterable[np.int64]
             The different number of clusters to try.
-        n_refs: np.int64, default=5
+        n_refs: np.int64, default=3
             Number of random reference data sets used as inertia reference to
             actual data.
 

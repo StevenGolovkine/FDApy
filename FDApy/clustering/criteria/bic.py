@@ -115,7 +115,7 @@ class BIC():
         Best number of clusters found. It is defined as the number of clusters
         that minimize the value of the BIC (according to the definition).
     bic: pd.DataFrame
-        BIC values for different values of n_clusters.
+        BIC values for different values of ``n_clusters``.
 
     Notes
     -----
