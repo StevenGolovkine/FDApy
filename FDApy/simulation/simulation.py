@@ -5,8 +5,6 @@
 Simulation class
 ----------------
 
-This module defines different simulation scenarios.
-
 """
 import numpy as np
 

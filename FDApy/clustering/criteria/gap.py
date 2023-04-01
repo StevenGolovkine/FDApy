@@ -6,7 +6,6 @@ Gap Statistic
 -------------
 
 """
-
 import pandas as pd
 import numpy as np
 import numpy.typing as npt
@@ -192,7 +191,7 @@ def _clustering(
 # Class Gap
 
 class Gap():
-    r"""Gap Statistic
+    r"""Gap Statistic.
 
     This module computes the Gap statistic [2]_ for a given dataset and number
     of clusters ``n_clusters``. Assuming the Euclidean distance as a measure of

@@ -5,12 +5,6 @@
 Functional Principal Components Analysis
 ----------------------------------------
 
-This module is used to compute the eigencomponents of a functional dataset.
-The class ``UFPCA`` concerns the decomposition of ``DenseFunctionalData``
-object. The class ``MFPCA`` concerns the decomposition of
-``MultivariateFunctionalData`` object. In both methods, multidimensional data
-can be considered (such as curves, images).
-
 """
 import numpy as np
 import numpy.typing as npt

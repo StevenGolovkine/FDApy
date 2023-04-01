@@ -6,3 +6,9 @@ exclude_paths:
     - 'examples/**'
     - 'tests/**'
     - 'docs/**'
+
+pylint:
+    enabled: true
+    config:
+        disable:
+            - D400

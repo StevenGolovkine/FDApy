@@ -5,8 +5,6 @@
 Karhunen-Loève decomposition
 ----------------------------
 
-This module defines simulation based on the Karhunen-Loève decomposition.
-
 """
 import numpy as np
 import numpy.typing as npt
