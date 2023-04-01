@@ -20,4 +20,3 @@ pydocstyle:
             - "pep257"
         add-ignore:
             - D400
-            - D205
