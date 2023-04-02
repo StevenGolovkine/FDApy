@@ -223,7 +223,7 @@ class UFPCA():
             argvals = data.argvals['input_dim_0']
             covariance = _compute_covariance(
                 eigenvalues / data.n_obs, eigenfunctions.T
-                )
+            )
             self.covariance = DenseFunctionalData(
                 {'input_dim_0': argvals, 'input_dim_1': argvals},
                 covariance[np.newaxis]
@@ -627,11 +627,11 @@ class MFPCA():
         eigenvectors = np.fliplr(eigenvectors)
 
         # Step 4: Estimation of the multivariate eigenfunctions.
-        M = self.n_components[0]
-        if isinstance(M, float):
-            nb_axis = sum(eigenvalues.cumsum() / eigenvalues.sum() < M)
-        elif isinstance(M, int):
-            nb_axis = M
+        npc = self.n_components[0]
+        if isinstance(npc, float):
+            nb_axis = sum(eigenvalues.cumsum() / eigenvalues.sum() < npc)
+        elif isinstance(npc, int):
+            nb_axis = npc
         else:
             nb_axis = eigenvectors.shape[1]
         eigenvectors = eigenvectors[:, :nb_axis]

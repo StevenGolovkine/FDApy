@@ -2,11 +2,12 @@ strictness: veryhigh
 max-line-length: 79
 doc-warnings: yes
 
-exclude:
-    - 'examples/**'
-    - 'tests/**'
-    - 'docs/**'
-    - '.github/**'
+ignore-paths:
+    - .github
+    - build
+    - docs
+    - examples
+    - tests
 
 requirements:
     - requirements.txt
@@ -22,13 +23,9 @@ mccabe:
 
 pep8:
     run: true
-    disable:
-        - D400
 
 pep257:
     run: true
-    disable:
-        - D400
 
 pydocstyle:
     run: true
@@ -39,3 +36,5 @@ pydocstyle:
         - D212
         - D213
         - D400
+        - D415
+        - N803

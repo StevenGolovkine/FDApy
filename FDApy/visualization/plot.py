@@ -65,14 +65,12 @@ def _plot_1d(
 
     """
     if colors is None:
-        COLORS = mpl.cm.jet(np.linspace(0, 1, len(np.unique(labels))))
-    else:
-        COLORS = colors
+        colors = mpl.cm.jet(np.linspace(0, 1, len(np.unique(labels))))
 
     if isinstance(data, DenseFunctionalData):
         for obs, l in zip(data.values, labels):
             ax.plot(
-                data.argvals['input_dim_0'], obs, c=COLORS[l], **plt_kwargs
+                data.argvals['input_dim_0'], obs, c=colors[l], **plt_kwargs
             )
     elif isinstance(data, IrregularFunctionalData):
         for argval, value, l in zip(
@@ -81,9 +79,9 @@ def _plot_1d(
             labels
         ):
             ax.plot(
-                argval, value, c=COLORS[l], **plt_kwargs
+                argval, value, c=colors[l], **plt_kwargs
             )
-            ax.scatter(argval, value, c=[COLORS[l]], **plt_kwargs)
+            ax.scatter(argval, value, c=[colors[l]], **plt_kwargs)
     else:
         raise TypeError('Data type not recognized!')
     return ax
@@ -121,9 +119,7 @@ def _plot_2d(
 
     """
     if colors is None:
-        COLORS = mpl.cm.jet(np.linspace(0, 1, len(np.unique(labels))))
-    else:
-        COLORS = colors
+        colors = mpl.cm.jet(np.linspace(0, 1, len(np.unique(labels))))
 
     if isinstance(data, DenseFunctionalData):
         if data.n_obs == 1:
@@ -141,7 +137,7 @@ def _plot_2d(
                 indexing='ij'
             )
             for obs, l in zip(data.values, labels):
-                ax.plot_surface(x, y, obs, color=COLORS[l], **plt_kwargs)
+                ax.plot_surface(x, y, obs, color=colors[l], **plt_kwargs)
     elif isinstance(data, IrregularFunctionalData):
         raise NotImplementedError(
             "Currently 2d irregular functional data"
