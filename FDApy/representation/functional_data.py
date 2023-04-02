@@ -106,7 +106,7 @@ class FunctionalData(ABC):
         argvals: Any,
         values: Any
     ) -> None:
-        pass
+        """Check argvals values."""
 
     @staticmethod
     @abstractmethod
@@ -115,7 +115,7 @@ class FunctionalData(ABC):
         fdata2: Any,
         func: np.ufunc
     ) -> FunctionalData:
-        pass
+        """Perform computation."""
 
     def __init__(
         self,
@@ -302,7 +302,6 @@ class FunctionalData(ABC):
         basis: 'Basis'
     ) -> None:
         """Expand the FunctionalData into a basis."""
-        pass
 
     @abstractmethod
     def mean(
@@ -311,7 +310,6 @@ class FunctionalData(ABC):
         **kwargs: Any
     ) -> FunctionalData:
         """Compute an estimate of the mean."""
-        pass
 
     @abstractmethod
     def covariance(
@@ -321,14 +319,12 @@ class FunctionalData(ABC):
         **kwargs: Any
     ) -> FunctionalData:
         """Compute an estimate of the covariance."""
-        pass
 
     @abstractmethod
     def inner_product(
         self
     ) -> npt.NDArray:
         """Compute an estimate of the inner product matrix."""
-        pass
 
     @abstractmethod
     def smooth(
@@ -341,7 +337,6 @@ class FunctionalData(ABC):
         bandwidth: Optional[List[float]] = None
     ) -> FunctionalData:
         """Smooth the data."""
-        pass
 
 
 ###############################################################################
