@@ -257,7 +257,6 @@ class FunctionalData(ABC):
     @abstractmethod
     def range_obs(self) -> Tuple[float, float]:
         """Get the range of the observations of the object."""
-        pass
 
     @property
     def n_dim(self) -> int:
