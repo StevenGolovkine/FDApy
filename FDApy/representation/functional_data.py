@@ -1810,10 +1810,6 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
         """Remove all items from the list."""
         super().clear()
 
-    def sort(self, key: Callable = None, reverse: bool = False) -> None:
-        """Sort the items of the list in place."""
-        raise NotImplementedError
-
     def reverse(self) -> None:
         """Reserve the elements of the list in place."""
         super().reverse()

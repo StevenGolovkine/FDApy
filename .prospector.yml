@@ -28,4 +28,5 @@ pep257:
 pydocstyle:
     run: true
     disable:
+        - D213
         - D400

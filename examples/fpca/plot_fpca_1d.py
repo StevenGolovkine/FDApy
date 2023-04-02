@@ -95,7 +95,7 @@ scores = ufpca.transform(data, method='InnPro')
 _ = plt.scatter(scores[:, 0], scores[:, 1])
 
 ###############################################################################
-# Reconstruct the curves using the scores. 
+# Reconstruct the curves using the scores.
 data_recons = ufpca.inverse_transform(scores)
 
 ###############################################################################
