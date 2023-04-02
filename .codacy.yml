@@ -3,21 +3,6 @@
 ---
 
 exclude_paths:
-    - 'examples/**'
     - 'tests/**'
     - 'docs/**'
     - '.github/**'
-
-pylint:
-    enabled: true
-    config:
-        disable:
-            - D400
-pydocstyle:
-    enabled: true
-    config:
-        conventions:
-            - "numpy"
-            - "pep257"
-        add-ignore:
-            - D400

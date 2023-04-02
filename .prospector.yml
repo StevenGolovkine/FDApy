@@ -1,22 +1,31 @@
-doc-warnings: yes
 strictness: veryhigh
-max-line-length: 70
+max-line-length: 79
+doc-warnings: yes
+
+exclude:
+    - 'tests/**'
+    - 'docs/**'
+    - '.github/**'
+
 requirements:
     - requirements.txt
+
 pylint:
     run: false
+
 pyflakes:
     run: false
+
 mccabe:
     run: false
+
 pep8:
-    disable:
-      - E501
+    run: true
+
 pep257:
+    run: true
+
+pydocstyle:
+    run: true
     disable:
-      - D203
-      - D205
-      - D212
-      - D213
-      - D406
-      - D407
+        - D400
