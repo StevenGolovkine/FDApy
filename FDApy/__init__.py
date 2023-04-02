@@ -1,5 +1,4 @@
-"""
-FDApy package.
+"""FDApy package.
 
 It includes the modules:
     - representation: used for the definition of the different representation

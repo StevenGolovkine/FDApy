@@ -19,7 +19,7 @@ import warnings
 from abc import ABC, abstractmethod
 from collections import UserList
 from typing import (
-    cast, Any, Callable, Dict, Iterable, Iterator, Optional, List,
+    cast, Any, Dict, Iterable, Iterator, Optional, List,
     Tuple, TYPE_CHECKING, Union
 )
 
@@ -274,19 +274,16 @@ class FunctionalData(ABC):
     @abstractmethod
     def n_points(self) -> Dict[str, int]:
         """Get the mean number of sampling points."""
-        pass
 
     @property
     @abstractmethod
     def range_dim(self) -> Dict[str, Tuple[int, int]]:
         """Range of the `argvals` for each of the dimension."""
-        pass
 
     @property
     @abstractmethod
     def shape(self) -> Dict[str, int]:
         """Shape of the data for each dimension."""
-        pass
 
     @abstractmethod
     def is_compatible(

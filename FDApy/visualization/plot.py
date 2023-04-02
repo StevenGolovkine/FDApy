@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*-coding:utf8 -*
-"""
-Module for the plotting of functional data.
+"""Module for the plotting of functional data.
 
 This module is used to create plot of diverse type of functional data.
 Currently, there is an implementation for dense and irregular functional
