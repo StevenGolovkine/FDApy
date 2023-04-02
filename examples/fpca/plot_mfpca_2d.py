@@ -74,7 +74,7 @@ scores = mfpca.transform(data, method='NumInt')
 _ = plt.scatter(scores[:, 0], scores[:, 1])
 
 ###############################################################################
-# Reconstruct the curves using the scores. 
+# Reconstruct the curves using the scores.
 data_recons = mfpca.inverse_transform(scores)
 
 ###############################################################################
@@ -109,7 +109,7 @@ scores = mfpca.transform(data, method='InnPro')
 _ = plt.scatter(scores[:, 0], scores[:, 1])
 
 ###############################################################################
-# Reconstruct the surfaces using the scores. 
+# Reconstruct the surfaces using the scores.
 data_recons = mfpca.inverse_transform(scores)
 
 ###############################################################################

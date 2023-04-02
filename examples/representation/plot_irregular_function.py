@@ -24,11 +24,10 @@ from FDApy.visualization.plot import plot
 # defined as a dictionary where each entry is another dictionary that
 # represents an input dimension (one entry corresponds to curves, two entries
 # correspond to surface, ...). Each entry of the dictionary corresponds to the
-# sampling points of one observation. 
+# sampling points of one observation.
 # The values of the functional data are defined in a dictionary where each entry
 # represents an observation as an ``npt.NDArray``. Each entry should have the
 # same dimension has the corresponding entry in the ``argvals`` dictionary.
-# 
 
 ###############################################################################
 # For unidimensional functional data

@@ -34,7 +34,7 @@ centers = random_state.multivariate_normal(mean, covariance, size=n_functions)
 ###############################################################################
 # We simulate :math:`N = 20` curves on the one-dimensional observation grid
 # :math:`\{0, 0.01, 0.02, \cdots, 1\}`, based on the first
-# :math:`K = 25` Fourier basis functions on :math:`[0, 1]`. The clusters are 
+# :math:`K = 25` Fourier basis functions on :math:`[0, 1]`. The clusters are
 # defined through the coefficients in the Karhunen-Loève decomposition. The
 # centers of the clusters are generated as Gaussian random variables with
 # parameters defined by `mean` and `covariance`. We also consider an

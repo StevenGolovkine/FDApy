@@ -196,7 +196,6 @@ class Simulation(ABC):
         **kwargs
     ) -> None:
         """Simulate a new set of curves."""
-        pass
 
     def add_noise(
         self,

@@ -52,8 +52,8 @@ _ = plot(kl.noisy_data)
 ###############################################################################
 # **Sparsification**
 # ---
-# We can generates a sparsified version of the functional data object by 
-# randomly removing a certain percentage of the sampling points. The percentage 
+# We can generates a sparsified version of the functional data object by
+# randomly removing a certain percentage of the sampling points. The percentage
 # of retain samplings points can be supplied by the user. In this example, the
 # retained number of observations will be different for each curve and be
 # randomly drawn between :math:`0.45` and :math:`0.55`.

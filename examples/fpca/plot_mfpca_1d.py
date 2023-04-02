@@ -71,7 +71,7 @@ scores = mfpca.transform(data, method='NumInt')
 _ = plt.scatter(scores[:, 0], scores[:, 1])
 
 ###############################################################################
-# Reconstruct the curves using the scores. 
+# Reconstruct the curves using the scores.
 data_recons = mfpca.inverse_transform(scores)
 
 ax = plot_multivariate(data.get_obs(idx))
@@ -101,7 +101,7 @@ scores = mfpca.transform(data, method='InnPro')
 _ = plt.scatter(scores[:, 0], scores[:, 1])
 
 ###############################################################################
-# Reconstruct the curves using the scores. 
+# Reconstruct the curves using the scores.
 data_recons = mfpca.inverse_transform(scores)
 
 ax = plot_multivariate(data.get_obs(idx))

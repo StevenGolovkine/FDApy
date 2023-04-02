@@ -6,18 +6,18 @@ Examples of simulation using the Karhunen-Loève decomposition.
 """
 
 ###############################################################################
-# The simulation of univariate functional data 
+# The simulation of univariate functional data
 # :math:`X: \mathcal{T} \rightarrow \mathbb{R}` is based on the truncated
 # Karhunen-Loève representation of :math:`X`. Consider that the representation
 # is truncated at :math:`K` components, then, for a particular realization
 # :math:`i` of the process :math:`X`:
 #
 # .. math::
-#       X_i(t) = \mu(t) + \sum_{k = 1}^K c_{i, k}\phi_k(t), 
+#       X_i(t) = \mu(t) + \sum_{k = 1}^K c_{i, k}\phi_k(t),
 #       \quad t \in \mathcal{T}
 #
 # with a common mean function :math:`\mu(t)` and eigenfunctions
-# :math:`\phi_k, k = 1, \cdots, K`. The scores :math:`c_{i, k}` are the 
+# :math:`\phi_k, k = 1, \cdots, K`. The scores :math:`c_{i, k}` are the
 # projection of the curves :math:`X_i` onto the eigenfunctions :math:`\phi_k`.
 # These scores are random variables with mean :math:`0`` and variance
 # :math:`\lambda_k`, which are the eigenvalues associated to each

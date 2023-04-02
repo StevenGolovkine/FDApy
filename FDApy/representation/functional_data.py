@@ -19,7 +19,7 @@ import warnings
 from abc import ABC, abstractmethod
 from collections import UserList
 from typing import (
-    cast, Any, Dict, Iterable, Iterator, Optional, List,
+    cast, Any, Callable, Dict, Iterable, Iterator, Optional, List,
     Tuple, TYPE_CHECKING, Union
 )
 
@@ -143,7 +143,6 @@ class FunctionalData(ABC):
         index: int
     ) -> FunctionalData:
         """Override getitem function, called when self[index]."""
-        pass
 
     def __add__(
         self,
@@ -616,7 +615,7 @@ class DenseFunctionalData(FunctionalData):
 
         """
         new_argvals: IrregArgvals = dict.fromkeys(self.argvals.keys(), {})
-        for dim in new_argvals.keys():
+        for dim in new_argvals:
             temp = {}
             for idx in range(self.n_obs):
                 temp[idx] = self.argvals[dim]
@@ -1812,7 +1811,7 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
         """Remove all items from the list."""
         super().clear()
 
-    def sort(self, *args: Any, **kwargs: Any) -> None:
+    def sort(self, key: Callable = None, reverse: bool = False) -> None:
         """Sort the items of the list in place."""
         raise NotImplementedError
 

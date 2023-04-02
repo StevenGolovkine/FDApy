@@ -835,8 +835,8 @@ class FCUBT():
     def _map_grow_join(self) -> Dict[N, N]:
         """Map results from grow to join step."""
         mapping = {}
-        for node1 in self.mapping_grow.keys():
-            for node2 in self.mapping_join.keys():
+        for node1 in self.mapping_grow:
+            for node2 in self.mapping_join:
                 if isinstance(node2.identifier, tuple):
                     if node1.identifier == node2.identifier:
                         mapping[node1] = node2

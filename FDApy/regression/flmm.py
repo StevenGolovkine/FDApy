@@ -354,7 +354,6 @@ class FLMM():
         TODO: Implement the method.
 
         """
-        pass
 
 
 def xtx_entry_(x1, x2, z1, z2):

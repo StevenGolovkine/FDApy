@@ -8,14 +8,14 @@ Examples of simulation using the multivariate Karhunen-Loève decomposition.
 ###############################################################################
 # Multivariate functional data consist of independent trajectories of a
 # vector-valued stochastic process
-# :math:`X = (X^{(1)}, \dots, X^{(P)})^\top, P \geq 1`. Each coordinate 
+# :math:`X = (X^{(1)}, \dots, X^{(P)})^\top, P \geq 1`. Each coordinate
 # :math:`X^{(p)}: \mathcal{T}_p \rightarrow \mathbb{R}` is assumed to be a
 # squared-integrable real-valued functions defined on :math:`\mathcal{T}_p`.
-# The simulation of multivariate functional data 
+# The simulation of multivariate functional data
 # :math:`X` is based on the truncated multivariate Karhunen-Loève
 # representation of :math:`X`. For a particular realization :math:`i` of the
 # process :math:`X`:
-# 
+#
 # .. math::
 #       X_i(t) = \mu(t) + \sum_{k = 1}^{K} c_{i,k}\phi_k(t),
 #       \quad t \in \mathcal{T}
