@@ -3,6 +3,7 @@ max-line-length: 79
 doc-warnings: yes
 
 exclude:
+    - 'examples/**'
     - 'tests/**'
     - 'docs/**'
     - '.github/**'
@@ -28,6 +29,7 @@ pep257:
 pydocstyle:
     run: true
     disable:
+        - D203
         - D204
         - D205
         - D212
