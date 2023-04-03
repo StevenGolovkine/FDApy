@@ -729,7 +729,7 @@ def _compute_covariance(
 ##############################################################################
 def _eigh(
     matrix: npt.NDArray[np.float64],
-    UPLO: str = 'L'
+    UPLO: str = 'L'  # noqa
 ) -> Tuple[npt.NDArray, npt.NDArray]:
     """Return the eigenvalues and eigenvectors of a real symmetrix matrix.
 

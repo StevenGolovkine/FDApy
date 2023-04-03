@@ -30,11 +30,11 @@ pep257:
 pydocstyle:
     run: true
     disable:
-        - D203
+        # Whitespace issues
         - D204
         - D205
         - D212
         - D213
+        # Docstring content issues
         - D400
         - D415
-        - N803
