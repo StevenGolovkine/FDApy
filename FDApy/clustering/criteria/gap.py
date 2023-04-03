@@ -13,12 +13,13 @@ import matplotlib.pyplot as plt
 
 from matplotlib.axes import Axes
 
-from typing import Callable, Dict, Generator, Optional, Iterable, NamedTuple
+from typing import (
+    Callable, Dict, Generator, Optional, Iterable, NamedTuple, Union
+)
 from joblib import Parallel, delayed
 from multiprocessing import cpu_count
 
 from sklearn.cluster import KMeans
-from sklearn.metrics import pairwise_distances
 
 
 ##############################################################################
@@ -55,7 +56,8 @@ class _GapResult(NamedTuple):
 def _compute_dispersion(
         data: npt.NDArray[np.float64],
         labels: npt.NDArray[np.float64],
-        metric: np.str_ = 'euclidean'
+        centroids: npt.NDArray[np.float64],
+        metric: Optional[Union[np.str_, np.int64]] = None
 ) -> np.float64:
     r"""Compute the dispersion of a given dataset.
 
@@ -70,9 +72,11 @@ def _compute_dispersion(
         Data.
     labels: npt.NDArray[np.float64], shape=(n_obs,)
         Label for each observation.
-    metric: np.str_, default='euclidean'
+    centroids: npt.NDArray[np.float64]
+        Center of the clusters.
+    metric: Optional[Union[np.str_, np.int64]], default=None
         The metric used for the computation of the distance between the
-        observations. See ``sklearn.metrics.pairwise_distance`` documentation
+        observations. See ``numpy.linalg.norm`` documentation
         for the list of available metric function.
 
     Returns
@@ -81,11 +85,10 @@ def _compute_dispersion(
         The dispersion of the points in their cluster.
 
     """
-    distances = [
-        pairwise_distances(data[labels == label], metric=metric)
-        for label in np.unique(labels)
-    ]
-    return np.sum([np.sum(d) / (2 * d.shape[0]) for d in distances])
+    return np.sum([
+        np.linalg.norm(inst - centroids[label], ord=metric)**2
+        for inst, label in zip(data, labels)
+    ])
 
 
 def _generate_uniform(
@@ -163,7 +166,7 @@ def _clustering(
     data: npt.NDArray[np.float64],
     n_clusters: np.int64,
     **clusterer_kwargs: Optional[Dict]
-) -> npt.NDArray[np.float64]:
+) -> Union[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
     """Cluster algorithm for Gap computation.
 
     This function uses the ``KMeans`` function from the ``sklearn`` library.
@@ -180,11 +183,13 @@ def _clustering(
 
     Returns
     -------
-    npt.NDArray
-        Index of the cluster each sample belongs to.
+    Union[npt.NDArray[np.float64], npt.NDArray[np.float64]]
+        A tuple containing the esitmated labels of each observations and the
+        center of the clusters.
 
     """
-    return KMeans(n_clusters=n_clusters, **clusterer_kwargs).fit_predict(data)
+    kmeans = KMeans(n_clusters=n_clusters, **clusterer_kwargs).fit(data)
+    return kmeans.labels_, kmeans.cluster_centers_
 
 
 ##############################################################################
@@ -227,8 +232,10 @@ class Gap():
     generating_process: np.str_, default='pca'
         The generating process of the data for the reference datasets. One
         of `uniform` or `pca`.
-    metric: np.str_, default='euclidean'
-        The metric used to compute distance between the observations.
+    metric: Optional[Union[np.str_, np.int64]], default=None
+        The metric used for the computation of the distance between the
+        observations. See ``numpy.linalg.norm`` documentation
+        for the list of available metric function.
 
     Attributes
     ----------
@@ -258,7 +265,7 @@ class Gap():
         clusterer: Optional[Callable] = None,
         clusterer_kwargs: Optional[Dict] = None,
         generating_process: np.str_ = 'pca',
-        metric: np.str_ = 'euclidean'
+        metric: Optional[Union[np.str_, np.int64]] = None
     ) -> None:
         """Initialize Gap object."""
         if parallel_backend is None:
@@ -286,7 +293,7 @@ class Gap():
                 "The generating process for the reference data "
                 "have to be 'uniform' or 'pca'."
             )
-        self.metric = metric if metric is not None else 'euclidean'
+        self.metric = metric
 
     def __str__(self) -> str:
         """Override __str__ function."""
@@ -304,7 +311,7 @@ class Gap():
         data: npt.NDArray[np.float64],
         cluster_array: Iterable[np.int64],
         n_refs: np.int64 = 3
-    ) -> int:
+    ) -> np.int64:
         """Compute the Gap statistic.
 
         Parameters
@@ -319,7 +326,7 @@ class Gap():
 
         Returns
         -------
-        np.int_
+        np.int64
             Returns the number of clusters that maximizes the Gap statistic.
 
         """
@@ -436,7 +443,7 @@ class Gap():
         data: npt.NDArray[np.float64],
         n_clusters: np.int64,
         n_refs: np.int64,
-        metric: np.str_ = 'euclidean'
+        metric: Optional[Union[np.str_, np.int64]] = None
     ) -> _GapResult:
         """Compute the Gap statistic.
 
@@ -450,7 +457,9 @@ class Gap():
             Number of random reference data sets used as inertia reference to
             actual data.
         metric: np.str_, default='euclidean'
-            The metric used to compute the Gap statistic.
+            The metric used for the computation of the distance between the
+            observations. See ``numpy.linalg.norm`` documentation
+            for the list of available metric function.
 
         Returns
         -------
@@ -465,10 +474,10 @@ class Gap():
         ref_dispersions = np.zeros(n_refs)
         for idx in range(n_refs):
             data_gen = self.generate_process(data, n_obs, a, b)
-            labels = self.clusterer(
+            labels, centers = self.clusterer(
                 data_gen, n_clusters, **self.clusterer_kwargs)
             ref_dispersions[idx] = _compute_dispersion(
-                data_gen, labels, metric)
+                data_gen, labels, centers, metric)
 
         # Compute dispersion the original dataset
         labels = self.clusterer(data, n_clusters, **self.clusterer_kwargs)

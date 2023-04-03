@@ -9,8 +9,11 @@ import numpy as np
 import pandas as pd
 import unittest
 
+from sklearn.cluster import KMeans
+
 from FDApy.clustering.criteria.gap import (
     _GapResult,
+    _compute_dispersion,
     _generate_uniform,
     _clustering,
     Gap
@@ -26,6 +29,19 @@ class TestGapResults(unittest.TestCase):
     def test_repr(self):
         gap_result = _GapResult(n_clusters=3, value=10.0)
         self.assertEqual(repr(gap_result), "Number of clusters: 3 - Gap: 10.0")
+
+
+class TestComputeDispersion(unittest.TestCase):
+    def test_compute_dispersion(self):
+        rnorm = np.random.default_rng(42).normal
+        data = rnorm(0, 1, (10, 2))
+
+        kmeans = KMeans(n_clusters=2, random_state=42)
+        labels = kmeans.fit_predict(data)
+        centroids = kmeans.cluster_centers_
+
+        output = _compute_dispersion(data, labels, centroids)
+        np.testing.assert_almost_equal(output, 5.982341862774169)
 
 
 class TestGenerateUniform(unittest.TestCase):
@@ -46,9 +62,9 @@ class TestClustering(unittest.TestCase):
         rnorm = np.random.default_rng(42).normal
         data = rnorm(0, 1, (10, 2))
 
-        output = _clustering(data, 2, random_state=42)
-        expected_output = np.array([1, 0, 1, 1, 1, 0, 0, 1, 1, 0])
-        np.testing.assert_array_equal(output, expected_output)
+        labels, centers = _clustering(data, 2, random_state=42)
+        expected_labels = np.array([1, 0, 1, 1, 1, 0, 0, 1, 1, 0])
+        np.testing.assert_array_equal(labels, expected_labels)
 
 
 class TestGapPrint(unittest.TestCase):

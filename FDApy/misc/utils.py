@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*-coding:utf8 -*
-"""Module that contains utility functions.
+"""
+Utility functions
+-----------------
 
-This module is used to define diverse helper functions. These functions are
-designed to standardize, manipulate and do computation on array.
 """
 import itertools
 import numpy as np
