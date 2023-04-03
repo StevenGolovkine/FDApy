@@ -29,9 +29,10 @@ pep257:
 
 pydocstyle:
     run: true
+    convention: numpy
     disable:
         # Whitespace issues
-        - D204
+        - D203
         - D205
         - D212
         - D213
