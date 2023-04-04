@@ -2,11 +2,9 @@
 # -*-coding:utf8 -*
 
 """
-Module for the definition of different loaders for FunctionalData types.
+Loaders
+-------
 
-This modules is used to defined different loaders to load common data files
-(such as csv, ts, ...) into an object of the class DenseFunctionalData,
-IrregularFunctionalData or MultivariateFunctionalData.
 """
 import numpy as np
 import numpy.typing as npt
@@ -14,8 +12,10 @@ import pandas as pd
 
 from typing import Any, Union
 
-from FDApy.representation.functional_data import (DenseFunctionalData,
-                                                  IrregularFunctionalData)
+from FDApy.representation.functional_data import (
+    DenseFunctionalData,
+    IrregularFunctionalData
+)
 
 
 ###############################################################################

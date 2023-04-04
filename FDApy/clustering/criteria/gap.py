@@ -100,25 +100,16 @@ def _compute_dispersion(
 
 def _generate_uniform(
     data: npt.NDArray[np.float64],
-    n_obs: np.int64,
-    low: np.float64 = 0.0,
-    high: np.float64 = 1.0,
     runif: Callable = np.random.uniform
 ) -> npt.NDArray[np.float64]:
     """Generate data according to a uniform distribution.
 
+    This reference distribution is given in P414 in [1]_.
+
     Parameters
     ----------
     data: npt.NDArray[np.float64], shape=(n_obs, n_features)
         Data.
-    n_obs: np.int64
-        Number of observations to be generated.
-    low: np.float64, default=0.0
-        Lower boundary of the output interval. All values generated will be
-        greater than or equal to ``low``.
-    high: np.float64, default=1.0
-        Upper boundary of the output interval. All values generated will be
-        less than or equal to high.
     runif: Callable, default=np.random.uniform
         Random data generator.
 
@@ -127,31 +118,28 @@ def _generate_uniform(
     npt.NDArray[np.float64]
         Generated samples.
 
+    References
+    ----------
+    .. [1] Tibshirani R., Walther G., and Hastie T. (2001), Estimating the
+        number of clusters in a data setp via the gap statistic, Journal of the
+        Royal Statistical Society, Series B, 63(2), 411--423.
+
     """
-    return runif(low, high, (n_obs, data.ndim))
+    return runif(low=data.min(axis=0), high=data.max(axis=0), size=data.shape)
 
 
 def _generate_pca(
     data: npt.NDArray[np.float64],
-    n_obs: np.int64,
-    low: np.float64 = 0.,
-    high: np.float64 = 1.,
     runif: Callable = np.random.uniform
 ) -> npt.NDArray[np.float64]:
     """Generate data according to a uniform distribution after PCA.
+
+    This reference distribution is given in P414 in [1]_.
 
     Parameters
     ----------
     data: npt.NDArray[np.float64], shape=(n_obs, n_features)
         Data.
-    n_obs: np.int64
-        Number of observations to be generated.
-    low: np.float64, default=0.0
-        Lower boundary of the output interval. All values generated will be
-        greater than or equal to ``low``.
-    high: np.float64, default=1.0
-        Upper boundary of the output interval. All values generated will be
-        less than or equal to high.
     runif: Callable, default=np.random.uniform
         Random data generator.
 
@@ -160,13 +148,19 @@ def _generate_pca(
     npt.NDArray[np.float64]
         Generated samples.
 
+    References
+    ----------
+    .. [1] Tibshirani R., Walther G., and Hastie T. (2001), Estimating the
+        number of clusters in a data setp via the gap statistic, Journal of the
+        Royal Statistical Society, Series B, 63(2), 411--423.
+
     """
-    data_centered = data - np.mean(data, axis=0)
-    _, _, eigenvec = np.linalg.svd(data_centered)
-    data_prime = np.matmul(data_centered, eigenvec)
-    data_transfo_prime = _generate_uniform(data_prime, n_obs, low, high, runif)
-    data_transfo = np.matmul(data_transfo_prime, eigenvec.transpose())
-    return data_transfo + np.mean(data, axis=0)
+    data_c = data - data.mean(axis=0)
+    _, _, vectors_t = np.linalg.svd(data_c, full_matrices=False)
+    data_prime = np.matmul(data_c, vectors_t.T)
+    features_prime = _generate_uniform(data_prime, runif)
+    features = np.matmul(features_prime, vectors_t)
+    return features + data.mean(axis=0)
 
 
 def _clustering(
@@ -174,7 +168,7 @@ def _clustering(
     n_clusters: np.int64,
     **clusterer_kwargs: Optional[Dict]
 ) -> Union[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
-    """Cluster algorithm for Gap computation.
+    """Define default clustering algorithm for Gap computation.
 
     This function uses the ``KMeans`` function from the ``sklearn`` library.
 
@@ -191,7 +185,7 @@ def _clustering(
     Returns
     -------
     Union[npt.NDArray[np.float64], npt.NDArray[np.float64]]
-        A tuple containing the esitmated labels of each observations and the
+        A tuple containing the estimated labels of each observations and the
         center of the clusters.
 
     """
@@ -211,15 +205,16 @@ class Gap():
     within-cluster sum of squares around the cluster means of the cluster
     :math:`k`. The Gap statistic is then given by
 
-    ..math::
+    .. math::
 
         Gap(k) = \mathbb{E}(\log W_k) - \log W_k,
 
     where :math:`\mathbb{E}` denotes the expectation under a sample of size
     :math:`n` from the reference distribution. The estimation of the number of
-    clusters in the dataset in then given as the value that maximise the Gap
-    statistics. Considering looking at the paper [2]_ for detailled
-    information.
+    clusters in the dataset in then given as the smallest :math:`k` such that
+    :math:`Gap(k) \leq Gap(k + 1)`. Consider looking at the paper [2]_ for
+    detailled information. In [1]_, the Gap statistic is defined without the
+    logarithm. The code is adapted from [3]_.
 
     Parameters
     ----------
@@ -232,8 +227,8 @@ class Gap():
         Parallel backend used for the computation.
     clusterer: Optional[Callable], default=None
         An user-provided function for the clustering of the dataset. The
-        function has to be compliant with sklearn clutering class and
-        return only the labels such as the `predict` function.
+        function has to return a tuple containing the labels of each
+        observation and the centers of the different clusters.
     clusterer_kwargs: Optional[Dict], default=None
         The parameters to be used by the clustering function.
     generating_process: np.str_, default='pca'
@@ -242,11 +237,12 @@ class Gap():
     metric: Optional[Union[np.str_, np.int64]], default=None
         The metric used for the computation of the distance between the
         observations. See ``numpy.linalg.norm`` documentation
-        for the list of available metric function.
+        for the list of available metric function. The default use the
+        Euclidean distance.
 
     Attributes
     ----------
-    n_clusters: int
+    n_clusters: np.int64
         Best number of clusters found. It is defined as the number of clusters
         that maximise the value of the Gap (according to the definition).
     gap: pd.DataFrame
