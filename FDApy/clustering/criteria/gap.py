@@ -269,7 +269,7 @@ class Gap():
         n_jobs: np.int64 = cpu_count(),
         parallel_backend: np.str_ = "multiprocessing",
         clusterer: Optional[Callable] = None,
-        clusterer_kwargs: Optional[Dict] = {},
+        clusterer_kwargs: Optional[Dict] = None,
         generating_process: np.str_ = 'pca',
         metric: Optional[Union[np.str_, np.int64]] = None
     ) -> None:
@@ -287,12 +287,10 @@ class Gap():
 
         # Initialize clustering parameters
         self.metric = metric
-        clusterer = clusterer if clusterer is not None else _clustering
-        clusterer_kwargs = (
-            clusterer_kwargs
-            if clusterer_kwargs != {}
-            else {'init': 'k-means++', 'n_init': 10}
-        )
+        self.clusterer = clusterer if clusterer is not None else _clustering
+        self.clusterer_kwargs = clusterer_kwargs
+        if clusterer is _clustering and clusterer_kwargs is None:
+            self.clusterer_kwargs = {'init': 'k-means++', 'n_init': 10}
 
         # Initialize reference datasets genreating process
         if generating_process == 'uniform':
@@ -477,13 +475,13 @@ class Gap():
             The results as a GapResult object.
 
         """
-        n_obs = np.ma.size(data, 0)
-        a, b = data.min(axis=0), data.max(axis=0)
+        # n_obs = np.ma.size(data, 0)
+        # a, b = data.min(axis=0), data.max(axis=0)
 
         # Generate the reference distributions and compute dispersions
         ref_dispersions = np.zeros(n_refs)
         for idx in range(n_refs):
-            data_gen = self.generate_process(data, n_obs, a, b)
+            data_gen = self.generate_process(data)
             labels, centers = self.clusterer(
                 data_gen, n_clusters, **self.clusterer_kwargs)
             ref_dispersions[idx] = _compute_dispersion(
