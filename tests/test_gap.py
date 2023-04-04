@@ -6,9 +6,11 @@ Written with the help of ChatGPT.
 
 """
 import numpy as np
-import pandas as pd
 import unittest
 
+from unittest.mock import patch
+
+from multiprocessing import cpu_count
 from sklearn.cluster import KMeans
 
 from FDApy.clustering.criteria.gap import (
@@ -102,6 +104,39 @@ class TestClustering(unittest.TestCase):
         ])
         np.testing.assert_array_equal(labels, expected_labels)
         np.testing.assert_array_almost_equal(centers, expected_centers)
+
+
+class TestGapInit(unittest.TestCase):     
+    def test_init_non_default(self):
+        # Test initialization with non-default values
+        gap = Gap(
+            n_jobs=1,
+            parallel_backend=None,
+            generating_process='uniform'
+        )
+        self.assertEqual(gap.n_jobs, 1)
+        self.assertEqual(gap.parallel_backend, None)
+        self.assertEqual(gap.generate_process, _generate_uniform)
+        
+    def test_init_error(self):
+        # Test initialization with invalid parallel_backend value
+        with self.assertRaises(ValueError):
+            Gap(parallel_backend='invalid_backend')
+        # Test initialization with invalid generate_process value
+        with self.assertRaises(ValueError):
+            Gap(generating_process='invalid_process')
+
+    def test_init_n_jobs(self):
+        # Test initialization with outside range n_jobs value
+        gap = Gap(n_jobs=0)
+        self.assertEqual(gap.n_jobs, 1)
+        self.assertEqual(gap.parallel_backend, 'multiprocessing')
+        self.assertEqual(gap.generate_process, _generate_pca)
+
+        gap = Gap(n_jobs=2)
+        self.assertEqual(gap.n_jobs, min(2, cpu_count()))
+        self.assertEqual(gap.parallel_backend, 'multiprocessing')
+        self.assertEqual(gap.generate_process, _generate_pca)
 
 
 class TestGapPrint(unittest.TestCase):

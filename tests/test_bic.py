@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 import unittest
 
-from unittest.mock import patch
 from multiprocessing import cpu_count
 
 from FDApy.clustering.criteria.bic import (

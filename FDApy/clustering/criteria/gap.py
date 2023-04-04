@@ -212,7 +212,8 @@ class Gap():
     where :math:`\mathbb{E}` denotes the expectation under a sample of size
     :math:`n` from the reference distribution. The estimation of the number of
     clusters in the dataset in then given as the smallest :math:`k` such that
-    :math:`Gap(k) \leq Gap(k + 1)`. Consider looking at the paper [2]_ for
+    :math:`Gap(k) \leq Gap(k + 1) - s_{k + 1}` where :math:`s_{k + 1}` is an
+    estimate of the simulation error. Consider looking at the paper [2]_ for
     detailled information. In [1]_, the Gap statistic is defined without the
     logarithm. The code is adapted from [3]_.
 
@@ -243,8 +244,10 @@ class Gap():
     Attributes
     ----------
     n_clusters: np.int64
-        Best number of clusters found. It is defined as the number of clusters
-        that maximise the value of the Gap (according to the definition).
+        Best number of clusters found. The estimation of the number of clusters
+        in the dataset in given as the smallest :math:`k` such that
+        :math:`Gap(k) \leq Gap(k + 1) - s_{k + 1}` where :math:`s_{k + 1}` is
+        an estimate of the simulation error.
     gap: pd.DataFrame
         Gap value for different values of ``n_clusters``.
 
@@ -263,14 +266,15 @@ class Gap():
 
     def __init__(
         self,
-        n_jobs: np.int64 = -1,
+        n_jobs: np.int64 = cpu_count(),
         parallel_backend: np.str_ = "multiprocessing",
         clusterer: Optional[Callable] = None,
-        clusterer_kwargs: Optional[Dict] = None,
+        clusterer_kwargs: Optional[Dict] = {},
         generating_process: np.str_ = 'pca',
         metric: Optional[Union[np.str_, np.int64]] = None
     ) -> None:
         """Initialize Gap object."""
+        # Initialize backend
         if parallel_backend is None:
             self.parallel_backend, self.n_jobs = parallel_backend, 1
         elif parallel_backend == 'multiprocessing':
@@ -281,22 +285,25 @@ class Gap():
                 "The parallel backend has to be 'multiprocessing' or None."
             )
 
-        self.clusterer = clusterer if clusterer is not None else _clustering
-        self.clusterer_kwargs = (
-            clusterer_kwargs or dict()
-            if clusterer is not None
-            else dict(init='k-means++', n_init=10)
+        # Initialize clustering parameters
+        self.metric = metric
+        clusterer = clusterer if clusterer is not None else _clustering
+        clusterer_kwargs = (
+            clusterer_kwargs
+            if clusterer_kwargs != {}
+            else {'init': 'k-means++', 'n_init': 10}
         )
+
+        # Initialize reference datasets genreating process
         if generating_process == 'uniform':
             self.generate_process = _generate_uniform
         elif generating_process == 'pca':
             self.generate_process = _generate_pca
         else:
             raise ValueError(
-                "The generating process for the reference data "
+                "The generating process for the reference datasets "
                 "have to be 'uniform' or 'pca'."
             )
-        self.metric = metric
 
     def __str__(self) -> str:
         """Override __str__ function."""
