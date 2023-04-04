@@ -64,7 +64,14 @@ def _compute_dispersion(
     ..math::
 
         W_k = \sum_{r=1}^k \frac{1}{2n_r}\sum_{i, i^\prime \in C_r}
-        d_{ii^\prime}
+        d_{ii^\prime}^2 = \sum_{r=1}^k \sum_{i \in C_r}
+        d_{i\mu_r},
+
+    where :math:`C_r` is the set of observation for the :math:`r`th cluster,
+    :math:`d_{ii^\prime}` is some distance measure between the observations
+    :math:`i` and :math:`i^\prime` and :math:`d_{i\mu_i}` is some distance
+    between the observation :math:`i` and the the center of the cluster
+    :math:`r`, :math:`\mu_r`.
 
     Parameters
     ----------
@@ -86,8 +93,8 @@ def _compute_dispersion(
 
     """
     return np.sum([
-        np.linalg.norm(inst - centroids[label], ord=metric)**2
-        for inst, label in zip(data, labels)
+        np.linalg.norm(obs - centroids[label], ord=metric)**2
+        for obs, label in zip(data, labels)
     ])
 
 

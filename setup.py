@@ -41,7 +41,7 @@ setup(
         'csaps>=1.1.0',
         'ggplot>=0.11.0',
         'numpy>=1.24.0',
-        'pandas>=1.3.0',
+        'pandas>=2.0.0',
         'patsy>=0.5.2',
         'pygam>=0.8.0',
         'scikit-learn>=0.23.0',

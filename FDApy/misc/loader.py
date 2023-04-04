@@ -50,7 +50,7 @@ def read_csv(
 
     try:
         all_argvals = data.columns.astype(np.int64).to_numpy()
-    except TypeError:
+    except ValueError:
         all_argvals = np.arange(0, len(data.columns))
 
     if not data.isna().values.any():
