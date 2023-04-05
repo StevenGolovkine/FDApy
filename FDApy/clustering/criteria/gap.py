@@ -337,7 +337,8 @@ class Gap():
         self,
         data: npt.NDArray[np.float64],
         cluster_array: Iterable[np.int64],
-        n_refs: np.int64 = 3
+        n_refs: np.int64 = 3,
+        runif: Callable = np.random.uniform
     ) -> np.int64:
         """Compute the Gap statistic.
 
@@ -350,6 +351,8 @@ class Gap():
         n_refs: np.int64, default=3
             Number of random reference data sets used as inertia reference to
             actual data.
+        runif: Callable, default=np.random.uniform
+            Random data generator.
 
         Returns
         -------
@@ -363,41 +366,28 @@ class Gap():
             engine = self._process_non_parallel
 
         # Compute Gap stat for each cluster count.
-        gap_df = pd.DataFrame({'n_clusters': [],
-                               'gap_value': [],
-                               'sk': [],
-                               'gap_value_star': [],
-                               'sk_star': []})
-        for gap_results in engine(data, cluster_array, n_refs):
-            gap_df = gap_df.append(
-                {
-                    'n_clusters': int(gap_results.k),
-                    'gap_value': gap_results.value,
-                    'sk': gap_results.sk,
-                    'gap_value_star': gap_results.value_star,
-                    'sk_star': gap_results.sk_star
-                }, ignore_index=True)
-            gap_df["gap_k+1"] = gap_df["gap_value"].shift(-1)
-            gap_df["gap_star_k+1"] = gap_df["gap_value_star"].shift(-1)
-            gap_df["sk+1"] = gap_df["sk"].shift(-1)
-            gap_df["sk_star+1"] = gap_df["sk_star"].shift(-1)
-            gap_df["diff"] = (
-                gap_df["gap_value"] - gap_df["gap_k+1"] + gap_df["sk+1"])
-            temp = gap_df["gap_value_star"] - gap_df["gap_star_k+1"]
-            gap_df["diff_star"] = temp + gap_df["sk_star+1"]
+        gap_df = pd.DataFrame.from_records(
+            engine(data, cluster_array, n_refs, runif),
+            columns=['n_clusters', 'log_value', 'log_error', 'value', 'error']
+        )
+        gap_df_shift = gap_df.shift(periods=-1)
 
-        gap_df.drop(
-            labels=["gap_k+1", "gap_star_k+1", "sk+1", "sk_star+1"],
-            axis=1,
-            inplace=True,
-            errors="ignore",
+        # Compute the '1-standard-error' style rule
+        gap_df['log_test'] = (
+            gap_df['log_value']
+            - gap_df_shift['log_value']
+            + gap_df_shift['log_error']
+        )
+        gap_df['test'] = (
+            gap_df['value']
+            - gap_df_shift['value']
+            + gap_df_shift['error']
         )
 
-        self.gap_df = gap_df.sort_values(by="n_clusters", ascending=True).\
+        self.gap = gap_df.sort_values(by="n_clusters", ascending=True).\
             reset_index(drop=True)
-        self.n_clusters = int(
-            self.gap_df.loc[np.argmax(self.gap_df.gap_value.values)].n_clusters
-        )
+        self.n_clusters = gap_df.\
+            loc[self.gap['log_test'].ge(0).argmax(), 'n_clusters']
         return self.n_clusters
 
     def plot(
@@ -526,7 +516,8 @@ class Gap():
         self,
         data: npt.NDArray[np.float64],
         cluster_array: Iterable[np.int64],
-        n_refs: np.int64 = 3
+        n_refs: np.int64 = 3,
+        runif: Callable = np.random.uniform
     ) -> Generator[_GapResult, None, None]:
         """Compute Gap statistics with multiprocessing parallelization.
 
@@ -539,6 +530,8 @@ class Gap():
         n_refs: np.int64, default=3
             Number of random reference data sets used as inertia reference to
             actual data.
+        runif: Callable, default=np.random.uniform
+            Random data generator.
 
         Returns
         -------
@@ -547,8 +540,9 @@ class Gap():
 
         """
         for result in Parallel(n_jobs=self.n_jobs)(
-            delayed(self._compute_gap)(data, n_clusters, n_refs, self.metric)
-            for n_clusters in cluster_array
+            delayed(self._compute_gap)(
+                data, n_clusters, n_refs, self.metric, runif
+            ) for n_clusters in cluster_array
         ):
             yield result
 
@@ -556,7 +550,8 @@ class Gap():
         self,
         data: npt.NDArray[np.float64],
         cluster_array: Iterable[np.int64],
-        n_refs: np.int64 = 5
+        n_refs: np.int64 = 5,
+        runif: Callable = np.random.uniform
     ) -> Generator[_GapResult, None, None]:
         """Compute Gap statistics without parallelization.
 
@@ -566,9 +561,11 @@ class Gap():
             Data as an array of shape (n_obs, n_components).
         cluster_array: Iterable[np.int64]
             The different number of clusters to try.
-        n_refs: np.int64, default=5
+        n_refs: np.int64, default=3
             Number of random reference datasets used as inertia reference to
             actual data.
+        runif: Callable, default=np.random.uniform
+            Random data generator.
 
         Returns
         -------
@@ -577,6 +574,6 @@ class Gap():
 
         """
         return (
-            self._compute_gap(data, n_clusters, n_refs, self.metric)
+            self._compute_gap(data, n_clusters, n_refs, self.metric, runif)
             for n_clusters in cluster_array
         )

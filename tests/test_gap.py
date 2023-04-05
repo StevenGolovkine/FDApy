@@ -6,6 +6,7 @@ Written with the help of ChatGPT.
 
 """
 import numpy as np
+import pandas as pd
 import unittest
 
 from multiprocessing import cpu_count
@@ -204,3 +205,55 @@ class TestComputeGap(unittest.TestCase):
         np.testing.assert_almost_equal(gap_results.log_error, 0.25694825724342335)
         np.testing.assert_almost_equal(gap_results.value, -2.9352343877606577)
         np.testing.assert_almost_equal(gap_results.error, 0.7303479722776504)
+
+
+class TestParallel(unittest.TestCase):
+    def test_process_parallel(self):
+        random = np.random.default_rng(42)
+        data = random.normal(0, 1, (10, 2))
+        cluster_array = [1, 2, 3]
+        gap = Gap(n_jobs=2, parallel_backend='multiprocessing')
+
+        gap_results = list(gap._process_with_multiprocessing(data, cluster_array))
+        self.assertEqual(len(gap_results), 3)
+        self.assertIsInstance(gap_results[0], _GapResult)
+
+
+class TestNonParallel(unittest.TestCase):
+    def test_process_non_parallel(self):
+        random = np.random.default_rng(42)
+        data = random.normal(0, 1, (10, 2))
+        cluster_array = [1, 2, 3]
+        gap = Gap(n_jobs=1, parallel_backend=None)
+
+        gap_results = list(gap._process_non_parallel(data, cluster_array))
+        self.assertEqual(len(gap_results), 3)
+        self.assertIsInstance(gap_results[0], _GapResult)
+
+
+class TestGap(unittest.TestCase):
+    def setUp(self):
+        self.random = np.random.default_rng(42)
+        self.data = self.random.normal(0, 1, (10, 2))
+        self.cluster_array = np.arange(1, 6)
+        self.n_refs = 3
+        self.gap = Gap(n_jobs=1, parallel_backend=None)
+
+    def test_call_method(self) -> None:
+        self.assertIsInstance(self.gap(self.data, self.cluster_array), np.int_)
+
+    def test_call_multiprocessing(self):
+        gap = Gap(n_jobs=2, parallel_backend='multiprocessing')
+        gap.__call__(self.data, self.cluster_array)
+        self.assertIsInstance(gap.n_clusters, np.int_)
+        self.assertGreater(gap.n_clusters, 0)
+
+    def test_gap_df_attr(self) -> None:
+        self.gap(self.data, self.cluster_array)
+        self.assertIsInstance(self.gap.gap, pd.DataFrame)
+        self.assertEqual(self.gap.gap.shape[0], len(self.cluster_array))
+
+    def test_n_clusters_attr(self) -> None:
+        self.gap(self.data, self.cluster_array)
+        self.assertIsInstance(self.gap.n_clusters, np.int_)
+        self.assertGreater(self.gap.n_clusters, 0)

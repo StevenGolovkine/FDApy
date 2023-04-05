@@ -101,24 +101,24 @@ class TestNonParallel(unittest.TestCase):
 class TestBIC(unittest.TestCase):
     def setUp(self):
         self.data = np.random.rand(100, 5)
-        self.n_clusters = np.arange(1, 6)
+        self.cluster_array = np.arange(1, 6)
         self.bic = BIC(n_jobs=1, parallel_backend=None)
 
     def test_call_method(self) -> None:
-        self.assertIsInstance(self.bic(self.data, self.n_clusters), np.int_)
+        self.assertIsInstance(self.bic(self.data, self.cluster_array), np.int_)
 
     def test_call_multiprocessing(self):
         bic = BIC(n_jobs=2, parallel_backend='multiprocessing')
-        bic.__call__(self.data, self.n_clusters)
+        bic.__call__(self.data, self.cluster_array)
         self.assertIsInstance(bic.n_clusters, np.int_)
         self.assertGreater(bic.n_clusters, 0)
 
     def test_bic_df_attr(self) -> None:
-        self.bic(self.data, self.n_clusters)
+        self.bic(self.data, self.cluster_array)
         self.assertIsInstance(self.bic.bic, pd.DataFrame)
-        self.assertEqual(self.bic.bic.shape[0], len(self.n_clusters))
+        self.assertEqual(self.bic.bic.shape[0], len(self.cluster_array))
 
-    def test_n_clusters_attr(self) -> None:
-        self.bic(self.data, self.n_clusters)
+    def test_cluster_array_attr(self) -> None:
+        self.bic(self.data, self.cluster_array)
         self.assertIsInstance(self.bic.n_clusters, np.int_)
         self.assertGreater(self.bic.n_clusters, 0)
