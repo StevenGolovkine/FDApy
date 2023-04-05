@@ -216,7 +216,7 @@ class BIC():
         ):
             yield result
 
-    def _process_non_parallel(
+    def _process_non_parallel(  # noqa
         self,
         data: npt.NDArray[np.float64],
         cluster_array: Iterable[np.int64]

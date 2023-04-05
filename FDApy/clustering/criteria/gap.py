@@ -9,9 +9,6 @@ Gap Statistic
 import pandas as pd
 import numpy as np
 import numpy.typing as npt
-import matplotlib.pyplot as plt
-
-from matplotlib.axes import Axes
 
 from typing import (
     Callable, Dict, Generator, Optional, Iterable, NamedTuple, Union
