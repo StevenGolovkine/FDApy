@@ -2,10 +2,9 @@
 # -*-coding:utf8 -*
 
 """
-Module for the definition of the functional CUBT.
+Functional Clustering Using Binary Trees
+----------------------------------------
 
-This module is used to defined the algorithm functional CUBT. It is used to
-cluster functional data using binary trees.
 """
 import itertools
 import matplotlib.pyplot as plt
@@ -16,8 +15,10 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from typing import Dict, List, Optional, Set, Tuple, TypeVar, Union
 
-from ..representation.functional_data import (DenseFunctionalData,
-                                              MultivariateFunctionalData)
+from ..representation.functional_data import (
+    DenseFunctionalData,
+    MultivariateFunctionalData
+)
 from ..preprocessing.dim_reduction.fpca import UFPCA, MFPCA
 from ..preprocessing.dim_reduction.fcp_tpa import FCPTPA
 from .criteria.gap import Gap
@@ -25,11 +26,13 @@ from .criteria.bic import BIC
 
 from sklearn.mixture import GaussianMixture
 
-COLORS = ['#377eb8', '#ff7f00', '#4daf4a',
-          '#f781bf', '#a65628', '#984ea3',
-          '#999999', '#e41a1c', '#dede00']
+COLORS = [
+    '#377eb8', '#ff7f00', '#4daf4a',
+    '#f781bf', '#a65628', '#984ea3',
+    '#999999', '#e41a1c', '#dede00'
+]
 
-N = TypeVar('N', bound='Node')
+N = TypeVar('N', bound='_Node')
 T = TypeVar('T', bound='DenseFunctionalData')
 M = TypeVar('M', bound='MultivariateFunctionalData')
 
@@ -162,7 +165,7 @@ def format_label(
 ###############################################################################
 # Class Node
 
-class Node():
+class _Node():
     """A class defining a node of the tree.
 
     A class used to define a node in a tree. A node is represented as a
@@ -193,9 +196,9 @@ class Node():
     ----------
     labels: np.array, shape (n_samples,)
         Component labels.
-    left: Node
+    left: _Node
         Left child of the node.
-    right: Node
+    right: _Node
         Right child of the node.
 
     """
@@ -218,7 +221,7 @@ class Node():
         is_leaf: bool = False,
         normalize: bool = False
     ) -> None:
-        """Initialiaze Node object."""
+        """Initialiaze _Node object."""
         self.identifier = (0, 0) if is_root else identifier
         self.data = data
         self.idx_obs = np.arange(data.n_obs) if idx_obs is None else idx_obs
@@ -408,12 +411,12 @@ class Node():
                         [obj[prediction == 1] for obj in self.data])
                 self.gaussian_model = gm
                 self.labels = prediction
-                self.left = Node(left_data,
+                self.left = _Node(left_data,
                                  identifier=(self.identifier[0] + 1,
                                              2 * self.identifier[1]),
                                  idx_obs=self.idx_obs[prediction == 0],
                                  normalize=self.normalize)
-                self.right = Node(right_data,
+                self.right = _Node(right_data,
                                   identifier=(self.identifier[0] + 1,
                                               2 * self.identifier[1] + 1),
                                   idx_obs=self.idx_obs[prediction == 1],
@@ -431,12 +434,12 @@ class Node():
 
         Parameters
         ----------
-        node: Node
+        node: _Node
             The node to unite with self.
 
         Returns
         -------
-        res: Node
+        res: _Node
             The unification of self and node.
 
         """
@@ -458,7 +461,7 @@ class Node():
                 raise TypeError("Wrong type for node.identifier.")
         else:
             raise TypeError("Wrong type for self.identifier.")
-        return Node(data,
+        return _Node(data,
                     identifier=new_id,
                     idx_obs=np.hstack([self.idx_obs, node.idx_obs]),
                     is_root=(self.is_root & node.is_root),
@@ -500,7 +503,7 @@ class Node():
         axes: Optional[Axes] = None,
         **plt_kwargs
     ) -> Axes:
-        """Plot of a Node object.
+        """Plot of a _Node object.
 
         Parameters
         ----------
@@ -532,19 +535,19 @@ class Node():
 # Class fCUBT
 
 class FCUBT():
-    """A class defining a functional CUBT.
+    """FCUBT -- Functional Clustering Using Binary Trees.
 
     Parameters
     ----------
-    root_node: Node, default=Node
+    root_node: _Node, default=_Node
         The root node of the tree.
     normalize: bool, default=False
         Perform a normalization of the data.
 
     Attributes
     ----------
-    tree: list of Node
-        A tree represented as a list of Node.
+    tree: list of _Node
+        A tree represented as a list of _Node.
     n_nodes: int
         Number of nodes in the tree.
     mapping: dict
@@ -557,6 +560,12 @@ class FCUBT():
         Number of leaves in the tree.
     height: int
         Height of the tree.
+
+    References
+    ----------
+    .. [1] Golovkine S., Klutchnikoff N. and Patilea V. (2022), Clustering
+    multivariate functional data using unsupervised binary trees, Computational
+    Statistics and Data Analysis, 168.
 
     """
 
@@ -679,7 +688,7 @@ class FCUBT():
 
         Returns
         -------
-        node: Node
+        node: _Node
             The node which identifier `idx`.
 
         """
@@ -695,12 +704,12 @@ class FCUBT():
 
         Parameters
         ----------
-        node: Node
+        node: _Node
             The considered node.
 
         Returns
         -------
-        res: Node
+        res: _Node
             The parent
 
         """
@@ -715,8 +724,8 @@ class FCUBT():
 
         Returns
         -------
-        res: list of Node
-            A list with only the leaf Node.
+        res: list of _Node
+            A list with only the leaf _Node.
 
         """
         return [node for node in self.tree if node.is_leaf]
@@ -809,7 +818,7 @@ class FCUBT():
 
         Parameters
         ----------
-        list_nodes: list of Nodes
+        list_nodes: list of _Nodes
             List of nodes to consider for the joining.
         siblings: set of tuples
             Set of tuples where each tuple contains two siblings nodes.
@@ -820,7 +829,7 @@ class FCUBT():
 
         Returns
         -------
-        nodes: list of Nodes
+        nodes: list of _Nodes
             The resulting list of nodes after the joining.
 
         """
