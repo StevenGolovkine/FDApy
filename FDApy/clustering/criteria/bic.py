@@ -172,7 +172,7 @@ class BIC():
 
         Returns
         -------
-        np.int_
+        np.int64
             Returns the number of clusters that minimizes the BIC.
 
         """

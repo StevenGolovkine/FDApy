@@ -32,23 +32,36 @@ class _GapResult(NamedTuple):
     ----------
     n_clusters: np.int64
         Number of clusters for which the Gap is computed.
+    log_value: np.float64
+        Value of the Gap statistic computed as in [2]_.
+    log_error: np.float64
+        Simulation error computed as in [2]_.
     value: np.float64
-        Value of the Gap statistic.
-    sk: np.float64
-    value_star: np.float64
-    sk_star: np.float64
+        Value of the Gap statistic computed as in [1]_.
+    error: np.float64
+        Simulation error computed as in [1]_.
+
+    References
+    ----------
+    .. [1] Mohajer M., Englmeier K.-H., and Schmid V. J., (2010), A comparison
+        of Gap statistic definitions with and without logarithm function,
+        Technical Report Number 096, Department of Statistics, University of
+        Munich.
+    .. [2] Tibshirani R., Walther G., and Hastie T. (2001), Estimating the
+        number of clusters in a data setp via the gap statistic, Journal of the
+        Royal Statistical Society, Series B, 63(2), 411--423.
 
     """
 
     n_clusters: np.int64
+    log_value: np.float64
+    log_error: np.float64
     value: np.float64
-    sk: np.float64 = 0
-    value_star: np.float64 = 0
-    sk_star: np.float64 = 0
+    error: np.float64
 
     def __repr__(self) -> str:
         """Override print function."""
-        return f"Number of clusters: {self.n_clusters} - Gap: {self.value}"
+        return f"Number of clusters: {self.n_clusters} - Gap: {self.log_value}"
 
 
 ###############################################################################
@@ -193,6 +206,12 @@ def _clustering(
     return kmeans.labels_, kmeans.cluster_centers_
 
 
+def _estimate_gap(dispersion, references):
+    value = np.mean(references) - dispersion
+    error = np.sqrt(1 + 1 / len(references)) * np.std(references)
+    return value, error
+
+
 ##############################################################################
 # Class Gap
 
@@ -335,7 +354,7 @@ class Gap():
         Returns
         -------
         np.int64
-            Returns the number of clusters that maximizes the Gap statistic.
+            Returns the best number of clusters
 
         """
         if self.parallel_backend == 'multiprocessing':
@@ -451,7 +470,8 @@ class Gap():
         data: npt.NDArray[np.float64],
         n_clusters: np.int64,
         n_refs: np.int64,
-        metric: Optional[Union[np.str_, np.int64]] = None
+        metric: Optional[Union[np.str_, np.int64]] = None,
+        runif: Callable = np.random.uniform
     ) -> _GapResult:
         """Compute the Gap statistic.
 
@@ -464,44 +484,43 @@ class Gap():
         n_refs: np.int64
             Number of random reference data sets used as inertia reference to
             actual data.
-        metric: np.str_, default='euclidean'
+        metric: Optional[Union[np.str_, np.int64]], default=None
             The metric used for the computation of the distance between the
-            observations. See ``numpy.linalg.norm`` documentation
-            for the list of available metric function.
+            observations. The default uses euclidean distance. See
+            ``numpy.linalg.norm`` documentation for the list of available
+            metric function.
+        runif: Callable, default=np.random.uniform
+            Random data generator.
 
         Returns
         -------
         _GapResult
-            The results as a GapResult object.
+            Results as a GapResult object.
 
         """
-        # n_obs = np.ma.size(data, 0)
-        # a, b = data.min(axis=0), data.max(axis=0)
-
         # Generate the reference distributions and compute dispersions
         ref_dispersions = np.zeros(n_refs)
         for idx in range(n_refs):
-            data_gen = self.generate_process(data)
+            samples = self.generate_process(data, runif)
             labels, centers = self.clusterer(
-                data_gen, n_clusters, **self.clusterer_kwargs)
+                samples, n_clusters, **self.clusterer_kwargs
+            )
             ref_dispersions[idx] = _compute_dispersion(
-                data_gen, labels, centers, metric)
+                samples, labels, centers, metric
+            )
 
         # Compute dispersion the original dataset
-        labels = self.clusterer(data, n_clusters, **self.clusterer_kwargs)
-        dispersion = _compute_dispersion(data, labels, metric)
+        labels, centers = self.clusterer(
+            data, n_clusters, **self.clusterer_kwargs
+        )
+        dispersion = _compute_dispersion(data, labels, centers, metric)
 
         # Compute Gap statistic
-        log_dispersion = np.log(dispersion)
-        log_ref_dispersion = np.mean(np.log(ref_dispersions))
-        gap_value = log_ref_dispersion - log_dispersion
-        sk = np.sqrt(1 + 1 / n_refs) * np.std(np.log(ref_dispersions))
-
-        # Compute Gap star statistic
-        gap_star_value = np.mean(ref_dispersions) - dispersion
-        sk_star = np.sqrt(1 + 1 / n_refs) * np.std(ref_dispersions)
-
-        return _GapResult(gap_value, n_clusters, sk, gap_star_value, sk_star)
+        log_value, log_error = _estimate_gap(
+            np.log(dispersion), np.log(ref_dispersions)
+        )
+        value, error = _estimate_gap(dispersion, ref_dispersions)
+        return _GapResult(n_clusters, log_value, log_error, value, error)
 
     def _process_with_multiprocessing(
         self,

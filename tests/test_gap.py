@@ -8,8 +8,6 @@ Written with the help of ChatGPT.
 import numpy as np
 import unittest
 
-from unittest.mock import patch
-
 from multiprocessing import cpu_count
 from sklearn.cluster import KMeans
 
@@ -19,18 +17,30 @@ from FDApy.clustering.criteria.gap import (
     _generate_uniform,
     _generate_pca,
     _clustering,
+    _estimate_gap,
     Gap
 )
 
 
 class TestGapResults(unittest.TestCase):
     def test_attributes(self):
-        gap_result = _GapResult(n_clusters=3, value=10.0)
+        gap_result = _GapResult(
+            n_clusters=3,
+            log_value=10.0, log_error=1.0,
+            value=1.0, error=0.1
+        )
         self.assertEqual(gap_result.n_clusters, 3)
-        self.assertEqual(gap_result.value, 10.0)
+        self.assertEqual(gap_result.log_value, 10.0)
+        self.assertEqual(gap_result.log_error, 1.0)
+        self.assertEqual(gap_result.value, 1.0)
+        self.assertEqual(gap_result.error, 0.1)
 
     def test_repr(self):
-        gap_result = _GapResult(n_clusters=3, value=10.0)
+        gap_result = _GapResult(
+            n_clusters=3,
+            log_value=10.0, log_error=1.0,
+            value=1.0, error=0.1
+        )
         self.assertEqual(repr(gap_result), "Number of clusters: 3 - Gap: 10.0")
 
 
@@ -106,6 +116,14 @@ class TestClustering(unittest.TestCase):
         np.testing.assert_array_almost_equal(centers, expected_centers)
 
 
+class TestEstimateGap(unittest.TestCase):
+    def test_estimate_gap(self):
+        dispersion = 10
+        references = np.array([11, 11, 9])
+        output = _estimate_gap(dispersion, references)
+        np.testing.assert_almost_equal(output, (0.3333333333333339, 1.0886621079036347))
+
+
 class TestGapInit(unittest.TestCase):     
     def test_init_non_default(self):
         # Test initialization with non-default values
@@ -171,3 +189,18 @@ class TestGapPrint(unittest.TestCase):
     def test_repr(self):
         gap = Gap(n_jobs=2, parallel_backend=None)
         self.assertEqual(repr(gap), 'Gap(n_jobs=1, parallel_backend=None)')
+
+
+class TestComputeGap(unittest.TestCase):
+    def test_compute_gap(self):
+        random = np.random.default_rng(42)
+        data = random.normal(0, 1, (10, 2))
+
+        gap = Gap()
+        gap_results = gap._compute_gap(data, 2, 3, runif=random.uniform)
+        self.assertIsInstance(gap_results, _GapResult)
+        np.testing.assert_equal(gap_results.n_clusters, 2)
+        np.testing.assert_almost_equal(gap_results.log_value, -0.6982832252153512)
+        np.testing.assert_almost_equal(gap_results.log_error, 0.25694825724342335)
+        np.testing.assert_almost_equal(gap_results.value, -2.9352343877606577)
+        np.testing.assert_almost_equal(gap_results.error, 0.7303479722776504)
