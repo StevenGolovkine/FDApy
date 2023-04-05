@@ -289,7 +289,7 @@ class Gap():
         self.metric = metric
         self.clusterer = clusterer if clusterer is not None else _clustering
         self.clusterer_kwargs = clusterer_kwargs
-        if clusterer is _clustering and clusterer_kwargs is None:
+        if self.clusterer is _clustering and self.clusterer_kwargs is None:
             self.clusterer_kwargs = {'init': 'k-means++', 'n_init': 10}
 
         # Initialize reference datasets genreating process

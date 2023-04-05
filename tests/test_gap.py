@@ -137,6 +137,30 @@ class TestGapInit(unittest.TestCase):
         self.assertEqual(gap.n_jobs, min(2, cpu_count()))
         self.assertEqual(gap.parallel_backend, 'multiprocessing')
         self.assertEqual(gap.generate_process, _generate_pca)
+    
+    def test_init_clusterer(self):
+        # Default values
+        gap = Gap()
+        self.assertEqual(gap.clusterer, _clustering)
+        self.assertEqual(gap.clusterer_kwargs, {'init': 'k-means++', 'n_init': 10})
+
+        # Change clusterer
+        def new_clusterer(data, n_clusters, **clusterer_kwargs):
+            return np.array([0, 0]), np.array([0, 0])
+        
+        gap = Gap(clusterer=new_clusterer)
+        self.assertEqual(gap.clusterer, new_clusterer)
+        self.assertIsNone(gap.clusterer_kwargs)
+
+        # Change clusterer_kwargs
+        gap = Gap(clusterer_kwargs={'n_init': 15})
+        self.assertEqual(gap.clusterer, _clustering)
+        self.assertEqual(gap.clusterer_kwargs, {'n_init': 15})
+
+        # Change both
+        gap = Gap(clusterer=new_clusterer, clusterer_kwargs={'n_init': 15})
+        self.assertEqual(gap.clusterer, new_clusterer)
+        self.assertEqual(gap.clusterer_kwargs, {'n_init': 15})
 
 
 class TestGapPrint(unittest.TestCase):
