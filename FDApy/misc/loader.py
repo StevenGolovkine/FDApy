@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from typing import Any, Union
+from typing import Union
 
 from FDApy.representation.functional_data import (
     DenseFunctionalData,
@@ -21,8 +21,8 @@ from FDApy.representation.functional_data import (
 ###############################################################################
 # Loader for csv
 def read_csv(
-    filepath: str,
-    **kwargs: Any
+    filepath: np.str_,
+    **kwargs
 ) -> Union[DenseFunctionalData, IrregularFunctionalData]:
     """Read a comma-separated values (csv) file into Functional Data.
 
@@ -35,14 +35,14 @@ def read_csv(
 
     Parameters
     ----------
-    filepath: str
+    filepath: np.str_
         Any valid string path is acceptable.
-    **kwargs:
+    **kwargs
         Keywords arguments to passed to the pd.read_csv function.
 
     Returns
     -------
-    obj: DenseFunctionalData or IrregularFunctionalData
+    Union[DenseFunctionalData, IrregularFunctionalData]
         The loaded csv file.
 
     """
@@ -69,12 +69,12 @@ def _read_csv_dense(
     ----------
     data: pd.DataFrame
         Input dataframe.
-    argvals: np.ndarray
+    argvals: npt.NDArray[np.float64]
         An array of argvals.
 
     Returns
     -------
-    obj: DenseFunctionalData
+    DenseFunctionalData
         The loaded csv file
 
     """
@@ -93,12 +93,12 @@ def _read_csv_irregular(
     ----------
     data: pd.DataFrame
         Input dataframe.
-    argvals: np.ndarray
+    argvals: npt.NDArray[np.float64]
         An array of argvals.
 
     Returns
     -------
-    obj: IrregularFunctionalData
+    IrregularFunctionalData
         The loaded csv file.
 
     """

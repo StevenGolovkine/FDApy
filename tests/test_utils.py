@@ -50,8 +50,8 @@ class TestNormalization(unittest.TestCase):
 
     def test_normalization_with_nan_min_max(self):
         x = np.array([0, 5, 10])
-        max_x = np.nan
-        min_x = np.nan
+        max_x = None
+        min_x = None
         expected = np.array([0., 0.5, 1.])
         result = _normalization(x, max_x=max_x, min_x=min_x)
         self.assertTrue(np.allclose(result, expected))

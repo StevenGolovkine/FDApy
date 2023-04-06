@@ -20,8 +20,8 @@ from typing import Dict, Optional, Tuple, Union
 #############################################################################
 def _normalization(
     x: npt.NDArray[np.float64],
-    max_x: float = np.nan,
-    min_x: float = np.nan
+    max_x: Optional[np.float64] = None,
+    min_x: Optional[np.float64] = None
 ) -> npt.NDArray[np.float64]:
     r"""Normalize a vector :math:`[a, b]` into a vector :math:`[0, 1]`.
 
@@ -34,9 +34,9 @@ def _normalization(
     ----------
     x: npt.NDArray[np.float64], shape=(n_obs,)
         Vector of data
-    max_x: float, default=None
+    max_x: Optional[np.float64], default=None
         Maximum value
-    min_x: float, default=None
+    min_x: Optional[np.float64], default=None
         Minimum value
 
     Returns
@@ -50,7 +50,7 @@ def _normalization(
     array([0., 0.5, 1.])
 
     """
-    if (np.isnan(max_x)) and (np.isnan(min_x)):
+    if (max_x is None) and (min_x is None):
         max_x = np.amax(x)
         min_x = np.amin(x)
     if max_x == min_x:
