@@ -23,7 +23,7 @@ from ..representation.functional_data import (
 # Utility functions
 def _init_ax(
     ax: Optional[Axes] = None,
-    projection: str = 'rectilinear'
+    projection: np.str_ = 'rectilinear'
 ) -> Axes:
     """Initialize axes."""
     if ax is None:
@@ -35,8 +35,8 @@ def _init_ax(
 # Utility functions
 def _plot_1d(
     data: Union[DenseFunctionalData, IrregularFunctionalData],
-    labels: npt.NDArray,
-    colors: Optional[npt.NDArray] = None,
+    labels: npt.NDArray[np.float64],
+    colors: Optional[npt.NDArray[np.float64]] = None,
     ax: Optional[Axes] = None,
     **plt_kwargs
 ) -> Axes:
@@ -46,21 +46,21 @@ def _plot_1d(
 
     Parameters
     ----------
-    data: UnivariateFunctionalData or IrregularFunctionalData
+    data: Union[DenseFunctionalData, IrregularFunctionalData]
         The object to plot.
-    labels: npt.NDArray, default=None
+    labels: npt.NDArray[np.float64], default=None
         The labels of each curve.
-    colors: npt.NDArray, default=None
+    colors: Optional[npt.NDArray[np.float64]], default=None
         Colors used for the plot. If `colors` is `None`, it uses the `jet`
         colormaps from the `matplotlib` library by default.
-    ax: matplotlib.axes._subplots.AxesSubplot
+    ax: Optional[Axes]
         Axes object onto which the objects are plotted.
-    **plt_kwargs:
+    **plt_kwargs
         Keywords plotting arguments
 
     Returns
     -------
-    ax: matplotlib.axes._subplots.AxesSubplot
+    Axes
         Axes objects onto the plot is done.
 
     """
@@ -78,9 +78,7 @@ def _plot_1d(
             data.values.values(),
             labels
         ):
-            ax.plot(
-                argval, value, c=colors[l], **plt_kwargs
-            )
+            ax.plot(argval, value, c=colors[l], **plt_kwargs)
             ax.scatter(argval, value, c=[colors[l]], **plt_kwargs)
     else:
         raise TypeError('Data type not recognized!')
@@ -89,8 +87,8 @@ def _plot_1d(
 
 def _plot_2d(
     data: Union[DenseFunctionalData, IrregularFunctionalData],
-    labels: npt.NDArray,
-    colors: Optional[npt.NDArray] = None,
+    labels: npt.NDArray[np.float64],
+    colors: Optional[npt.NDArray[np.float64]] = None,
     ax: Optional[Axes] = None,
     **plt_kwargs
 ) -> Axes:
@@ -100,21 +98,21 @@ def _plot_2d(
 
     Parameters
     ----------
-    data: IrregularFunctionalData
+    data: Union[DenseFunctionalData, IrregularFunctionalData]
         The object to plot.
-    labels: npt.NDArray, default=None
+    labels: npt.NDArray[np.float64], default=None
         The labels of each curve.
-    colors: npt.NDArray, default=None
+    colors: Optional[npt.NDArray[np.float64]], default=None
         Colors used for the plot. If `colors` is `None`, it uses the `jet`
         colormaps from the `matplotlib` library by default.
-    ax: matplotlib.axes._subplots.AxesSubplot
+    ax: Optional[Axes]
         Axes object onto which the objects are plotted.
     **plt_kwargs:
         Keywords plotting arguments
 
     Returns
     -------
-    ax: matplotlib.axes._subplots.AxesSubplot
+    Axes
         Axes objects onto the plot is done.
 
     """
@@ -152,9 +150,9 @@ def _plot_2d(
 # Plotting functions
 def plot(
     data: Union[DenseFunctionalData, IrregularFunctionalData],
-    labels: Optional[npt.NDArray] = None,
-    colors: Optional[npt.NDArray] = None,
-    ax: Axes = None,
+    labels: Optional[npt.NDArray[np.float64]] = None,
+    colors: Optional[npt.NDArray[np.float64]] = None,
+    ax: Optional[Axes] = None,
     **plt_kwargs
 ) -> Axes:
     """Plot function for univariate functional data.
@@ -164,21 +162,21 @@ def plot(
 
     Parameters
     ----------
-    data: UnivariateFunctionalData, IrregularFunctionalData
+    data: Union[DenseFunctionalData, IrregularFunctionalData]
         The object to plot.
-    labels: npt.NDArray, default=None
+    labels: Optional[npt.NDArray[np.float64]], default=None
         The labels of each curve.
-    colors: npt.NDArray, default=None
+    colors: Optional[npt.NDArray[np.float64]], default=None
         Colors used for the plot. If `colors` is `None`, it uses the `jet`
         colormaps from the `matplotlib` library by default.
-    ax: matplotlib.axes._subplots.AxesSubplot
+    ax: Optional[Axes]
         Axes object onto which the objects are plotted.
     **plt_kwargs:
         Keywords plotting arguments
 
     Returns
     -------
-    ax: matplotlib.axes._subplots.AxesSubplot
+    Axes
         Axes objects onto the plot is done.
 
     """
@@ -203,10 +201,10 @@ def plot(
 
 def plot_multivariate(
     data: MultivariateFunctionalData,
-    labels: Optional[npt.NDArray] = None,
-    titles: Optional[List[str]] = None,
-    colors: Optional[npt.NDArray] = None,
-    ax: Axes = None,
+    labels: Optional[npt.NDArray[np.float64]] = None,
+    titles: Optional[List[np.str_]] = None,
+    colors: Optional[npt.NDArray[np.float64]] = None,
+    ax: Optional[Axes] = None,
     **plt_kwargs
 ) -> List[Axes]:
     """Plot function for multivariate functional data.
@@ -217,21 +215,21 @@ def plot_multivariate(
     ----------
     data: MultivariateFunctional
         The object to plot.
-    labels: npt.NDArray, default=None
+    labels: Optional[npt.NDArray[np.float64]], default=None
         The labels of each curve.
-    titles: List[str], default=None
+    titles: Optional[List[np.str_]], default=None
         Titles of the subfigure.
-    colors: npt.NDArray, default=None
+    colors: Optional[npt.NDArray[np.float64]], default=None
         Colors used for the plot. If `colors` is `None`, it uses the `jet`
         colormaps from the `matplotlib` library by default.
-    ax: matplotlib.axes._subplots.AxesSubplot
+    ax: Optional[Axes]
         Axes object onto which the objects are plotted.
     **plt_kwargs:
         Keywords plotting arguments
 
     Returns
     -------
-    axes: list of matplotlib.axes._subplots.AxesSubplot
+    List[Axes]
         Axes objects onto the plot is done.
 
     """
