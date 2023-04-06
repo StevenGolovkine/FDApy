@@ -10,6 +10,7 @@ import itertools
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
+import numpy.typing as npt
 
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
@@ -43,29 +44,38 @@ M = TypeVar('M', bound='MultivariateFunctionalData')
 def _joining_step(
     list_nodes: List[N],
     siblings: Set[Tuple[N, N]],
-    n_components: Union[int, float] = 0.95,
-    max_group: int = 5,
-    normalize: bool = False
+    n_components: Union[np.int64, np.float64] = 0.95,
+    max_group: np.int64 = 5,
+    normalize: np.bool_ = False
 ) -> List[N]:
-    """Perform a joining step.
+    """Perform one joining step for the FCUBT algorithm.
+
+    This function implements the Algorithm 2 in [1]_. Considering a set of
+    nodes, the function tries to join each combination of two nodes together.
 
     Parameters
     ----------
-    list_nodes: list of Nodes
+    list_nodes: List[N]
         List of nodes to consider for the joining.
-    siblings: set of tuples
+    siblings: Set[Tuple[N, N]]
         Set of tuples where each tuple contains two siblings nodes.
-    n_components: int or float, default=0.95
+    n_components: Union[np.int64, np.float64], default=0.95
         Number of components to keep for the aggregation of the nodes.
-    max_group: int, default=5
+    max_group: np.int64, default=5
         Number of models to try to split the data.
-    normalize: bool, default=False
+    normalize: np.bool_, default=False
         Perform a normalization of the data.
 
     Returns
     -------
-    nodes: list of Nodes
+    List[N]
         The resulting list of nodes after the joining.
+
+    References
+    ----------
+    .. [1] Golovkine S., Klutchnikoff N. and Patilea V. (2022), Clustering
+    multivariate functional data using unsupervised binary trees, Computational
+    Statistics and Data Analysis, 168.
 
     """
     nodes_combinations = set(itertools.combinations(list_nodes, 2))
@@ -105,8 +115,9 @@ def _joining_step(
                 )
                 scores = fcptpa.transform(new_data)
             else:
-                raise ValueError("The dimension of the input data should "
-                                 "be 1 or 2.")
+                raise ValueError(
+                    "The dimension of the input data should be 1 or 2."
+                )
         elif isinstance(new_data, MultivariateFunctionalData):
             mfpca = MFPCA(n_components=n_components, normalize=normalize)
             mfpca.fit(data=new_data)
@@ -138,19 +149,19 @@ def _joining_step(
 
 def _format_label(
     list_nodes: List[N]
-) -> Tuple[Dict[N, int], np.ndarray]:
+) -> Tuple[Dict[N, np.int64], npt.NDArray[np.float64]]:
     """Format the labels.
 
     Parameters
     ----------
-    list_nodes: list of Nodes
-        A list of nodes representing a clustering of the observations.
+    list_nodes: List[N]
+        List of nodes representing a clustering of the observations.
         Typically, it should the leaves of the grown tree or the result of the
         joining step.
 
     Returns
     -------
-    labels: np.ndarray
+    Tuple[Dict[N, np.int64], npt.NDArray[np.float64]]
         The labels ordered using the index observation within the nodes.
 
     """
@@ -176,7 +187,7 @@ class _Node():
     ----------
     data: FunctionalData
         The data as FunctionalData object.
-    identifier: tuple of int
+    identifier: Tuple[int, int]
         An unique identifier of the node. The format is (depth, position). If
         the Node is a root node, the id will be (0, 0). Then, for a node with
         identifier (d, j), the identifier of the left child will be
@@ -208,18 +219,19 @@ class _Node():
         new_data: Union[T, M]
     ) -> None:
         """Check the user provided `data`."""
-        if not isinstance(new_data, (DenseFunctionalData,
-                                     MultivariateFunctionalData)):
+        if not isinstance(
+            new_data, (DenseFunctionalData, MultivariateFunctionalData)
+        ):
             raise TypeError("Provided data do not have the right type.")
 
     def __init__(
         self,
         data: Union[T, M],
-        identifier: Tuple[int, int] = (0, 0),
-        idx_obs: Optional[int] = None,
-        is_root: bool = False,
-        is_leaf: bool = False,
-        normalize: bool = False
+        identifier: Tuple[np.int64, np.int64] = (0, 0),
+        idx_obs: Optional[np.int64] = None,
+        is_root: np.bool_ = False,
+        is_leaf: np.bool_ = False,
+        normalize: np.bool_ = False
     ) -> None:
         """Initialiaze _Node object."""
         self.identifier = (0, 0) if is_root else identifier
@@ -232,12 +244,12 @@ class _Node():
         self.is_leaf = is_leaf
         self.normalize = normalize
 
-    def __str__(self) -> str:
+    def __str__(self) -> np.str_:
         """Override __str__ function."""
         return (f"Node(id={self.identifier}, is_root={self.is_root}"
                 f", is_leaf={self.is_leaf})")
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> np.str_:
         """Override __repr__ function."""
         return self.__str__()
 
@@ -252,30 +264,30 @@ class _Node():
         self._data = new_data
 
     @property
-    def identifier(self) -> Tuple[int, int]:
+    def identifier(self) -> Tuple[np.int64, np.int64]:
         """Getter for identifier."""
         return self._identifier
 
     @identifier.setter
-    def identifier(self, new_identifier: Tuple[int, int]) -> None:
+    def identifier(self, new_identifier: Tuple[np.int64, np.int64]) -> None:
         self._identifier = new_identifier
 
     @property
-    def labels_grow(self) -> np.ndarray:
+    def labels_grow(self) -> npt.NDArray[np.float64]:
         """Getter for labels_grow."""
         return self._labels_grow
 
     @labels_grow.setter
-    def labels_grow(self, new_labels: np.ndarray) -> None:
+    def labels_grow(self, new_labels: npt.NDArray[np.float64]) -> None:
         self._labels_grow = new_labels
 
     @property
-    def labels_join(self) -> np.ndarray:
+    def labels_join(self) -> npt.NDArray[np.float64]:
         """Getter for labels_join."""
         return self._labels_join
 
     @labels_join.setter
-    def labels_join(self, new_labels: np.ndarray):
+    def labels_join(self, new_labels: npt.NDArray[np.float64]):
         self._labels_join = new_labels
 
     @property
@@ -297,29 +309,29 @@ class _Node():
         self._right = new_right
 
     @property
-    def is_root(self) -> bool:
+    def is_root(self) -> np.bool_:
         """Getter for is_root."""
         return self._is_root
 
     @is_root.setter
-    def is_root(self, new_is_root: bool) -> None:
+    def is_root(self, new_is_root: np.bool_) -> None:
         self._is_root = new_is_root
 
     @property
-    def is_leaf(self) -> bool:
+    def is_leaf(self) -> np.bool_:
         """Getter for is_left."""
         return self._is_leaf
 
     @is_leaf.setter
-    def is_leaf(self, new_is_leaf: bool) -> None:
+    def is_leaf(self, new_is_leaf: np.bool_) -> None:
         self._is_leaf = new_is_leaf
 
     def split(
         self,
-        splitting_criteria: str = 'bic',
-        n_components: Union[float, int, None] = 1,
-        min_size: int = 10,
-        max_group: int = 5
+        splitting_criteria: np.str_ = 'bic',
+        n_components: Union[np.float64, np.int64, None] = 1,
+        min_size: np.int64 = 10,
+        max_group: np.int64 = 5
     ) -> None:
         """Split a node into two groups.
 
@@ -372,8 +384,9 @@ class _Node():
                     scores = fcptpa.transform(self.data)
                     self.fpca = fcptpa
                 else:
-                    raise ValueError("The dimension of the input data should "
-                                     "be 1 or 2.")
+                    raise ValueError(
+                        "The dimension of the input data should be 1 or 2."
+                    )
             elif isinstance(self.data, MultivariateFunctionalData):
                 mfpca = MFPCA(
                     n_components=n_components,
@@ -390,9 +403,11 @@ class _Node():
                 bic_stat = BIC(parallel_backend=None)
                 best_k = bic_stat(scores, np.arange(1, max_group))
             elif splitting_criteria == 'gap':
-                gap_stat = Gap(generating_process='uniform',
-                               metric='euclidean',
-                               parallel_backend=None)
+                gap_stat = Gap(
+                    generating_process='uniform',
+                    metric='euclidean',
+                    parallel_backend=None
+                )
                 best_k = gap_stat(scores, np.arange(1, max_group), n_refs=3)
             else:
                 raise NotImplementedError('Not implemented.')
@@ -406,21 +421,31 @@ class _Node():
                     right_data = self.data[prediction == 1]
                 elif isinstance(self.data, MultivariateFunctionalData):
                     left_data = MultivariateFunctionalData(
-                        [obj[prediction == 0] for obj in self.data])
+                        [obj[prediction == 0] for obj in self.data]
+                    )
                     right_data = MultivariateFunctionalData(
-                        [obj[prediction == 1] for obj in self.data])
+                        [obj[prediction == 1] for obj in self.data]
+                    )
                 self.gaussian_model = gm
                 self.labels = prediction
-                self.left = _Node(left_data,
-                                 identifier=(self.identifier[0] + 1,
-                                             2 * self.identifier[1]),
-                                 idx_obs=self.idx_obs[prediction == 0],
-                                 normalize=self.normalize)
-                self.right = _Node(right_data,
-                                  identifier=(self.identifier[0] + 1,
-                                              2 * self.identifier[1] + 1),
-                                  idx_obs=self.idx_obs[prediction == 1],
-                                  normalize=self.normalize)
+                self.left = _Node(
+                    left_data,
+                    identifier=(
+                        self.identifier[0] + 1,
+                        2 * self.identifier[1]
+                    ),
+                    idx_obs=self.idx_obs[prediction == 0],
+                    normalize=self.normalize
+                )
+                self.right = _Node(
+                    right_data,
+                    identifier=(
+                        self.identifier[0] + 1,
+                        2 * self.identifier[1] + 1
+                    ),
+                    idx_obs=self.idx_obs[prediction == 1],
+                    normalize=self.normalize
+                )
             else:
                 self.is_leaf = True
         else:
@@ -439,7 +464,7 @@ class _Node():
 
         Returns
         -------
-        res: _Node
+        _Node
             The unification of self and node.
 
         """
@@ -461,17 +486,19 @@ class _Node():
                 raise TypeError("Wrong type for node.identifier.")
         else:
             raise TypeError("Wrong type for self.identifier.")
-        return _Node(data,
-                    identifier=new_id,
-                    idx_obs=np.hstack([self.idx_obs, node.idx_obs]),
-                    is_root=(self.is_root & node.is_root),
-                    is_leaf=(self.is_leaf & node.is_leaf),
-                    normalize=self.normalize)
+        return _Node(
+            data,
+            identifier=new_id,
+            idx_obs=np.hstack([self.idx_obs, node.idx_obs]),
+            is_root=(self.is_root & node.is_root),
+            is_leaf=(self.is_leaf & node.is_leaf),
+            normalize=self.normalize
+        )
 
     def isin(
         self,
         node: N
-    ) -> Tuple[int, int]:
+    ) -> Tuple[np.int64, np.int64]:
         """Test whether self is include in node."""
         return self.identifier in node.identifier
 
@@ -492,7 +519,7 @@ class _Node():
     def predict_proba(
         self,
         new_obs: Union[T, M]
-    ) -> float:
+    ) -> np.float64:
         """Predict the probability for a new observation."""
         score = self.fpca.transform(new_obs, method='NumInt')
         proba = self.gaussian_model.predict_proba(score)
@@ -525,8 +552,10 @@ class _Node():
             axes = plt.gca()
 
         for o, i in zip(self.data.values, self.labels):
-            axes.plot(self.data.argvals['input_dim_0'], o,
-                      c=COLORS[i], **plt_kwargs)
+            axes.plot(
+                self.data.argvals['input_dim_0'], o,
+                c=COLORS[i], **plt_kwargs
+            )
         axes.set_title(f'{self.identifier}')
         return axes
 
