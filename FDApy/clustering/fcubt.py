@@ -568,26 +568,26 @@ class FCUBT():
 
     Parameters
     ----------
-    root_node: _Node, default=_Node
+    root_node: Optional[N], default=_Node
         The root node of the tree.
-    normalize: bool, default=False
+    normalize: np.bool_, default=False
         Perform a normalization of the data.
 
     Attributes
     ----------
-    tree: list of _Node
+    tree: List[N]
         A tree represented as a list of _Node.
-    n_nodes: int
+    n_nodes: np.int_
         Number of nodes in the tree.
-    mapping: dict
+    mapping: Dict[N, np.float64]
         A mapping between leaf nodes and cluster labels.
-    labels: np.array, shape (n_samples,)
+    labels: npt.NDArray[np.float64], shape (n_samples,)
         Component labels after the tree has been grown.
-    n_nodes: int
+    n_nodes: np.int64
         Number of nodes in the tree.
-    n_leaf: int
+    n_leaf: np.int64
         Number of leaves in the tree.
-    height: int
+    height: np.int64
         Height of the tree.
 
     References
@@ -601,7 +601,7 @@ class FCUBT():
     def __init__(
         self,
         root_node: Optional[N] = None,
-        normalize: bool = False
+        normalize: np.bool_ = False
     ) -> None:
         """Initialize fCUBT object."""
         self.root_node = root_node
@@ -627,17 +627,17 @@ class FCUBT():
         self._tree = new_tree
 
     @property
-    def n_nodes(self) -> int:
+    def n_nodes(self) -> np.int64:
         """Get the number of nodes in the tree."""
         return len(self.tree)
 
     @property
-    def n_leaf(self) -> int:
+    def n_leaf(self) -> np.int64:
         """Get the number of leaves in the tree."""
         return len([True for node in self.tree if node.is_leaf])
 
     @property
-    def height(self) -> int:
+    def height(self) -> np.int64:
         """Get the height of the tree.
 
         The height of the tree is defined starting at 1. So, a tree with only
@@ -645,7 +645,7 @@ class FCUBT():
 
         Returns
         -------
-        height: int
+        np.int64
             The height of the tree.
 
         """
@@ -653,71 +653,77 @@ class FCUBT():
 
     def grow(
         self,
-        n_components: Union[float, int, None] = 0.95,
-        min_size: int = 10,
-        max_group: int = 5
+        n_components: Union[np.float64, np.int64, None] = 0.95,
+        min_size: np.int64 = 10,
+        max_group: np.int64 = 5
     ) -> None:
         """Grow a complete tree."""
-        tree = self._recursive_clustering(self.tree, n_components=n_components,
-                                          min_size=min_size,
-                                          max_group=max_group)
+        tree = self._recursive_clustering(
+            self.tree,
+            n_components=n_components,
+            min_size=min_size,
+            max_group=max_group
+        )
         self.tree = sorted(tree, key=lambda node: node.identifier)
         self.mapping_grow, self.labels_grow = _format_label(self.get_leaves())
 
     def join(
         self,
-        n_components: Union[float, int, None] = 0.95,
-        max_group: int = 5
+        n_components: Union[np.float64, np.int64, None] = 0.95,
+        max_group: np.int64 = 5
     ) -> None:
         """Join elements of the tree."""
         leaves = self.get_leaves()
         siblings = self.get_siblings()
-        final_cluster = self._recursive_joining(leaves, siblings,
-                                                n_components, max_group)
+        final_cluster = self._recursive_joining(
+            leaves, siblings, n_components, max_group
+        )
         self.mapping_join, self.labels_join = _format_label(final_cluster)
 
     def predict(
         self,
         new_data: Union[T, M],
-        step: str = "join"
-    ) -> np.ndarray:
+        step: np.str_ = "join"
+    ) -> npt.NDArray[np.float64]:
         """Predict labels for a set of new observation."""
         if isinstance(new_data, DenseFunctionalData):
             return np.array([self._predict(obs, step) for obs in new_data])
         elif isinstance(new_data, MultivariateFunctionalData):
-            return np.array([self._predict(obs, step)
-                             for obs in new_data.get_obs()])
+            return np.array(
+                [self._predict(obs, step) for obs in new_data.get_obs()]
+            )
         else:
             raise TypeError("Wrong data type.")
 
     def predict_proba(
         self,
         new_data: Union[T, M],
-        step: str = "join"
-    ) -> np.ndarray:
+        step: np.str_ = "join"
+    ) -> npt.NDArray[np.float64]:
         """Predict the probability for new obs to be in each classes."""
         if isinstance(new_data, DenseFunctionalData):
             return [self._predict_proba(obs, step) for obs in new_data]
         elif isinstance(new_data, MultivariateFunctionalData):
-            return np.array([self._predict_proba(obs, step)
-                             for obs in new_data.get_obs()])
+            return np.array(
+                [self._predict_proba(obs, step) for obs in new_data.get_obs()]
+            )
         else:
             raise TypeError("Wrong data type.")
 
     def get_node(
         self,
-        idx: Tuple[int, int]
+        idx: Tuple[np.int64, np.int64]
     ) -> N:
         """Get a particular node in the tree.
 
         Parameters
         ----------
-        idx: tuple of int
+        idx: Tuple[np.int64, np.int64]
             The identifier of a node.
 
         Returns
         -------
-        node: _Node
+        _Node
             The node which identifier `idx`.
 
         """
@@ -738,7 +744,7 @@ class FCUBT():
 
         Returns
         -------
-        res: _Node
+        _Node
             The parent
 
         """
@@ -753,7 +759,7 @@ class FCUBT():
 
         Returns
         -------
-        res: list of _Node
+        List[N]
             A list with only the leaf _Node.
 
         """
@@ -761,7 +767,7 @@ class FCUBT():
 
     def get_siblings(
         self
-    ) -> List[Tuple[int, int]]:
+    ) -> List[Tuple[np.int64, np.int64]]:
         """Get the siblings in the tree.
 
         A siblings couple is defined as a pair of nodes that are leaf node and
@@ -769,15 +775,17 @@ class FCUBT():
 
         Returns
         -------
-        list_siblings: list of tuple
+        List[Tuple[np.int64, np.int64]]
             A list of tuple where each tuple represent a siblings couple.
 
         """
-        return set([(self.get_node(node.identifier),
-                     self.get_node((node.identifier[0],
-                                    node.identifier[1] + 1)))
-                    for node in self.tree
-                    if node.is_leaf and node.identifier[1] % 2 == 0])
+        return set([
+            (
+                self.get_node(node.identifier),
+                self.get_node((node.identifier[0], node.identifier[1] + 1))
+            ) for node in self.tree
+            if node.is_leaf and node.identifier[1] % 2 == 0
+        ])
 
     def plot(
         self,
@@ -818,57 +826,67 @@ class FCUBT():
     def _recursive_clustering(
         self,
         list_nodes: List[N],
-        n_components: Union[int, float, None] = 0.95,
-        min_size: int = 10,
-        max_group: int = 5
+        n_components: Union[np.int64, np.float64, None] = 0.95,
+        min_size: np.int64 = 10,
+        max_group: np.int64 = 5
     ) -> List[N]:
         """Perform the binary clustering recursively."""
         tree = []
         for node in list_nodes:
             if node is not None:
                 tree.append(node)
-                node.split(splitting_criteria='bic', n_components=n_components,
-                           min_size=min_size, max_group=max_group)
-                tree.extend(self._recursive_clustering(
-                    [node.left, node.right],
+                node.split(
+                    splitting_criteria='bic',
                     n_components=n_components,
                     min_size=min_size,
-                    max_group=max_group))
+                    max_group=max_group
+                )
+                tree.extend(
+                    self._recursive_clustering(
+                        [node.left, node.right],
+                        n_components=n_components,
+                        min_size=min_size,
+                        max_group=max_group
+                    )
+                )
         return tree
 
     def _recursive_joining(
         self,
         list_nodes: List[N],
-        siblings: Set[Tuple[int, int]],
-        n_components: Union[int, float, None] = 0.95,
-        max_group: int = 5
+        siblings: Set[Tuple[np.int64, np.int64]],
+        n_components: Union[np.int64, np.float64, None] = 0.95,
+        max_group: np.int64 = 5
     ) -> List[N]:
         """Perform the joining recursively.
 
         Parameters
         ----------
-        list_nodes: list of _Nodes
+        list_nodes: List[N]
             List of nodes to consider for the joining.
-        siblings: set of tuples
+        siblings: Set[Tuple[np.int64, np.int64]]
             Set of tuples where each tuple contains two siblings nodes.
-        n_components: int or float, default=0.95
+        n_components: Union[np.int64, np.float64, None], default=0.95
             Number of components to keep for the aggregation of the nodes.
-        max_group: int, default=5
+        max_group: np.int64, default=5
             Number of models to try to split the data.
 
         Returns
         -------
-        nodes: list of _Nodes
+        List[N]
             The resulting list of nodes after the joining.
 
         """
-        new_list_nodes = _joining_step(list_nodes, siblings, n_components,
-                                      max_group, normalize=self.normalize)
+        new_list_nodes = _joining_step(
+            list_nodes, siblings, n_components, max_group,
+            normalize=self.normalize
+        )
         if len(new_list_nodes) == len(list_nodes):
             return new_list_nodes
         else:
-            return self._recursive_joining(new_list_nodes, siblings,
-                                           n_components, max_group)
+            return self._recursive_joining(
+                new_list_nodes, siblings, n_components, max_group
+            )
 
     def _map_grow_join(self) -> Dict[N, N]:
         """Map results from grow to join step."""
@@ -888,21 +906,21 @@ class FCUBT():
     def _predict(
         self,
         new_data: Union[T, M],
-        step: str = "join"
-    ) -> int:
+        step: np.str_ = "join"
+    ) -> np.int64:
         """Predict the label for a new observation.
 
         Parameters
         ----------
-        new_data: Functional data
+        new_data: Union[T, M]
             The new data to predict the cluster.
-        step: str, default="join"
+        step: np.str_, default="join"
             At which step should we predict the label. Should be 'grow' or
             'join'.
 
         Returns
         -------
-        label: int
+        np.int64
             The label of the prediction.
 
         """
@@ -921,21 +939,21 @@ class FCUBT():
     def _predict_proba(
         self,
         new_data: Union[T, M],
-        step: str = 'join'
-    ) -> Dict[N, float]:
+        step: np.str_ = 'join'
+    ) -> Dict[N, np.float64]:
         """Predict the probability for each class for a new observation.
 
         Parameters
         ----------
-        new_data: Functional data
+        new_data: Union[T, M]
             The new data to predict the cluster.
-        step: str, default="join"
+        step: np.str_, default="join"
             At which step should we predict the label. Should be 'grow' or
             'join'.
 
         Returns
         -------
-        proba: dict
+        Dict[N, np.float64]
             A dictionary containing the probablity to belong to each class for
             the new observation.
 
