@@ -40,7 +40,7 @@ M = TypeVar('M', bound='MultivariateFunctionalData')
 ###############################################################################
 # Utility functions
 
-def joining_step(
+def _joining_step(
     list_nodes: List[N],
     siblings: Set[Tuple[N, N]],
     n_components: Union[int, float] = 0.95,
@@ -136,7 +136,7 @@ def joining_step(
     return list(graph.nodes)
 
 
-def format_label(
+def _format_label(
     list_nodes: List[N]
 ) -> Tuple[Dict[N, int], np.ndarray]:
     """Format the labels.
@@ -633,7 +633,7 @@ class FCUBT():
                                           min_size=min_size,
                                           max_group=max_group)
         self.tree = sorted(tree, key=lambda node: node.identifier)
-        self.mapping_grow, self.labels_grow = format_label(self.get_leaves())
+        self.mapping_grow, self.labels_grow = _format_label(self.get_leaves())
 
     def join(
         self,
@@ -645,7 +645,7 @@ class FCUBT():
         siblings = self.get_siblings()
         final_cluster = self._recursive_joining(leaves, siblings,
                                                 n_components, max_group)
-        self.mapping_join, self.labels_join = format_label(final_cluster)
+        self.mapping_join, self.labels_join = _format_label(final_cluster)
 
     def predict(
         self,
@@ -833,7 +833,7 @@ class FCUBT():
             The resulting list of nodes after the joining.
 
         """
-        new_list_nodes = joining_step(list_nodes, siblings, n_components,
+        new_list_nodes = _joining_step(list_nodes, siblings, n_components,
                                       max_group, normalize=self.normalize)
         if len(new_list_nodes) == len(list_nodes):
             return new_list_nodes

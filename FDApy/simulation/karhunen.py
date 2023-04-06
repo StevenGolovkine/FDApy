@@ -19,10 +19,6 @@ from ..representation.functional_data import (
 from ..representation.basis import Basis
 from .simulation import Simulation
 
-#############################################################################
-# Class Data
-Data = namedtuple('Data', ['labels', 'eigenvalues', 'data'])
-
 
 #############################################################################
 # Definition of the decreasing of the eigenvalues
