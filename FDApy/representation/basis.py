@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*-coding:utf8 -*
 
-"""Basis functions.
+"""
+Basis
+-----
 
-This module is used to define a Basis class and diverse classes derived from
-it. These are used to define basis of functions as DenseFunctionalData object.
 """
 import numpy as np
 import numpy.typing as npt
@@ -22,7 +22,7 @@ from .functional_data import _tensor_product
 
 def basis_legendre(
     argvals: npt.NDArray[np.float64],
-    n_functions: int = 3,
+    n_functions: np.int64 = 3,
 ) -> npt.NDArray[np.float64]:
     r"""Define Legendre basis of function.
 
@@ -31,14 +31,14 @@ def basis_legendre(
 
     Parameters
     ----------
-    argvals: numpy.ndarray
+    argvals: npt.NDArray[np.float64]
         The values on which evaluated the Legendre polynomials.
-    n_functions: int, default=3
+    n_functions: np.int64, default=3
         Maximum degree of the Legendre polynomials.
 
     Returns
     -------
-    values: np.ndarray, shape=(n_functions, len(argvals))
+    values: npt.NDArray[np.float64], shape=(n_functions, len(argvals))
         An array containing the evaluation of `n_functions` functions of
         Legendre basis.
 
@@ -66,7 +66,7 @@ def basis_legendre(
 
 def basis_wiener(
     argvals: npt.NDArray[np.float64],
-    n_functions: int = 3
+    n_functions: np.int64 = 3
 ) -> npt.NDArray[np.float64]:
     r"""Define Wiener basis of function.
 
@@ -75,15 +75,15 @@ def basis_wiener(
 
     Parameters
     ----------
-    argvals: numpy.ndarray
+    argvals: npt.NDArray[np.float64]
         The values on which the eigenfunctions of a Wiener process are
         evaluated.
-    n_functions: int, default=3
+    n_functions: np.int64, default=3
         Number of functions to consider.
 
     Returns
     -------
-    values: np.ndarray, shape=(n_functions, len(argvals))
+    values: npt.NDArray[np.float64], shape=(n_functions, len(argvals))
         An array containing the evaluation of `n_functions` functions of
         Wiener basis.
 
@@ -109,8 +109,8 @@ def basis_wiener(
 
 def basis_fourier(
     argvals: npt.NDArray[np.float64],
-    n_functions: int = 3,
-    period: float = 2 * np.pi,
+    n_functions: np.int64 = 3,
+    period: np.float64 = 2 * np.pi,
 ) -> npt.NDArray[np.float64]:
     r"""Define Fourier basis of function.
 
@@ -119,16 +119,16 @@ def basis_fourier(
 
     Parameters
     ----------
-    argvals: numpy.ndarray
+    argvals: npt.NDArray[np.float64]
         The values on which evaluated the Fourier series.
-    n_functions: int, default=3
+    n_functions: np.int64, default=3
         Number of considered Fourier series. Should be odd.
-    period: float, default=2*numpy.pi
+    period: np.float64, default=2 * np.pi
         The period of the circular functions.
 
     Returns
     -------
-    values: np.ndarray, shape=(n_functions, len(argvals))
+    values: npt.NDArray[np.float64], shape=(n_functions, len(argvals))
         An array containing the evaluation of `n_functions` functions of
         Wiener basis.
 
@@ -158,8 +158,8 @@ def basis_fourier(
 
 def basis_bsplines(
     argvals: npt.NDArray[np.float64],
-    n_functions: int = 5,
-    degree: int = 3,
+    n_functions: np.int64 = 5,
+    degree: np.int64 = 3,
     knots: Optional[npt.NDArray[np.float64]] = None,
 ) -> npt.NDArray[np.float64]:
     """Define B-splines basis of function.
@@ -169,20 +169,20 @@ def basis_bsplines(
 
     Parameters
     ----------
-    argvals: numpy.ndarray
+    argvals: npt.NDArray[np.float64]
         The values on which evaluated the B-splines.
-    n_functions: int, default=5
+    n_functions: np.int64, default=5
         Number of considered B-splines.
-    degree: int, default=3
+    degree: np.int64, default=3
         Degree of the B-splines. The default gives cubic splines.
-    knots: numpy.ndarray, (n_knots,)
+    knots: Optional[npt.NDArray[np.float64]], (n_knots,)
         Specify the break points defining the B-splines. If ``knots``
         are provided, the provided value of ``n_functions`` is ignored. And the
         number of basis functions is ``n_knots + degree - 1``.
 
     Returns
     -------
-    values: np.ndarray, shape=(n_functions, len(argvals))
+    values: npt.NDArray[np.float64], shape=(n_functions, len(argvals))
         An array containing the evaluation of `n_functions` functions of
         Wiener basis.
 
@@ -206,44 +206,48 @@ def basis_bsplines(
 
 
 def simulate_basis(
-    name: str,
+    name: np.str_,
     argvals: npt.NDArray[np.float64],
-    n_functions: int = 3,
-    norm: bool = False,
-    **kwargs: Any
+    n_functions: np.int64 = 3,
+    norm: np.bool_ = False,
+    **kwargs
 ) -> npt.NDArray[np.float64]:
     """Redirect to the right simulation basis function.
 
     Parameters
     ----------
-    name: str, {'legendre', 'wiener', 'fourier', 'bsplines'}
+    name: np.str_, {'legendre', 'wiener', 'fourier', 'bsplines'}
         Name of the basis to use.
-    argvals: numpy.ndarray
+    argvals: npt.NDArray[np.float64]
         The values on which the basis functions are evaluated.
-    n_functions: int, default=3
+    n_functions: np.int64, default=3
         Number of functions to compute.
-    norm: boolean
+    norm: np.bool_
         Should we normalize the functions?
 
     Keyword Args
     ------------
-    period: float, default = 2*numpy.pi
+    period: np.float64, default = 2 * np.pi
         The period of the circular functions for the Fourier basis.
-    degree: int, default = 3
+    degree: np.int64, default = 3
         Degree of the B-splines. The default gives cubic splines.
-    knots: numpy.ndarray, (n_knots,)
+    knots: npt.NDArray[np.float64], (n_knots,)
         Specify the break points defining the B-splines.
 
     Returns
     -------
-    values: np.ndarray, shape=(n_functions, len(argvals))
+    values: npt.NDArray[np.float64], shape=(n_functions, len(argvals))
         An array containing the evaluation of `n_functions` functions of
         Wiener basis.
 
     Example
     -------
-    >>> simulate_basis('legendre', n_functions=3,
-    >>>                argvals=np.arange(-1, 1, 0.1), norm=True)
+    >>> simulate_basis(
+    ...     'legendre',
+    ...     n_functions=3,
+    ...     argvals=np.arange(-1, 1, 0.1),
+    ...     norm=True
+    ... )
 
     """
     if name == 'legendre':
@@ -271,47 +275,45 @@ def simulate_basis(
 ###############################################################################
 # Class Basis
 
-class Basis(
-    DenseFunctionalData
-):
+class Basis(DenseFunctionalData):
     r"""A functional data object representing an orthogonal basis of functions.
 
     Parameters
     ----------
-    name: str, {'legendre', 'wiener', 'fourier', 'bsplines'}
+    name: np.str_, {'legendre', 'wiener', 'fourier', 'bsplines'}
         Denotes the basis of functions to use.
-    n_functions: int
+    n_functions: np.int64
         Number of functions in the basis.
-    dimension: str, ('1D', '2D'), default='1D'
+    dimension: np.str_, {'1D', '2D'}, default='1D'
         Dimension of the basis to simulate. If '2D', the basis is simulated as
         the tensor product of the one dimensional basis of functions by itself.
         The number of functions in the 2D basis will be :math:`n_function^2`.
-    argvals: dict
+    argvals: Optional[Dict[np.str_, npt.NDArray[np.float64]]]
         The sampling points of the functional data. Each entry of the
         dictionary represents an input dimension. The shape of the :math:`j`th
         dimension is :math:`(m_j,)` for :math:`0 \leq j \leq p`.
-    norm: bool, default=False
+    norm: np.bool_, default=False
         Should we normalize the basis function?
 
     Keyword Args
     ------------
-    period: float, default = 2*numpy.pi
+    period: np.float64, default=2 * np.pi
         The period of the circular functions for the Fourier basis.
-    degree: int, default = 3
+    degree: np.int64, default=3
         Degree of the B-splines. The default gives cubic splines.
-    knots: numpy.ndarray, (n_knots,)
+    knots: npt.NDArray[np.float64], (n_knots,)
         Specify the break points defining the B-splines.
 
     """
 
     def __init__(
         self,
-        name: str,
-        n_functions: int = 5,
-        dimension: str = '1D',
-        argvals: Optional[Dict[str, npt.NDArray[np.float64]]] = None,
-        norm: bool = False,
-        **kwargs: Any
+        name: np.str_,
+        n_functions: np.int64 = 5,
+        dimension: np.str_ = '1D',
+        argvals: Optional[Dict[np.str_, npt.NDArray[np.float64]]] = None,
+        norm: np.bool_ = False,
+        **kwargs
     ) -> None:
         """Initialize Basis object."""
         self.name = name
@@ -340,30 +342,30 @@ class Basis(
             raise ValueError(f"{dimension} is not a valid dimension!")
 
     @property
-    def name(self) -> str:
+    def name(self) -> np.str_:
         """Getter for name."""
         return self._name
 
     @name.setter
-    def name(self, new_name: str) -> None:
+    def name(self, new_name: np.str_) -> None:
         if not isinstance(new_name, str):
             raise TypeError(f'{new_name!r} has to be `str`.')
         self._name = new_name
 
     @property
-    def norm(self) -> bool:
+    def norm(self) -> np.bool_:
         """Getter for norm."""
         return self._norm
 
     @norm.setter
-    def norm(self, new_norm: bool) -> None:
+    def norm(self, new_norm: np.bool_) -> None:
         self._norm = new_norm
 
     @property
-    def dimension(self) -> str:
+    def dimension(self) -> np.str_:
         """Getter for dimension."""
         return self._dimension
 
     @dimension.setter
-    def dimension(self, new_dimension: str) -> None:
+    def dimension(self, new_dimension: np.str_) -> None:
         self._dimension = new_dimension

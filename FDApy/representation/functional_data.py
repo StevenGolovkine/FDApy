@@ -2,11 +2,9 @@
 # -*-coding:utf8 -*
 
 """
-Module for the definition of FunctionalData types.
+Functional Data
+---------------
 
-This modules is used to defined different types of functional data. The
-different types are: Univariate Functional Data, Irregular Functional Data and
-Multivariate Functional Data.
 """
 from __future__ import annotations
 
@@ -48,9 +46,12 @@ class FunctionalData(ABC):
 
     Parameters
     ----------
-    argvals: list
-    values: list
-    category: str, {'univariate', 'irregular', 'multivariate'}
+    argvals: Union[DenseArgvals, IrregArgvals]
+        Sampling points of the functional data.
+    values: Union[DenseValues, IrregValues]
+        Values of the functional data.
+    category: str, {'univariate', 'irregular'}
+        Type of the functional data.
 
     """
 
