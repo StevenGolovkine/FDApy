@@ -17,8 +17,8 @@ import warnings
 from abc import ABC, abstractmethod
 from collections import UserList
 from typing import (
-    cast, Any, Dict, Iterable, Iterator, Optional, List,
-    Tuple, TYPE_CHECKING, Union
+    Callable, cast, Any, Dict, Iterable, Iterator, Optional, List,
+    Tuple, Type, TYPE_CHECKING, Union
 )
 
 from sklearn.metrics import pairwise_distances
@@ -33,10 +33,10 @@ from ..misc.utils import _normalization, _outer
 if TYPE_CHECKING:
     from ..representation.basis import Basis
 
-DenseArgvals = Dict[str, npt.NDArray[np.float64]]
+DenseArgvals = Dict[np.str_, npt.NDArray[np.float64]]
 DenseValues = npt.NDArray[np.float64]
-IrregArgvals = Dict[str, Dict[int, npt.NDArray[np.float64]]]
-IrregValues = Dict[int, npt.NDArray[np.float64]]
+IrregArgvals = Dict[np.str_, Dict[np.int64, npt.NDArray[np.float64]]]
+IrregValues = Dict[np.int64, npt.NDArray[np.float64]]
 
 
 ###############################################################################
@@ -50,23 +50,23 @@ class FunctionalData(ABC):
         Sampling points of the functional data.
     values: Union[DenseValues, IrregValues]
         Values of the functional data.
-    category: str, {'univariate', 'irregular'}
+    category: np.str_, {'univariate', 'irregular'}
         Type of the functional data.
 
     """
 
     @staticmethod
     def _check_same_type(
-        argv1: FunctionalData,
-        argv2: FunctionalData
+        argv1: Type[FunctionalData],
+        argv2: Type[FunctionalData]
     ) -> None:
         """Raise an error if `argv1` and `argv2` have different type.
 
         Parameters
         ----------
-        argv1: FunctionalData
+        argv1: Type[FunctionalData]
             An object.
-        argv2: FunctionalData
+        argv2: Type[FunctionalData]
             An object.
 
         Raises
@@ -80,7 +80,7 @@ class FunctionalData(ABC):
 
     @staticmethod
     def _check_same_nobs(
-        *argv: FunctionalData
+        *argv: Type[FunctionalData]
     ) -> None:
         """Raise an arror if elements in argv have different number of obs."""
         n_obs = set(obj.n_obs for obj in argv)
@@ -91,8 +91,8 @@ class FunctionalData(ABC):
 
     @staticmethod
     def _check_same_ndim(
-        argv1: FunctionalData,
-        argv2: FunctionalData
+        argv1: Type[FunctionalData],
+        argv2: Type[FunctionalData]
     ) -> None:
         """Raise an error if `argv1` and `argv2` have different dim."""
         if argv1.n_dim != argv2.n_dim:
@@ -104,25 +104,25 @@ class FunctionalData(ABC):
     @staticmethod
     @abstractmethod
     def _check_argvals_values(
-        argvals: Any,
-        values: Any
+        argvals: Union[DenseArgvals, IrregArgvals],
+        values: Union[DenseValues, IrregValues]
     ) -> None:
         """Check argvals values."""
 
     @staticmethod
     @abstractmethod
     def _perform_computation(
-        fdata1: Any,
-        fdata2: Any,
-        func: np.ufunc
-    ) -> FunctionalData:
+        fdata1: Type[FunctionalData],
+        fdata2: Type[FunctionalData],
+        func: Callable
+    ) -> Type[FunctionalData]:
         """Perform computation."""
 
     def __init__(
         self,
         argvals: Union[DenseArgvals, IrregArgvals],
         values: Union[DenseValues, IrregValues],
-        category: str
+        category: np.str_
     ) -> None:
         """Initialize FunctionalData object."""
         super().__init__()
@@ -130,69 +130,69 @@ class FunctionalData(ABC):
         self.values = values
         self.category = category
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> np.str_:
         """Override print function."""
         return (
-            f"{self.category.capitalize()} functional data object with"
-            f" {self.n_obs} observations on a {self.n_dim}-dimensional"
-            " support."
+            f"{self.category.capitalize()} functional data object with "
+            f"{self.n_obs} observations on a {self.n_dim}-dimensional "
+            "support."
         )
 
     @abstractmethod
     def __getitem__(
         self,
-        index: int
-    ) -> FunctionalData:
+        index: np.int_
+    ) -> Type[FunctionalData]:
         """Override getitem function, called when self[index]."""
 
     def __add__(
         self,
-        obj: FunctionalData
-    ) -> FunctionalData:
+        obj: Type[FunctionalData]
+    ) -> Type[FunctionalData]:
         """Override add function."""
         return self._perform_computation(self, obj, np.add)
 
     def __sub__(
         self,
-        obj: FunctionalData
-    ) -> FunctionalData:
+        obj: Type[FunctionalData]
+    ) -> Type[FunctionalData]:
         """Override sub function."""
         return self._perform_computation(self, obj, np.subtract)
 
     def __mul__(
         self,
-        obj: FunctionalData
-    ) -> FunctionalData:
+        obj: Type[FunctionalData]
+    ) -> Type[FunctionalData]:
         """Override mul function."""
         return self._perform_computation(self, obj, np.multiply)
 
     def __rmul__(
         self,
-        obj: FunctionalData
-    ) -> FunctionalData:
+        obj: Type[FunctionalData]
+    ) -> Type[FunctionalData]:
         """Override rmul function."""
         return self * obj
 
     def __truediv__(
         self,
-        obj: FunctionalData
-    ) -> FunctionalData:
+        obj: Type[FunctionalData]
+    ) -> Type[FunctionalData]:
         """Override truediv function."""
         return self._perform_computation(self, obj, np.true_divide)
 
     def __floordiv__(
         self,
-        obj: FunctionalData
-    ) -> FunctionalData:
+        obj: Type[FunctionalData]
+    ) -> Type[FunctionalData]:
         """Override floordiv function."""
         return self._perform_computation(self, obj, np.floor_divide)
 
     @property
     def argvals(
         self
-    ) -> Any:
+    ) -> Union[DenseArgvals, IrregArgvals]:
         """Getter for argvals."""
-        return self._argvals  # type: ignore
+        return self._argvals
 
     @argvals.setter
     def argvals(
@@ -220,7 +220,7 @@ class FunctionalData(ABC):
     @property
     def values(
         self
-    ) -> Any:
+    ) -> Union[DenseValues, IrregValues]:
         """Getter for values."""
         return self._values
 
@@ -234,21 +234,21 @@ class FunctionalData(ABC):
         self._values = new_values
 
     @property
-    def category(self) -> str:
+    def category(self) -> np.str_:
         """Getter for category."""
         return self._category
 
     @category.setter
-    def category(self, new_category: str) -> None:
+    def category(self, new_category: np.str_) -> None:
         self._category = new_category
 
     @property
-    def n_obs(self) -> int:
+    def n_obs(self) -> np.int64:
         """Get the number of observations of the functional data.
 
         Returns
         -------
-        int
+        np.int64
             Number of observations within the functional data.
 
         """
@@ -256,16 +256,16 @@ class FunctionalData(ABC):
 
     @property
     @abstractmethod
-    def range_obs(self) -> Tuple[float, float]:
+    def range_obs(self) -> Tuple[np.float64, np.float64]:
         """Get the range of the observations of the object."""
 
     @property
-    def n_dim(self) -> int:
+    def n_dim(self) -> np.int64:
         """Get the number of input dimension of the functional data.
 
         Returns
         -------
-        int
+        np.int64
             Number of input dimension with the functional data.
 
         """
@@ -273,24 +273,24 @@ class FunctionalData(ABC):
 
     @property
     @abstractmethod
-    def n_points(self) -> Dict[str, int]:
+    def n_points(self) -> Dict[np.str_, np.int64]:
         """Get the mean number of sampling points."""
 
     @property
     @abstractmethod
-    def range_dim(self) -> Dict[str, Tuple[int, int]]:
+    def range_dim(self) -> Dict[np.str_, Tuple[np.int64, np.int64]]:
         """Range of the `argvals` for each of the dimension."""
 
     @property
     @abstractmethod
-    def shape(self) -> Dict[str, int]:
+    def shape(self) -> Dict[np.str_, np.int64]:
         """Shape of the data for each dimension."""
 
     @abstractmethod
     def is_compatible(
         self,
-        fdata: FunctionalData
-    ) -> bool:
+        fdata: Type[FunctionalData]
+    ) -> np.bool_:
         """Check if `fdata` is compatible with `self`."""
         FunctionalData._check_same_type(self, fdata)
         FunctionalData._check_same_nobs(self, fdata)
@@ -300,31 +300,31 @@ class FunctionalData(ABC):
     @abstractmethod
     def to_basis(
         self,
-        basis: 'Basis'
+        basis: Basis
     ) -> None:
         """Expand the FunctionalData into a basis."""
 
     @abstractmethod
     def mean(
         self,
-        smooth: Optional[str] = None,
-        **kwargs: Any
-    ) -> FunctionalData:
+        smooth: Optional[np.str_] = None,
+        **kwargs
+    ) -> Type[FunctionalData]:
         """Compute an estimate of the mean."""
 
     @abstractmethod
     def covariance(
         self,
-        mean: Optional[FunctionalData] = None,
-        smooth: Optional[str] = None,
-        **kwargs: Any
-    ) -> FunctionalData:
+        mean: Optional[Type[FunctionalData]] = None,
+        smooth: Optional[np.str_] = None,
+        **kwargs
+    ) -> Type[FunctionalData]:
         """Compute an estimate of the covariance."""
 
     @abstractmethod
     def inner_product(
         self
-    ) -> npt.NDArray:
+    ) -> npt.NDArray[np.float64]:
         """Compute an estimate of the inner product matrix."""
 
     @abstractmethod
@@ -333,10 +333,10 @@ class FunctionalData(ABC):
         points: npt.NDArray[np.float64],
         neighborhood: npt.NDArray[np.float64],
         points_estim: Optional[npt.NDArray[np.float64]] = None,
-        degree: int = 0,
-        kernel: str = "epanechnikov",
-        bandwidth: Optional[List[float]] = None
-    ) -> FunctionalData:
+        degree: np.int64 = 0,
+        kernel: np.str_ = "epanechnikov",
+        bandwidth: Optional[List[np.float64]] = None
+    ) -> Type[FunctionalData]:
         """Smooth the data."""
 
 
@@ -453,7 +453,7 @@ class DenseFunctionalData(FunctionalData):
     def _perform_computation(
         fdata1: DenseFunctionalData,
         fdata2: DenseFunctionalData,
-        func: np.ufunc
+        func: Callable
     ) -> DenseFunctionalData:
         """Perform computation defined by `func`."""
         if fdata1.is_compatible(fdata2):
@@ -470,13 +470,13 @@ class DenseFunctionalData(FunctionalData):
 
     def __getitem__(
         self,
-        index: int
+        index: np.int64
     ) -> DenseFunctionalData:
         """Overrride getitem function, called when self[index].
 
         Parameters
         ----------
-        index: int
+        index: np.int64
             The observation(s) of the object to retrive.
 
         Returns
@@ -531,12 +531,12 @@ class DenseFunctionalData(FunctionalData):
         )
 
     @property
-    def range_obs(self) -> Tuple[float, float]:
+    def range_obs(self) -> Tuple[np.float64, np.float64]:
         """Get the range of the observations of the object.
 
         Returns
         -------
-        tuple
+        Tuple[np.float64, np.float64]
             Tuple containing the mimimum and maximum values taken by all the
             observations for the object.
 
@@ -544,12 +544,12 @@ class DenseFunctionalData(FunctionalData):
         return np.min(self.values), np.max(self.values)
 
     @property
-    def n_points(self) -> Dict[str, int]:
+    def n_points(self) -> Dict[np.str_, np.int64]:
         """Get the mean number of sampling points.
 
         Returns
         -------
-        Dict[str, int]
+        Dict[np.str_, np.int64]
             A dictionary with the same shape than argvals with the number of
             sampling points along each axis.
 
@@ -561,12 +561,12 @@ class DenseFunctionalData(FunctionalData):
         return {idx: len(points) for idx, points in self.argvals.items()}
 
     @property
-    def range_dim(self) -> Dict[str, Tuple[int, int]]:
+    def range_dim(self) -> Dict[np.str_, Tuple[np.int64, np.int64]]:
         """Get the range of the `argvals` for each of the dimension.
 
         Returns
         -------
-        Dict[str, Tuple[int, int]]
+        Dict[np.str_, Tuple[np.int64, np.int64]]
             Dictionary containing the range of the argvals for each of the
             input dimension.
 
@@ -577,12 +577,12 @@ class DenseFunctionalData(FunctionalData):
         }
 
     @property
-    def shape(self) -> Dict[str, int]:
+    def shape(self) -> Dict[np.str_, np.int64]:
         r"""Get the shape of the data for each dimension.
 
         Returns
         -------
-        Dict[str, int]
+        Dict[np.str_, np.int64]
             Dictionary containing the number of points for each of the
             dimension. It corresponds to :math:`m_j` for
             :math:`0 \leq j \leq p`.
@@ -621,8 +621,8 @@ class DenseFunctionalData(FunctionalData):
 
     def is_compatible(
         self,
-        fdata: FunctionalData
-    ) -> bool:
+        fdata: DenseFunctionalData
+    ) -> np.bool_:
         """Check if `fdata` is compatible with `self`.
 
         Two DenseFunctionalData object are said to be compatible if they
@@ -631,7 +631,7 @@ class DenseFunctionalData(FunctionalData):
 
         Parameters
         ----------
-        fdata: DenseFunctionalData object
+        fdata: DenseFunctionalData
             The object to compare with `self`.
 
         Returns
@@ -666,30 +666,30 @@ class DenseFunctionalData(FunctionalData):
 
     def mean(
         self,
-        smooth: Optional[str] = None,
-        **kwargs: Any
+        smooth: Optional[np.str_] = None,
+        **kwargs
     ) -> DenseFunctionalData:
         """Compute an estimate of the mean.
 
         Parameters
         ----------
-        smooth: str, default=None
+        smooth: Optional[np.str_], default=None
             Name of the smoothing method to use. Currently, not implemented.
 
         Keyword Args
         ------------
-        kernel_name: str, default='epanechnikov'
+        kernel_name: np.str_, default='epanechnikov'
             Name of the kernel used for local polynomial smoothing.
-        degree: int, default=1
+        degree: np.int64, default=1
             Degree used for local polynomial smoothing.
-        bandwidth: float, default=1
+        bandwidth: np.float64, default=1
             Bandwidth used for local polynomial smoothing.
-        n_basis: int, default=10
+        n_basis: np.int64, default=10
             Number of splines basis used for GAM smoothing.
 
         Returns
         -------
-        DenseFunctionalData object
+        DenseFunctionalData
             An estimate of the mean as a DenseFunctionalData object with the
             same argvals as `self` and one observation.
 
@@ -725,34 +725,34 @@ class DenseFunctionalData(FunctionalData):
 
     def covariance(
         self,
-        mean: Optional[FunctionalData] = None,
-        smooth: Optional[str] = None,
-        **kwargs: Any
+        mean: Optional[DenseFunctionalData] = None,
+        smooth: Optional[np.str_] = None,
+        **kwargs
     ) -> DenseFunctionalData:
         """Compute an estimate of the covariance.
 
         Parameters
         ----------
-        smooth: str, default=None
+        smooth: Optional[np.str_], default=None
             Name of the smoothing method to use. Currently, not implemented.
-        mean: DenseFunctionalData, default=None
+        mean: Optional[DenseFunctionalData], default=None
             An estimate of the mean of self. If None, an estimate is computed.
 
         Returns
         -------
-        DenseFunctionalData object
+        DenseFunctionalData
             An estimate of the covariance as a two-dimensional
             DenseFunctionalData object with same argvals as `self`.
 
         Keyword Args
         ------------
-        kernel_name: str, default='epanechnikov'
+        kernel_name: np.str_, default='epanechnikov'
             Name of the kernel used for local polynomial smoothing.
-        degree: int, default=1
+        degree: np.int64, default=1
             Degree used for local polynomial smoothing.
-        bandwidth: float, default=1
+        bandwidth: np.float64, default=1
             Bandwidth used for local polynomial smoothing.
-        n_basis: int, default=10
+        n_basis: np.int64, default=10
             Number of splines basis used for GAM smoothing.
 
         References
@@ -833,7 +833,7 @@ class DenseFunctionalData(FunctionalData):
 
     def inner_product(
         self
-    ) -> npt.NDArray:
+    ) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
 
         The inner product matrix is a ``n_obs`` by ``n_obs`` matrix where each
@@ -847,7 +847,7 @@ class DenseFunctionalData(FunctionalData):
 
         Returns
         -------
-        npt.NDArray, shape=(n_obs, n_obs)
+        npt.NDArray[np.float64], shape=(n_obs, n_obs)
             Inner product matrix of the data.
 
         Examples
@@ -945,27 +945,27 @@ class DenseFunctionalData(FunctionalData):
         points: npt.NDArray[np.float64],
         neighborhood: npt.NDArray[np.float64],
         points_estim: Optional[npt.NDArray[np.float64]] = None,
-        degree: int = 0,
-        kernel: str = "epanechnikov",
-        bandwidth: Optional[List[float]] = None
+        degree: np.int64 = 0,
+        kernel: np.str_ = "epanechnikov",
+        bandwidth: Optional[List[np.float64]] = None
     ) -> DenseFunctionalData:
         """Smooth the data.
 
         Parameters
         ----------
-        points: np.array
+        points: npt.NDArray[np.float64]
             Points at which the Bandwidth is estimated.
-        neighborhood: np.array
+        neighborhood: npt.NDArray[np.float64]
             Neighborhood considered for each each points. Should have the same
             shape than points.
-        points_estim: np.array, default=None
+        points_estim: npt.NDArray[np.float64], default=None
             Points at which the curves are estimated. The default is None,
             meaning we use the argvals as estimation points.
-        degree: int, default=2
+        degree: np.int64, default=2
             Degree for the local polynomial smoothing.
-        kernel: str, default='epanechnikov'
+        kernel: np.str_, default='epanechnikov'
             The name of the kernel to use.
-        bandwidth: Bandwidth, default=None
+        bandwidth: Optional[List[np.float64]], default=None
             An instance of Bandwidth for the smoothing.
 
         Returns
@@ -993,19 +993,19 @@ class DenseFunctionalData(FunctionalData):
 
     def pairwise_distance(
         self,
-        metric: str = 'euclidean'
+        metric: np.str_ = 'euclidean'
     ) -> npt.NDArray[np.float64]:
         """Compute the pairwise distance between the data.
 
         Parameters
         ----------
-        metric: str, default='euclidean'
+        metric: np.str_, default='euclidean'
             The metric to use when calculating distance between instances in a
             functional data object.
 
         Returns
         -------
-        D: np.ndarray, shape=(n_obs, n_obs)
+        npt.NDArray[np.float64], shape=(n_obs, n_obs)
             A distance matrix D such that D_{i, j} is the distance between the
             ith and jth observations of the functional data object,
 
@@ -1040,8 +1040,8 @@ class DenseFunctionalData(FunctionalData):
 
     def normalize(
         self,
-        use_argvals_stand: bool = False
-    ) -> Tuple[DenseFunctionalData, float]:
+        use_argvals_stand: np.bool_ = False
+    ) -> Tuple[DenseFunctionalData, np.float64]:
         r"""Normalize the data.
 
         The normalization is performed by divising each functional datum by
@@ -1049,12 +1049,12 @@ class DenseFunctionalData(FunctionalData):
 
         Parameters
         ----------
-        use_argvals_stand: bool, default=False
+        use_argvals_stand: np.bool_, default=False
             Use standardized argvals to compute the normalization of the data.
 
         Returns
         -------
-        DenseFunctionalData
+        Tuple[DenseFunctionalData, np.float64]
             The normalized data.
 
         Todo
@@ -1645,7 +1645,7 @@ class IrregularFunctionalData(FunctionalData):
 ###############################################################################
 # Class MultivariateFunctionalData
 
-class MultivariateFunctionalData(UserList[FunctionalData]):
+class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     r"""A class for defining Multivariate Functional Data.
 
     An instance of MultivariateFunctionalData is a list containing objects of
@@ -1660,54 +1660,54 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
 
     Parameters
     ----------
-    data: list
+    data: List[Type[FunctionalData]]
         The list containing the elements of the MultivariateFunctionalData.
 
     """
 
     def __init__(
         self,
-        initlist: List[FunctionalData]
+        initlist: List[Type[FunctionalData]]
     ) -> None:
         """Initialize MultivariateFunctionalData object."""
         self.data = initlist
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> np.str_:
         """Override print function."""
         return (f"Multivariate functional data object with {self.n_functional}"
                 f" functions of {self.n_obs} observations.")
 
     @property
-    def n_obs(self) -> int:
+    def n_obs(self) -> np.int64:
         """Get the number of observations of the functional data.
 
         Returns
         -------
-        n_obs: int
+        np.int64
             Number of observations within the functional data.
 
         """
         return self.data[0].n_obs if len(self) > 0 else 0
 
     @property
-    def n_functional(self) -> int:
+    def n_functional(self) -> np.int64:
         """Get the number of functional data with `self`.
 
         Returns
         -------
-        n_functional: int
+        np.int64
             Number of functions in the list.
 
         """
         return len(self)
 
     @property
-    def n_dim(self) -> List[int]:
+    def n_dim(self) -> List[np.int64]:
         """Get the dimension of the functional data.
 
         Returns
         -------
-        dim: list
+        List[np.int64]
             List containing the dimension of each component in the functional
             data.
 
@@ -1715,12 +1715,12 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
         return [i.n_dim for i in self]
 
     @property
-    def range_obs(self) -> List[Tuple[float, float]]:
+    def range_obs(self) -> List[Tuple[np.float64, np.float64]]:
         """Get the range of the observations of the object.
 
         Returns
         -------
-        (min, max): list of tuples
+        List[Tuple[np.float64, np.float64]]
             List of tuples containing the mimimum and maximum values taken by
             all the observations for the object for each function.
 
@@ -1728,12 +1728,12 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
         return [i.range_obs for i in self]
 
     @property
-    def n_points(self) -> List[Dict[str, int]]:
+    def n_points(self) -> List[Dict[np.str_, np.int64]]:
         """Get the mean number of sampling points.
 
         Returns
         -------
-        n_points: list of dict
+        List[Dict[np.str_, np.int64]]
             A list of dictionary with the same shape than argvals with the
             number of sampling points along each axis for each function.
 
@@ -1741,12 +1741,12 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
         return [i.n_points for i in self]
 
     @property
-    def range_points(self) -> List[Dict[str, Tuple[int, int]]]:
+    def range_points(self) -> List[Dict[np.str_, Tuple[np.int_, np.int_]]]:
         """Get the range of the `argvals` for each of the dimension.
 
         Returns
         -------
-        ranges: list of dict
+        List[Dict[np.str_, Tuple[np.int_, np.int_]]]
             List of dictionary containing the range of the argvals for each of
             the input dimension for each function.
 
@@ -1754,12 +1754,12 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
         return [i.range_dim for i in self]
 
     @property
-    def shape(self) -> List[Dict[str, int]]:
+    def shape(self) -> List[Dict[np.str_, np.int64]]:
         r"""Get the shape of the data for each dimension.
 
         Returns
         -------
-        shape: list of dict
+        List[Dict[np.str_, np.int64]]
             List of dictionary containing the number of points for each of the
             dimension for each function. It corresponds to :math:`m_j` for
             :math:`0 \leq j \leq p`.
@@ -1767,12 +1767,12 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
         """
         return [i.shape for i in self]
 
-    def append(self, item: FunctionalData) -> None:
+    def append(self, item: Type[FunctionalData]) -> None:
         """Add an item to `self`.
 
         Parameters
         ----------
-        item: DenseFunctionalData or IrregularFunctionalData
+        Type[FunctionalData]
             Item to add.
 
         """
@@ -1782,20 +1782,20 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
             FunctionalData._check_same_nobs(*self, item)
             self.data.append(item)
 
-    def extend(self, other: Iterable[FunctionalData]) -> None:
+    def extend(self, other: Iterable[Type[FunctionalData]]) -> None:
         """Extend the list of FunctionalData by appending from iterable."""
         super().extend(other)
 
-    def insert(self, i: int, item: FunctionalData) -> None:
+    def insert(self, i: np.int64, item: Type[FunctionalData]) -> None:
         """Insert an item `item` at a given position `i`."""
         FunctionalData._check_same_nobs(*self, item)
         self.data.insert(i, item)
 
-    def remove(self, item: FunctionalData) -> None:
+    def remove(self, item: Type[FunctionalData]) -> None:
         """Remove the first item from `self` where value is `item`."""
         raise NotImplementedError
 
-    def pop(self, i: int = -1) -> FunctionalData:
+    def pop(self, i: np.int_ = -1) -> Type[FunctionalData]:
         """Remove the item at the given position in the list, and return it."""
         return super().pop(i)
 
@@ -1816,25 +1816,25 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
         for idx in range(self.n_obs):
             yield MultivariateFunctionalData([obs[idx] for obs in self])
 
-    def get_obs(self, idx) -> MultivariateFunctionalData:
+    def get_obs(self, idx: np.int64) -> MultivariateFunctionalData:
         """Return the observation idx."""
         return MultivariateFunctionalData([obs[idx] for obs in self])
 
     def mean(
         self,
-        smooth: Optional[str] = None,
-        **kwargs: Any
+        smooth: Optional[np.str_] = None,
+        **kwargs
     ) -> MultivariateFunctionalData:
         """Compute an estimate of the mean.
 
         Parameters
         ----------
-        smooth: str, default=None
+        smooth: Optional[np.str_], default=None
             Name of the smoothing method. Currently, not implemented.
 
         Returns
         -------
-        obj: MultivariateFunctionalData object
+        MultivariateFunctionalData
             An estimate of the mean as a MultivariateFunctionalData object
             with a concatenation of the self.argvals as argvals and one
             observation.
@@ -1847,21 +1847,21 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
     def covariance(
         self,
         mean: Optional[MultivariateFunctionalData] = None,
-        smooth: Optional[str] = None,
-        **kwargs: Any
+        smooth: Optional[np.str_] = None,
+        **kwargs
     ) -> MultivariateFunctionalData:
         """Compute an estimate of the covariance.
 
         Parameters
         ----------
-        smooth: str, default=None
-            Name of the smoothing method to use. Currently, not implemented.
-        mean: MultivariateFunctionalData, default=None
+        mean: Optional[MultivariateFunctionalData], default=None
             An estimate of the mean of self. If None, an estimate is computed.
+        smooth: Optional[np.str_], default=None
+            Name of the smoothing method to use. Currently, not implemented.
 
         Returns
         -------
-        obj: MultivariateFunctionalData object
+        MultivariateFunctionalData
             An estimate of the covariance as a two-dimensional
             MultivariateFunctionalData object with same argvals as `self`.
 
@@ -1875,7 +1875,7 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
                 [i.covariance(None, smooth, **kwargs) for i in self]
             )
 
-    def inner_product(self) -> npt.NDArray:
+    def inner_product(self) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
 
         The inner product matrix is a ``n_obs`` by ``n_obs`` matrix where each
@@ -1888,7 +1888,7 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
 
         Returns
         -------
-        np.array, shape=(n_obs, n_obs)
+        npt.NDArray[np.float64], shape=(n_obs, n_obs)
             Inner product matrix of the data.
 
         Examples
@@ -1960,7 +1960,7 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
 
         Returns
         -------
-        res: MultivariateFunctionalData
+        MultivariateFunctionalData
             The concatenation of self and data.
 
         """
@@ -1969,7 +1969,7 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
 
     def normalize(
         self,
-        use_argvals_stand: bool = False
+        use_argvals_stand: np.bool_ = False
     ) -> Tuple[MultivariateFunctionalData, npt.NDArray[np.float64]]:
         r"""Normalize the data.
 
@@ -1978,12 +1978,12 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
 
         Parameters
         ----------
-        use_argvals_stand: bool, default=False
+        use_argvals_stand: np.bool_, default=False
             Use standardized argvals to compute the normalization of the data.
 
         Returns
         -------
-        MultivariateFunctionalData, npt.NDArray[np.float64]
+        Tuple[MultivariateFunctionalData, npt.NDArray[np.float64]]
             The normalized data.
 
         References
@@ -2006,8 +2006,8 @@ class MultivariateFunctionalData(UserList[FunctionalData]):
 # Functional data manipulation
 
 def _concatenate(
-    data: List[FunctionalData]
-) -> FunctionalData:
+    data: List[DenseFunctionalData]
+) -> DenseFunctionalData:
     """Concatenate multiple functional data.
 
     Concateate multiple DenseFunctionalData into one. It works with higher
@@ -2052,7 +2052,7 @@ def _tensor_product(
 
     Returns
     -------
-    data: DenseFunctionalData
+    DenseFunctionalData
         The tensor product between data1 and data2. It contains data1.n_obs *
         data2.n_obs observations.
 
@@ -2062,7 +2062,9 @@ def _tensor_product(
     * Add tests.
 
     """
-    arg = {'input_dim_0': data1.argvals['input_dim_0'],
-           'input_dim_1': data2.argvals['input_dim_0']}
+    arg = {
+        'input_dim_0': data1.argvals['input_dim_0'],
+        'input_dim_1': data2.argvals['input_dim_0']
+    }
     val = [_outer(i, j) for i in data1.values for j in data2.values]
     return DenseFunctionalData(arg, np.array(val))

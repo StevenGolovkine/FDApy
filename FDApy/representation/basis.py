@@ -11,7 +11,7 @@ import numpy.typing as npt
 import scipy
 
 from patsy import bs
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
 
 from .functional_data import DenseFunctionalData
 from .functional_data import _tensor_product
