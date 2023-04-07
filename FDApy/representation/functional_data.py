@@ -17,7 +17,7 @@ import warnings
 from abc import ABC, abstractmethod
 from collections import UserList
 from typing import (
-    Callable, cast, Any, Dict, Iterable, Iterator, Optional, List,
+    Callable, cast, Dict, Iterable, Iterator, Optional, List,
     Tuple, Type, TYPE_CHECKING, Union
 )
 
@@ -1106,14 +1106,14 @@ class IrregularFunctionalData(FunctionalData):
 
     Parameters
     ----------
-    argvals: dict
+    argvals: IrregArgvals
         The sampling points of the functional data. Each entry of the
         dictionary represents an input dimension. Then, each dimension is a
         dictionary where entries are the different observations. So, the
         observation :math:`i` for the dimension :math:`j` is a `np.ndarray`
         with shape :math:`(m^i_j,)` for :math:`0 \leq i \leq n` and
         :math:`0 \leq j \leq p`.
-    values: dict
+    values: IrregValues
         The values of the functional data. Each entry of the dictionary is an
         observation of the process. And, an observation is represented by a
         `np.ndarray` of shape :math:`(n, m_1, \dots, m_p)`. It should not
@@ -1246,7 +1246,7 @@ class IrregularFunctionalData(FunctionalData):
     def _perform_computation(
         fdata1: IrregularFunctionalData,
         fdata2: IrregularFunctionalData,
-        func: np.ufunc
+        func: Callable
     ) -> IrregularFunctionalData:
         """Perform computation defined by `func`."""
         if fdata1.is_compatible(fdata2):
@@ -1266,13 +1266,13 @@ class IrregularFunctionalData(FunctionalData):
 
     def __getitem__(
         self,
-        index: int
+        index: np.int64
     ) -> IrregularFunctionalData:
         """Overrride getitem function, called when self[index].
 
         Parameters
         ----------
-        index: int
+        index: np.int64
             The observation(s) of the object to retrive.
 
         Returns
@@ -1340,12 +1340,12 @@ class IrregularFunctionalData(FunctionalData):
         self._values = new_values
 
     @property
-    def range_obs(self) -> Tuple[float, float]:
+    def range_obs(self) -> Tuple[np.float64, np.float64]:
         """Get the range of the observations of the object.
 
         Returns
         -------
-        tuple
+        Tuple[np.float64, np.float64]
             Tuple containing the mimimum and maximum values taken by all the
             observations for the object.
 
@@ -1354,12 +1354,12 @@ class IrregularFunctionalData(FunctionalData):
         return min(min(ranges)), max(max(ranges))
 
     @property
-    def n_points(self) -> Dict[str, int]:
+    def n_points(self) -> Dict[np.str_, np.int64]:
         """Get the mean number of sampling points.
 
         Returns
         -------
-        dict
+        Dict[np.str_, np.int64]
             A dictionary with the same shape than argvals with the number of
             sampling points along each axis.
 
@@ -1370,12 +1370,12 @@ class IrregularFunctionalData(FunctionalData):
         return n_points
 
     @property
-    def range_dim(self) -> Dict[str, Tuple[int, int]]:
+    def range_dim(self) -> Dict[np.str_, Tuple[np.int64, np.int64]]:
         """Get the range of the `argvals` for each of the dimension.
 
         Returns
         -------
-        dict
+        Dict[np.str_, Tuple[np.int64, np.int64]]
             Dictionary containing the range of the argvals for each of the
             input dimension.
 
@@ -1392,12 +1392,12 @@ class IrregularFunctionalData(FunctionalData):
         }
 
     @property
-    def shape(self) -> Dict[str, int]:
+    def shape(self) -> Dict[np.str_, np.int64]:
         r"""Get the shape of the data for each dimension.
 
         Returns
         -------
-        dict
+        Dict[np.str_, np.int64]
             Dictionary containing the number of points for each of the
             dimension. It corresponds to :math:`m_j` for
             :math:`0 \leq j \leq p`.
@@ -1473,7 +1473,7 @@ class IrregularFunctionalData(FunctionalData):
 
         return DenseFunctionalData(new_argvals, new_values)
 
-    def is_compatible(self, fdata: FunctionalData) -> bool:
+    def is_compatible(self, fdata: FunctionalData) -> np.bool_:
         """Check if `fdata` is compatible with `self`.
 
         Two IrregularFunctionalData object are said to be compatible if they
@@ -1482,7 +1482,7 @@ class IrregularFunctionalData(FunctionalData):
 
         Parameters
         ----------
-        fdata : IrregularFunctionalData object
+        fdata: IrregularFunctionalData
             The object to compare with `self`.
 
         Raises
@@ -1518,19 +1518,19 @@ class IrregularFunctionalData(FunctionalData):
 
     def mean(
         self,
-        smooth: Optional[str] = None,
-        **kwargs: Any
+        smooth: Optional[np.str_] = None,
+        **kwargs
     ) -> DenseFunctionalData:
         """Compute an estimate of the mean.
 
         Parameters
         ----------
-        smooth: str, default=None
+        smooth: np.str_, default=None
             Name of the smoothing method. Currently, not implemented.
 
         Returns
         -------
-        obj: DenseFunctionalData object
+        DenseFunctionalData
             An estimate of the mean as a DenseFunctionalData object with a
             concatenation of the self.argvals as argvals and one observation.
 
@@ -1545,10 +1545,10 @@ class IrregularFunctionalData(FunctionalData):
 
     def covariance(
         self,
-        mean: Optional[FunctionalData] = None,
-        smooth: Optional[str] = None,
-        **kwargs: Any
-    ) -> FunctionalData:
+        mean: Optional[IrregularFunctionalData] = None,
+        smooth: Optional[np.str_] = None,
+        **kwargs
+    ) -> IrregularFunctionalData:
         """Compute an estimate of the covariance.
 
         Raises
@@ -1559,7 +1559,7 @@ class IrregularFunctionalData(FunctionalData):
         """
         raise NotImplementedError()
 
-    def inner_product(self) -> npt.NDArray:
+    def inner_product(self) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
 
         The inner product matrix is a ``n_obs`` by ``n_obs`` matrix where each
@@ -1584,9 +1584,9 @@ class IrregularFunctionalData(FunctionalData):
         points: npt.NDArray[np.float64],
         neighborhood: npt.NDArray[np.float64],
         points_estim: Optional[npt.NDArray[np.float64]] = None,
-        degree: int = 0,
-        kernel: str = "epanechnikov",
-        bandwidth: Optional[List[float]] = None
+        degree: np.int64 = 0,
+        kernel: np.str_ = "epanechnikov",
+        bandwidth: Optional[List[np.float64]] = None
     ) -> IrregularFunctionalData:
         """Smooth the data.
 
@@ -1596,24 +1596,24 @@ class IrregularFunctionalData(FunctionalData):
 
         Parameters
         ----------
-        points: np.array
+        points: npt.NDArray[np.float64]
             Points at which the Bandwidth is estimated.
-        neighborhood: np.array
+        neighborhood: npt.NDArray[np.float64]
             Neighborhood considered for each each points. Should have the same
             shape than points.
-        points_estim: np.array, default=None
+        points_estim: Optional[npt.NDArray[np.float64]], default=None
             Points at which the curves are estimated. The default is None,
             meaning we use the argvals as estimation points.
-        degree: int, default=0
+        degree: np.int64, default=0
             Degree for the local polynomial smoothing.
-        kernel: str, default='epanechnikov'
+        kernel: np.str_, default='epanechnikov'
             The name of the kernel to use.
-        bandwidth: Bandwidth, default=None
+        bandwidth: Optional[List[np.float64]], default=None
             An instance of Bandwidth for the smoothing.
 
         Returns
         -------
-        obj: IrregularFunctionalData
+        IrregularFunctionalData
             A smoothed version of the data.
 
         """
@@ -1772,7 +1772,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Parameters
         ----------
-        Type[FunctionalData]
+        item: Type[FunctionalData]
             Item to add.
 
         """
