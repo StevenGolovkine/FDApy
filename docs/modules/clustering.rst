@@ -4,6 +4,10 @@ Clustering
 .. automodule:: FDApy.clustering.fcubt
 	:members:
 
+
+Criteria
+--------
+
 .. automodule:: FDApy.clustering.criteria.bic
 	:members:
 

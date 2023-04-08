@@ -20,7 +20,7 @@ from .functional_data import _tensor_product
 #######################################################################
 # Definition of the basis (eigenfunctions)
 
-def basis_legendre(
+def _basis_legendre(
     argvals: npt.NDArray[np.float64],
     n_functions: np.int64 = 3,
 ) -> npt.NDArray[np.float64]:
@@ -54,7 +54,7 @@ def basis_legendre(
 
     Examples
     --------
-    >>> basis_legendre(argvals=np.arange(-1, 1, 0.1), n_functions=3)
+    >>> _basis_legendre(argvals=np.arange(-1, 1, 0.1), n_functions=3)
 
     """
     values = np.empty((n_functions, len(argvals)))
@@ -64,7 +64,7 @@ def basis_legendre(
     return values
 
 
-def basis_wiener(
+def _basis_wiener(
     argvals: npt.NDArray[np.float64],
     n_functions: np.int64 = 3
 ) -> npt.NDArray[np.float64]:
@@ -97,7 +97,7 @@ def basis_wiener(
 
     Example
     -------
-    >>> basis_wiener(argvals=np.arange(0, 1, 0.05), n_functions=3)
+    >>> _basis_wiener(argvals=np.arange(0, 1, 0.05), n_functions=3)
 
     """
     values = np.empty((n_functions, len(argvals)))
@@ -107,7 +107,7 @@ def basis_wiener(
     return values
 
 
-def basis_fourier(
+def _basis_fourier(
     argvals: npt.NDArray[np.float64],
     n_functions: np.int64 = 3,
     period: np.float64 = 2 * np.pi,
@@ -143,7 +143,7 @@ def basis_fourier(
 
     Examples
     --------
-    >>> basis_fourier(argvals=np.arange(0, 2*np.pi, 0.1), n_functions=3)
+    >>> _basis_fourier(argvals=np.arange(0, 2*np.pi, 0.1), n_functions=3)
 
     """
     n_functions = n_functions + 1 if n_functions % 2 == 0 else n_functions
@@ -156,7 +156,7 @@ def basis_fourier(
     return values[:n_functions, :]
 
 
-def basis_bsplines(
+def _basis_bsplines(
     argvals: npt.NDArray[np.float64],
     n_functions: np.int64 = 5,
     degree: np.int64 = 3,
@@ -188,7 +188,7 @@ def basis_bsplines(
 
     Examples
     --------
-    >>> basis_bsplines(argvals=np.arange(0, 1, 0.01), n_functions=5)
+    >>> _basis_bsplines(argvals=np.arange(0, 1, 0.01), n_functions=5)
 
     """
     if knots is not None:
@@ -205,7 +205,7 @@ def basis_bsplines(
     return values.T  # type: ignore
 
 
-def simulate_basis(
+def _simulate_basis(
     name: np.str_,
     argvals: npt.NDArray[np.float64],
     n_functions: np.int64 = 3,
@@ -242,7 +242,7 @@ def simulate_basis(
 
     Example
     -------
-    >>> simulate_basis(
+    >>> _simulate_basis(
     ...     'legendre',
     ...     n_functions=3,
     ...     argvals=np.arange(-1, 1, 0.1),
@@ -251,15 +251,15 @@ def simulate_basis(
 
     """
     if name == 'legendre':
-        values = basis_legendre(argvals, n_functions)
+        values = _basis_legendre(argvals, n_functions)
     elif name == 'wiener':
-        values = basis_wiener(argvals, n_functions)
+        values = _basis_wiener(argvals, n_functions)
     elif name == 'fourier':
-        values = basis_fourier(
+        values = _basis_fourier(
             argvals, n_functions, kwargs.get('period', 2 * np.pi)
         )
     elif name == 'bsplines':
-        values = basis_bsplines(
+        values = _basis_bsplines(
             argvals, n_functions,
             kwargs.get('degree', 3), kwargs.get('knots', None)
         )
@@ -290,7 +290,7 @@ class Basis(DenseFunctionalData):
         The number of functions in the 2D basis will be :math:`n_function^2`.
     argvals: Optional[Dict[np.str_, npt.NDArray[np.float64]]]
         The sampling points of the functional data. Each entry of the
-        dictionary represents an input dimension. The shape of the :math:`j`th
+        dictionary represents an input dimension. The shape of the :math:`j` th
         dimension is :math:`(m_j,)` for :math:`0 \leq j \leq p`.
     norm: np.bool_, default=False
         Should we normalize the basis function?
@@ -328,7 +328,7 @@ class Basis(DenseFunctionalData):
                 'Only one dimensional basis are implemented.'
             )
 
-        values = simulate_basis(
+        values = _simulate_basis(
             name, argvals['input_dim_0'], n_functions, norm, **kwargs
         )
 
