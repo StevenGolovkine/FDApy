@@ -2,13 +2,13 @@
 # -*-coding:utf8 -*
 
 """
-Module for the definition for Functional Linear Mixed Models.
+Functional Linear Mixed Models
+------------------------------
 
-This module is used to implements algorithms FLMM. It is used to model the
-variance containing within functional data.
 """
 import itertools
 import numpy as np
+import numpy.typing as npt
 
 from typing import Dict, Optional, List, Union
 
@@ -19,52 +19,46 @@ from ..representation.functional_data import (
 )
 from ..misc.utils import _integration_weights
 
-###############################################################################
-# Checkers for parameters
-
 
 ###############################################################################
 # Class FLMM
-
-
 class FLMM():
-    """A class defining Functional Linear Mixed Model.
+    """Class defining Functional Linear Mixed Model.
 
     Estimation of functional linear mixed models (FLMMs) for functional data
     based on functional principal components analysis (FPCA).
 
     Parameters
     ----------
-    n_components: list of {int, float, None}, default=None
-        Number of components to keep for each grouping factors in data.
-
-        If `n_components` is an integer, we keep `n_components`.
-
-        If `0 < n_components < 1`, we select the number of components such that
-        the amount of explained variance is greater than the percentage
-        specified by `n_components`.
-    smooth: str
+    n_components: Optional[List[Union[int, float]]], default=None
+        Number of components to keep. If `n_components` is `None`, all
+        components are kept, ``n_components == min(n_samples, n_features)``.
+        If `n_components` is an integer, `n_components` are kept. If
+        `0 < n_components < 1`, select the number of components such that the
+        amount of variance that needs to be explained is greater than the
+        percentage specified by `n_components`.
+    smooth: Optional[str]
         Method to used for the smoothing of the covariance surfaces.
 
     Attributes
     ----------
-    sigma2: float
+    sigma2: np.float64
         Estimated measurement error variance :math:`sigma^2`.
-    total_var: float
+    total_var: np.float64
         Total average variance of the curves.
-    explained_var: float
+    explained_var: np.float64
         Level of variance explained by the selected functional principal
         components (+ error variance).
-    error_var: float
+    error_var: np.float64
         Variance of the error.
-    nu: Dictionary of np.ndarray
+    nu: Dict[npt.NDArray[np.float64]]
         Dictionary of array containing the estimated eigenvalues.
-    xi: List of np.ndarray
+    xi: Dict[npt.NDArray[np.float64]]
         List of array containing the predicted random basis weights.
-    phi: List of DenseFunctionalData
+    phi: List[DenseFunctionalData]
         List of FD containing the functional principal components kept per
         grouping factors, with the smooth errors.
-    random_effects: List of DenseFunctionalData
+    random_effects: List[DenseFunctionalData]
         List of FD containing the estimated random effects.
 
     References
@@ -78,7 +72,7 @@ class FLMM():
 
     def __init__(
         self,
-        n_components: List[Union[int, float, None]] = None,
+        n_components: Optional[List[Union[int, float]]] = None,
         smooth: Optional[str] = None
     ) -> None:
         """Initialize FLMM object."""
@@ -88,9 +82,9 @@ class FLMM():
     def fit(
         self,
         data: FunctionalData,
-        n_factors: int,
-        n_levels: List[int],
-        group_list: Dict[int, Dict[int, np.ndarray]],
+        n_factors: np.int64,
+        n_levels: List[np.int64],
+        group_list: Dict[np.int64, Dict[np.int64, npt.NDArray[np.float64]]],
         **kwargs
     ) -> None:
         """Fit the model on data.
@@ -99,26 +93,26 @@ class FLMM():
         ----------
         data: FunctionalData
             Training data.
-        n_factors: int
+        n_factors: np.int64
             Number of grouping factors not used for the estimation of the error
             variance.
-        n_levels: List of int
+        n_levels: List[np.int64]
             List containing the number of levels for each grouping factors.
-        group_list: Dictionary
+        group_list: Dict[np.int64, Dict[np.int64, npt.NDArray[np.float64]]]
             Dictionary of design matrices.
 
         Keyword Args
         ------------
 
         """
-        self._fit(data, n_factors, n_levels, group_list)
+        self._fit(data, n_factors, n_levels, group_list, **kwargs)
 
     def _fit(
         self,
         data: FunctionalData,
-        n_factors: int,
-        n_levels: List[int],
-        group_list: Dict[int, Dict[int, np.ndarray]],
+        n_factors: np.int64,
+        n_levels: List[np.int64],
+        group_list: Dict[np.int64, Dict[np.int64, npt.NDArray[np.float64]]],
         **kwargs
     ) -> None:
         """Dispatch ot the right submethod depending on the input."""
@@ -127,15 +121,17 @@ class FLMM():
         elif isinstance(data, IrregularFunctionalData):
             self._fit_irregular(data)
         else:
-            raise TypeError('FLMM supports DenseFunctionalData and '
-                            'IrregularFunctionalData objects!')
+            raise TypeError(
+                'FLMM supports DenseFunctionalData and '
+                'IrregularFunctionalData objects!'
+            )
 
     def _fit_dense(
         self,
         data: DenseFunctionalData,
-        n_factors: int,
-        n_levels: List[int],
-        group_list: Dict[int, Dict[int, np.ndarray]]
+        n_factors: np.int64,
+        n_levels: List[np.int64],
+        group_list: Dict[np.int64, Dict[np.int64, npt.NDArray[np.float64]]]
     ) -> None:
         r"""Functional Linear Mixte Model for Dense Functional Data.
 
@@ -143,12 +139,12 @@ class FLMM():
         ----------
         data: DenseFunctionalData
             Training data.
-        n_factors: int
+        n_factors: np.int64
             Number of grouping factors not used for the estimation of the error
             variance.
-        n_levels: List of int
+        n_levels: List[np.int64]
             List containing the number of levels for each grouping factors.
-        group_list: Dictionary
+        group_list: Dict[np.int64, Dict[np.int64, npt.NDArray[np.float64]]]
             Dictionary of design matrices.
 
         References
@@ -282,8 +278,7 @@ class FLMM():
         # Step 7: Predict basis weights
         zty = np.concatenate([
             _zty_entry_(data.values, z[0], phi.T)
-            for (idx, z), (_, phi) in zip(group_list.items(),
-                                          phis_estim.items())
+            for (_, z), (_, phi) in zip(group_list.items(), phis_estim.items())
         ])
 
         ztz_dict = {

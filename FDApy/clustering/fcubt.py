@@ -187,25 +187,25 @@ class _Node():
     ----------
     data: FunctionalData
         The data as FunctionalData object.
-    identifier: Tuple[int, int]
+    identifier: Tuple[np.int64, np.int64]
         An unique identifier of the node. The format is (depth, position). If
         the Node is a root node, the id will be (0, 0). Then, for a node with
         identifier (d, j), the identifier of the left child will be
         (d + 1, 2 * j) and the identifier of the right node will be
         (d + 1, 2 * j + 1).
-    idx_obs: np.array, shape=(n_samples,), default=None
+    idx_obs: npt.NDArray[np.float64], shape=(n_samples,), default=None
         Array to remember the observation in the node. If None, it will be
         initialized as np.arange(data.n_obs).
-    is_root: boolean
+    is_root: np.bool_
         Is the node a root node?
-    is_leaf: boolean
+    is_leaf: np.bool_
         Is the node a leaf node?
-    normalize: bool, default=False
+    normalize: np.bool_, default=False
         Perform a normalization of the data.
 
     Attributes
     ----------
-    labels: np.array, shape (n_samples,)
+    labels: npt.NDArray[np.float64], shape=(n_samples,)
         Component labels.
     left: _Node
         Left child of the node.
@@ -329,7 +329,7 @@ class _Node():
     def split(
         self,
         splitting_criteria: np.str_ = 'bic',
-        n_components: Union[np.float64, np.int64, None] = 1,
+        n_components: Optional[Union[np.float64, np.int64]] = 1,
         min_size: np.int64 = 10,
         max_group: np.int64 = 5
     ) -> None:
@@ -337,18 +337,20 @@ class _Node():
 
         Parameters
         ----------
-        splitting_criteria: str, {'gap', 'bic'}, default='bic'
+        splitting_criteria: np.str_, {'gap', 'bic'}, default='bic'
             The splitting criteria used to decide if a split is done or not.
-        n_components: int, float, None, default=None
-            Number of components to keep.
-            if n_components is int, n_components are kept.
-            if 0 < n_components < 1, select the number of components such that
-            the amount of variance that needs to be explained is greater than
-            the percentage specified by n_components.
-        min_size: int, default=10
+        n_components: Optional[Union[np.float64, np.int64]], default=None
+            Number of components to keep. If `n_components` is `None`, all
+            components are kept,
+            ``n_components == min(n_samples, n_features)``. If `n_components`
+            is an integer, `n_components` are kept. If `0 < n_components < 1`,
+            select the number of components such that the amount of variance
+            that needs to be explained is greater than the percentage specified
+            by `n_components`.
+        min_size: np.int64, default=10
             Minimum number of observation within the node in order to try to
             be split.
-        max_group: int, default=5
+        max_group: np.int64, default=5
             Number of models to try to split the data.
 
         """
@@ -534,20 +536,22 @@ class _Node():
 
         Parameters
         ----------
-        axes: matplotlib.axes
+        axes: Optional[Axes]
             Axes object onto which the objects are plotted.
-        **plt_kwargs:
+        **plt_kwargs
             Keywords plotting arguments.
 
         Returns
         -------
-        axes: matplotlib.axes
+        Axes
             Axes object containing the graphs.
 
         """
         if self.data.n_dim > 1:
-            raise ValueError("Prediction is not available for data with "
-                             "dimension strictly greater than 1.")
+            raise ValueError(
+                "Prediction is not available for data with "
+                "dimension strictly greater than 1."
+            )
         if axes is None:
             axes = plt.gca()
 
@@ -577,11 +581,11 @@ class FCUBT():
     ----------
     tree: List[N]
         A tree represented as a list of _Node.
-    n_nodes: np.int_
+    n_nodes: np.int64
         Number of nodes in the tree.
     mapping: Dict[N, np.float64]
         A mapping between leaf nodes and cluster labels.
-    labels: npt.NDArray[np.float64], shape (n_samples,)
+    labels: npt.NDArray[np.float64], shape=(n_samples,)
         Component labels after the tree has been grown.
     n_nodes: np.int64
         Number of nodes in the tree.
@@ -653,7 +657,7 @@ class FCUBT():
 
     def grow(
         self,
-        n_components: Union[np.float64, np.int64, None] = 0.95,
+        n_components: Optional[Union[np.float64, np.int64]] = 0.95,
         min_size: np.int64 = 10,
         max_group: np.int64 = 5
     ) -> None:
@@ -669,7 +673,7 @@ class FCUBT():
 
     def join(
         self,
-        n_components: Union[np.float64, np.int64, None] = 0.95,
+        n_components: Optional[Union[np.float64, np.int64]] = 0.95,
         max_group: np.int64 = 5
     ) -> None:
         """Join elements of the tree."""
@@ -683,7 +687,7 @@ class FCUBT():
     def predict(
         self,
         new_data: Union[T, M],
-        step: np.str_ = "join"
+        step: np.str_ = 'join'
     ) -> npt.NDArray[np.float64]:
         """Predict labels for a set of new observation."""
         if isinstance(new_data, DenseFunctionalData):
@@ -698,7 +702,7 @@ class FCUBT():
     def predict_proba(
         self,
         new_data: Union[T, M],
-        step: np.str_ = "join"
+        step: np.str_ = 'join'
     ) -> npt.NDArray[np.float64]:
         """Predict the probability for new obs to be in each classes."""
         if isinstance(new_data, DenseFunctionalData):
@@ -779,26 +783,25 @@ class FCUBT():
             A list of tuple where each tuple represent a siblings couple.
 
         """
-        return set([
-            (
-                self.get_node(node.identifier),
-                self.get_node((node.identifier[0], node.identifier[1] + 1))
-            ) for node in self.tree
+        return set([(
+            self.get_node(node.identifier),
+            self.get_node((node.identifier[0], node.identifier[1] + 1))
+        ) for node in self.tree
             if node.is_leaf and node.identifier[1] % 2 == 0
         ])
 
     def plot(
         self,
-        fig: Figure = None,
+        fig: Optional[Figure] = None,
         **plt_kwargs
     ) -> None:
         """Plot the tree.
 
         Parameters
         ----------
-        fig: matplotlib.figure.Figure
+        fig: Optional[Figure]
             A matplotlib Figure object.
-        **plt_kwargs:
+        **plt_kwargs
             Keywords plotting arguments
 
         """
@@ -826,7 +829,7 @@ class FCUBT():
     def _recursive_clustering(
         self,
         list_nodes: List[N],
-        n_components: Union[np.int64, np.float64, None] = 0.95,
+        n_components: Optional[Union[np.int64, np.float64]] = 0.95,
         min_size: np.int64 = 10,
         max_group: np.int64 = 5
     ) -> List[N]:
@@ -855,7 +858,7 @@ class FCUBT():
         self,
         list_nodes: List[N],
         siblings: Set[Tuple[np.int64, np.int64]],
-        n_components: Union[np.int64, np.float64, None] = 0.95,
+        n_components: Optional[Union[np.int64, np.float64]] = 0.95,
         max_group: np.int64 = 5
     ) -> List[N]:
         """Perform the joining recursively.
@@ -866,7 +869,7 @@ class FCUBT():
             List of nodes to consider for the joining.
         siblings: Set[Tuple[np.int64, np.int64]]
             Set of tuples where each tuple contains two siblings nodes.
-        n_components: Union[np.int64, np.float64, None], default=0.95
+        n_components: Optional[Union[np.int64, np.float64]], default=0.95
             Number of components to keep for the aggregation of the nodes.
         max_group: np.int64, default=5
             Number of models to try to split the data.

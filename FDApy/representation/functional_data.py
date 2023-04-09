@@ -343,7 +343,7 @@ class FunctionalData(ABC):
 ###############################################################################
 # Class DenseFunctionalData
 class DenseFunctionalData(FunctionalData):
-    r"""A class for defining Dense Functional Data.
+    r"""Class for defining Dense Functional Data.
 
     A class used to define dense functional data. We denote by :math:`n`, the
     number of observations and by :math:`p`, the number of input dimensions.
