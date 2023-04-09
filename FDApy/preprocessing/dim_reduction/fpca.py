@@ -37,20 +37,20 @@ class UFPCA():
 
     Parameters
     ----------
-    method: str, {'covariance', 'inner-product'}, default='covariance'
+    method: np.str_, {'covariance', 'inner-product'}, default='covariance'
         Method used to estimate the eigencomponents. If
         ``method == 'covariance'``, the estimation is based on an
         eigendecomposition of the covariance operator. If
         ``method == 'inner-product'``, the estimation is based on an
         eigendecomposition of the inner-product matrix.
-    n_components: Union[int, float, None], default=None
+    n_components: Optional[Union[np.int64, np.float64]], default=None
         Number of components to keep. If `n_components` is `None`, all
         components are kept, ``n_components == min(n_samples, n_features)``.
         If `n_components` is an integer, `n_components` are kept. If
         `0 < n_components < 1`, select the number of components such that the
         amount of variance that needs to be explained is greater than the
         percentage specified by `n_components`.
-    normalize: bool, default=False
+    normalize: np.bool_, default=False
         Perform a normalization of the data.
 
     Attributes
@@ -70,9 +70,9 @@ class UFPCA():
 
     def __init__(
         self,
-        method: str = 'covariance',
-        n_components: Union[int, float, None] = None,
-        normalize: bool = False
+        method: np.str_ = 'covariance',
+        n_components: Optional[Union[np.int64, np.float64]] = None,
+        normalize: np.bool_ = False
     ) -> None:
         """Initaliaze UFPCA object."""
         self.n_components = n_components
@@ -142,7 +142,7 @@ class UFPCA():
         ----------
         data: DenseFunctionalData
             Training data.
-        covariance: DenseFunctionalData, default=None
+        covariance: Optional[DenseFunctionalData], default=None
             An estimation of the covariance of the training data.
 
         References
@@ -237,7 +237,7 @@ class UFPCA():
     def transform(
         self,
         data: DenseFunctionalData,
-        method: str = 'NumInt',
+        method: np.str_ = 'NumInt',
         **kwargs
     ) -> npt.NDArray[np.float64]:
         r"""Apply dimensionality reduction to the data.
@@ -249,10 +249,10 @@ class UFPCA():
         .. math::
             c_{ik} = \int_{\mathcal{T}} \{X_i(t) - \mu(t)\}\phi_k(t)dt.
 
-        This integrale can be estimated using two ways. First, if data are
+        This integral can be estimated using two ways. First, if data are
         sampled on a common fine grid, the estimation is done using
         numerical integration. Second, the PACE (Principal Components through
-        Conditional Expectation) algorithm [YMW]_ is used for sparse functional
+        Conditional Expectation) algorithm [1]_ is used for sparse functional
         data. If the eigenfunctions have been estimated using the inner-product
         matrix, the scores can also be estimated using the formula
 
@@ -266,10 +266,10 @@ class UFPCA():
         ----------
         data: DenseFunctionalData
             Data
-        method: str, {'NumInt', 'PACE', 'InnPro'}, default='NumInt'
+        method: np.str_, {'NumInt', 'PACE', 'InnPro'}, default='NumInt'
             Method used to estimate the scores. If ``method == 'NumInt'``,
             numerical integration method is performed. If
-            ``method == 'PACE'``, the PACE algorithm [YMW]_ is used. If
+            ``method == 'PACE'``, the PACE algorithm [1]_ is used. If
             ``method == 'InnPro'``, the estimation is performed using the
             inner product matrix of the data (can only be used if the
             eigencomponents have been estimated using the inner-product
@@ -292,7 +292,7 @@ class UFPCA():
 
         References
         ----------
-        .. [YMW] Yao, Müller and Wang (2005), Functional Data Analysis for
+        .. [1] Yao, Müller and Wang (2005), Functional Data Analysis for
             Sparse Longitudinal Data, Journal of the American Statistical
             Association, Vol. 100, No. 470.
 
@@ -356,7 +356,7 @@ class UFPCA():
 
         References
         ----------
-        .. [YWM] Yao, Müller and Wang (2005), Functional Data Analysis for
+        .. [1] Yao, Müller and Wang (2005), Functional Data Analysis for
             Sparse Longitudinal Data, Journal of the American Statistical
             Association, Vol. 100, No. 470.
 
@@ -373,7 +373,7 @@ class UFPCA():
     def _numerical_integration(
         self,
         data: DenseFunctionalData,
-        method: str = "trapz"
+        method: np.str_ = "trapz"
     ) -> npt.NDArray[np.float64]:
         """Estimate scores using numerical integration.
 
@@ -381,7 +381,7 @@ class UFPCA():
         ----------
         data: DenseFunctionalData
             Data
-        method: str, {'trapz', 'simpson'}, default='trapz'
+        method: np.str_, {'trapz', 'simpson'}, default='trapz'
             Method used to perform numerical integration.
 
         Returns
@@ -465,26 +465,26 @@ class MFPCA():
 
     Parameters
     ----------
-    method: str, {'covariance', 'inner-product'}, default='covariance'
+    method: np.str_, {'covariance', 'inner-product'}, default='covariance'
         Method used to estimate the eigencomponents. If
         ``method == 'covariance'``, the estimation is based on an
         eigendecomposition of the covariance operator of each univariate
         components. If ``method == 'inner-product'``, the estimation is
         based on an eigendecomposition of the inner-product matrix.
-    n_components: List[Union[int, float, None]], default=None
+    n_components: Optional[List[Union[np.int64, np.float64]]], default=None
         Number of components to keep. If ``method=='covariance'``,
         `n_components` should be a list of length :math:`P`. Each entry
         represents the variance explained by each univariate component. Note
         that for 2-dimensional data, `n_components` has to be an integer, as we
         use the FCP-TPA algorithm. If ``method=='inner-product'``,
         `n_components` should not be a list and represents the variance
-        explained by the multivariate components.
-        If `n_components` is `None`, all components are kept,
+        explained by the multivariate components. If `n_components` is `None`,
+        all components are kept,
         ``n_components == min(n_samples, n_features)``. If `n_components` is an
         integer, `n_components` are kept. If `0 < n_components < 1`, select the
         number of components such that the amount of variance that needs to be
         explained is greater than the percentage specified by `n_components`.
-    normalize: bool, default=False
+    normalize: np.bool_, default=False
         Perform a normalization of the data.
 
     Attributes
@@ -504,9 +504,9 @@ class MFPCA():
 
     def __init__(
         self,
-        method: str = 'covariance',
-        n_components: List[Union[int, float, None]] = None,
-        normalize: bool = False
+        method: np.str_ = 'covariance',
+        n_components: Optional[List[Union[np.int64, np.float64]]] = None,
+        normalize: np.bool_ = False
     ) -> None:
         """Initialize MFPCA object."""
         self.n_components = n_components
@@ -517,24 +517,24 @@ class MFPCA():
     def fit(
         self,
         data: MultivariateFunctionalData,
-        scores_method: str = 'NumInt'
+        scores_method: np.str_ = 'NumInt'
     ) -> None:
         """Estimate the eigencomponents of the data.
 
         Before estimating the eigencomponents, the data is centered. Using the
-        covariance operator, the estimation is based on [2]_.
+        covariance operator, the estimation is based on [1]_.
 
         Parameters
         ----------
         data: MultivariateFunctionalData
             Training data used to estimate the eigencomponents.
-        scores_method: str, {'NumInt', 'PACE'}, default='NumInt'
+        scores_method: np.str_, {'NumInt', 'PACE'}, default='NumInt'
             Method for the estimation of the univariate scores for the
             diagonalization of the covariance operator.
 
         References
         ----------
-        .. [2] Happ C. & Greven S. (2018) Multivariate Functional Principal
+        .. [1] Happ C. & Greven S. (2018) Multivariate Functional Principal
             Component Analysis for Data Observed on Different (Dimensional)
             Domains, Journal of the American Statistical Association, 113:522,
             649-659, DOI: 10.1080/01621459.2016.1273115
@@ -573,7 +573,7 @@ class MFPCA():
     def _fit_covariance(
         self,
         data: MultivariateFunctionalData,
-        scores_method: str = 'NumInt'
+        scores_method: np.str_ = 'NumInt'
     ) -> None:
         """Multivariate Functional PCA.
 
@@ -581,7 +581,7 @@ class MFPCA():
         ----------
         data: MultivariateFunctionalData
             Training data.
-        scores_method: str, {'NumInt', 'PACE'}, default='NumInt'
+        scores_method: np.str_, {'NumInt', 'PACE'}, default='NumInt'
             Method for the estimation of the univariate scores.
 
         """
@@ -705,7 +705,7 @@ class MFPCA():
     def transform(
         self,
         data: MultivariateFunctionalData,
-        method: str = 'NumInt',
+        method: np.str_ = 'NumInt',
         **kwargs
     ) -> npt.NDArray[np.float64]:
         r"""Apply dimensionality reduction to the data.
@@ -718,7 +718,7 @@ class MFPCA():
             c_{ik} = \sum_{p = 1}^P \int_{\mathcal{T}_p} \{X_i^{(p)}(t) -
             \mu^{(p)}(t)\}\phi_k^{(p)}(t)dt.
 
-        This integrale can be estimated using numerical integration. If the
+        This integral can be estimated using numerical integration. If the
         eigenfunctions have been estimated using the inner-product matrix, the
         scores can also be estimated using the formula
 
@@ -732,7 +732,7 @@ class MFPCA():
         ----------
         data: MultivariateFunctionalData
             Data
-        method: str, {'NumInt', 'InnPro'}, default='NumInt'
+        method: np.str_, {'NumInt', 'InnPro'}, default='NumInt'
             Method used to estimate the scores. If ``method == 'NumInt'``,
             numerical integration method is performed. If
             ``method == 'InnPro'``, the estimation is performed using the
@@ -742,7 +742,7 @@ class MFPCA():
 
         Keyword Args
         ------------
-        integration_method: str, {'trapz', 'simpson'}, default='trapz'
+        integration_method: np.str_, {'trapz', 'simpson'}, default='trapz'
             Method used to perform numerical integration, only used if
             ``method == 'NumInt'``.
 
@@ -758,11 +758,11 @@ class MFPCA():
         directly estimate the scores using the projection of the data onto the
         multivariate eigenfunctions and not use the univariate components and
         the decomposition of the covariance of the univariate scores as Happ
-        and Greven [2]_ could do.
+        and Greven [1]_ could do.
 
         References
         ----------
-        .. [2] Happ C. & Greven S. (2018) Multivariate Functional Principal
+        .. [1] Happ C. & Greven S. (2018) Multivariate Functional Principal
             Component Analysis for Data Observed on Different (Dimensional)
             Domains, Journal of the American Statistical Association, 113:522,
             649-659, DOI: 10.1080/01621459.2016.1273115
@@ -811,7 +811,7 @@ class MFPCA():
     def _numerical_integration(
         self,
         data: MultivariateFunctionalData,
-        method: str = "trapz"
+        method: np.str_ = "trapz"
     ) -> npt.NDArray[np.float64]:
         """Estimate scores using numerical integration.
 
@@ -819,7 +819,7 @@ class MFPCA():
         ----------
         data: MultivariateFunctionalData
             Data
-        method: str, {'trapz', 'simpson'}, default='trapz'
+        method: np.str_, {'trapz', 'simpson'}, default='trapz'
             Method used to perform numerical integration.
 
         Returns
