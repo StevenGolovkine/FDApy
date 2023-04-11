@@ -10,7 +10,6 @@ import numpy as np
 import numpy.typing as npt
 import scipy
 
-from patsy import bs
 from typing import Dict, Optional
 
 from .functional_data import DenseFunctionalData
@@ -160,12 +159,12 @@ def _basis_bsplines(
     argvals: npt.NDArray[np.float64],
     n_functions: np.int64 = 5,
     degree: np.int64 = 3,
-    knots: Optional[npt.NDArray[np.float64]] = None,
 ) -> npt.NDArray[np.float64]:
     """Define B-splines basis of function.
 
     Build a basis of :math:`n_functions` functions using B-splines basis on the
-    interval defined by ``argvals``.
+    interval defined by ``argvals``. We assume that the knots are not given,
+    and we compute them from the quantiles of the ``argvals``.
 
     Parameters
     ----------
@@ -175,10 +174,6 @@ def _basis_bsplines(
         Number of considered B-splines.
     degree: np.int64, default=3
         Degree of the B-splines. The default gives cubic splines.
-    knots: Optional[npt.NDArray[np.float64]], (n_knots,)
-        Specify the break points defining the B-splines. If ``knots``
-        are provided, the provided value of ``n_functions`` is ignored. And the
-        number of basis functions is ``n_knots + degree - 1``.
 
     Returns
     -------
@@ -191,20 +186,22 @@ def _basis_bsplines(
     >>> _basis_bsplines(argvals=np.arange(0, 1, 0.01), n_functions=5)
 
     """
-    if knots is not None:
-        n_knots = len(knots)
-        n_functions = n_knots + degree - 1
-    else:
-        n_knots = n_functions - degree + 1
-        knots = np.linspace(argvals[0], argvals[-1], n_knots)
-
-    # patsy is not maintained anymore.
-    # replace with scipy.interpolate.splev
-    values = bs(
-        argvals, df=n_functions, knots=knots[1:-1],
-        degree=degree, include_intercept=True
+    # TODO: Add checkers
+    order = degree + 1
+    n_inner_knots = n_functions - order
+    inner_knots = np.linspace(0, 1, n_inner_knots + 2)[1:-1]
+    lower_bound, upper_bound = np.min(argvals), np.max(argvals)
+    knots = np.sort(
+        np.concatenate(([lower_bound, upper_bound] * order, inner_knots))
     )
-    return values.T  # type: ignore
+
+    n_bases = len(knots) - order  # Should be equal to n_functions
+    basis = np.empty((argvals.shape[0], n_bases), dtype=float)
+    for i in range(n_bases):
+        coefs = np.zeros((n_bases,))
+        coefs[i] = 1
+        basis[:, i] = scipy.interpolate.splev(argvals, (knots, coefs, degree))
+    return basis.T
 
 
 def _simulate_basis(
@@ -233,8 +230,6 @@ def _simulate_basis(
         The period of the circular functions for the Fourier basis.
     degree: np.int64, default = 3
         Degree of the B-splines. The default gives cubic splines.
-    knots: npt.NDArray[np.float64], (n_knots,)
-        Specify the break points defining the B-splines.
 
     Returns
     -------
@@ -261,10 +256,7 @@ def _simulate_basis(
             argvals, n_functions, kwargs.get('period', 2 * np.pi)
         )
     elif name == 'bsplines':
-        values = _basis_bsplines(
-            argvals, n_functions,
-            kwargs.get('degree', 3), kwargs.get('knots', None)
-        )
+        values = _basis_bsplines(argvals, n_functions, kwargs.get('degree', 3))
     else:
         raise NotImplementedError(f'Basis {name!r} not implemented!')
 

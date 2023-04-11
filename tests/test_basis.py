@@ -63,13 +63,6 @@ class TestBasis(unittest.TestCase):
             np.array([[1., 0., 0.],[0., 1., 1.]])
         )
 
-    def test_basis_bsplines_with_knots(self):
-        X = Basis(name='bsplines', n_functions=2, argvals=self.argvals, degree=0, knots=np.array([0.25, 0.5, 0.75]))
-        np.testing.assert_allclose(
-            X.values,
-            np.array([[1., 0., 0.],[0., 1., 1.]])
-        )
-
     def test_multibasis(self):
         X = Basis(name='legendre', n_functions=2, dimension='2D', argvals=self.argvals)
         np.testing.assert_allclose(
