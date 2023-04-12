@@ -196,9 +196,7 @@ def _basis_bsplines(
     inner_knots = np.linspace(0, 1, n_inner_knots + 2)
     inner_knots = np.quantile(argvals, inner_knots)
     knots = np.pad(inner_knots, (degree, degree), 'edge')
-
-    n_bases = len(knots) - (degree + 1)
-    coefs = np.eye(n_bases)
+    coefs = np.eye(n_functions)
     basis = scipy.interpolate.splev(argvals, (knots, coefs, degree))
     return np.vstack(basis)
 

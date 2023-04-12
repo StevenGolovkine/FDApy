@@ -5,7 +5,6 @@ networkx
 numpy
 numpydoc
 pandas
-patsy
 pillow
 pygam
 scikit-learn

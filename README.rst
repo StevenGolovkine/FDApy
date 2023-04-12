@@ -77,7 +77,6 @@ Requirements
 * `matplotlib <https://github.com/matplotlib/matplotlib>`_ - Plotting with Python
 * `numpy <https://github.com/numpy/numpy>`_ - The fundamental package for scientific computing with Python
 * `pandas <https://github.com/pandas-dev/pandas>`_ - Powerful Python data analysis toolkit
-* `patsy <https://github.com/pydata/patsy>`_ - Describing statisticals models in Python using symbolic formulas. 
 * `pygam <https://github.com/dswah/pyGAM>`_ - Generalized Additive Models in Python
 * `scikit-learn <https://github.com/scikit-learn/scikit-learn>`_ - Machine learning in Python
 * `scipy <https://github.com/scipy/scipy>`_ - Scientific computation in Python
