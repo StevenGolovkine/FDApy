@@ -186,28 +186,27 @@ def _basis_bsplines(
     >>> _basis_bsplines(argvals=np.arange(0, 1, 0.01), n_functions=5)
 
     """
-    # TODO: Add checkers
-    order = degree + 1
-    n_inner_knots = n_functions - order
-    inner_knots = np.linspace(0, 1, n_inner_knots + 2)[1:-1]
-    lower_bound, upper_bound = np.min(argvals), np.max(argvals)
-    knots = np.sort(
-        np.concatenate(([lower_bound, upper_bound] * order, inner_knots))
-    )
+    n_inner_knots = n_functions - degree - 1
+    if n_inner_knots < 0:
+        raise ValueError(
+            f"n_functions={n_functions} is too small for degree={degree}; "
+            f"must be >= {degree + 1}."
+        )
 
-    n_bases = len(knots) - order  # Should be equal to n_functions
-    basis = np.empty((argvals.shape[0], n_bases), dtype=float)
-    for i in range(n_bases):
-        coefs = np.zeros((n_bases,))
-        coefs[i] = 1
-        basis[:, i] = scipy.interpolate.splev(argvals, (knots, coefs, degree))
-    return basis.T
+    inner_knots = np.linspace(0, 1, n_inner_knots + 2)
+    inner_knots = np.quantile(argvals, inner_knots)
+    knots = np.pad(inner_knots, (degree, degree), 'edge')
+
+    n_bases = len(knots) - (degree + 1)
+    coefs = np.eye(n_bases)
+    basis = scipy.interpolate.splev(argvals, (knots, coefs, degree))
+    return np.vstack(basis)
 
 
 def _simulate_basis(
     name: np.str_,
     argvals: npt.NDArray[np.float64],
-    n_functions: np.int64 = 3,
+    n_functions: np.int64 = 5,
     norm: np.bool_ = False,
     **kwargs
 ) -> npt.NDArray[np.float64]:
@@ -219,7 +218,7 @@ def _simulate_basis(
         Name of the basis to use.
     argvals: npt.NDArray[np.float64]
         The values on which the basis functions are evaluated.
-    n_functions: np.int64, default=3
+    n_functions: np.int64, default=5
         Number of functions to compute.
     norm: np.bool_
         Should we normalize the functions?

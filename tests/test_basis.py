@@ -102,3 +102,8 @@ class TestBasisFails(unittest.TestCase):
         with self.assertRaises(ValueError) as cm:
             Basis(name='legendre', n_functions=2, argvals=self.argvals_1d, dimension='3D')
         self.assertTrue('dimension' in str(cm.exception))
+
+    def test_basis_bsplines_fail(self):
+        with self.assertRaises(ValueError) as cm:
+            Basis(name='bsplines', n_functions=2, argvals=self.argvals_1d, degree=2)
+        self.assertTrue('small' in str(cm.exception))
