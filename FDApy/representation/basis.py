@@ -292,8 +292,6 @@ class Basis(DenseFunctionalData):
         The period of the circular functions for the Fourier basis.
     degree: np.int64, default=3
         Degree of the B-splines. The default gives cubic splines.
-    knots: npt.NDArray[np.float64], (n_knots,)
-        Specify the break points defining the B-splines.
 
     """
 
