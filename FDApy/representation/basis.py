@@ -12,7 +12,7 @@ import scipy
 
 from typing import Dict, Optional
 
-from .functional_data import DenseFunctionalData
+from .functional_data import DenseFunctionalData, MultivariateFunctionalData
 from .functional_data import _tensor_product
 
 
@@ -201,6 +201,22 @@ def _basis_bsplines(
     return np.vstack(basis)
 
 
+def _basis_natural_cubic_splines(
+    argvals: npt.NDArray[np.float64],
+    n_functions: np.int64 = 5,
+    degree: np.int64 = 3
+) -> npt.NDArray[np.float64]:
+    """Define natural cubic splines basis of functions."""
+
+
+def _basis_cyclic_cubic_splines(
+    argvals: npt.NDArray[np.float64],
+    n_functions: np.int64 = 5,
+    degree: np.int64 = 3
+) -> npt.NDArray[np.float64]:
+    """Define cyclic cubic splines basis of functions."""
+
+
 def _simulate_basis(
     name: np.str_,
     argvals: npt.NDArray[np.float64],
@@ -267,10 +283,12 @@ def _simulate_basis(
 # Class Basis
 
 class Basis(DenseFunctionalData):
-    r"""A functional data object representing an orthogonal basis of functions.
+    r"""Functional data object representing an orthogonal basis of functions.
 
     Parameters
     ----------
+    n_components: np.int64
+        Number of components in the data multivariate basis.
     name: np.str_, {'legendre', 'wiener', 'fourier', 'bsplines'}
         Denotes the basis of functions to use.
     n_functions: np.int64
@@ -297,6 +315,7 @@ class Basis(DenseFunctionalData):
 
     def __init__(
         self,
+        n_components: np.int64,
         name: np.str_,
         n_functions: np.int64 = 5,
         dimension: np.str_ = '1D',
@@ -329,6 +348,84 @@ class Basis(DenseFunctionalData):
             super().__init__(basis2d.argvals, basis2d.values)
         else:
             raise ValueError(f"{dimension} is not a valid dimension!")
+
+    @property
+    def name(self) -> np.str_:
+        """Getter for name."""
+        return self._name
+
+    @name.setter
+    def name(self, new_name: np.str_) -> None:
+        if not isinstance(new_name, str):
+            raise TypeError(f'{new_name!r} has to be `str`.')
+        self._name = new_name
+
+    @property
+    def norm(self) -> np.bool_:
+        """Getter for norm."""
+        return self._norm
+
+    @norm.setter
+    def norm(self, new_norm: np.bool_) -> None:
+        self._norm = new_norm
+
+    @property
+    def dimension(self) -> np.str_:
+        """Getter for dimension."""
+        return self._dimension
+
+    @dimension.setter
+    def dimension(self, new_dimension: np.str_) -> None:
+        self._dimension = new_dimension
+
+
+###############################################################################
+# Class MultivariateBasis
+class MultivariateBasis(MultivariateFunctionalData):
+    r"""Functional data object representing an orthogonal basis of functions.
+
+    Parameters
+    ----------
+    n_components: np.int64
+        Number of components in the data multivariate basis.
+    name: np.str_, {'legendre', 'wiener', 'fourier', 'bsplines'}
+        Denotes the basis of functions to use.
+    n_functions: np.int64
+        Number of functions in the basis.
+    dimension: np.str_, {'1D', '2D'}, default='1D'
+        Dimension of the basis to simulate. If '2D', the basis is simulated as
+        the tensor product of the one dimensional basis of functions by itself.
+        The number of functions in the 2D basis will be :math:`n_function^2`.
+    argvals: Optional[Dict[np.str_, npt.NDArray[np.float64]]]
+        The sampling points of the functional data. Each entry of the
+        dictionary represents an input dimension. The shape of the :math:`j` th
+        dimension is :math:`(m_j,)` for :math:`0 \leq j \leq p`.
+    norm: np.bool_, default=False
+        Should we normalize the basis function?
+
+    Keyword Args
+    ------------
+    period: np.float64, default=2 * np.pi
+        The period of the circular functions for the Fourier basis.
+    degree: np.int64, default=3
+        Degree of the B-splines. The default gives cubic splines.
+
+    """
+
+    def __init__(
+        self,
+        n_components: np.int64,
+        name: np.str_,
+        n_functions: np.int64 = 5,
+        dimension: np.str_ = '1D',
+        argvals: Optional[Dict[np.str_, npt.NDArray[np.float64]]] = None,
+        norm: np.bool_ = False,
+        **kwargs
+    ) -> None:
+        """Initialize Basis object."""
+        self.name = name
+        self.norm = norm
+        self.dimension = dimension
 
     @property
     def name(self) -> np.str_:
