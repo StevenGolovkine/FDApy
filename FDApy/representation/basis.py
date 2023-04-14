@@ -331,8 +331,6 @@ class Basis(DenseFunctionalData):
 
     Parameters
     ----------
-    n_components: np.int64
-        Number of components in the data multivariate basis.
     name: np.str_, {'legendre', 'wiener', 'fourier', 'bsplines'}
         Denotes the basis of functions to use.
     n_functions: np.int64
@@ -359,7 +357,6 @@ class Basis(DenseFunctionalData):
 
     def __init__(
         self,
-        n_components: np.int64,
         name: np.str_,
         n_functions: np.int64 = 5,
         dimension: np.str_ = '1D',
