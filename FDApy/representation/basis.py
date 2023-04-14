@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import scipy
 
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 from .functional_data import DenseFunctionalData, MultivariateFunctionalData
 from .functional_data import _tensor_product
@@ -247,8 +247,7 @@ def _simulate_basis(
     Returns
     -------
     values: npt.NDArray[np.float64], shape=(n_functions, len(argvals))
-        An array containing the evaluation of `n_functions` functions of
-        Wiener basis.
+        An array containing the evaluation of `n_functions` functions.
 
     Example
     -------
@@ -277,6 +276,51 @@ def _simulate_basis(
         norm2 = np.sqrt(scipy.integrate.simpson(values * values, argvals))
         values = np.divide(values, norm2[:, np.newaxis])
     return values
+
+
+def _simulate_basis_multivariate_weighted(
+    basis_name: List[np.str_],
+    argvals: List[npt.NDArray[np.float64]],
+    n_functions: np.int64 = 5,
+    norm: np.bool_ = False,
+    **kwargs
+):
+    """Simulate function for multivariate functional data.
+
+    Using weighted
+
+    Parameters
+    ----------
+    basis_name: List[np.str_]
+        Name of the basis to used.
+    argvals: List[npt.NDArray[np.float64]]
+        The values on which the basis functions are evaluated.
+    n_functions: np.int64
+        Number of basis functions to used.
+    norm: np.bool_
+        Should we normalize the functions?
+
+    Keyword Args
+    ------------
+    period: np.float64, default = 2 * np.pi
+        The period of the circular functions for the Fourier basis.
+    degree: np.int64, default = 3
+        Degree of the B-splines. The default gives cubic splines.
+
+    Returns
+    -------
+    List[npt.NDArray[np.float64]], shape=(n_functions, len(argvals))
+        An array containing the evaluation of `n_functions` functions.
+
+    """
+    # Define weights
+    alpha = np.random.uniform(low=0.2, high=0.8, size=len(basis_name))
+    weights = np.sqrt(alpha / np.sum(alpha))
+
+    return [
+        weight * _simulate_basis(name, argval, n_functions, norm, **kwargs)
+        for name, argval, weight in zip(basis_name, argvals, weights)
+    ]
 
 
 ###############################################################################
