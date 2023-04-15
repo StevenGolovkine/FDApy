@@ -323,6 +323,59 @@ def _simulate_basis_multivariate_weighted(
     ]
 
 
+def _simulate_basis_multivariate_split(
+    basis_name: List[np.str_],
+    argvals: List[npt.NDArray[np.float64]],
+    n_functions: np.int64 = 5,
+    norm: np.bool_ = False,
+    **kwargs
+):
+    """Simulate function for multivariate functional data.
+
+    Using split.
+
+    Parameters
+    ----------
+    basis_name: List[np.str_]
+        Name of the basis to used.
+    argvals: List[npt.NDArray[np.float64]]
+        The values on which the basis functions are evaluated.
+    n_functions: np.int64
+        Number of basis functions to used.
+    norm: np.bool_
+        Should we normalize the functions?
+
+    Keyword Args
+    ------------
+    period: np.float64, default = 2 * np.pi
+        The period of the circular functions for the Fourier basis.
+    degree: np.int64, default = 3
+        Degree of the B-splines. The default gives cubic splines.
+
+    Returns
+    -------
+    List[npt.NDArray[np.float64]], shape=(n_functions, len(argvals))
+        An array containing the evaluation of `n_functions` functions.
+
+    """
+    x = len(argvals) * [None]
+    split_vals = np.repeat(0, len(argvals) + 1)
+
+    x[0] = argvals[0]
+    split_vals[1] = len(x[0])
+    for idx in np.arange(1, len(argvals), 1):
+        x[idx] = argvals[idx] - np.min(argvals[idx]) + np.max(x[idx - 1])
+        split_vals[idx + 1] = split_vals[idx] + len(x[idx])
+
+    x_concat = np.concatenate(x)
+    values = _simulate_basis(basis_name, x_concat, n_functions, norm, **kwargs)
+    flips = np.random.choice((-1, 1), size=len(argvals))
+    return [
+        flips[idx] * values[:, split_vals[idx]:split_vals[idx + 1]]
+        for idx in range(len(argvals))
+    ]
+
+
 ###############################################################################
 # Class Basis
 
