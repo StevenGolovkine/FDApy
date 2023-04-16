@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import scipy
 
-from typing import Dict, Optional, List
+from typing import Callable, Dict, Optional, List
 
 from .functional_data import DenseFunctionalData, MultivariateFunctionalData
 from .functional_data import _tensor_product
@@ -283,6 +283,7 @@ def _simulate_basis_multivariate_weighted(
     argvals: List[npt.NDArray[np.float64]],
     n_functions: np.int64 = 5,
     norm: np.bool_ = False,
+    runif: Callable = np.random.uniform,
     **kwargs
 ):
     """Simulate function for multivariate functional data.
@@ -299,6 +300,8 @@ def _simulate_basis_multivariate_weighted(
         Number of basis functions to used.
     norm: np.bool_
         Should we normalize the functions?
+    runif: Callable, default=np.random.uniform
+        Method used to generate uniform distribution.
 
     Keyword Args
     ------------
@@ -314,7 +317,7 @@ def _simulate_basis_multivariate_weighted(
 
     """
     # Define weights
-    alpha = np.random.uniform(low=0.2, high=0.8, size=len(basis_name))
+    alpha = runif(low=0.2, high=0.8, size=len(basis_name))
     weights = np.sqrt(alpha / np.sum(alpha))
 
     return [
@@ -328,6 +331,7 @@ def _simulate_basis_multivariate_split(
     argvals: List[npt.NDArray[np.float64]],
     n_functions: np.int64 = 5,
     norm: np.bool_ = False,
+    rchoice: Callable = np.random.choice,
     **kwargs
 ):
     """Simulate function for multivariate functional data.
@@ -344,6 +348,8 @@ def _simulate_basis_multivariate_split(
         Number of basis functions to used.
     norm: np.bool_
         Should we normalize the functions?
+    rchoice: Callable, default=np.random.choice
+        Method used to generate binomial distribution.
 
     Keyword Args
     ------------
@@ -358,21 +364,21 @@ def _simulate_basis_multivariate_split(
         An array containing the evaluation of `n_functions` functions.
 
     """
-    x = len(argvals) * [None]
-    split_vals = np.repeat(0, len(argvals) + 1)
+    # Create "big" argvals vector and the split points
+    x = [argvals[0]]
+    split_vals = [0, len(x[0])]
+    for idx in np.arange(1, len(argvals)):
+        x.append(argvals[idx] - np.min(argvals[idx]) + np.max(x[-1]))
+        split_vals.append(split_vals[-1] + len(x[-1]))
 
-    x[0] = argvals[0]
-    split_vals[1] = len(x[0])
-    for idx in np.arange(1, len(argvals), 1):
-        x[idx] = argvals[idx] - np.min(argvals[idx]) + np.max(x[idx - 1])
-        split_vals[idx + 1] = split_vals[idx] + len(x[idx])
-
+    # Simulate the "big" basis
     x_concat = np.concatenate(x)
     values = _simulate_basis(basis_name, x_concat, n_functions, norm, **kwargs)
-    flips = np.random.choice((-1, 1), size=len(argvals))
+
+    flips = rchoice((-1, 1), size=len(argvals))
     return [
         flips[idx] * values[:, split_vals[idx]:split_vals[idx + 1]]
-        for idx in range(len(argvals))
+        for idx in np.arange(len(argvals))
     ]
 
 
