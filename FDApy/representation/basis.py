@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import scipy
 
-from typing import Callable, Dict, Optional, List
+from typing import Callable, Dict, Optional, List, Union
 
 from .functional_data import DenseFunctionalData, MultivariateFunctionalData
 from .functional_data import _tensor_product
@@ -239,9 +239,9 @@ def _simulate_basis(
 
     Keyword Args
     ------------
-    period: np.float64, default = 2 * np.pi
+    period: np.float64, default=2 * np.pi
         The period of the circular functions for the Fourier basis.
-    degree: np.int64, default = 3
+    degree: np.int64, default=3
         Degree of the B-splines. The default gives cubic splines.
 
     Returns
@@ -305,9 +305,9 @@ def _simulate_basis_multivariate_weighted(
 
     Keyword Args
     ------------
-    period: np.float64, default = 2 * np.pi
+    period: np.float64, default=2 * np.pi
         The period of the circular functions for the Fourier basis.
-    degree: np.int64, default = 3
+    degree: np.int64, default=3
         Degree of the B-splines. The default gives cubic splines.
 
     Returns
@@ -353,9 +353,9 @@ def _simulate_basis_multivariate_split(
 
     Keyword Args
     ------------
-    period: np.float64, default = 2 * np.pi
+    period: np.float64, default=2 * np.pi
         The period of the circular functions for the Fourier basis.
-    degree: np.int64, default = 3
+    degree: np.int64, default=3
         Degree of the B-splines. The default gives cubic splines.
 
     Returns
@@ -380,6 +380,99 @@ def _simulate_basis_multivariate_split(
         flips[idx] * values[:, split_vals[idx]:split_vals[idx + 1]]
         for idx in np.arange(len(argvals))
     ]
+
+
+def _simulate_basis_multivariate(
+    simulation_type: np.str_,
+    n_components: np.int64,
+    name: Union[np.str_, List[np.str_]],
+    argvals: List[npt.NDArray[np.float64]],
+    n_functions: np.int64 = 5,
+    norm: np.bool_ = False,
+    **kwargs
+) -> npt.NDArray[np.float64]:
+    """Redirect to the right simulation basis function.
+
+    Parameters
+    ----------
+    simulation_type: np.str_, {'split', 'weighted'}
+        Type of the simulation.
+    n_components: np.int64
+        Number of components to generate.
+    name: Union[np.str_, List[np.str_]]
+        Basis names to use, {'legendre', 'wiener', 'fourier', 'bsplines'}.
+    argvals: npt.NDArray[np.float64]
+        The values on which the basis functions are evaluated.
+    n_functions: np.int64, default=5
+        Number of functions to compute.
+    norm: np.bool_
+        Should we normalize the functions?
+
+    Keyword Args
+    ------------
+    rchoice: Callable, default=np.random.choice
+        Method used to generate binomial distribution.
+    runif: Callable, default=np.random.uniform
+        Method used to generate uniform distribution.
+    period: np.float64, default=2 * np.pi
+        The period of the circular functions for the Fourier basis.
+    degree: np.int64, default=3
+        Degree of the B-splines. The default gives cubic splines.
+
+    Returns
+    -------
+    values: List[npt.NDArray[np.float64]], shape=(n_functions, len(argvals))
+        An array containing the evaluation of `n_functions` functions.
+
+    Example
+    -------
+    >>> _simulate_basis_multivariate(
+    ...     simulation_type='split',
+    ...     n_components=3,
+    ...     name='fourier',
+    ...     argvals=[
+    ...         np.linspace(0, 1, 101),
+    ...         np.linspace(-np.pi, np.pi, 101),
+    ...         np.linspace(-0.5, 0.5, 51)
+    ...     ],
+    ...     n_functions=3,
+    ...     norm=True
+    ... )
+
+    """
+    if len(argvals) != n_components:
+        raise ValueError(f'`len(argvals)` should be equal to {n_components}.')
+
+    if simulation_type == 'split':
+        if not isinstance(name, (str, np.str_)):
+            raise ValueError(
+                'For the `split` simulation type, `basis_name` '
+                'should be a str.'
+            )
+        values = _simulate_basis_multivariate_split(
+            name, argvals, n_functions, norm,
+            kwargs.get('rchoice', np.random.choice), **kwargs
+        )
+    elif simulation_type == 'weighted':
+        if not isinstance(name, list):
+            raise ValueError(
+                'For the `weighted` simulation type, `basis_name` '
+                'should be a list.'
+            )
+        if len(name) != n_components:
+            raise ValueError(
+                'For the `weighted` simulation type, `len(basis_name)` '
+                f'should be equal to {n_components}.'
+            )
+        values = _simulate_basis_multivariate_weighted(
+            name, argvals, n_functions, norm,
+            kwargs.get('runif', np.random.uniform), **kwargs
+        )
+    else:
+        raise NotImplementedError(
+            f'Simulation {simulation_type!r} not implemented!'
+        )
+    return values
 
 
 ###############################################################################
