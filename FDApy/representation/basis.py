@@ -288,7 +288,11 @@ def _simulate_basis_multivariate_weighted(
 ):
     """Simulate function for multivariate functional data.
 
-    Using weighted
+    The multivariate eigenfunction basis consists of weighted univariate
+    orthonormal bases. This yields an orthonormal basis of multivariate
+    functions with `n_functions` elements. For data on two-dimensional domains,
+    the univariate basis is constructed as a tensor product of univariate bases
+    in each direction. The simulation setup is based on [1]_.
 
     Parameters
     ----------
@@ -315,6 +319,13 @@ def _simulate_basis_multivariate_weighted(
     List[npt.NDArray[np.float64]], shape=(n_functions, len(argvals))
         An array containing the evaluation of `n_functions` functions.
 
+    References
+    ----------
+    .. [1] Happ C. & Greven S. (2018) Multivariate Functional Principal
+        Component Analysis for Data Observed on Different (Dimensional)
+        Domains, Journal of the American Statistical Association, 113:522,
+        649-659, DOI: 10.1080/01621459.2016.1273115
+
     """
     # Define weights
     alpha = runif(low=0.2, high=0.8, size=len(basis_name))
@@ -336,7 +347,12 @@ def _simulate_basis_multivariate_split(
 ):
     """Simulate function for multivariate functional data.
 
-    Using split.
+    The basis functions of an underlying big orthonormal basis are split in
+    `n_functions` parts, translated and possible reflected. This yields an
+    orthonormal basis of multivariate functions with `n_functions` elements.
+    For data on two-dimensional domains, the univariate basis is constructed as
+    a tensor product of univariate bases in each direction. The simulation
+    setup is based on [1]_.
 
     Parameters
     ----------
@@ -362,6 +378,13 @@ def _simulate_basis_multivariate_split(
     -------
     List[npt.NDArray[np.float64]], shape=(n_functions, len(argvals))
         An array containing the evaluation of `n_functions` functions.
+
+    References
+    ----------
+    .. [1] Happ C. & Greven S. (2018) Multivariate Functional Principal
+        Component Analysis for Data Observed on Different (Dimensional)
+        Domains, Journal of the American Statistical Association, 113:522,
+        649-659, DOI: 10.1080/01621459.2016.1273115
 
     """
     # Create "big" argvals vector and the split points
@@ -451,7 +474,7 @@ def _simulate_basis_multivariate(
             )
         values = _simulate_basis_multivariate_split(
             name, argvals, n_functions, norm,
-            kwargs.get('rchoice', np.random.choice), **kwargs
+            kwargs.pop('rchoice', np.random.choice), **kwargs
         )
     elif simulation_type == 'weighted':
         if not isinstance(name, list):
@@ -466,7 +489,7 @@ def _simulate_basis_multivariate(
             )
         values = _simulate_basis_multivariate_weighted(
             name, argvals, n_functions, norm,
-            kwargs.get('runif', np.random.uniform), **kwargs
+            kwargs.pop('runif', np.random.uniform), **kwargs
         )
     else:
         raise NotImplementedError(
