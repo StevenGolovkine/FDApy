@@ -70,6 +70,78 @@ def _eigenvalues_exponential(
     return np.exp(-(np.arange(0, n)) / 2)
 
 
+def _eigenvalues_quadratic(
+    n: np.int64 = 3
+) -> npt.NDArray[np.float64]:
+    """Generate quadratic decreasing eigenvalues.
+
+    Parameters
+    ----------
+    n: np.int64, default=3
+        Number of eigenvalues to generates.
+
+    Returns
+    -------
+    npt.NDArray[np.float64], shape=(n,)
+        The generated eigenvalues.
+
+    Example
+    -------
+    >>> _eigenvalues_quadratic(n=3)
+    array([1., 0.25, 0.11111111])
+
+    """
+    return np.power(np.arange(1., n + 1), -2)
+
+
+def _eigenvalues_inverse(
+    n: np.int64 = 3
+) -> npt.NDArray[np.float64]:
+    """Generate inverse decreasing eigenvalues.
+
+    Parameters
+    ----------
+    n: np.int64, default=3
+        Number of eigenvalues to generates.
+
+    Returns
+    -------
+    npt.NDArray[np.float64], shape=(n,)
+        The generated eigenvalues.
+
+    Example
+    -------
+    >>> _eigenvalues_inverse(n=3)
+    array([1., 0.5, 0.33333333])
+
+    """
+    return np.power(np.arange(1., n + 1), -1)
+
+
+def _eigenvalues_sqrt(
+    n: np.int64 = 3
+) -> npt.NDArray[np.float64]:
+    """Generate square-root decreasing eigenvalues.
+
+    Parameters
+    ----------
+    n: np.int64, default=3
+        Number of eigenvalues to generates.
+
+    Returns
+    -------
+    npt.NDArray[np.float64], shape=(n,)
+        The generated eigenvalues.
+
+    Example
+    -------
+    >>> _eigenvalues_sqrt(n=3)
+    array([1., 0.70710678, 0.57735027, 0.5])
+
+    """
+    return np.power(np.arange(1., n + 1), -1 / 2)
+
+
 def _eigenvalues_wiener(
     n: np.int64 = 3
 ) -> npt.NDArray[np.float64]:
@@ -102,8 +174,9 @@ def _simulate_eigenvalues(
 
     Parameters
     ----------
-    name: np.str_, {'linear', 'exponential', 'wiener'}
-        Name of the eigenvalues generation process to use.
+    name: np.str_,
+        Name of the eigenvalues generation process to use. One of
+        `{'linear', 'exponential', 'wiener', 'quadratic', 'inverse', 'sqrt'}`.
     n: np.int64, default=3
         Number of eigenvalues to generates. Should be strictly positive.
 
@@ -124,6 +197,12 @@ def _simulate_eigenvalues(
         return _eigenvalues_linear(n)
     elif name == 'exponential':
         return _eigenvalues_exponential(n)
+    elif name == 'quadratic':
+        return _eigenvalues_quadratic(n)
+    elif name == 'inverse':
+        return _eigenvalues_inverse(n)
+    elif name == 'sqrt':
+        return _eigenvalues_sqrt(n)
     elif name == 'wiener':
         return _eigenvalues_wiener(n)
     else:

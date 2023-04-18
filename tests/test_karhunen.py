@@ -16,6 +16,9 @@ from FDApy.representation.functional_data import (
 from FDApy.simulation.karhunen import (
     _eigenvalues_linear,
     _eigenvalues_exponential,
+    _eigenvalues_quadratic,
+    _eigenvalues_inverse,
+    _eigenvalues_sqrt,
     _eigenvalues_wiener,
     _simulate_eigenvalues,
     _make_coef,
@@ -68,6 +71,69 @@ class TestEigenvaluesExponential(unittest.TestCase):
         np.testing.assert_allclose(result, expected_output)
 
 
+class TestEigenvaluesQuadratic(unittest.TestCase):
+    def test_eigenvalues_quadratic_default(self):
+        expected_output = np.array(
+            [1., 0.25, 0.11111111]
+        )
+        result = _eigenvalues_quadratic()
+        np.testing.assert_allclose(result, expected_output)
+
+    def test_eigenvalues_quadratic_n4(self):
+        expected_output = np.array(
+            [1., 0.25, 0.11111111, 0.0625]
+        )
+        result = _eigenvalues_quadratic(n=4)
+        np.testing.assert_allclose(result, expected_output)
+
+    def test_eigenvalues_quadratic_n1(self):
+        expected_output = np.array([1.])
+        result = _eigenvalues_exponential(n=1)
+        np.testing.assert_allclose(result, expected_output)
+
+
+class TestEigenvaluesInverse(unittest.TestCase):
+    def test_eigenvalues_inverse_default(self):
+        expected_output = np.array(
+            [1., 0.5, 0.33333333]
+        )
+        result = _eigenvalues_inverse()
+        np.testing.assert_allclose(result, expected_output)
+
+    def test_eigenvalues_inverse_n4(self):
+        expected_output = np.array(
+            [1., 0.5, 0.33333333, 0.25]
+        )
+        result = _eigenvalues_inverse(n=4)
+        np.testing.assert_allclose(result, expected_output)
+
+    def test_eigenvalues_inverse_n1(self):
+        expected_output = np.array([1.])
+        result = _eigenvalues_inverse(n=1)
+        np.testing.assert_allclose(result, expected_output)
+
+
+class TestEigenvaluesSqrt(unittest.TestCase):
+    def test_eigenvalues_sqrt_default(self):
+        expected_output = np.array(
+            [1., 0.70710678, 0.57735027]
+        )
+        result = _eigenvalues_sqrt()
+        np.testing.assert_allclose(result, expected_output)
+
+    def test_eigenvalues_sqrt_n4(self):
+        expected_output = np.array(
+            [1., 0.70710678, 0.57735027, 0.5]
+        )
+        result = _eigenvalues_sqrt(n=4)
+        np.testing.assert_allclose(result, expected_output)
+
+    def test_eigenvalues_sqrt_n1(self):
+        expected_output = np.array([1.])
+        result = _eigenvalues_inverse(n=1)
+        np.testing.assert_allclose(result, expected_output)
+
+
 class TestEigenvaluesWiener(unittest.TestCase):
     def test_eigenvalues_wiener_default(self):
         expected_output = np.array(
@@ -106,6 +172,27 @@ class TestSimulateEigenvalues(unittest.TestCase):
             [1., 0.60653066, 0.36787944]
         )
         output = _simulate_eigenvalues('exponential', n=3)
+        np.testing.assert_allclose(output, expected_output)
+
+    def test_quadratic_eigenvalues(self):
+        expected_output = np.array(
+            [1., 0.25, 0.11111111]
+        )
+        output = _simulate_eigenvalues('quadratic', n=3)
+        np.testing.assert_allclose(output, expected_output)
+    
+    def test_linear_eigenvalues(self):
+        expected_output = np.array(
+            [1., 0.5, 0.33333333]
+        )
+        output = _simulate_eigenvalues('inverse', n=3)
+        np.testing.assert_allclose(output, expected_output)
+    
+    def test_sqrt_eigenvalues(self):
+        expected_output = np.array(
+            [1., 0.70710678, 0.57735027]
+        )
+        output = _simulate_eigenvalues('sqrt', n=3)
         np.testing.assert_allclose(output, expected_output)
 
     def test_wiener_eigenvalues(self):

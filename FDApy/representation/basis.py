@@ -579,13 +579,16 @@ class MultivariateBasis(MultivariateFunctionalData):
 
     Parameters
     ----------
+    simulation_type: np.str_, {'split', 'weighted'}
+        Type of the simulation.
     n_components: np.int64
-        Number of components in the data multivariate basis.
-    name: np.str_, {'legendre', 'wiener', 'fourier', 'bsplines'}
-        Denotes the basis of functions to use.
+        Number of components to generate.
+    name: Union[np.str_, List[np.str_]]
+        Name of the basis to use. One of
+        `{'legendre', 'wiener', 'fourier', 'bsplines'}`.
     n_functions: np.int64
         Number of functions in the basis.
-    dimension: np.str_, {'1D', '2D'}, default='1D'
+    dimension: List[np.str_], {'1D', '2D'}, default='1D'
         Dimension of the basis to simulate. If '2D', the basis is simulated as
         the tensor product of the one dimensional basis of functions by itself.
         The number of functions in the 2D basis will be :math:`n_function^2`.
@@ -598,6 +601,10 @@ class MultivariateBasis(MultivariateFunctionalData):
 
     Keyword Args
     ------------
+    rchoice: Callable, default=np.random.choice
+        Method used to generate binomial distribution.
+    runif: Callable, default=np.random.uniform
+        Method used to generate uniform distribution.
     period: np.float64, default=2 * np.pi
         The period of the circular functions for the Fourier basis.
     degree: np.int64, default=3
@@ -607,11 +614,12 @@ class MultivariateBasis(MultivariateFunctionalData):
 
     def __init__(
         self,
+        simulation_type: np.str_,
         n_components: np.int64,
-        name: np.str_,
+        name: Union[np.str_, List[np.str_]],
         n_functions: np.int64 = 5,
-        dimension: np.str_ = '1D',
-        argvals: Optional[Dict[np.str_, npt.NDArray[np.float64]]] = None,
+        dimension: Union[np.str_, List[np.str_]] = '1D',
+        argvals: Optional[npt.NDArray[np.float64]] = None,
         norm: np.bool_ = False,
         **kwargs
     ) -> None:
@@ -619,6 +627,27 @@ class MultivariateBasis(MultivariateFunctionalData):
         self.name = name
         self.norm = norm
         self.dimension = dimension
+
+        if argvals is None:
+            argvals = n_components * [np.linspace(0, 1, 101)]
+
+        if len(argvals) != n_components:
+            raise ValueError(
+                f'`len(argvals)` should be equal to {n_components}.'
+            )
+
+        values = _simulate_basis_multivariate(
+            simulation_type, n_components, name,
+            argvals, n_functions, norm, **kwargs
+        )
+
+        basis_fd = []
+        for argval, basis, dim in zip(argvals, values, dimension):
+            temp = DenseFunctionalData({'input_dim_0': argval}, basis)
+            if dim == '2D':
+                temp = _tensor_product(temp, temp)
+            basis_fd.append(temp[:n_functions])
+        super().__init__(basis_fd)
 
     @property
     def name(self) -> np.str_:
