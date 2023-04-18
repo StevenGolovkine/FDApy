@@ -677,14 +677,20 @@ class MultivariateBasis(MultivariateFunctionalData):
         self._simulation_type = new_simulation_type
 
     @property
-    def name(self) -> np.str_:
+    def name(self) -> Union[np.str_, List[np.str_]]:
         """Getter for name."""
         return self._name
 
     @name.setter
-    def name(self, new_name: np.str_) -> None:
+    def name(self, new_name: Union[np.str_, List[np.str_]]) -> None:
         if not isinstance(new_name, str):
-            raise TypeError(f'{new_name!r} has to be `str`.')
+            if (
+                not isinstance(new_name, list) and
+                not all(isinstance(name, str) for name in new_name)
+            ):
+                raise TypeError(
+                    f'{new_name!r} has to be `str` or `List[str]`.'
+                )
         self._name = new_name
 
     @property
@@ -697,10 +703,10 @@ class MultivariateBasis(MultivariateFunctionalData):
         self._norm = new_norm
 
     @property
-    def dimension(self) -> np.str_:
+    def dimension(self) -> List[np.str_]:
         """Getter for dimension."""
         return self._dimension
 
     @dimension.setter
-    def dimension(self, new_dimension: np.str_) -> None:
+    def dimension(self, new_dimension: List[np.str_]) -> None:
         self._dimension = new_dimension
