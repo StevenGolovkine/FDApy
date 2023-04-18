@@ -606,7 +606,7 @@ class MultivariateBasis(MultivariateFunctionalData):
         `{'legendre', 'wiener', 'fourier', 'bsplines'}`.
     n_functions: np.int64
         Number of functions in the basis.
-    dimension: List[np.str_], {'1D', '2D'}, default='1D'
+    dimension: Optional[List[np.str_]], {'1D', '2D'}, default=None
         Dimension of the basis to simulate. If '2D', the basis is simulated as
         the tensor product of the one dimensional basis of functions by itself.
         The number of functions in the 2D basis will be :math:`n_function^2`.
@@ -636,23 +636,21 @@ class MultivariateBasis(MultivariateFunctionalData):
         n_components: np.int64,
         name: Union[np.str_, List[np.str_]],
         n_functions: np.int64 = 5,
-        dimension: Union[np.str_, List[np.str_]] = '1D',
+        dimension: Optional[List[np.str_]] = None,
         argvals: Optional[npt.NDArray[np.float64]] = None,
         norm: np.bool_ = False,
         **kwargs
     ) -> None:
         """Initialize Basis object."""
+        self.simulation_type = simulation_type
         self.name = name
         self.norm = norm
-        self.dimension = dimension
 
         if argvals is None:
-            argvals = n_components * [np.linspace(0, 1, 101)]
-
-        if len(argvals) != n_components:
-            raise ValueError(
-                f'`len(argvals)` should be equal to {n_components}.'
-            )
+            argvals = n_components * [np.arange(0, 1.01, 0.01)]
+        self.dimension = (
+            n_components * ['1D'] if dimension is None else dimension
+        )
 
         values = _simulate_basis_multivariate(
             simulation_type, n_components, name,
@@ -660,12 +658,23 @@ class MultivariateBasis(MultivariateFunctionalData):
         )
 
         basis_fd = []
-        for argval, basis, dim in zip(argvals, values, dimension):
+        for argval, basis, dim in zip(argvals, values, self.dimension):
             temp = DenseFunctionalData({'input_dim_0': argval}, basis)
             if dim == '2D':
                 temp = _tensor_product(temp, temp)
             basis_fd.append(temp[:n_functions])
         super().__init__(basis_fd)
+
+    @property
+    def simulation_type(self) -> np.str_:
+        """Getter for simulation_type."""
+        return self._simulation_type
+
+    @simulation_type.setter
+    def simulation_type(self, new_simulation_type: np.str_) -> None:
+        if not isinstance(new_simulation_type, str):
+            raise TypeError(f'{new_simulation_type!r} has to be `str`.')
+        self._simulation_type = new_simulation_type
 
     @property
     def name(self) -> np.str_:
