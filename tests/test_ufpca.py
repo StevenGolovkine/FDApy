@@ -18,7 +18,7 @@ from FDApy.preprocessing.dim_reduction.fpca import (
 
 class TestFitCovariance(unittest.TestCase):
     def setUp(self):
-        argvals = {'input_dim_0': np.linspace(0, 1, 10)}
+        argvals = np.linspace(0, 1, 10)
         kl = KarhunenLoeve(
             basis_name='fourier', argvals=argvals, 
             n_functions=5, random_state=42
@@ -84,7 +84,7 @@ class TestFitCovariance(unittest.TestCase):
 
 class TestFitInnerProduct(unittest.TestCase):
     def setUp(self):
-        argvals = {'input_dim_0': np.linspace(0, 1, 10)}
+        argvals = np.linspace(0, 1, 10)
         kl = KarhunenLoeve(
             basis_name='fourier', argvals=argvals, 
             n_functions=5, random_state=42
@@ -132,7 +132,7 @@ class TestFitInnerProduct(unittest.TestCase):
 
 class TestFit(unittest.TestCase):
     def setUp(self):
-        argvals = {'input_dim_0': np.linspace(0, 1, 10)}
+        argvals = np.linspace(0, 1, 10)
         kl = KarhunenLoeve(
             basis_name='fourier', argvals=argvals, 
             n_functions=5, random_state=42
@@ -196,7 +196,7 @@ class TestFit(unittest.TestCase):
 
 class TestPace(unittest.TestCase):
     def setUp(self):
-        argvals = {'input_dim_0': np.linspace(0, 1, 10)}
+        argvals = np.linspace(0, 1, 10)
         kl = KarhunenLoeve(
             basis_name='fourier', argvals=argvals, 
             n_functions=5, random_state=42
@@ -228,7 +228,7 @@ class TestNumericalIntegration(unittest.TestCase):
     def setUp(self):
         warnings.simplefilter('ignore', category=UserWarning)
 
-        argvals = {'input_dim_0': np.linspace(0, 1, 10)}
+        argvals = np.linspace(0, 1, 10)
         kl = KarhunenLoeve(
             basis_name='fourier', argvals=argvals, 
             n_functions=5, random_state=42
@@ -256,7 +256,7 @@ class TestNumericalIntegration(unittest.TestCase):
         )
 
     def test_numerical_integration_2d(self):
-        argvals = {'input_dim_0': np.linspace(0, 1, 10)}
+        argvals = np.linspace(0, 1, 10)
         kl = KarhunenLoeve(
             basis_name='fourier', argvals=argvals, n_functions=5,
             dimension='2D', random_state=42
@@ -306,7 +306,7 @@ class TestTransform(unittest.TestCase):
     def setUp(self):
         warnings.simplefilter('ignore', category=UserWarning)
 
-        argvals = {'input_dim_0': np.linspace(0, 1, 10)}
+        argvals = np.linspace(0, 1, 10)
         kl = KarhunenLoeve(
             basis_name='fourier', argvals=argvals, 
             n_functions=5, random_state=42
@@ -399,7 +399,7 @@ class TestInverseTranform(unittest.TestCase):
     def setUp(self):
         warnings.simplefilter('ignore', category=UserWarning)
 
-        argvals = {'input_dim_0': np.linspace(0, 1, 10)}
+        argvals = np.linspace(0, 1, 10)
         kl = KarhunenLoeve(
             basis_name='fourier', argvals=argvals,
             n_functions=5, random_state=42

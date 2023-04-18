@@ -308,7 +308,7 @@ class TestFit(unittest.TestCase):
             basis_name='bsplines',
             n_functions=5,
             dimension='2D',
-            argvals={'input_dim_0': np.linspace(0, 1, 10)},
+            argvals=np.linspace(0, 1, 10),
             random_state=42
         )
         kl.new(n_obs=50)
@@ -358,7 +358,7 @@ class TestTransform(unittest.TestCase):
             basis_name='bsplines',
             n_functions=5,
             dimension='2D',
-            argvals={'input_dim_0': np.linspace(0, 1, 10)},
+            argvals=np.linspace(0, 1, 10),
             random_state=42
         )
         kl.new(n_obs=50)
@@ -403,7 +403,7 @@ class TestInverseTransform(unittest.TestCase):
             basis_name='bsplines',
             n_functions=5,
             dimension='2D',
-            argvals={'input_dim_0': np.linspace(0, 1, 10)},
+            argvals=np.linspace(0, 1, 10),
             random_state=42
         )
         kl.new(n_obs=50)

@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import scipy
 
-from typing import Callable, Dict, Optional, List, Union
+from typing import Callable, Optional, List, Union
 
 from .functional_data import DenseFunctionalData, MultivariateFunctionalData
 from .functional_data import _tensor_product
@@ -502,7 +502,7 @@ def _simulate_basis_multivariate(
 # Class Basis
 
 class Basis(DenseFunctionalData):
-    r"""Functional data object representing an orthogonal basis of functions.
+    r"""Define univariate orthonormal basis.
 
     Parameters
     ----------
@@ -514,7 +514,7 @@ class Basis(DenseFunctionalData):
         Dimension of the basis to simulate. If '2D', the basis is simulated as
         the tensor product of the one dimensional basis of functions by itself.
         The number of functions in the 2D basis will be :math:`n_function^2`.
-    argvals: Optional[Dict[np.str_, npt.NDArray[np.float64]]]
+    argvals: Optional[npt.NDArray[np.float64]]
         The sampling points of the functional data. Each entry of the
         dictionary represents an input dimension. The shape of the :math:`j` th
         dimension is :math:`(m_j,)` for :math:`0 \leq j \leq p`.
@@ -535,7 +535,7 @@ class Basis(DenseFunctionalData):
         name: np.str_,
         n_functions: np.int64 = 5,
         dimension: np.str_ = '1D',
-        argvals: Optional[Dict[np.str_, npt.NDArray[np.float64]]] = None,
+        argvals: Optional[npt.NDArray[np.float64]] = None,
         norm: np.bool_ = False,
         **kwargs
     ) -> None:
@@ -545,21 +545,16 @@ class Basis(DenseFunctionalData):
         self.dimension = dimension
 
         if argvals is None:
-            argvals = {'input_dim_0': np.arange(0, 1.01, 0.01)}
-
-        if len(argvals) > 1:
-            raise NotImplementedError(
-                'Only one dimensional basis are implemented.'
-            )
+            argvals = np.arange(0, 1.01, 0.01)
 
         values = _simulate_basis(
-            name, argvals['input_dim_0'], n_functions, norm, **kwargs
+            name, argvals, n_functions, norm, **kwargs
         )
 
         if dimension == '1D':
-            super().__init__(argvals, values)
+            super().__init__({'input_dim_0': argvals}, values)
         elif dimension == '2D':
-            basis1d = DenseFunctionalData(argvals, values)
+            basis1d = DenseFunctionalData({'input_dim_0': argvals}, values)
             basis2d = _tensor_product(basis1d, basis1d)
             super().__init__(basis2d.argvals, basis2d.values)
         else:
@@ -598,7 +593,7 @@ class Basis(DenseFunctionalData):
 ###############################################################################
 # Class MultivariateBasis
 class MultivariateBasis(MultivariateFunctionalData):
-    r"""Functional data object representing an orthogonal basis of functions.
+    r"""Define multivariate orthonormal basis.
 
     Parameters
     ----------

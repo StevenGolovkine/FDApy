@@ -569,7 +569,7 @@ class KarhunenLoeve(Simulation):
         basis_name: Sequence[np.str_],
         dimension: Sequence[np.str_],
         n_functions: np.int64,
-        argvals: Optional[Dict[np.str_, npt.NDArray[np.float64]]] = None,
+        argvals: Optional[npt.NDArray[np.float64]] = None,
         **kwargs_basis
     ) -> Sequence[Basis]:
         """Create a list of Basis given some parameters.
@@ -617,7 +617,7 @@ class KarhunenLoeve(Simulation):
         basis_name: Union[np.str_, Sequence[np.str_]],
         n_functions: np.int_ = 5,
         dimension: Union[np.str_, Sequence[np.str_]] = '1D',
-        argvals: Optional[Dict[np.str_, npt.NDArray[np.float64]]] = None,
+        argvals: Optional[npt.NDArray[np.float64]] = None,
         basis: Optional[Union[Basis, Sequence[Basis]]] = None,
         random_state: Optional[np.int64] = None,
         **kwargs_basis: Any

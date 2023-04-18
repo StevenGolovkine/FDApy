@@ -18,7 +18,7 @@ from FDApy.representation.basis import (
 
 class TestBasis(unittest.TestCase):
     def setUp(self):
-        self.argvals = {'input_dim_0': np.array([0, 0.5, 1])}
+        self.argvals = np.array([0, 0.5, 1])
 
     def test_getter(self):
         X = Basis(name='legendre', n_functions=2, argvals=self.argvals)
@@ -80,13 +80,8 @@ class TestBasisFails(unittest.TestCase):
     """Fail test class for the functions in basis.py"""
 
     def setUp(self):
-        self.argvals_1d = {
-            'input_dim_0': np.array([0, 0.5, 1]),
-        }
-        self.argvals_2d = {
-            'input_dim_0': np.array([0, 0.5, 1]),
-            'input_dim_1': np.array([0, 0.5, 1])
-        }
+        self.argvals_1d = np.array([0, 0.5, 1]) 
+        self.argvals_2d = [np.array([0, 0.5, 1]), np.array([0, 0.5, 1])]
 
     def test_basis(self):
         with self.assertRaises(NotImplementedError) as cm:
@@ -97,11 +92,6 @@ class TestBasisFails(unittest.TestCase):
         with self.assertRaises(TypeError) as cm:
             Basis(name=0, n_functions=2, argvals=self.argvals_1d)
         self.assertTrue('str' in str(cm.exception))
-
-    def test_basis_2d(self):
-        with self.assertRaises(NotImplementedError) as cm:
-            Basis(name='legendre', n_functions=2, argvals=self.argvals_2d)
-        self.assertTrue('dimensional' in str(cm.exception))
 
     def test_basis_dim(self):
         with self.assertRaises(ValueError) as cm:
