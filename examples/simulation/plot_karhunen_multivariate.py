@@ -47,7 +47,7 @@ n_obs = 10
 name = ['fourier', 'bsplines']
 n_functions = 5
 dimensions = ['2D', '1D']
-argvals = {'input_dim_0': np.arange(0, 10.01, 0.01)}
+argvals = np.arange(0, 10.01, 0.01)
 
 ###############################################################################
 # Simulation for one-dimensional curve

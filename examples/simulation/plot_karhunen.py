@@ -42,7 +42,7 @@ n_obs = 10
 # Parameters of the basis
 name = 'fourier'
 n_functions = 25
-argvals = {'input_dim_0': np.arange(0, 10.01, 0.01)}
+argvals = np.arange(0, 10.01, 0.01)
 
 ###############################################################################
 # Simulation for one-dimensional curve
