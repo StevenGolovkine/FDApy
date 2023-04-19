@@ -558,14 +558,6 @@ class TestKarhunenLoeveInit(unittest.TestCase):
         self.assertEqual(kl.basis[0].n_obs, 5)
         self.assertEqual(kl.basis[0].dimension, '1D')
 
-    def test_init_warning(self):
-        with self.assertWarns(Warning):
-            KarhunenLoeve(
-                basis_name=self.basis_name[0],
-                n_functions=6,
-                dimension=self.dimension
-            )
-
 
 class TestKarhunenLoeveNew(unittest.TestCase):
     def setUp(self):

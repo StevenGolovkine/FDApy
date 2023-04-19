@@ -8,7 +8,6 @@ Karhunen-Loève decomposition
 """
 import numpy as np
 import numpy.typing as npt
-import warnings
 
 from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
@@ -632,12 +631,6 @@ class KarhunenLoeve(Simulation):
         else:
             basis_name, dimension = KarhunenLoeve._format_basis_name_not_none(
                 basis_name, dimension
-            )
-
-        if ('fourier' in basis_name) and (n_functions % 2 == 0):
-            warnings.warn(
-                "The number of basis of functions is even for the "
-                "Fourier basis, it may result to strange behavior."
             )
 
         # Create the Basis list using the basis_name list.

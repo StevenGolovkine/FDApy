@@ -34,13 +34,8 @@ class TestFitCovariance(unittest.TestCase):
         uf._fit_covariance(self.data)
 
         # Expected output
-        expected_eigenvalues = np.array([2.12083689, 0.30121072])
-        expected_eigenfunctions = np.array([
-            [-0.81090817, -0.89598764, -0.96671352, -1.02049924, -1.055401,
-             -1.0702047 , -1.06447946, -1.03859515, -0.99370311, -0.931681],
-            [1.6177605 , 1.35775569, 1.0347427 , 0.66299649, 0.25913981,
-             -0.15865381, -0.57153304, -0.96087493, -1.30918003, -1.60091268]
-        ])
+        expected_eigenvalues = np.array([1.24653269, 1.0329227])
+        expected_eigenfunctions = np.array([[ 0.68114728, -0.88313991, -2.11738635, -1.42791831, -0.05059818,  0.03678524, -0.75646213, -0.56949506,  0.57736795,  0.68114728],[ 0.7776058 , -0.40973431,  0.18979468,  1.41280427,  0.87919815, -0.90633626, -1.21192797,  0.50901826,  1.69502368,  0.7776058 ]])
 
         # Test that eigenvalues and eigenfunctions are computed correctly
         np.testing.assert_array_almost_equal(
@@ -63,13 +58,8 @@ class TestFitCovariance(unittest.TestCase):
         uf._fit_covariance(self.data, covariance=covariance)
 
         # Expected output
-        expected_eigenvalues = np.array([2.12083689, 0.30121072])
-        expected_eigenfunctions = np.array([
-            [-0.81090817, -0.89598764, -0.96671352, -1.02049924, -1.055401,
-             -1.0702047 , -1.06447946, -1.03859515, -0.99370311, -0.931681],
-            [1.6177605 , 1.35775569, 1.0347427 , 0.66299649, 0.25913981,
-             -0.15865381, -0.57153304, -0.96087493, -1.30918003, -1.60091268]
-        ])
+        expected_eigenvalues = np.array([1.24653269, 1.0329227])
+        expected_eigenfunctions = np.array([[ 0.68114728, -0.88313991, -2.11738635, -1.42791831, -0.05059818,  0.03678524, -0.75646213, -0.56949506,  0.57736795,  0.68114728],[ 0.7776058 , -0.40973431,  0.18979468,  1.41280427,  0.87919815, -0.90633626, -1.21192797,  0.50901826,  1.69502368,  0.7776058 ]])
 
         # Test that eigenvalues and eigenfunctions are computed correctly
         np.testing.assert_array_almost_equal(
@@ -100,13 +90,8 @@ class TestFitInnerProduct(unittest.TestCase):
         uf._fit_inner_product(self.data)
 
         # Expected output
-        expected_eigenvalues = np.array([2.09295274, 0.31180837])
-        expected_eigenfunctions = np.array([
-            [-0.82550138, -0.90805814, -0.97573227, -1.02608867, -1.05735198,
-             -1.0684853, -1.05923499, -1.0301395, -0.9825019, -0.91832733],
-            [-1.61444622, -1.35183415, -1.0264989, -0.65293216, -0.24794233,
-             0.17015282, 0.5824073, 0.97015873, 1.31592627, 1.60425072]
-        ])
+        expected_eigenvalues = np.array([1.23451254, 1.05652506])
+        expected_eigenfunctions = np.array([[-0.78057529,  0.90183037,  2.06354079,  1.23567777, -0.06523557,  0.08696559,  0.94945447,  0.56796216, -0.74594942, -0.78057529],[-0.71805317,  0.21150077, -0.49982238, -1.57957827, -0.85686903,  0.96901378,  1.25263279, -0.3996304 , -1.51419005, -0.71805317]])
 
         # Test that eigenvalues and eigenfunctions are computed correctly
         np.testing.assert_array_almost_equal(
@@ -170,7 +155,7 @@ class TestFit(unittest.TestCase):
         uf = UFPCA(n_components=2, method='covariance')
         uf.fit(self.data)
 
-        expected_eigenvalues = np.array([2.12083689, 0.30121072])
+        expected_eigenvalues = np.array([1.24653269, 1.0329227 ])
         np.testing.assert_array_almost_equal(
             uf.eigenvalues, expected_eigenvalues
         )
@@ -179,7 +164,7 @@ class TestFit(unittest.TestCase):
         uf = UFPCA(n_components=2, method='inner-product')
         uf.fit(self.data)
 
-        expected_eigenvalues = np.array([2.07842015, 0.29518651])
+        expected_eigenvalues = np.array([1.22160203, 1.01226424])
         np.testing.assert_array_almost_equal(
             uf.eigenvalues, expected_eigenvalues
         )
@@ -188,7 +173,7 @@ class TestFit(unittest.TestCase):
         uf = UFPCA(n_components=2, normalize=True)
         uf.fit(self.data)
 
-        expected_eigenvalues = np.array([0.37250134, 0.0529043])
+        expected_eigenvalues = np.array([0.06555129, 0.05431821])
         np.testing.assert_array_almost_equal(
             uf.eigenvalues, expected_eigenvalues
         )
@@ -213,11 +198,11 @@ class TestPace(unittest.TestCase):
         scores = uf._pace(self.data)
 
         expected_scores = np.array([
-            [-2.70324475e-01,  -7.54032250e-01],
-            [ 1.89943408e+00,  -5.17586244e-01],
-            [-2.30573992e+00,  -2.14846678e-01],
-            [ 8.99858737e-01,  -5.28052839e-01],
-            [-2.25425896e-01, 2.02702135e-01]
+            [ 1.46015886e+00,  2.04695739e+00],
+            [ 4.94950452e-01,  1.78515078e-01],
+            [ 2.15517571e-01, -1.99545738e-01],
+            [ 4.73664501e-01, -1.56381155e-01],
+            [ 7.73468093e-01,  2.56786248e-01]
         ])
         np.testing.assert_array_almost_equal(
             np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
@@ -245,11 +230,11 @@ class TestNumericalIntegration(unittest.TestCase):
         scores = uf._numerical_integration(self.data)
 
         expected_scores = np.array([
-            [-0.26337429, -0.75976051],
-            [ 1.89087774, -0.51679176],
-            [-2.31549977, -0.21327057],
-            [ 0.87391109, -0.52526401],
-            [-0.21814701, 0.19876454]
+            [ 1.42086765,  2.00210923],
+            [ 0.64501025,  0.34982201],
+            [ 0.11092837, -0.31895034],
+            [ 0.49936318, -0.12704974],
+            [ 0.78610985,  0.27121312]
         ])
         np.testing.assert_array_almost_equal(
             np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
@@ -270,11 +255,11 @@ class TestNumericalIntegration(unittest.TestCase):
         scores = uf._numerical_integration(data)
 
         expected_scores = np.array([
-            [-0.88091993, 1.23604672],
-            [-2.36805008, -0.0315452],
-            [2.23914369, -1.25243888],
-            [0.60748215, -0.7046951],
-            [0.49341521, 0.39777882]
+            [ 0.28494501,  1.41559105],
+            [ 0.6256589 , -0.39976069],
+            [-0.75868556,  1.60777177],
+            [-0.7041311 , -0.33108738],
+            [ 1.51247731,  0.45983859]
         ])
         np.testing.assert_array_almost_equal(
             np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
@@ -336,11 +321,11 @@ class TestTransform(unittest.TestCase):
 
         scores = uf.transform(self.data, method='PACE')
         expected_scores = np.array([
-            [-0.39121016,  0.62482911],
-            [ 1.77859707,  0.38835183],
-            [-2.42667221,  0.085571  ],
-            [ 0.77899918,  0.39881965],
-            [-0.34631175, -0.33203334]
+            [-1.35951225, -1.83425839],
+            [-0.39430398,  0.03418355],
+            [-0.11487114,  0.41224429],
+            [-0.37301803,  0.36907972],
+            [-0.67282157, -0.0440876 ]
         ])
         np.testing.assert_array_almost_equal(
             np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
@@ -352,11 +337,11 @@ class TestTransform(unittest.TestCase):
 
         scores = uf.transform(self.data, method='NumInt')
         expected_scores = np.array([
-            [-0.38336168,  0.63031539],
-            [ 1.77089036,  0.38734664],
-            [-2.43548716,  0.08382546],
-            [ 0.75392371,  0.39581889],
-            [-0.33813439, -0.32820965]
+            [-1.32124942, -1.7905831 ],
+            [-0.54539202, -0.13829588],
+            [-0.01131015,  0.53047647],
+            [-0.39974495,  0.33857587],
+            [-0.68649162, -0.05968698]
         ])
         np.testing.assert_array_almost_equal(
             np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
@@ -368,11 +353,11 @@ class TestTransform(unittest.TestCase):
 
         scores = uf.transform(self.data, method='InnPro')
         expected_scores = np.array([
-            [-0.38336168,  0.63031539],
-            [ 1.77089036,  0.38734664],
-            [-2.43548716,  0.08382546],
-            [ 0.75392371,  0.39581889],
-            [-0.33813439, -0.32820965]
+            [-1.32124942, -1.7905831 ],
+            [-0.54539202, -0.13829588],
+            [-0.01131015,  0.53047647],
+            [-0.39974495,  0.33857587],
+            [-0.68649162, -0.05968698]
         ])
         np.testing.assert_array_almost_equal(
             np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
@@ -384,11 +369,11 @@ class TestTransform(unittest.TestCase):
 
         scores = uf.transform(self.data, method='InnPro')
         expected_scores = np.array([
-            [-0.16066415,  0.2641607 ],
-            [ 0.74216755,  0.16233422],
-            [-1.02069534,  0.03513065],
-            [ 0.31596406,  0.16588488],
-            [-0.14170972, -0.13755033]
+            [-0.30298673, -0.41061355],
+            [-0.1250684 , -0.03171378],
+            [-0.00259362,  0.12164799],
+            [-0.09166885,  0.07764166],
+            [-0.15742512, -0.01368732]
         ])
         np.testing.assert_array_almost_equal(
             np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4

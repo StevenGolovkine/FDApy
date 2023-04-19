@@ -108,8 +108,7 @@ def _basis_wiener(
 
 def _basis_fourier(
     argvals: npt.NDArray[np.float64],
-    n_functions: np.int64 = 3,
-    period: np.float64 = 2 * np.pi,
+    n_functions: np.int64 = 3
 ) -> npt.NDArray[np.float64]:
     r"""Define Fourier basis of function.
 
@@ -122,8 +121,6 @@ def _basis_fourier(
         The values on which evaluated the Fourier series.
     n_functions: np.int64, default=3
         Number of considered Fourier series. Should be odd.
-    period: np.float64, default=2 * np.pi
-        The period of the circular functions.
 
     Returns
     -------
@@ -145,14 +142,17 @@ def _basis_fourier(
     >>> _basis_fourier(argvals=np.arange(0, 2*np.pi, 0.1), n_functions=3)
 
     """
-    n_functions = n_functions + 1 if n_functions % 2 == 0 else n_functions
-    values = np.ones((n_functions, len(argvals)))
-    for k in np.arange(1, (n_functions + 1) // 2):
-        sin = np.sin(2 * np.pi * k * argvals / period)
-        cos = np.cos(2 * np.pi * k * argvals / period)
-        values[(2 * k - 1), :] = sin
-        values[(2 * k), :] = cos
-    return values[:n_functions, :]
+    values = np.ones((n_functions, len(argvals))) / np.sqrt(np.ptp(argvals))
+
+    norm = np.sqrt(2 / np.ptp(argvals))
+    xx = ((2 * np.pi * (argvals - np.min(argvals)) / np.ptp(argvals)) - np.pi)
+    for k in np.arange(1, n_functions):
+        # We consider k + 1 bebause of Python indexation
+        if k % 2:  # k + 1 even
+            values[k, :] = norm * np.cos(((k + 1) // 2) * xx)
+        else:  # k + 1 odd
+            values[k, :] = norm * np.sin(((k + 1) // 2) * xx)
+    return values
 
 
 def _basis_bsplines(
@@ -239,8 +239,6 @@ def _simulate_basis(
 
     Keyword Args
     ------------
-    period: np.float64, default=2 * np.pi
-        The period of the circular functions for the Fourier basis.
     degree: np.int64, default=3
         Degree of the B-splines. The default gives cubic splines.
 
@@ -265,7 +263,7 @@ def _simulate_basis(
         values = _basis_wiener(argvals, n_functions)
     elif name == 'fourier':
         values = _basis_fourier(
-            argvals, n_functions, kwargs.get('period', 2 * np.pi)
+            argvals, n_functions
         )
     elif name == 'bsplines':
         values = _basis_bsplines(argvals, n_functions, kwargs.get('degree', 3))
@@ -309,8 +307,6 @@ def _simulate_basis_multivariate_weighted(
 
     Keyword Args
     ------------
-    period: np.float64, default=2 * np.pi
-        The period of the circular functions for the Fourier basis.
     degree: np.int64, default=3
         Degree of the B-splines. The default gives cubic splines.
 
@@ -369,8 +365,6 @@ def _simulate_basis_multivariate_split(
 
     Keyword Args
     ------------
-    period: np.float64, default=2 * np.pi
-        The period of the circular functions for the Fourier basis.
     degree: np.int64, default=3
         Degree of the B-splines. The default gives cubic splines.
 
@@ -437,8 +431,6 @@ def _simulate_basis_multivariate(
         Method used to generate binomial distribution.
     runif: Callable, default=np.random.uniform
         Method used to generate uniform distribution.
-    period: np.float64, default=2 * np.pi
-        The period of the circular functions for the Fourier basis.
     degree: np.int64, default=3
         Degree of the B-splines. The default gives cubic splines.
 
@@ -523,8 +515,6 @@ class Basis(DenseFunctionalData):
 
     Keyword Args
     ------------
-    period: np.float64, default=2 * np.pi
-        The period of the circular functions for the Fourier basis.
     degree: np.int64, default=3
         Degree of the B-splines. The default gives cubic splines.
 
@@ -623,8 +613,6 @@ class MultivariateBasis(MultivariateFunctionalData):
         Method used to generate binomial distribution.
     runif: Callable, default=np.random.uniform
         Method used to generate uniform distribution.
-    period: np.float64, default=2 * np.pi
-        The period of the circular functions for the Fourier basis.
     degree: np.int64, default=3
         Degree of the B-splines. The default gives cubic splines.
 
