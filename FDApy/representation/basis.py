@@ -281,7 +281,7 @@ def _simulate_basis_multivariate_weighted(
     argvals: List[npt.NDArray[np.float64]],
     n_functions: np.int64 = 5,
     norm: np.bool_ = False,
-    runif: Callable = np.random.uniform,
+    runif: Optional[Callable] = np.random.uniform,
     **kwargs
 ):
     """Simulate function for multivariate functional data.
@@ -302,8 +302,9 @@ def _simulate_basis_multivariate_weighted(
         Number of basis functions to used.
     norm: np.bool_
         Should we normalize the functions?
-    runif: Callable, default=np.random.uniform
-        Method used to generate uniform distribution.
+    runif: Optional[Callable], default=np.random.uniform
+        Method used to generate uniform distribution. If `None`, all the
+        weights are set to :math:`1`.
 
     Keyword Args
     ------------
@@ -324,7 +325,10 @@ def _simulate_basis_multivariate_weighted(
 
     """
     # Define weights
-    alpha = runif(low=0.2, high=0.8, size=len(basis_name))
+    if runif is None:
+        alpha = np.repeat(1, len(basis_name))
+    else:
+        alpha = runif(low=0.2, high=0.8, size=len(basis_name))
     weights = np.sqrt(alpha / np.sum(alpha))
 
     return [
