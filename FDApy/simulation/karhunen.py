@@ -14,7 +14,7 @@ from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 from ..representation.functional_data import (
     DenseFunctionalData, MultivariateFunctionalData
 )
-from ..representation.basis import Basis
+from ..representation.basis import Basis, MultivariateBasis
 from .simulation import Simulation
 
 
@@ -431,7 +431,7 @@ class KarhunenLoeve(Simulation):
         The sampling points of the functional data. Each entry of the
         dictionary represents an input dimension. The shape of the :math:`j`th
         dimension is :math:`(m_j,)` for :math:`0 \leq j \leq p`.
-    basis: Union[Basis, Sequence[Basis]], default=None
+    basis: Optional[Union[Basis, MultivariateBasis]], default=None
         Basis of functions as a Basis object. Used to have a user-defined basis
         of function.
     random_state: np.int64, default=None
@@ -447,7 +447,7 @@ class KarhunenLoeve(Simulation):
         An object that represents a sparse version of the simulated data.
     labels: npt.NDArray[np.float64], shape=(n_obs,)
         The integer labels for cluster membership of each sample.
-    basis: Sequence[Basis]
+    basis: Union[Basis, MultivariateBasis]
         The eigenfunctions used to simulate the data.
     eigenvalues: npt.NDArray[np.float64], shape=(n_functions,)
         The eigenvalues used to simulate the data.
@@ -463,17 +463,17 @@ class KarhunenLoeve(Simulation):
 
     @staticmethod
     def _check_basis_none(
-        basis_name: Union[np.str_, Sequence[np.str_]],
-        basis: Optional[Basis]
+        basis_name: Optional[Union[np.str_, Sequence[np.str_]]],
+        basis: Optional[Union[Basis, MultivariateBasis]]
     ) -> None:
-        """Check if ``basis_name`` of ``basis`` is ``None``.
+        """Check if `basis_name` of `basis` is `None`.
 
         Parameters
         ----------
-        basis_name: Union[np.str_, Sequence[np.str_]]
+        basis_name: Optional[Union[np.str_, Sequence[np.str_]]]
             A str or a sequence of str indicating the name or names of the
             basis.
-        basis: Basis
+        basis: Optional[Union[Basis, MultivariateBasis]]
             A Basis instance.
 
         Raises
@@ -493,13 +493,13 @@ class KarhunenLoeve(Simulation):
 
     @staticmethod
     def _check_basis_type(
-        basis: Optional[Basis]
+        basis: Optional[Union[Basis, MultivariateBasis]]
     ) -> None:
         """Check if `basis` has the right type.
 
         Parameters
         ----------
-        basis: Optional[Basis]
+        basis: Optional[Basis, MultivariateBasis]
             A Basis instance or None.
 
         Raises
@@ -509,20 +509,23 @@ class KarhunenLoeve(Simulation):
             Basis class.
 
         """
-        if not isinstance(basis, (Basis, list)) and (basis is not None):
+        if (
+            (not isinstance(basis, (Basis, MultivariateBasis))) and
+            (basis is not None)
+        ):
             raise ValueError(
                 'The basis argument has to be an instance of Basis.'
             )
 
     @staticmethod
     def _format_basis_name_none(
-        basis: Union[Basis, Sequence[Basis]]
+        basis: Union[Basis, MultivariateBasis]
     ) -> Tuple[Sequence[np.str_], Sequence[Basis]]:
         """Format ``basis_name`` and ``basis`` if ``basis_name==None``.
 
         Parameters
         ----------
-        basis: Union[Basis, Sequence[Basis]]
+        basis: Union[Basis, MultivariateBasis]
             Basis of functions as a Basis object.
 
         Returns

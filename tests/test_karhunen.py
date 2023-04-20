@@ -8,7 +8,7 @@ Written with the help of ChatGPT.
 import numpy as np
 import unittest
 
-from FDApy.representation.basis import Basis
+from FDApy.representation.basis import Basis, MultivariateBasis
 from FDApy.representation.functional_data import (
     DenseFunctionalData,
     MultivariateFunctionalData
@@ -384,6 +384,12 @@ class TestCheckBasisType(unittest.TestCase):
         from FDApy.representation.basis import Basis
 
         self.basis = Basis(name='legendre', n_functions=2, dimension='1D')
+        self.basis_multi = MultivariateBasis(
+            simulation_type='split',
+            n_components=2,
+            name='fourier',
+            n_functions=3
+        )
 
     def test_raise_error(self):
         with self.assertRaises(ValueError):
@@ -398,7 +404,7 @@ class TestCheckBasisType(unittest.TestCase):
         self.assertTrue(True)  # if no error was raised, the test is successful
 
     def test_basis_list_basis(self):
-        KarhunenLoeve._check_basis_type([self.basis, self.basis])
+        KarhunenLoeve._check_basis_type(self.basis_multi)
         self.assertTrue(True)  # if no error was raised, the test is successful
 
 
