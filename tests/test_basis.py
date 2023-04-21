@@ -242,6 +242,15 @@ class TestMultivariateBasis(unittest.TestCase):
         np.testing.assert_equal(X.norm, False)
         np.testing.assert_equal(X.dimension, ['1D', '1D'])
 
+        X = MultivariateBasis(
+            simulation_type='weighted', n_components=self.n_components,
+            name=['legendre', 'fourier'], n_functions=2, argvals=self.argvals
+        )
+        np.testing.assert_equal(X.simulation_type, 'weighted')
+        np.testing.assert_equal(X.name, ['legendre', 'fourier'])
+        np.testing.assert_equal(X.norm, False)
+        np.testing.assert_equal(X.dimension, ['1D', '1D'])
+
     def test_setter_fails(self):
         X = MultivariateBasis(
             simulation_type='split', n_components=self.n_components,
