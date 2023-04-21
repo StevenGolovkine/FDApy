@@ -242,6 +242,22 @@ class TestMultivariateBasis(unittest.TestCase):
         np.testing.assert_equal(X.norm, False)
         np.testing.assert_equal(X.dimension, ['1D', '1D'])
 
+    def test_setter_fails(self):
+        X = MultivariateBasis(
+            simulation_type='split', n_components=self.n_components,
+            name='legendre', n_functions=2, argvals=self.argvals
+        )
+        with self.assertRaises(TypeError) as cm:
+            X.simulation_type = 0
+        self.assertTrue('str' in str(cm.exception))
+
+        with self.assertRaises(TypeError) as cm:
+            X.name = 0
+        self.assertTrue('str' in str(cm.exception))
+        with self.assertRaises(TypeError) as cm:
+            X.name = [0]
+        self.assertTrue('List[str]' in str(cm.exception))
+
     def test_argvals(self):
         X = MultivariateBasis(
             simulation_type='split', n_components=self.n_components,

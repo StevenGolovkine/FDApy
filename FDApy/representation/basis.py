@@ -675,15 +675,15 @@ class MultivariateBasis(MultivariateFunctionalData):
 
     @name.setter
     def name(self, new_name: Union[np.str_, List[np.str_]]) -> None:
-        if not isinstance(new_name, str):
-            if (
-                not isinstance(new_name, list) and
-                not all(isinstance(name, str) for name in new_name)
-            ):
-                raise TypeError(
-                    f'{new_name!r} has to be `str` or `List[str]`.'
-                )
-        self._name = new_name
+        if isinstance(new_name, str):
+            self._name = new_name
+        elif (
+            isinstance(new_name, list) and
+            all(isinstance(x, str) for x in new_name)
+        ):
+            self._name = new_name
+        else:
+            raise TypeError(f'{new_name!r} has to be a `str` or `List[str]`.')
 
     @property
     def norm(self) -> np.bool_:
