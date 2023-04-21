@@ -181,6 +181,20 @@ class TestSimulateBasisMultivariate(unittest.TestCase):
         for idx in range(len(output)):
             np.testing.assert_array_almost_equal(output[idx], expected_output[idx])
 
+    def test_simulation_type_weighted(self):
+        simulation_type = 'weighted'
+        name = ['fourier', 'legendre']
+
+        output = _simulate_basis_multivariate(
+            simulation_type, self.n_components, name, self.argvals, 
+            self.n_functions, self.norm, runif=None
+        )
+        expected1 = np.array([[ 7.07106781e-01,  7.07106781e-01,  7.07106781e-01,  7.07106781e-01,  7.07106781e-01,  7.07106781e-01,  7.07106781e-01,  7.07106781e-01,  7.07106781e-01,  7.07106781e-01,  7.07106781e-01],[-1.00000000e+00, -8.09016994e-01, -3.09016994e-01,  3.09016994e-01,  8.09016994e-01,  1.00000000e+00,  8.09016994e-01,  3.09016994e-01, -3.09016994e-01, -8.09016994e-01, -1.00000000e+00],[-1.22464680e-16, -5.87785252e-01, -9.51056516e-01, -9.51056516e-01, -5.87785252e-01,  0.00000000e+00,  5.87785252e-01,  9.51056516e-01,  9.51056516e-01,  5.87785252e-01,  1.22464680e-16]])
+        expected2 = np.array([[ 0.70710678,  0.70710678,  0.70710678,  0.70710678,  0.70710678,  0.70710678,  0.70710678,  0.70710678,  0.70710678,  0.70710678,  0.70710678],[-0.35355339, -0.28284271, -0.21213203, -0.14142136, -0.07071068,  0.        ,  0.07071068,  0.14142136,  0.21213203,  0.28284271,  0.35355339],[-0.08838835, -0.18384776, -0.25809398, -0.31112698, -0.34294679, -0.35355339, -0.34294679, -0.31112698, -0.25809398, -0.18384776, -0.08838835]])
+        expected_output = [expected1, expected2]
+        for idx in range(len(output)):
+            np.testing.assert_array_almost_equal(output[idx], expected_output[idx])
+
     def test_simulation_type_not_implemented(self):
         simulation_type = 'unknown'
         name = 'fourier'
