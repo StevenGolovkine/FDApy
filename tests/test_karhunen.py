@@ -329,8 +329,6 @@ class TestInitializeClusterStd(unittest.TestCase):
 
 class TestComputeData(unittest.TestCase):
     def setUp(self):
-        from FDApy.representation.basis import Basis
-
         self.basis1d = Basis(name='legendre', n_functions=2, dimension='1D')
         self.basis2d = Basis(name='legendre', n_functions=2, dimension='2D')
 
@@ -350,10 +348,9 @@ class TestComputeData(unittest.TestCase):
         np.testing.assert_array_almost_equal(output.values, expected)
 
     def test_raise_value_error(self):
-        from FDApy.representation.basis import Basis
-
-        basis = Basis(name='legendre', n_functions=2, dimension='1D')
-        basis.dimension = 'error'
+        argvals = {'input_dim_0': np.array([0, 1, 2]), 'input_dim_1': np.array([0, 1]), 'input_dim_2': np.array([0, 1])}
+        values = np.zeros((1, 3, 2, 2))
+        basis = DenseFunctionalData(argvals, values)  # n_dim = 3
 
         with self.assertRaises(ValueError):
             _compute_data(basis, self.coef_1d)
@@ -361,8 +358,6 @@ class TestComputeData(unittest.TestCase):
 
 class TestCheckBasisNone(unittest.TestCase):
     def setUp(self):
-        from FDApy.representation.basis import Basis
-
         self.basis = Basis(name='legendre', n_functions=2, dimension='1D')
         self.basis_name = 'fourier'
 
@@ -381,8 +376,6 @@ class TestCheckBasisNone(unittest.TestCase):
 
 class TestCheckBasisType(unittest.TestCase):
     def setUp(self):
-        from FDApy.representation.basis import Basis
-
         self.basis = Basis(name='legendre', n_functions=2, dimension='1D')
         self.basis_multi = MultivariateBasis(
             simulation_type='split',
@@ -410,8 +403,6 @@ class TestCheckBasisType(unittest.TestCase):
 
 class TestFormatBasisNameNone(unittest.TestCase):
     def setUp(self):
-        from FDApy.representation.basis import Basis
-
         self.basis = Basis(name='legendre', n_functions=2, dimension='1D')
 
     def test_basis_basis(self):

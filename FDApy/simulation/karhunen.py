@@ -347,7 +347,7 @@ def _initialize_clusters_std(
 #############################################################################
 # Generation of univariate functional data
 def _compute_data(
-    basis: Basis,
+    basis: DenseFunctionalData,
     coefficients: npt.NDArray[np.float64]
 ) -> DenseFunctionalData:
     r"""Compute functional data.
@@ -364,10 +364,10 @@ def _compute_data(
 
     Parameters
     ----------
-    basis: Basis
+    basis: DenseFunctionalData
         Basis of functions to use for the generation of the data.
     coefficients: npt.NDArray[np.float64], shape=(n_obs, n_features)
-        A set of coefficients of shape the number of observations times the
+        Set of coefficients of shape the number of observations times the
         number of elements in the basis.
 
     Returns
@@ -376,13 +376,13 @@ def _compute_data(
         Generated data as a DenseFunctionalData object.
 
     """
-    if basis.dimension == '1D':
+    if basis.n_dim == 1:
         values = np.matmul(coefficients, basis.values)
-    elif basis.dimension == '2D':
+    elif basis.n_dim == 2:
         values = np.tensordot(coefficients, basis.values, axes=1)
     else:
         raise ValueError(
-            f"The basis dimension {basis.dimension} has to be 1D or 2D"
+            f"The basis dimension {basis.n_dim} has to be 1D or 2D."
         )
     return DenseFunctionalData(basis.argvals, values)
 
