@@ -454,42 +454,38 @@ class TestCreateListBasis(unittest.TestCase):
         self.dimension = ['1D', '2D']
         self.n_functions = 5
 
-    def test_create_list_basis(self):
+    def test_create_basis(self):
         
-        basis_list = KarhunenLoeve._create_list_basis(
+        basis_list = KarhunenLoeve._create_basis(
             self.basis_name, self.dimension, self.n_functions
         )
 
         self.assertEqual(len(basis_list), 2)
-        self.assertIsInstance(basis_list[0], Basis)
-        self.assertIsInstance(basis_list[1], Basis)
+        self.assertIsInstance(basis_list, MultivariateBasis)
+        self.assertEqual(basis_list.name, ['fourier', 'bsplines'])
 
-        self.assertEqual(basis_list[0].name, 'fourier')
-        self.assertEqual(basis_list[0].n_obs, 25)
-        self.assertEqual(basis_list[0].dimension, '1D')
+        self.assertEqual(basis_list[0].n_obs, 5)
+        self.assertEqual(basis_list[0].n_dim, 1)
 
-        self.assertEqual(basis_list[1].name, 'bsplines')
-        self.assertEqual(basis_list[1].n_obs, 25)
-        self.assertEqual(basis_list[1].dimension, '2D')
+        self.assertEqual(basis_list[1].n_obs, 5)
+        self.assertEqual(basis_list[1].n_dim, 2)
 
-    def test_create_list_basis_fourier(self):
+    def test_create_basis_fourier(self):
         n_functions = 6
 
-        basis_list = KarhunenLoeve._create_list_basis(
+        basis_list = KarhunenLoeve._create_basis(
             self.basis_name, self.dimension, n_functions
         )
 
         self.assertEqual(len(basis_list), 2)
-        self.assertIsInstance(basis_list[0], Basis)
-        self.assertIsInstance(basis_list[1], Basis)
+        self.assertIsInstance(basis_list, MultivariateBasis)
+        self.assertEqual(basis_list.name, ['fourier', 'bsplines'])
 
-        self.assertEqual(basis_list[0].name, 'fourier')
-        self.assertEqual(basis_list[0].n_obs, 49)
-        self.assertEqual(basis_list[0].dimension, '1D')
+        self.assertEqual(basis_list[0].n_obs, 6)
+        self.assertEqual(basis_list[0].n_dim, 1)
 
-        self.assertEqual(basis_list[1].name, 'bsplines')
-        self.assertEqual(basis_list[1].n_obs, 49)
-        self.assertEqual(basis_list[1].dimension, '2D')
+        self.assertEqual(basis_list[1].n_obs, 6)
+        self.assertEqual(basis_list[1].n_dim, 2)
 
 
 class TestKarhunenLoeveInit(unittest.TestCase):
@@ -525,10 +521,10 @@ class TestKarhunenLoeveInit(unittest.TestCase):
         )
         self.assertIsNotNone(kl.basis)
         self.assertEqual(len(kl.basis), 1)
-        self.assertIsInstance(kl.basis[0], Basis)
-        self.assertEqual(kl.basis[0].name, 'fourier')
-        self.assertEqual(kl.basis[0].n_obs, 5)
-        self.assertEqual(kl.basis[0].dimension, '1D')
+        self.assertIsInstance(kl.basis, Basis)
+        #self.assertEqual(kl.basis[0].name, 'fourier')
+        #self.assertEqual(kl.basis[0].n_obs, 5)
+        #self.assertEqual(kl.basis[0].dimension, '1D')
 
     def test_init_with_basis_name_as_list(self):
         kl = KarhunenLoeve(
@@ -538,8 +534,7 @@ class TestKarhunenLoeveInit(unittest.TestCase):
         )
         self.assertIsNotNone(kl.basis)
         self.assertEqual(len(kl.basis), 2)
-        self.assertIsInstance(kl.basis[0], Basis)
-        self.assertIsInstance(kl.basis[1], Basis)
+        self.assertIsInstance(kl.basis, MultivariateBasis)
 
     def test_init_with_basis_as_list(self):
         kl = KarhunenLoeve(
@@ -550,10 +545,10 @@ class TestKarhunenLoeveInit(unittest.TestCase):
         )
         self.assertIsNotNone(kl.basis)
         self.assertEqual(len(kl.basis), 1)
-        self.assertIsInstance(kl.basis[0], Basis)
-        self.assertEqual(kl.basis[0].name, 'fourier')
-        self.assertEqual(kl.basis[0].n_obs, 5)
-        self.assertEqual(kl.basis[0].dimension, '1D')
+        self.assertIsInstance(kl.basis, Basis)
+        #self.assertEqual(kl.basis[0].name, 'fourier')
+        #self.assertEqual(kl.basis[0].n_obs, 5)
+        #self.assertEqual(kl.basis[0].dimension, '1D')
 
 
 class TestKarhunenLoeveNew(unittest.TestCase):

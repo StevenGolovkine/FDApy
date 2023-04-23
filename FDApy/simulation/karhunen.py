@@ -534,6 +534,8 @@ class KarhunenLoeve(Simulation):
             Tuple containing the basis names and the basis objects as a list.
 
         """
+        #TODO: incorporate MultivariateBasis
+        #I think it should return a MultivariateBasis in every case.
         if isinstance(basis, Basis):
             basis = [basis]
         basis_name = len(basis) * ['user-defined']
@@ -567,13 +569,13 @@ class KarhunenLoeve(Simulation):
         return basis_name, dimension
 
     @staticmethod
-    def _create_list_basis(
+    def _create_basis(
         basis_name: Sequence[np.str_],
         dimension: Sequence[np.str_],
         n_functions: np.int64,
         argvals: Optional[npt.NDArray[np.float64]] = None,
         **kwargs_basis
-    ) -> Sequence[Basis]:
+    ) -> MultivariateBasis:
         """Create a list of Basis given some parameters.
 
         Parameters
@@ -584,35 +586,27 @@ class KarhunenLoeve(Simulation):
             A sequence of basis dimensions.
         n_functions: np.int64
             The number of functions to generate for each basis object.
-        argvals: Optional[Dict[np.str_, npt.NDArray[np.float64]]]
+        argvals: Optional[npt.NDArray[np.float64]]
             The argument values used to generate the basis functions.
         **kwargs_basis
             Additional keyword arguments used to generate the Basis objects.
 
         Returns
         -------
-        Sequence[Basis]
-            A list of Basis objects generated for each name-dimension pair.
+        MultivariateBasis
+            MultivariateBasis objects generated for each name-dimension pair.
 
         """
-        # Because Fourier is defined by pairs.
-        if 'fourier' in basis_name and n_functions % 2 == 0:
-            n_functions += 1
-
-        basis_list = len(basis_name) * [None]
-        for idx, (name, dim) in enumerate(zip(basis_name, dimension)):
-            if dim == '1D' and '2D' in dimension:
-                n_func = np.power(n_functions, 2)
-            else:
-                n_func = n_functions
-            basis_list[idx] = Basis(
-                name=name,
-                n_functions=n_func,
-                dimension=dim,
-                argvals=argvals,
-                **kwargs_basis
-            )
-        return basis_list
+        return MultivariateBasis(
+            simulation_type='weighted',
+            n_components=len(basis_name),
+            name=basis_name,
+            n_functions=n_functions,
+            dimension=dimension,
+            argvals=argvals,
+            rchoice=None,
+            **kwargs_basis
+        )
 
     def __init__(
         self,
@@ -638,7 +632,9 @@ class KarhunenLoeve(Simulation):
 
         # Create the Basis list using the basis_name list.
         if basis is None:
-            basis = KarhunenLoeve._create_list_basis(
+            if isinstance(argvals, np.ndarray):
+                argvals = [argvals]
+            basis = KarhunenLoeve._create_basis(
                 basis_name, dimension, n_functions, argvals, **kwargs_basis
             )
         super().__init__(basis_name, random_state)
@@ -648,7 +644,7 @@ class KarhunenLoeve(Simulation):
         self,
         n_obs: np.int64,
         n_clusters: np.int64 = 1,
-        argvals: Optional[Dict[np.str_, npt.NDArray[np.float64]]] = None,
+        argvals: Optional[npt.NDArray[np.float64]] = None,
         **kwargs
     ) -> None:
         """Simulate realizations from Karhunen-Loève decomposition.
