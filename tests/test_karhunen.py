@@ -401,53 +401,6 @@ class TestCheckBasisType(unittest.TestCase):
         self.assertTrue(True)  # if no error was raised, the test is successful
 
 
-class TestFormatBasisNameNone(unittest.TestCase):
-    def setUp(self):
-        self.basis = Basis(name='legendre', n_functions=2, dimension='1D')
-
-    def test_basis_basis(self):
-        basis_name, basis = KarhunenLoeve._format_basis_name_none(self.basis)
-        expected_name = ['user-defined']
-        expected_basis_legnth = 1
-
-        np.testing.assert_equal(basis_name, expected_name)
-        np.testing.assert_equal(len(basis), expected_basis_legnth)
-
-    def test_basis_basis_2(self):
-        basis_name, basis = KarhunenLoeve._format_basis_name_none(
-            [self.basis, self.basis]
-        )
-        expected_name = ['user-defined', 'user-defined']
-        expected_basis_legnth = 2
-
-        np.testing.assert_equal(basis_name, expected_name)
-        np.testing.assert_equal(len(basis), expected_basis_legnth)
-
-
-class TestFormatBasisNotNone(unittest.TestCase):
-    def test_format_basis_name_not_none(self):
-        basis_name = ['basis1', 'basis2']
-        dimension = ['1D', '2D']
-
-        arguments = KarhunenLoeve._format_basis_name_not_none(
-            basis_name, dimension
-        )
-
-        self.assertListEqual(basis_name, arguments[0])
-        self.assertListEqual(dimension, arguments[1])
-
-    def test_format_basis_name_not_none_2(self):
-        basis_name = 'basis1'
-        dimension = '1D'
-
-        arguments = KarhunenLoeve._format_basis_name_not_none(
-            basis_name, dimension
-        )
-
-        self.assertListEqual([basis_name], arguments[0])
-        self.assertListEqual([dimension], arguments[1])
-
-
 class TestCreateListBasis(unittest.TestCase):
     def setUp(self):
         self.basis_name = ['fourier', 'bsplines']
@@ -520,11 +473,10 @@ class TestKarhunenLoeveInit(unittest.TestCase):
             dimension=self.dimension
         )
         self.assertIsNotNone(kl.basis)
-        self.assertEqual(len(kl.basis), 1)
         self.assertIsInstance(kl.basis, Basis)
-        #self.assertEqual(kl.basis[0].name, 'fourier')
-        #self.assertEqual(kl.basis[0].n_obs, 5)
-        #self.assertEqual(kl.basis[0].dimension, '1D')
+        self.assertEqual(kl.basis.name, 'fourier')
+        self.assertEqual(kl.basis.n_obs, 5)
+        self.assertEqual(kl.basis.dimension, '1D')
 
     def test_init_with_basis_name_as_list(self):
         kl = KarhunenLoeve(
@@ -536,7 +488,7 @@ class TestKarhunenLoeveInit(unittest.TestCase):
         self.assertEqual(len(kl.basis), 2)
         self.assertIsInstance(kl.basis, MultivariateBasis)
 
-    def test_init_with_basis_as_list(self):
+    def test_init_with_basis_univariate(self):
         kl = KarhunenLoeve(
             basis_name=None,
             n_functions=None,
@@ -544,11 +496,10 @@ class TestKarhunenLoeveInit(unittest.TestCase):
             basis=self.basis
         )
         self.assertIsNotNone(kl.basis)
-        self.assertEqual(len(kl.basis), 1)
         self.assertIsInstance(kl.basis, Basis)
-        #self.assertEqual(kl.basis[0].name, 'fourier')
-        #self.assertEqual(kl.basis[0].n_obs, 5)
-        #self.assertEqual(kl.basis[0].dimension, '1D')
+        self.assertEqual(kl.basis.name, 'fourier')
+        self.assertEqual(kl.basis.n_obs, 5)
+        self.assertEqual(kl.basis.dimension, '1D')
 
 
 class TestKarhunenLoeveNew(unittest.TestCase):

@@ -113,7 +113,7 @@ class TestCheckDimension(unittest.TestCase):
         self.simulation = KarhunenLoeve('fourier', dimension='2D')
         self.simulation.new(n_obs=1, n_clusters=1)
         self.simulation_multi = KarhunenLoeve(
-            ['fourier', 'bsplines'], dimension='2D'
+            ['fourier', 'bsplines'], dimension=['2D', '2D']
         )
         self.simulation_multi.new(n_obs=1, n_clusters=1)
 

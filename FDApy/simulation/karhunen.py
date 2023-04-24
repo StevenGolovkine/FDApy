@@ -9,7 +9,7 @@ Karhunen-Loève decomposition
 import numpy as np
 import numpy.typing as npt
 
-from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Optional, Sequence, Tuple, Union
 
 from ..representation.functional_data import (
     DenseFunctionalData, MultivariateFunctionalData
@@ -375,6 +375,10 @@ def _compute_data(
     DenseFunctionalData
         Generated data as a DenseFunctionalData object.
 
+    TODO
+    ----
+    Maybe, at some point, this function should be in functionaldata.py
+
     """
     if basis.n_dim == 1:
         values = np.matmul(coefficients, basis.values)
@@ -518,72 +522,23 @@ class KarhunenLoeve(Simulation):
             )
 
     @staticmethod
-    def _format_basis_name_none(
-        basis: Union[Basis, MultivariateBasis]
-    ) -> Tuple[Sequence[np.str_], Sequence[Basis]]:
-        """Format ``basis_name`` and ``basis`` if ``basis_name==None``.
-
-        Parameters
-        ----------
-        basis: Union[Basis, MultivariateBasis]
-            Basis of functions as a Basis object.
-
-        Returns
-        -------
-        Tuple[Sequence[np.str_], Sequence[Basis]]
-            Tuple containing the basis names and the basis objects as a list.
-
-        """
-        #TODO: incorporate MultivariateBasis
-        #I think it should return a MultivariateBasis in every case.
-        if isinstance(basis, Basis):
-            basis = [basis]
-        basis_name = len(basis) * ['user-defined']
-        return basis_name, basis
-
-    @staticmethod
-    def _format_basis_name_not_none(
-        basis_name: Union[np.str_, Sequence[np.str_]],
-        dimension: Union[np.str_, Sequence[np.str_]]
-    ) -> Tuple[Sequence[np.str_], Sequence[np.str_]]:
-        """Format different arguments if ``basis_name != None``.
-
-        Parameters
-        ----------
-        basis_name: Union[np.str_, Sequence[np.str_]]
-            Name of the basis to use.
-        dimension: Union[np.str_, Sequence[np.str_]
-            Dimension of the basis to generate.
-
-        Returns
-        -------
-        Tuple[Sequence[np.str_], Sequence[np.str_]]
-            Tuple containing the basis names, the number of functions ans the
-            dimensions as list.
-
-        """
-        if isinstance(basis_name, str):
-            basis_name = [basis_name]
-        if isinstance(dimension, str):
-            dimension = len(basis_name) * [dimension]
-        return basis_name, dimension
-
-    @staticmethod
     def _create_basis(
-        basis_name: Sequence[np.str_],
-        dimension: Sequence[np.str_],
+        basis_name: Union[np.str_, Sequence[np.str_]],
+        dimension: Union[np.str_, Sequence[np.str_]],
         n_functions: np.int64,
         argvals: Optional[npt.NDArray[np.float64]] = None,
         **kwargs_basis
-    ) -> MultivariateBasis:
+    ) -> Union[Basis, MultivariateBasis]:
         """Create a list of Basis given some parameters.
 
         Parameters
         ----------
-        basis_name: Sequence[np.str_]
-            A sequence of basis names.
-        dimension: Sequence[np.str_]
-            A sequence of basis dimensions.
+        basis_name: Union[np.str_, Sequence[np.str_]]
+            Basis name for Basis or sequence of basis names for
+            MultivariateBasis.
+        dimension: Union[np.str_, Sequence[np.str_]]
+            Dimension for Basis or sequence of basis dimensions for
+            MultivariateBasis.
         n_functions: np.int64
             The number of functions to generate for each basis object.
         argvals: Optional[npt.NDArray[np.float64]]
@@ -593,20 +548,32 @@ class KarhunenLoeve(Simulation):
 
         Returns
         -------
-        MultivariateBasis
-            MultivariateBasis objects generated for each name-dimension pair.
+        Union[Basis, MultivariateBasis]
+            Basis or MultivariateBasis objects generated for each
+            name-dimension pair.
 
         """
-        return MultivariateBasis(
-            simulation_type='weighted',
-            n_components=len(basis_name),
-            name=basis_name,
-            n_functions=n_functions,
-            dimension=dimension,
-            argvals=argvals,
-            rchoice=None,
-            **kwargs_basis
-        )
+        if isinstance(basis_name, str):
+            return Basis(
+                name=basis_name,
+                n_functions=n_functions,
+                dimension=dimension,
+                argvals=argvals,
+                **kwargs_basis
+            )
+        elif isinstance(basis_name, list):
+            return MultivariateBasis(
+                simulation_type='weighted',
+                n_components=len(basis_name),
+                name=basis_name,
+                n_functions=n_functions,
+                dimension=dimension,
+                argvals=argvals,
+                rchoice=None,
+                **kwargs_basis
+            )
+        else:
+            raise TypeError('Argument basis_name have to be a str or a list.')
 
     def __init__(
         self,
@@ -623,17 +590,8 @@ class KarhunenLoeve(Simulation):
         KarhunenLoeve._check_basis_none(basis_name, basis)
         KarhunenLoeve._check_basis_type(basis)
 
-        if basis_name is None:
-            basis_name, basis = KarhunenLoeve._format_basis_name_none(basis)
-        else:
-            basis_name, dimension = KarhunenLoeve._format_basis_name_not_none(
-                basis_name, dimension
-            )
-
         # Create the Basis list using the basis_name list.
         if basis is None:
-            if isinstance(argvals, np.ndarray):
-                argvals = [argvals]
             basis = KarhunenLoeve._create_basis(
                 basis_name, dimension, n_functions, argvals, **kwargs_basis
             )
@@ -684,7 +642,7 @@ class KarhunenLoeve(Simulation):
         clusters_std = kwargs.get('clusters_std', None)
 
         # Initialize parameters
-        n_features = self.basis[0].n_obs
+        n_features = self.basis.n_obs
         centers = _initialize_centers(n_features, n_clusters, centers)
         clusters_std = _initialize_clusters_std(
             n_features, n_clusters, clusters_std
@@ -694,14 +652,12 @@ class KarhunenLoeve(Simulation):
         coef, labels = _make_coef(
             n_obs, n_features, centers, clusters_std, rnorm
         )
-        simus_univariate = [
-            _compute_data(basis=basis, coefficients=coef)
-            for basis in self.basis
-        ]
-
-        if len(simus_univariate) > 1:
-            self.data = MultivariateFunctionalData(simus_univariate)
-        else:
-            self.data = simus_univariate[0]
+        if isinstance(self.basis, Basis):
+            self.data = _compute_data(basis=self.basis, coefficients=coef)
+        else:  # self.basis is MultivariateBasis
+            self.data = MultivariateFunctionalData([
+                _compute_data(basis=basis, coefficients=coef)
+                for basis in self.basis
+            ])
         self.labels = labels
         self.eigenvalues = clusters_std[:, 0]
