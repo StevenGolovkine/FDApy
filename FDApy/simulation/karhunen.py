@@ -561,7 +561,7 @@ class KarhunenLoeve(Simulation):
                 argvals=argvals,
                 **kwargs_basis
             )
-        elif isinstance(basis_name, list):
+        else:  # isinstance(basis_name, list)
             return MultivariateBasis(
                 simulation_type='weighted',
                 n_components=len(basis_name),
@@ -572,8 +572,6 @@ class KarhunenLoeve(Simulation):
                 rchoice=None,
                 **kwargs_basis
             )
-        else:
-            raise TypeError('Argument basis_name have to be a str or a list.')
 
     def __init__(
         self,
