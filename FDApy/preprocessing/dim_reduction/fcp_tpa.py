@@ -681,6 +681,10 @@ class FCPTPA():
         # The eigenvalues are not sorted by default
         # idx = np.argsort(coefficients)[::-1]
 
+        # Add normalization -> see MFPCA and funData
+        # https://github.com/ClaraHapp/MFPCA/blob/master/R/univDecomp.R#L422
+        # https://github.com/ClaraHapp/funData/blob/master/R/funDataMethods.R#L883
+
         self._scores = np.einsum('j, ij -> ij', coefficients, matrices[0])
         self.eigenvalues = np.var(self._scores, axis=0)
         self.eigenfunctions = DenseFunctionalData(
