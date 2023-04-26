@@ -16,7 +16,7 @@ from numpy.linalg import norm
 from scipy.optimize import minimize_scalar
 
 from ...representation.functional_data import DenseFunctionalData
-from ...misc.utils import _eigh
+from ...misc.utils import _eigh, _integrate_2d
 
 
 ##############################################################################
@@ -470,6 +470,7 @@ class FCPTPA():
     ----------
     n_components: np.int64, default=5
         Number of components to be calculated.
+    normalize: np.bool_, default=False
 
     Attributes
     ----------
@@ -500,10 +501,12 @@ class FCPTPA():
 
     def __init__(
         self,
-        n_components: np.int64 = 5
+        n_components: np.int64 = 5,
+        normalize: np.bool_ = False
     ) -> None:
         """Initialize FCPTPA object."""
         self.n_components = n_components
+        self.normalize = normalize
 
     def fit(
         self,
@@ -681,12 +684,33 @@ class FCPTPA():
         # The eigenvalues are not sorted by default
         # idx = np.argsort(coefficients)[::-1]
 
-        # Add normalization -> see MFPCA and funData
-        # https://github.com/ClaraHapp/MFPCA/blob/master/R/univDecomp.R#L422
-        # https://github.com/ClaraHapp/funData/blob/master/R/funDataMethods.R#L883
-
         self._scores = np.einsum('j, ij -> ij', coefficients, matrices[0])
         self.eigenvalues = np.var(self._scores, axis=0)
+        print(self.eigenvalues)
+        # Add normalization -> see MFPCA and funData
+        # https://github.com/ClaraHapp/MFPCA/blob/master/R/univDecomp.R#L422
+        # https://github.com/ClaraHapp/funData/blob/master/R/funDataMethods.R
+        if self.normalize:
+            norm_fd = eigenimages.shape[0] * [None]
+            for idx in np.arange(eigenimages.shape[0]):
+                norm_fd[idx] = np.power(_integrate_2d(
+                    np.power(eigenimages[idx, :, :], 2),
+                    data.argvals['input_dim_0'],
+                    data.argvals['input_dim_1'],
+                    method='trapz'
+                ), 0.5)
+            print(norm_fd)
+
+            new_eigenimage = np.zeros_like(eigenimages)
+            new_scores = np.zeros_like(self._scores)
+            for idx, values in enumerate(norm_fd):
+                new_eigenimage[idx, :, :] = eigenimages[idx, :, :] / values
+                new_scores[:, idx] = self._scores[:, idx] * np.power(values, 2)
+
+            self._scores = new_scores
+            self.eigenvalues = self.eigenvalues * np.power(norm_fd, 2)
+            eigenimages = new_eigenimage
+        print(self.eigenvalues)
         self.eigenfunctions = DenseFunctionalData(
             data.argvals, eigenimages
         )
