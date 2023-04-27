@@ -287,6 +287,15 @@ class FunctionalData(ABC):
         """Shape of the data for each dimension."""
 
     @abstractmethod
+    def norm(
+        self,
+        squared: np.bool_ = False,
+        method: np.str_ = 'trapz',
+        use_argvals_stand: np.bool_ = False
+    ) -> npt.NDArray[np.float64]:
+        """Norm of each observation of the data."""
+
+    @abstractmethod
     def is_compatible(
         self,
         fdata: Type[FunctionalData]
@@ -593,6 +602,71 @@ class DenseFunctionalData(FunctionalData):
 
         """
         return self.n_points
+
+    def norm(
+        self,
+        squared: np.bool_ = False,
+        method: np.str_ = 'trapz',
+        use_argvals_stand: np.bool_ = False
+    ) -> npt.NDArray[np.float64]:
+        r"""Norm of each observation of the data.
+
+        For each observation in the data, it computes its norm defined as
+
+        .. math::
+            || f || = \left(\int_{\mathcal{T}} f(t)^2dt\right)^{1\2},
+            t \in \mathcal{T},
+
+        Parameters
+        ----------
+        squared: np.bool_, default=False
+            If `True`, the function calculates the squared norm, otherwise the
+            result is not squared.
+        method: np.str_, default='trapz'
+            Integration method to be used.
+        use_argvals_stand: np.bool_, default=False
+            Use standardized argvals to compute the normalization of the data.
+
+
+        Returns
+        -------
+        npt.NDArray[np.float64]
+            The norm of each observations.
+
+        """
+        if self.n_dim == 1:
+            int_func = _integrate
+            if use_argvals_stand:
+                x = self.argvals_stand['input_dim_0']
+            else:
+                x = self.argvals['input_dim_0']
+            params = {'x': x}
+        elif self.n_dim == 2:
+            int_func = _integrate_2d
+            if use_argvals_stand:
+                x = self.argvals_stand['input_dim_0']
+                y = self.argvals_stand['input_dim_1']
+            else:
+                x = self.argvals['input_dim_0']
+                y = self.argvals['input_dim_1']
+            params = {
+                'x': x,
+                'y': y
+            }
+        else:
+            raise ValueError(
+                'The data dimension is not correct.'
+            )
+
+        sq_values = np.power(self.values, 2)
+        norm_fd = self.n_obs * [None]
+        for idx in np.arange(self.n_obs):
+            norm_fd[idx] = int_func(sq_values[idx], method=method, **params)
+
+        if squared:
+            return np.array(norm_fd)
+        else:
+            return np.power(norm_fd, 0.5)
 
     def as_irregular(self) -> IrregularFunctionalData:
         """Convert `self` from Dense to Irregular functional data.
@@ -1406,6 +1480,38 @@ class IrregularFunctionalData(FunctionalData):
         return {
             idx: len(dim) for idx, dim in self.gather_points().items()
         }
+
+    def norm(
+        self,
+        squared: np.bool_ = False,
+        method: np.str_ = 'trapz',
+        use_argvals_stand: np.bool_ = False
+    ) -> npt.NDArray[np.float64]:
+        r"""Norm of each observation of the data.
+
+        For each observation in the data, it computes its norm defined as
+
+        .. math::
+            || f || = \left(\int_{\mathcal{T}} f(t)^2dt\right)^{1\2},
+            t \in \mathcal{T},
+
+        Parameters
+        ----------
+        squared: np.bool_, default=False
+            If `True`, the function calculates the squared norm, otherwise the
+            result is not squared.
+        method: np.str_, default='trapz'
+            Integration method to be used.
+        use_argvals_stand: np.bool_, default=False
+            Use standardized argvals to compute the normalization of the data.
+
+        Raises
+        ------
+        NotImplementedError
+            Currently not implemented.
+
+        """
+        raise NotImplementedError()
 
     def gather_points(self) -> DenseArgvals:
         """Gather all the `argvals` for each of the dimensions separetely.

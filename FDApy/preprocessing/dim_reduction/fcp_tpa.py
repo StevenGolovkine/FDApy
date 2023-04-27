@@ -681,39 +681,22 @@ class FCPTPA():
         # Save the results
         eigenimages = np.einsum('ik, jk -> kij', *matrices[1:])
 
-        # The eigenvalues are not sorted by default
-        # idx = np.argsort(coefficients)[::-1]
-
         self._scores = np.einsum('j, ij -> ij', coefficients, matrices[0])
         self.eigenvalues = np.var(self._scores, axis=0)
-        print(self.eigenvalues)
-        # Add normalization -> see MFPCA and funData
-        # https://github.com/ClaraHapp/MFPCA/blob/master/R/univDecomp.R#L422
-        # https://github.com/ClaraHapp/funData/blob/master/R/funDataMethods.R
-        if self.normalize:
-            norm_fd = eigenimages.shape[0] * [None]
-            for idx in np.arange(eigenimages.shape[0]):
-                norm_fd[idx] = np.power(_integrate_2d(
-                    np.power(eigenimages[idx, :, :], 2),
-                    data.argvals['input_dim_0'],
-                    data.argvals['input_dim_1'],
-                    method='trapz'
-                ), 0.5)
-            print(norm_fd)
-
-            new_eigenimage = np.zeros_like(eigenimages)
-            new_scores = np.zeros_like(self._scores)
-            for idx, values in enumerate(norm_fd):
-                new_eigenimage[idx, :, :] = eigenimages[idx, :, :] / values
-                new_scores[:, idx] = self._scores[:, idx] * values
-
-            self._scores = new_scores
-            self.eigenvalues = self.eigenvalues * np.power(norm_fd, 2)
-            eigenimages = new_eigenimage
-        print(self.eigenvalues)
         self.eigenfunctions = DenseFunctionalData(
             data.argvals, eigenimages
         )
+
+        if self.normalize:
+            norm_data = self.eigenfunctions.norm(squared=False)
+            new_eigenimages = (
+                self.eigenfunctions.values / norm_data[:, None, None]
+            )
+            new_scores = self._scores * norm_data
+
+            self.eigenvalues = self.eigenvalues * np.power(norm_data, 2)
+            self.eigenfunctions.values = new_eigenimages
+            self._scores = new_scores
 
     def transform(
         self,
