@@ -705,7 +705,7 @@ class FCPTPA():
             new_scores = np.zeros_like(self._scores)
             for idx, values in enumerate(norm_fd):
                 new_eigenimage[idx, :, :] = eigenimages[idx, :, :] / values
-                new_scores[:, idx] = self._scores[:, idx] * np.power(values, 2)
+                new_scores[:, idx] = self._scores[:, idx] * values
 
             self._scores = new_scores
             self.eigenvalues = self.eigenvalues * np.power(norm_fd, 2)
@@ -744,11 +744,15 @@ class FCPTPA():
 
         """
         if method == 'NumInt':
+            if self.normalize:
+                n_points = np.prod(list(data.n_points.values()))
+            else:
+                n_points = 1
             return np.einsum(
                 'ikl, jkl -> ij',
                 data.values,
                 self.eigenfunctions.values
-            )
+            ) / n_points
         elif method == 'FCPTPA':
             return self._scores
         else:
