@@ -352,6 +352,44 @@ class TestFit(unittest.TestCase):
             )
 
 
+class TestFitNorm(unittest.TestCase):
+    def setUp(self):
+        kl = KarhunenLoeve(
+            basis_name='bsplines',
+            n_functions=5,
+            dimension='2D',
+            argvals=np.linspace(0, 1, 10),
+            random_state=42
+        )
+        kl.new(n_obs=50)
+        self.data = kl.data
+
+        n_points = self.data.n_points
+        mat_v = np.diff(np.identity(n_points['input_dim_0']))
+        mat_w = np.diff(np.identity(n_points['input_dim_1']))
+        self.penalty_matrices={
+            'v': np.dot(mat_v, mat_v.T),
+            'w': np.dot(mat_w, mat_w.T)
+        }
+        self.alpha_range = {'v': (1e-2, 1e2), 'w': (1e-2, 1e2)}
+
+    def test_fit_norm(self):
+        fcptpa = FCPTPA(n_components=5, normalize=True)
+        fcptpa.fit(
+            self.data,
+            penalty_matrices=self.penalty_matrices,
+            alpha_range=self.alpha_range,
+            tolerance=1e-4,
+            max_iteration=15,
+            adapt_tolerance=True,
+            verbose=True
+        )
+
+        np.testing.assert_equal(fcptpa._scores.shape, (50, 5))
+        np.testing.assert_equal(fcptpa.eigenvalues.shape, (5,))
+        self.assertIsInstance(fcptpa.eigenfunctions, DenseFunctionalData)
+
+
 class TestTransform(unittest.TestCase):
     def setUp(self):
         kl = KarhunenLoeve(
