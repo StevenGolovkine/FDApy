@@ -147,7 +147,7 @@ def _basis_fourier(
     norm = np.sqrt(2 / np.ptp(argvals))
     xx = ((2 * np.pi * (argvals - np.min(argvals)) / np.ptp(argvals)) - np.pi)
     for k in np.arange(1, n_functions):
-        # We consider k + 1 bebause of Python indexation
+        # We consider k + 1 because of Python indexation
         if k % 2:  # k + 1 even
             values[k, :] = norm * np.cos(((k + 1) // 2) * xx)
         else:  # k + 1 odd

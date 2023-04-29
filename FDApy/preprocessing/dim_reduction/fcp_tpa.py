@@ -16,7 +16,7 @@ from numpy.linalg import norm
 from scipy.optimize import minimize_scalar
 
 from ...representation.functional_data import DenseFunctionalData
-from ...misc.utils import _eigh, _integrate_2d
+from ...misc.utils import _eigh
 
 
 ##############################################################################
