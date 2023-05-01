@@ -1,5 +1,5 @@
 """
-One-dimensional Basis
+Two-dimensional Basis
 =====================
 
 """
@@ -20,7 +20,7 @@ from FDApy.visualization.plot import plot
 name = 'fourier'
 n_functions = 5
 argvals = np.linspace(0, 1, 101)
-dimension = '1D'
+dimension = '2D'
 
 ###############################################################################
 basis = Basis(
