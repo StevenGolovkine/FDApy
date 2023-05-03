@@ -548,9 +548,10 @@ class Basis(DenseFunctionalData):
         if dimension == '1D':
             super().__init__({'input_dim_0': argvals}, values)
         elif dimension == '2D':
+            # TODO: Change the generation to get meaningfull functions.
             basis1d = DenseFunctionalData({'input_dim_0': argvals}, values)
             basis2d = _tensor_product(basis1d, basis1d)
-            super().__init__(basis2d.argvals, basis2d.values)
+            super().__init__(basis2d.argvals, basis2d.values[:n_functions])
         else:
             raise ValueError(f"{dimension} is not a valid dimension!")
 
