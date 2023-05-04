@@ -636,6 +636,7 @@ class MFPCA():
             nb_axis = npc
         else:
             nb_axis = eigenvectors.shape[1]
+        eigenvalues = eigenvalues[:nb_axis]
         eigenvectors = eigenvectors[:, :nb_axis]
 
         # Retrieve the number of eigenfunctions for each univariate function.
