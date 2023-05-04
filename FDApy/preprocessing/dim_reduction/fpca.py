@@ -589,14 +589,16 @@ class MFPCA():
         ufpca_list, scores = [], []
         for function, n in zip(data, self.n_components):
             if function.n_dim == 1:
-                ufpca = UFPCA(n_components=n, normalize=False)
+                ufpca = UFPCA(n_components=n, normalize=True)
                 ufpca.fit(data=function)
-                scores_uni = ufpca.transform(data=function, method='NumInt')
+                scores_uni = ufpca.transform(
+                    data=function, method=scores_method
+                )
             elif function.n_dim == 2:
                 n_points = function.n_points
                 mat_v = np.diff(np.identity(n_points['input_dim_0']))
                 mat_w = np.diff(np.identity(n_points['input_dim_1']))
-                ufpca = FCPTPA(n_components=n)
+                ufpca = FCPTPA(n_components=n, normalize=True)
                 ufpca.fit(
                     function,
                     penalty_matrices={
