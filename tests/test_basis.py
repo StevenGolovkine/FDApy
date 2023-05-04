@@ -73,7 +73,7 @@ class TestBasis(unittest.TestCase):
         X = Basis(name='legendre', n_functions=2, dimension='2D', argvals=self.argvals)
         np.testing.assert_allclose(
             X.values,
-            np.array([[[1., 1., 1.],[1., 1., 1.],[1., 1., 1.]],[[0., 0.5, 1.],[0., 0.5, 1.],[0., 0.5, 1.]],[[0., 0., 0.],[0.5, 0.5, 0.5],[1., 1., 1.]],[[0., 0., 0.],[0., 0.25, 0.5],[0., 0.5, 1.]]])
+            np.array([[[0.  , 0.5 , 1.  ],[0.  , 0.5 , 1.  ],[0.  , 0.5 , 1.  ]], [[0.  , 0.  , 0.  ],[0.  , 0.25, 0.5 ],[0.  , 0.5 , 1.  ]]])
         )
 
 

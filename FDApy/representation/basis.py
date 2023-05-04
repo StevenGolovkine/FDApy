@@ -222,6 +222,7 @@ def _simulate_basis(
     argvals: npt.NDArray[np.float64],
     n_functions: np.int64 = 5,
     norm: np.bool_ = False,
+    add_intercept: np.bool_ = True,
     **kwargs
 ) -> npt.NDArray[np.float64]:
     """Redirect to the right simulation basis function.
@@ -236,6 +237,8 @@ def _simulate_basis(
         Number of functions to compute.
     norm: np.bool_
         Should we normalize the functions?
+    add_intercept: np.bool_, default=True
+        Should the constant functions be into the basis?
 
     Keyword Args
     ------------
@@ -257,14 +260,15 @@ def _simulate_basis(
     ... )
 
     """
+    if not add_intercept:
+        n_functions = n_functions + 1
+
     if name == 'legendre':
         values = _basis_legendre(argvals, n_functions)
     elif name == 'wiener':
         values = _basis_wiener(argvals, n_functions)
     elif name == 'fourier':
-        values = _basis_fourier(
-            argvals, n_functions
-        )
+        values = _basis_fourier(argvals, n_functions)
     elif name == 'bsplines':
         values = _basis_bsplines(argvals, n_functions, kwargs.get('degree', 3))
     else:
@@ -273,7 +277,11 @@ def _simulate_basis(
     if norm:
         norm2 = np.sqrt(scipy.integrate.simpson(values * values, argvals))
         values = np.divide(values, norm2[:, np.newaxis])
-    return values
+
+    if add_intercept:
+        return values
+    else:
+        return values[1:]
 
 
 def _simulate_basis_multivariate_weighted(
@@ -516,6 +524,8 @@ class Basis(DenseFunctionalData):
         dimension is :math:`(m_j,)` for :math:`0 \leq j \leq p`.
     norm: np.bool_, default=False
         Should we normalize the basis function?
+    add_intercept: np.bool_, default=True
+        Should the constant functions be into the basis?
 
     Keyword Args
     ------------
@@ -531,6 +541,7 @@ class Basis(DenseFunctionalData):
         dimension: np.str_ = '1D',
         argvals: Optional[npt.NDArray[np.float64]] = None,
         norm: np.bool_ = False,
+        add_intercept: np.bool_ = True,
         **kwargs
     ) -> None:
         """Initialize Basis object."""
@@ -542,15 +553,22 @@ class Basis(DenseFunctionalData):
             argvals = np.arange(0, 1.01, 0.01)
 
         values = _simulate_basis(
-            name, argvals, n_functions, norm, **kwargs
+            name, argvals, n_functions, norm, add_intercept, **kwargs
         )
 
         if dimension == '1D':
             super().__init__({'input_dim_0': argvals}, values)
         elif dimension == '2D':
-            # TODO: Change the generation to get meaningfull functions.
-            basis1d = DenseFunctionalData({'input_dim_0': argvals}, values)
-            basis2d = _tensor_product(basis1d, basis1d)
+            cut = np.ceil(np.sqrt(n_functions)).astype(int)
+            rest = (n_functions / cut + 1).astype(int)
+
+            basis_first_dim = DenseFunctionalData(
+                {'input_dim_0': argvals}, values[:cut]
+            )
+            basis_second_dim = DenseFunctionalData(
+                {'input_dim_0': argvals}, values[1:(rest + 1)]
+            )
+            basis2d = _tensor_product(basis_first_dim, basis_second_dim)
             super().__init__(basis2d.argvals, basis2d.values[:n_functions])
         else:
             raise ValueError(f"{dimension} is not a valid dimension!")

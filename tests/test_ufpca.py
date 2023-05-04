@@ -255,11 +255,11 @@ class TestNumericalIntegration(unittest.TestCase):
         scores = uf._numerical_integration(data)
 
         expected_scores = np.array([
-            [ 0.28494501,  1.41559105],
-            [ 0.6256589 , -0.39976069],
-            [-0.75868556,  1.60777177],
-            [-0.7041311 , -0.33108738],
-            [ 1.51247731,  0.45983859]
+            [-1.42086765, -2.00210923],
+            [-0.64501025, -0.34982201],
+            [-0.11092837,  0.31895034],
+            [-0.49936318,  0.12704974],
+            [-0.78610985, -0.27121312]
         ])
         np.testing.assert_array_almost_equal(
             np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4

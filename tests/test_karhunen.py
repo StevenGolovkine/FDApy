@@ -333,9 +333,7 @@ class TestComputeData(unittest.TestCase):
         self.basis2d = Basis(name='legendre', n_functions=2, dimension='2D')
 
         self.coef_1d = np.array([[0.30471708, -0.73537981]])
-        self.coef_2d = np.array([
-            [0.30471708, -0.90065266,  0.53064913,  0.47028236]
-        ])
+        self.coef_2d = np.array([[0.30471708, -0.90065266]])
 
     def test_dimension_1d(self):
         output = _compute_data(self.basis1d, self.coef_1d)
