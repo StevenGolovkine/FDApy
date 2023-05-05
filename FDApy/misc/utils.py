@@ -12,7 +12,7 @@ import scipy
 
 from numpy.linalg import eigh
 
-from typing import Dict, Optional, Tuple, Union
+from typing import Callable, Dict, Optional, Tuple, Union
 
 
 #############################################################################
@@ -267,13 +267,13 @@ def _get_axis_dimension(
 
 
 def _get_dict_dimension(
-    x: Dict[str, npt.NDArray[np.float64]]
+    x: Dict[np.str_, npt.NDArray[np.float64]]
 ) -> Tuple[int, ...]:
     """Return the shape of an object defined as a dict of np.ndarray.
 
     Parameters
     ----------
-    x: Dict[str, npt.NDArray[np.float64]]
+    x: Dict[np.str_, npt.NDArray[np.float64]]
         Dictionary containing keys as string and values as numpy array.
 
     Returns
@@ -295,14 +295,14 @@ def _get_dict_dimension(
 
 
 def _get_obs_shape(
-    x: Dict[str, Dict[int, npt.NDArray[np.float64]]],
+    x: Dict[np.str_, Dict[int, npt.NDArray[np.float64]]],
     obs: int
 ) -> Tuple[int, ...]:
     """Get the shape of `obs` if `X` is a nested dict.
 
     Parameters
     ----------
-    x: Dict[str, Dict[int, npt.NDArray[np.float64]]]
+    x: Dict[np.str_, Dict[int, npt.NDArray[np.float64]]]
         Nested dictionary containing the data, where the first level of keys
         are strings and the second level of keys are integers representing the
         observation number.
@@ -383,7 +383,7 @@ def _shift(
 def _integrate(
     y: npt.NDArray[np.float64],
     x: npt.NDArray[np.float64],
-    method: str = 'simpson'
+    method: np.str_ = 'simpson'
 ) -> float:
     r"""Compute an estimate of the integral of 1-dimensional curve.
 
@@ -398,7 +398,7 @@ def _integrate(
         Domain for the integration, it has to be ordered.
     y: npt.NDArray[np.float64], shape=(n_features,)
         Observations
-    method: str, {'simpson', 'trapz'}, default = 'simpson'
+    method: np.str_, {'simpson', 'trapz'}, default = 'simpson'
         The method used to integrated.
 
     Returns
@@ -426,7 +426,7 @@ def _integrate_2d(
     z: npt.NDArray[np.float64],
     x: npt.NDArray[np.float64],
     y: npt.NDArray[np.float64],
-    method: str = 'simpson'
+    method: np.str_ = 'simpson'
 ) -> float:
     r"""Compute an estimate of the integral of 2- dimensional surface.
 
@@ -441,7 +441,7 @@ def _integrate_2d(
         First domain for the integration, it has to be ordered.
     y: npt.NDArray[np.float64], shape=(n_features_2,)
         Second domain for the integration, it has to be ordered.
-    method: str, {'simpson', 'trapz'}, default = 'simpson'
+    method: np.str_, {'simpson', 'trapz'}, default = 'simpson'
         The method used to integrated.
 
     Returns
@@ -600,7 +600,7 @@ def _outer(
 
 def _integration_weights(
     x: npt.NDArray[np.float64],
-    method: str = 'trapz'
+    method: Union[np.str_, Callable] = 'trapz'
 ) -> npt.NDArray[np.float64]:
     """Compute integration weights.
 
@@ -611,7 +611,7 @@ def _integration_weights(
     ----------
     x: npt.NDArray[np.float64], shape=(n_points,)
         Domain on which compute the weights.
-    method: str or callable, default='trapz'
+    method: Union[np.str_, Callable], default='trapz'
         The method to compute the weights.
 
     Returns
@@ -729,7 +729,7 @@ def _compute_covariance(
 ##############################################################################
 def _eigh(
     matrix: npt.NDArray[np.float64],
-    UPLO: str = 'L'  # noqa
+    UPLO: np.str_ = 'L'  # noqa
 ) -> Tuple[npt.NDArray, npt.NDArray]:
     """Return the eigenvalues and eigenvectors of a real symmetrix matrix.
 
@@ -743,7 +743,7 @@ def _eigh(
     matrix: npt.NDArray[np.float64], shape=(M, M)
         Hermitian or real symmetric matrices whose eigenvalues and eigenvectors
         are to be computed.
-    UPLO: str, {'L', 'U'}, default='L'
+    UPLO: np.str_, {'L', 'U'}, default='L'
         Specifies whether the calculation is done with the lower triangular
         part of a ('L', default) or the upper triangular part ('U').
         Irrespective of this value only the real parts of the diagonal will be
