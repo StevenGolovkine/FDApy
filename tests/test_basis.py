@@ -61,6 +61,13 @@ class TestBasis(unittest.TestCase):
             X.values,
             np.array([[ 1.        ,  1.        ,  1.        ], [-1.41421356,  1.41421356, -1.41421356]])
         )
+    
+    def test_basis_fourier_no_intercept(self):
+        X = Basis(name='fourier', n_functions=2, argvals=self.argvals, add_intercept=False)
+        np.testing.assert_allclose(
+            X.values,
+            np.array([[-1.41421356,  1.41421356, -1.41421356], [-1.731912e-16,  0.000000e+00,  1.731912e-16]])
+        )
 
     def test_basis_bsplines(self):
         X = Basis(name='bsplines', n_functions=2, argvals=self.argvals, degree=0)
