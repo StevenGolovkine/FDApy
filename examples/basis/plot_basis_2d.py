@@ -28,3 +28,12 @@ basis = Basis(
 )
 
 _ = plot(basis)
+
+
+###############################################################################
+basis = Basis(
+    name=name, n_functions=n_functions, argvals=argvals,
+    dimension=dimension, add_intercept=False
+)
+
+_ = plot(basis)
