@@ -1,5 +1,5 @@
 """
-Multivariate Basis of one-dimensional data
+Multivariate Basis of multi-dimensional data
 ==========================================
 
 """
@@ -24,7 +24,7 @@ argvals = [
     np.linspace(0, 0.5, 11)
 ]
 n_functions = 3
-dimension = ['1D', '1D']
+dimension = ['1D', '2D']
 random_state = np.random.default_rng(42)
 
 ###############################################################################
