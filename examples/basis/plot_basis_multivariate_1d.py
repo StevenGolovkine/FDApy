@@ -28,6 +28,7 @@ dimension = ['1D', '1D']
 random_state = np.random.default_rng(42)
 
 ###############################################################################
+# Using split
 basis = MultivariateBasis(
     simulation_type='split',
     n_components=n_components,
@@ -37,6 +38,22 @@ basis = MultivariateBasis(
     argvals=argvals,
     norm=False,
     rchoice=random_state.choice
+)
+
+_ = plot_multivariate(basis)
+
+
+###############################################################################
+# Using weighted
+basis = MultivariateBasis(
+    simulation_type='weighted',
+    n_components=n_components,
+    name=['fourier', 'legendre'],
+    n_functions=n_functions,
+    dimension=dimension,
+    argvals=argvals,
+    norm=False,
+    runif=random_state.uniform
 )
 
 _ = plot_multivariate(basis)
