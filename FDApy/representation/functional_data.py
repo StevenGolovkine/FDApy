@@ -299,12 +299,11 @@ class FunctionalData(ABC):
     def is_compatible(
         self,
         fdata: Type[FunctionalData]
-    ) -> np.bool_:
+    ) -> None:
         """Check if `fdata` is compatible with `self`."""
         FunctionalData._check_same_type(self, fdata)
         FunctionalData._check_same_nobs(self, fdata)
         FunctionalData._check_same_ndim(self, fdata)
-        return True
 
     @abstractmethod
     def to_basis(
