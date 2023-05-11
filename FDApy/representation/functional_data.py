@@ -713,6 +713,8 @@ class DenseFunctionalData(FunctionalData):
             If the objects are compatible, otherwise an error is raised before
             the return statement.
 
+        TODO: Change returns statement, it seems akward to return True.
+
         """
         super().is_compatible(fdata)
         DenseFunctionalData._check_argvals_equality(
@@ -730,6 +732,8 @@ class DenseFunctionalData(FunctionalData):
         ----------
         basis: Basis
             Basis used to simulate the data.
+
+        TODO: Work on this function to incorporate smoothing.
 
         """
         xtx = np.linalg.inv(np.matmul(basis.values, basis.values.T))
@@ -765,6 +769,8 @@ class DenseFunctionalData(FunctionalData):
         DenseFunctionalData
             An estimate of the mean as a DenseFunctionalData object with the
             same argvals as `self` and one observation.
+
+        TODO: Split into multiple functions. Modify LocalLinear part.
 
         """
         mean_estim = self.values.mean(axis=0)
@@ -837,10 +843,13 @@ class DenseFunctionalData(FunctionalData):
         Analysis of Longitudinal Data,” Journal of the American Statistical
         Association, 93, 1403-1418.
 
+        TODO: Split into multiple functions. Modify LocalLinear part.
+
         """
         if self.n_dim > 1:
-            raise ValueError('Only one dimensional functional data are'
-                             ' supported')
+            raise ValueError(
+                'Only one dimensional functional data are supported'
+            )
 
         p = self.n_points['input_dim_0']
         argvals = self.argvals['input_dim_0']
@@ -889,9 +898,11 @@ class DenseFunctionalData(FunctionalData):
         cov = (cov + cov.T) / 2
 
         # Smoothing the diagonal of the covariance (Yao, Müller and Wang, 2005)
-        lp = LocalPolynomial(kernel_name=kwargs.get('kernel_name', 'gaussian'),
-                             bandwidth=kwargs.get('bandwidth', 1),
-                             degree=kwargs.get('degree', 1))
+        lp = LocalPolynomial(
+            kernel_name=kwargs.get('kernel_name', 'gaussian'),
+            bandwidth=kwargs.get('bandwidth', 1),
+            degree=kwargs.get('degree', 1)
+        )
         var_hat = lp.fit_predict(argvals, cov_diag, argvals)
         # Estimate noise variance (Staniswalis and Lee, 1998)
         ll = argvals[len(argvals) - 1] - argvals[0]
@@ -1050,6 +1061,8 @@ class DenseFunctionalData(FunctionalData):
         -----
         Only, one dimensional IrregularFunctionalData can be smoothed.
 
+        TODO: Modify this function to include different type of smoothing.
+
         """
         if self.n_dim != 1:
             raise NotImplementedError(
@@ -1082,11 +1095,15 @@ class DenseFunctionalData(FunctionalData):
             A distance matrix D such that D_{i, j} is the distance between the
             ith and jth observations of the functional data object,
 
+        TODO: Compare this with the inner-product matrix. Maybe not rely on
+        sklearn for that.
+
         """
         if self.n_dim > 1:
-            raise NotImplementedError('The distance computation is not'
-                                      ' implemented for data with dimension'
-                                      ' greater than 1.')
+            raise NotImplementedError(
+                'The distance computation is not implemented for data with'
+                ' dimension greater than 1.'
+            )
         return cast(
             npt.NDArray[np.float64],
             pairwise_distances(self.values, metric=metric)
@@ -1130,10 +1147,8 @@ class DenseFunctionalData(FunctionalData):
         Tuple[DenseFunctionalData, np.float64]
             The normalized data.
 
-        Todo
-        ----
-        - Add other normalization schames
-        - Add the possibility to normalize multidemsional data
+        TODO: Add other normalization schames and Add the possibility to
+        normalize multidemsional data
 
         References
         ----------
