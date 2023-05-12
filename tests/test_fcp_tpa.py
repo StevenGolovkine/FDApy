@@ -423,6 +423,27 @@ class TestTransform(unittest.TestCase):
         expected_shape = (50, 5)
         np.testing.assert_array_equal(scores.shape, expected_shape)
 
+    def test_transform_numint_norm(self):
+        # We only test the shape of the output because the optimization step
+        # can lead to different solution
+        n_points = self.data.n_points
+        mat_v = np.diff(np.identity(n_points['input_dim_0']))
+        mat_w = np.diff(np.identity(n_points['input_dim_1']))
+
+        fcptpa = FCPTPA(n_components=5)
+        fcptpa.fit(
+            self.data,
+            penalty_matrices={'v': np.dot(mat_v, mat_v.T), 'w': np.dot(mat_w, mat_w.T)},
+            alpha_range={'v': (1e-2, 1e2), 'w': (1e-2, 1e2)},
+            tolerance=1e-4,
+            max_iteration=15,
+            adapt_tolerance=True
+        )
+    
+        scores = fcptpa.transform(self.data, method='NumInt')
+        expected_shape = (50, 5)
+        np.testing.assert_array_equal(scores.shape, expected_shape)
+
     def test_transform_fcptpa(self):
         # We only test the shape of the output because the optimization step
         # can lead to different solution
