@@ -430,7 +430,7 @@ class TestTransform(unittest.TestCase):
         mat_v = np.diff(np.identity(n_points['input_dim_0']))
         mat_w = np.diff(np.identity(n_points['input_dim_1']))
 
-        fcptpa = FCPTPA(n_components=5)
+        fcptpa = FCPTPA(n_components=5, normalize=True)
         fcptpa.fit(
             self.data,
             penalty_matrices={'v': np.dot(mat_v, mat_v.T), 'w': np.dot(mat_w, mat_w.T)},
