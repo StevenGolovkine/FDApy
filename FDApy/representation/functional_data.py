@@ -1262,6 +1262,8 @@ class IrregularFunctionalData(FunctionalData):
         ValueError
             When the number of observations is different across the dimensions.
 
+        TODO: Rewrite using generator?
+
         """
         lengths = [len(obj) for obj in argv.values()]
         if len(set(lengths)) > 1:
@@ -1287,6 +1289,8 @@ class IrregularFunctionalData(FunctionalData):
         ------
         ValueError
             If `argv1` and `argv2` do not have the same sampling points.
+
+        TODO: Rewrite using generator?
 
         """
         temp = all([
@@ -1320,6 +1324,8 @@ class IrregularFunctionalData(FunctionalData):
         ValueError
             When `argvals` and `values` do not have coherent common dimensions.
 
+        TODO: Rewrite using generator?
+
         """
         has_obs_shape = [
             obs.shape == _get_obs_shape(argvals, idx)
@@ -1339,8 +1345,9 @@ class IrregularFunctionalData(FunctionalData):
         """Perform computation defined by `func`."""
         if fdata1.is_compatible(fdata2):
             new_values = {}
-            for (idx, obs1), (_, obs2) in zip(fdata1.values.items(),
-                                              fdata2.values.items()):
+            for (idx, obs1), (_, obs2) in zip(
+                fdata1.values.items(), fdata2.values.items()
+            ):
                 new_values[idx] = func(obs1, obs2)
         return IrregularFunctionalData(fdata1.argvals, new_values)
 
@@ -1560,6 +1567,8 @@ class IrregularFunctionalData(FunctionalData):
         DenseFunctionalData
             An object of the class DenseFunctionalData
 
+        TODO: Simplify this.
+
         """
         new_argvals = self.gather_points()
         new_values = np.full(
@@ -1615,6 +1624,8 @@ class IrregularFunctionalData(FunctionalData):
         True
             If the objects are compatible.
 
+        TODO: Should not return True? Just raise an error.
+
         """
         super().is_compatible(fdata)
         IrregularFunctionalData._check_argvals_equality(
@@ -1632,6 +1643,8 @@ class IrregularFunctionalData(FunctionalData):
         ------
         NotImplementedError
             Currently not implemented.
+
+        TODO: Implement this function.
 
         """
         raise NotImplementedError()
@@ -1654,6 +1667,8 @@ class IrregularFunctionalData(FunctionalData):
             An estimate of the mean as a DenseFunctionalData object with a
             concatenation of the self.argvals as argvals and one observation.
 
+        TODO: Modify this function to incorporate smoothing.
+
         """
         dense_self = self.as_dense()
 
@@ -1675,6 +1690,8 @@ class IrregularFunctionalData(FunctionalData):
         ------
         NotImplementedError
             Currently not implemented.
+
+        TODO: Implement this function.
 
         """
         raise NotImplementedError()
@@ -1736,6 +1753,8 @@ class IrregularFunctionalData(FunctionalData):
         IrregularFunctionalData
             A smoothed version of the data.
 
+        TODO: Modify this function.
+
         """
         if self.n_dim > 1:
             raise NotImplementedError('Currently, only one dimensional data'
@@ -1794,8 +1813,10 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     def __repr__(self) -> np.str_:
         """Override print function."""
-        return (f"Multivariate functional data object with {self.n_functional}"
-                f" functions of {self.n_obs} observations.")
+        return (
+            f"Multivariate functional data object with {self.n_functional}"
+            f" functions of {self.n_obs} observations."
+        )
 
     @property
     def n_obs(self) -> np.int64:
@@ -1832,7 +1853,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             data.
 
         """
-        return [i.n_dim for i in self]
+        return [fdata.n_dim for fdata in self]
 
     @property
     def range_obs(self) -> List[Tuple[np.float64, np.float64]]:
@@ -1845,7 +1866,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             all the observations for the object for each function.
 
         """
-        return [i.range_obs for i in self]
+        return [fdata.range_obs for fdata in self]
 
     @property
     def n_points(self) -> List[Dict[np.str_, np.int64]]:
@@ -1858,7 +1879,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             number of sampling points along each axis for each function.
 
         """
-        return [i.n_points for i in self]
+        return [fdata.n_points for fdata in self]
 
     @property
     def range_points(self) -> List[Dict[np.str_, Tuple[np.int_, np.int_]]]:
@@ -1871,7 +1892,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             the input dimension for each function.
 
         """
-        return [i.range_dim for i in self]
+        return [fdata.range_dim for fdata in self]
 
     @property
     def shape(self) -> List[Dict[np.str_, np.int64]]:
@@ -1885,7 +1906,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             :math:`0 \leq j \leq p`.
 
         """
-        return [i.shape for i in self]
+        return [fdata.shape for fdata in self]
 
     def append(self, item: Type[FunctionalData]) -> None:
         """Add an item to `self`.
@@ -1961,7 +1982,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         """
         return MultivariateFunctionalData(
-            [i.mean(smooth, **kwargs) for i in self]
+            [fdata.mean(smooth, **kwargs) for fdata in self]
         )
 
     def covariance(
