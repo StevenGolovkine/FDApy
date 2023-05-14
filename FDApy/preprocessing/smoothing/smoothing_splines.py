@@ -47,6 +47,9 @@ class SmoothingSpline():
     * C. de Boor, A Practical Guide to Splines, Springer-Verlad, 1978.
     * csaps, https://github.com/espdev/csaps
 
+    TODO: Reimplement this part to remove the dependency on csaps. Automatize
+    the smoothing 1D/2D smoothing. SHould be based on scipy.interpolate.PPoly
+
     """
 
     def __init__(
