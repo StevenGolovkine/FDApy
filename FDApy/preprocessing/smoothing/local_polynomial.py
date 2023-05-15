@@ -317,7 +317,10 @@ class LocalPolynomial():
 
         Returns
         -------
-        self: returns an instance of self.
+        LocalPolynomial
+            Returns an instance of self.
+
+        TODO: Change this, it should not return that.
 
         """
         # TODO: Add tests on the parameters.
@@ -333,11 +336,11 @@ class LocalPolynomial():
         design_matrix_x0 = self.poly_features.\
             fit_transform(np.array(x0, ndmin=2).T)
 
-        self.X_fit_ = np.array([_loc_poly(self.x, self.y, i, design_matrix, j,
-                                          self.kernel_name, h)
-                                for (i, j, h) in zip(x0.T,
-                                                     design_matrix_x0,
-                                                     bandwidth)])
+        X_fit = [
+            _loc_poly(self.x, self.y, i, design_matrix, j, self.kernel_name, h)
+            for (i, j, h) in zip(x0.T, design_matrix_x0, bandwidth)
+        ]
+        self.X_fit_ = np.array(X_fit)
         return self
 
     def predict(
@@ -348,12 +351,12 @@ class LocalPolynomial():
 
         Parameters
         ----------
-        x: array-like, shape = (n_dim, n_samples)
+        x: npt.NDArray[np.float64], shape = (n_dim, n_samples)
             Data
 
         Returns
         -------
-        y_pred: array-like, shape = (n_samples,)
+        npt.NDArray[np.float64], shape = (n_samples,)
             Return predicted values.
 
         """
@@ -368,13 +371,11 @@ class LocalPolynomial():
         design_matrix_x0 = self.poly_features.\
             fit_transform(np.array(x, ndmin=2).T)
 
-        y_pred = np.array([_loc_poly(self.x, self.y, i, design_matrix, j,
-                                     self.kernel_name, h)
-                           for (i, j, h) in zip(x.T,
-                                                design_matrix_x0,
-                                                bandwidth)])
-
-        return y_pred
+        y_pred = [
+            _loc_poly(self.x, self.y, i, design_matrix, j, self.kernel_name, h)
+            for (i, j, h) in zip(x.T, design_matrix_x0, bandwidth)
+        ]
+        return np.array(y_pred)
 
     def fit_predict(
         self,
@@ -386,17 +387,17 @@ class LocalPolynomial():
 
         Parameters
         ----------
-        x: array-like, shape = (n_dim, n_samples)
+        x: npt.NDArray[np.float64], shape = (n_dim, n_samples)
             Training data, input array
-        y: array-like, shape = (n_sample, )
+        y: npt.NDArray[np.float64], shape = (n_sample,)
             Target values, 1-D input array
-        x_pred: array-like, shape = (n_dim, n_samples2)
+        x_pred: npt.NDArray[np.float64], shape = (n_dim, n_samples2)
             Data to predict
 
         Returns
         -------
-        y_pred: array-like, shape = (n_samples2,)
-            Return predicted values
+        npt.NDArray[np.float64], shape = (n_samples2,)
+            Return predicted values.
 
         """
         self.x = x
@@ -406,18 +407,18 @@ class LocalPolynomial():
             x_pred = [x_pred]
 
         if not np.iterable(self.bandwidth):
-            bandwidth = np.repeat(self.bandwidth,
-                                  np.size(x_pred) // np.ndim(x_pred))
+            bandwidth = np.repeat(
+                self.bandwidth, np.size(x_pred) // np.ndim(x_pred)
+            )
 
         design_matrix = self.poly_features.\
             fit_transform(np.array(self.x, ndmin=2).T)
         design_matrix_x0 = self.poly_features.\
             fit_transform(np.array(x_pred, ndmin=2).T)
 
-        y_pred = np.array([_loc_poly(self.x, self.y, i, design_matrix, j,
-                                     self.kernel_name, h)
-                           for (i, j, h) in zip(x_pred.T,
-                                                design_matrix_x0,
-                                                bandwidth)])
+        y_pred = [
+            _loc_poly(self.x, self.y, i, design_matrix, j, self.kernel_name, h)
+            for (i, j, h) in zip(x_pred.T, design_matrix_x0, bandwidth)
+        ]
 
-        return y_pred
+        return np.array(y_pred)
