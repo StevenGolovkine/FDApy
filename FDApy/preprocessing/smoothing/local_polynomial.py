@@ -26,12 +26,13 @@ def _gaussian(
 
     Parameters
     ----------
-    t: array-like, shape = (n_samples,)
-        Array at which computes the gaussian density
+    t: npt.NDArray[np.float64], shape = (n_samples,)
+        Array at which computes the gaussian density.
 
     Returns
     -------
-    kernel: array-like, shape = (n_samples,)
+    npt.NDArray[np.float64], shape = (n_samples,)
+        Values of the kernel.
 
     """
     return np.exp(- t**2 / 2) / np.sqrt(2 * np.pi)  # type: ignore
@@ -44,12 +45,13 @@ def _epanechnikov(
 
     Parameters
     ----------
-    t: array-like, shape = (n_samples,)
-        Array on which computes the Epanechnikov kernel
+    t: npt.NDArray[np.float64], shape = (n_samples,)
+        Array on which computes the Epanechnikov kernel.
 
     Returns
     -------
-    kernel: array-like, shape = (n_samples,)
+    npt.NDArray[np.float64], shape = (n_samples,)
+        Values of the kernel.
 
     References
     ----------
@@ -70,12 +72,13 @@ def _tri_cube(
 
     Parameters
     ----------
-    t: array-like, shape = (n_samples,)
+    t: npt.NDArray[np.float64], shape = (n_samples,)
         Array on which computes the tri-cube kernel
 
     Returns
     -------
-    kernel: array-like, shape = (n_samples,)
+    npt.NDArray[np.float64], shape = (n_samples,)
+        Values of the kernel.
 
     References
     ----------
@@ -96,12 +99,13 @@ def _bi_square(
 
     Parameters
     ----------
-    t: array-like, shape = (n_samples,)
+    t: npt.NDArray[np.float64], shape = (n_samples,)
         Array on which computes the bi-square kernel
 
     Returns
     -------
-    kernel: array-like, shape = (n_samples,)
+    npt.NDArray[np.float64], shape = (n_samples,)
+        Values of the kernel.
 
     References
     ----------
@@ -118,30 +122,33 @@ def _bi_square(
 def _compute_kernel(
     x: npt.NDArray[np.float64],
     x0: npt.NDArray[np.float64],
-    h: Union[float, npt.NDArray[np.float64]],
-    kernel_name: str = 'gaussian'
+    h: Union[np.float64, npt.NDArray[np.float64]],
+    kernel_name: np.str_ = 'gaussian'
 ) -> npt.NDArray[np.float64]:
     """Compute kernel at point norm(x - x0) / h.
 
     Parameters
     ----------
-    x: array-like, shape = (n_dim, n_samples)
+    x: npt.NDArray[np.float64], shape = (n_dim, n_samples)
         Training data.
-    x0: float-array, shape = (n_dim, )
+    x0: npt.NDArray[np.float64], shape = (n_dim, )
         Number around which compute the kernel.
-    h: float or float-array, shape = (n_samples, )
+    h: Union[np.float64, npt.NDArray[np.float64]], shape = (n_samples, )
         Bandwidth to control the importance of points far from x0.
-    kernel_name : string, default='gaussian'
+    kernel_name : np.str_, default='gaussian'
         Kernel name used.
 
     Returns
     -------
-    kernel: array-like , shape = (n_samples, )
+    npt.NDArray[np.float64] , shape = (n_samples,)
+        Values of the kernel.
 
     References
     ----------
     Hastie, Tibshirani and Friedman, Elements of Statistical Learning, 2009,
     equation 6.13
+
+    TODO: Possible to simplify this function?
 
     """
     if not np.iterable(x0):
@@ -160,8 +167,9 @@ def _compute_kernel(
     elif kernel_name == 'bisquare':
         kernel = _bi_square(t)
     else:
-        raise NotImplementedError(f'The kernel {kernel_name} is not'
-                                  ' implemented')
+        raise NotImplementedError(
+            f'The kernel {kernel_name} is not implemented'
+        )
     return kernel
 
 
@@ -171,9 +179,9 @@ def _loc_poly(
     x0: npt.NDArray[np.float64],
     design_matrix: npt.NDArray[np.float64],
     design_matrix_x0: npt.NDArray[np.float64],
-    kernel_name: str = 'epanechnikov',
-    h: float = 0.05
-) -> float:
+    kernel_name: np.str_ = 'epanechnikov',
+    h: Union[np.float64, npt.NDArray[np.float64]] = 0.05
+) -> np.float64:
     r"""Local polynomial regression for one point.
 
     Let :math:`(x_1, Y_1), ..., (x_n, Y_n)` be a random sample of bivariate
@@ -184,24 +192,24 @@ def _loc_poly(
 
     Parameters
     ----------
-    x: array-like, shape = (n_dim, n_samples)
+    x: npt.NDArray[np.float64], shape = (n_dim, n_samples)
         Input array.
-    y: array-like, shape = (n_samples, )
+    y: npt.NDArray[np.float64], shape = (n_samples, )
         1-D input array such that :math:`y = f(x) + e`.
-    x0: array-like, shape = (n_dim, )
+    x0: npt.NDArray[np.float64], shape = (n_dim, )
         1-D array on which estimate the function f(x).
-    design_matrix: array-like, shape = (n_sample, degree + 1)
+    design_matrix: npt.NDArray[np.float64], shape = (n_sample, degree + 1)
         Design matrix of the matrix x.
-    design_matrix_x0: array-like, shape = (n_dim, degree + 1)
+    design_matrix_x0: npt.NDArray[np.float64], shape = (n_dim, degree + 1)
         Design matrix of the observation point x0.
-    kernel_name: string, default='epanechnikov'
+    kernel_name: np.str_, default='epanechnikov'
         Kernel name used as weight.
-    h: float or float-array, default=0.05
+    h: Union[np.float64, npt.NDArray[np.float64]], default=0.05
         Bandwidth for the kernel trick.
 
     Returns
     -------
-    y0_pred: float
+    np.float64
         Prediction of y0, which is f(x0).
 
     References
@@ -235,11 +243,11 @@ class LocalPolynomial():
 
     Parameters
     ----------
-    kernel: string, default="gaussian"
+    kernel: np.str_, default="gaussian"
         Kernel name used as weight (default = 'gaussian').
-    bandwidth: float, default=0.05
+    bandwidth: np.float64, default=0.05
         Strictly positive. Control the size of the associated neighborhood.
-    degree: integer, default=2
+    degree: np.int64, default=2
         Degree of the local polynomial to fit. If degree = 0, we fit the local
         constant estimator (equivalent to the Nadaraya-Watson estimator). If
         degree = 1, we fit the local linear estimator.
@@ -254,9 +262,9 @@ class LocalPolynomial():
 
     def __init__(
         self,
-        kernel_name: str = "gaussian",
-        bandwidth: float = 0.05,
-        degree: int = 2
+        kernel_name: np.str_ = "gaussian",
+        bandwidth: np.float64 = 0.05,
+        degree: np.int64 = 2
     ) -> None:
         """Initialize LocalPolynomial object."""
         # TODO: Add test on parameters.
@@ -266,30 +274,30 @@ class LocalPolynomial():
         self.poly_features = PolynomialFeatures(degree=degree)
 
     @property
-    def kernel_name(self) -> str:
+    def kernel_name(self) -> np.str_:
         """Getter for `kernel_name`."""
         return self._kernel_name
 
     @kernel_name.setter
-    def kernel_name(self, new_kernel_name: str) -> None:
+    def kernel_name(self, new_kernel_name: np.str_) -> None:
         self._kernel_name = new_kernel_name
 
     @property
-    def bandwidth(self) -> float:
+    def bandwidth(self) -> np.float64:
         """Getter for `bandwidth`."""
         return self._bandwidth
 
     @bandwidth.setter
-    def bandwidth(self, new_bandwidth: float) -> None:
+    def bandwidth(self, new_bandwidth: np.float64) -> None:
         self._bandwidth = new_bandwidth
 
     @property
-    def degree(self) -> float:
+    def degree(self) -> np.float64:
         """Getter for `degree`."""
         return self._degree
 
     @degree.setter
-    def degree(self, new_degree: int) -> None:
+    def degree(self, new_degree: np.int64) -> None:
         self._degree = new_degree
         self._poly_features = PolynomialFeatures(degree=new_degree)
 
@@ -302,9 +310,9 @@ class LocalPolynomial():
 
         Parameters
         ----------
-        x: array-like, shape = (n_dim, n_samples)
+        x: npt.NDArray[np.float64], shape = (n_dim, n_samples)
             Training data, input array.
-        y: array-like, shape = (n_samples, )
+        y: npt.NDArray[np.float64], shape = (n_samples,)
             Target values, 1-D input array
 
         Returns
