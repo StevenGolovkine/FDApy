@@ -211,8 +211,10 @@ class FLMM():
 
         if self.smooth is not None:
             print("Smooth the matrices")
-        cov = {idx: k.reshape((n_points, n_points))
-               for idx, k in enumerate(cov_mat)}
+        cov = {
+            idx: k.reshape((n_points, n_points))
+            for idx, k in enumerate(cov_mat)
+        }
         cov = {idx: (k + k.T) / 2 for idx, k in cov.items()}
 
         # Step 4: Estimate noise variance.

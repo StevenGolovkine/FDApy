@@ -37,7 +37,7 @@ class SmoothingSpline():
 
     Parameters
     ----------
-    smooth: float, default=None
+    smooth: np.float64, default=None
         The smoothing factor values. Can be a list for multidimensional
         smoothing. Should be in the range :math:`[0, 1]`. If None, the
         smoothing parameter will be computed automatically.
@@ -54,7 +54,7 @@ class SmoothingSpline():
 
     def __init__(
         self,
-        smooth: float = np.nan
+        smooth: np.float64 = np.nan
     ) -> None:
         """Initialize SmoothingSpline object."""
         self.smooth = smooth
@@ -67,7 +67,7 @@ class SmoothingSpline():
     @smooth.setter
     def smooth(
         self,
-        new_smooth: float
+        new_smooth: np.float64
     ) -> None:
         """Setter for smooth."""
         self._smooth = new_smooth
@@ -81,9 +81,9 @@ class SmoothingSpline():
 
         Parameters
         ----------
-        x: array-like
+        x: npt.NDArray[np.float64]
             Training data, input array.
-        y: array-like
+        y: npt.NDArray[np.float64]
             Target values
 
         Returns
@@ -104,12 +104,12 @@ class SmoothingSpline():
 
         Parameters
         ----------
-        x: array-like
+        x: npt.NDArray[np.float64]
             Data
 
         Returns
         -------
-        y_pred: array-like
+        y_pred: npt.NDArray[np.float64]
             Return predicted values.
 
         """
@@ -125,16 +125,16 @@ class SmoothingSpline():
 
         Parameters
         ----------
-        x: array-like
+        x: npt.NDArray[np.float64]
             Training data, input array.
-        y: array-like
+        y: npt.NDArray[np.float64]
             Target values
-        x_pred: array-like
+        x_pred: npt.NDArray[np.float64]
             Data to predict
 
         Returns
         -------
-        y_pred: array-like
+        y_pred: npt.NDArray[np.float64]
             Return predicted values.
 
         """
