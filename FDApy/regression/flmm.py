@@ -154,8 +154,9 @@ class FLMM():
 
         Notes
         -----
+        TODO: Simplify the function / Cut into multiple functions.
         TODO: Add smoothing of covariance surfaces.
-        TODO: Add the case of group-specific errors
+        TODO: Add the case of group-specific errors.
 
         """
         # Step 0: Get different parameters.
