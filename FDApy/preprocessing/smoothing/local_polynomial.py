@@ -5,6 +5,9 @@
 Local Polynomials
 -----------------
 
+TODO: Rename most of the parameters. Propose somehting to estimate the
+bandwith automatically. Parallelize the compuation. Update the references.
+
 """
 from __future__ import annotations
 
