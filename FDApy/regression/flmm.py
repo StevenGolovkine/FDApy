@@ -30,14 +30,14 @@ class FLMM():
 
     Parameters
     ----------
-    n_components: Optional[List[Union[int, float]]], default=None
+    n_components: Optional[List[Union[np.int64, np.float64]]], default=None
         Number of components to keep. If `n_components` is `None`, all
         components are kept, ``n_components == min(n_samples, n_features)``.
         If `n_components` is an integer, `n_components` are kept. If
         `0 < n_components < 1`, select the number of components such that the
         amount of variance that needs to be explained is greater than the
         percentage specified by `n_components`.
-    smooth: Optional[str]
+    smooth: Optional[np.str_]
         Method to used for the smoothing of the covariance surfaces.
 
     Attributes
@@ -68,12 +68,15 @@ class FLMM():
     * JonaCRC. (2017). JonaCRC/denseFLMM: First release (v0.1.0). Zenodo.
         https://doi.org/10.5281/zenodo.322651
 
+    TODO: Simplify the functions. Refactor the functions. Extends to Irregular
+    Functional data. Rename parameters.
+
     """
 
     def __init__(
         self,
-        n_components: Optional[List[Union[int, float]]] = None,
-        smooth: Optional[str] = None
+        n_components: Optional[List[Union[np.int64, np.float64]]] = None,
+        smooth: Optional[np.str_] = None
     ) -> None:
         """Initialize FLMM object."""
         self.n_components = n_components
@@ -115,7 +118,11 @@ class FLMM():
         group_list: Dict[np.int64, Dict[np.int64, npt.NDArray[np.float64]]],
         **kwargs
     ) -> None:
-        """Dispatch ot the right submethod depending on the input."""
+        """Dispatch ot the right submethod depending on the input.
+
+        TODO: Remove and put into fit().
+
+        """
         if isinstance(data, DenseFunctionalData):
             self._fit_dense(data, n_factors, n_levels, group_list)
         elif isinstance(data, IrregularFunctionalData):
