@@ -23,13 +23,18 @@ from sklearn.preprocessing import PolynomialFeatures
 # Inner functions for the LocalPolynomial class.
 
 def _gaussian(
-    t: npt.NDArray[np.float64]
+    x: npt.NDArray[np.float64]
 ) -> npt.NDArray[np.float64]:
-    """Compute the gaussian density with mean 0 and standard deviation 1.
+    r"""Compute the Gaussian density with mean 0 and standard deviation 1.
+
+    The Gaussian density is given by
+
+    .. math::
+        K(x) = \frac{\exp(-x^2/2)}{\sqrt{2 \pi}}.
 
     Parameters
     ----------
-    t: npt.NDArray[np.float64], shape = (n_samples,)
+    x: npt.NDArray[np.float64], shape = (n_samples,)
         Array at which computes the gaussian density.
 
     Returns
@@ -38,17 +43,22 @@ def _gaussian(
         Values of the kernel.
 
     """
-    return np.exp(- t**2 / 2) / np.sqrt(2 * np.pi)  # type: ignore
+    return np.exp(- x**2 / 2) / np.sqrt(2 * np.pi)  # type: ignore
 
 
 def _epanechnikov(
-    t: npt.NDArray[np.float64]
+    x: npt.NDArray[np.float64]
 ) -> npt.NDArray[np.float64]:
-    """Compute the Epanechnikov kernel.
+    r"""Compute the Epanechnikov kernel.
+
+    The Epanechnikov kernel is given, in [1]_ equation 6.4, by
+
+    .. math::
+        K(x) = \frac{3}{4}(1 - x^2)  \text{if } |x| \leq 1.
 
     Parameters
     ----------
-    t: npt.NDArray[np.float64], shape = (n_samples,)
+    x: npt.NDArray[np.float64], shape = (n_samples,)
         Array on which computes the Epanechnikov kernel.
 
     Returns
@@ -58,24 +68,30 @@ def _epanechnikov(
 
     References
     ----------
-    Hastie, Tibshirani and Friedman, Elements of Statistical Learning, 2009,
-    equation 6.4
+    .. [1] Hastie, T., Tibshirani, R., Friedman, J., 2009. The Elements of
+        Statistical Learning: Data Mining, Inference, and Prediction,
+        Second Edition, 2nd ed, Springer Series in Statistics.
 
     """
-    kernel = np.zeros(t.shape)
-    idx = np.where(np.abs(t) <= 1)
-    kernel[idx] = 0.75 * (1 - t[idx]**2)
+    kernel = np.zeros(x.shape)
+    idx = np.where(np.abs(x) <= 1)
+    kernel[idx] = 0.75 * (1 - x[idx]**2)
     return kernel
 
 
 def _tri_cube(
-    t: npt.NDArray[np.float64]
+    x: npt.NDArray[np.float64]
 ) -> npt.NDArray[np.float64]:
-    """Compute the tri-cube kernel.
+    r"""Compute the tri-cube kernel.
+
+    The tri-cube kernel is given, in [1]_ equation 6.6, by
+
+    .. math::
+        K(x) = (1 - |x|^3)^3  \text{if } |x| \leq 1.
 
     Parameters
     ----------
-    t: npt.NDArray[np.float64], shape = (n_samples,)
+    x: npt.NDArray[np.float64], shape = (n_samples,)
         Array on which computes the tri-cube kernel
 
     Returns
@@ -85,24 +101,30 @@ def _tri_cube(
 
     References
     ----------
-    Hastie, Tibshirani and Friedman, Elements of Statistical Learning, 2009,
-    equation 6.6
+    .. [1] Hastie, T., Tibshirani, R., Friedman, J., 2009. The Elements of
+        Statistical Learning: Data Mining, Inference, and Prediction,
+        Second Edition, 2nd ed, Springer Series in Statistics.
 
     """
-    kernel = np.zeros(t.shape)
-    idx = np.where(np.abs(t) < 1)
-    kernel[idx] = (1 - np.abs(t[idx])**3)**3
+    kernel = np.zeros(x.shape)
+    idx = np.where(np.abs(x) < 1)
+    kernel[idx] = (1 - np.abs(x[idx])**3)**3
     return kernel
 
 
 def _bi_square(
-    t: npt.NDArray[np.float64]
+    x: npt.NDArray[np.float64]
 ) -> npt.NDArray[np.float64]:
-    """Compute the bi-square kernel.
+    r"""Compute the bi-square kernel.
+
+    The bi-square kernel is given, in [1]_, by
+
+    .. math::
+        K(x) = (1 - x^2)^2  \text{if } |x| \leq 1.
 
     Parameters
     ----------
-    t: npt.NDArray[np.float64], shape = (n_samples,)
+    x: npt.NDArray[np.float64], shape = (n_samples,)
         Array on which computes the bi-square kernel
 
     Returns
@@ -112,13 +134,14 @@ def _bi_square(
 
     References
     ----------
-    Cleveland, Robust Locally Weighted Regression and Smoothing Scatterplots,
-    1979, p.831
+    ..[1] Cleveland W., 1979. Robust Locally Weighted Regression and Smoothing
+    Scatterplots. Journal of the American Statistical Association,
+    74(368): 829--836.
 
     """
-    kernel = np.zeros(t.shape)
-    idx = np.where(np.abs(t) < 1)
-    kernel[idx] = (1 - t[idx]**2)**2
+    kernel = np.zeros(x.shape)
+    idx = np.where(np.abs(x) < 1)
+    kernel[idx] = (1 - x[idx]**2)**2
     return kernel
 
 
@@ -339,11 +362,11 @@ class LocalPolynomial():
         design_matrix_x0 = self.poly_features.\
             fit_transform(np.array(x0, ndmin=2).T)
 
-        X_fit = [
+        x_fit = [
             _loc_poly(self.x, self.y, i, design_matrix, j, self.kernel_name, h)
             for (i, j, h) in zip(x0.T, design_matrix_x0, bandwidth)
         ]
-        self.X_fit_ = np.array(X_fit)
+        self.X_fit_ = np.array(x_fit)
         return self
 
     def predict(
