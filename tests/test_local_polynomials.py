@@ -13,7 +13,8 @@ from FDApy.preprocessing.smoothing.local_polynomial import (
     _gaussian,
     _epanechnikov,
     _tri_cube,
-    _bi_square
+    _bi_square,
+    _kernel
 )
 
 
@@ -89,3 +90,25 @@ class TestBiSquare(unittest.TestCase):
         expected_result = np.array([0, 0])
         result = _bi_square(x)
         np.testing.assert_allclose(result, expected_result)
+
+
+class TestKernel(unittest.TestCase):
+    def test_gaussian_kernel(self):
+        kernel_func = _kernel('gaussian')
+        self.assertEqual(kernel_func, _gaussian)
+
+    def test_epanechnikov_kernel(self):
+        kernel_func = _kernel('epanechnikov')
+        self.assertEqual(kernel_func, _epanechnikov)
+
+    def test_tricube_kernel(self):
+        kernel_func = _kernel('tricube')
+        self.assertEqual(kernel_func, _tri_cube)
+
+    def test_bisquare_kernel(self):
+        kernel_func = _kernel('bisquare')
+        self.assertEqual(kernel_func, _bi_square)
+
+    def test_unknown_kernel(self):
+        with self.assertRaises(NotImplementedError):
+            _kernel('unknown_kernel')

@@ -14,7 +14,7 @@ from __future__ import annotations
 import numpy as np
 import numpy.typing as npt
 
-from typing import Union
+from typing import Callable, Union
 
 from sklearn.preprocessing import PolynomialFeatures
 
@@ -70,7 +70,7 @@ def _epanechnikov(
     ----------
     .. [1] Hastie, T., Tibshirani, R., Friedman, J., 2009. The Elements of
         Statistical Learning: Data Mining, Inference, and Prediction,
-        Second Edition, 2nd ed, Springer Series in Statistics.
+        Second Edition, Springer Series in Statistics.
 
     """
     kernel = np.zeros(x.shape)
@@ -103,7 +103,7 @@ def _tri_cube(
     ----------
     .. [1] Hastie, T., Tibshirani, R., Friedman, J., 2009. The Elements of
         Statistical Learning: Data Mining, Inference, and Prediction,
-        Second Edition, 2nd ed, Springer Series in Statistics.
+        Second Edition, Springer Series in Statistics.
 
     """
     kernel = np.zeros(x.shape)
@@ -135,8 +135,8 @@ def _bi_square(
     References
     ----------
     ..[1] Cleveland W., 1979. Robust Locally Weighted Regression and Smoothing
-    Scatterplots. Journal of the American Statistical Association,
-    74(368): 829--836.
+        Scatterplots. Journal of the American Statistical Association,
+        74(368): 829--836.
 
     """
     kernel = np.zeros(x.shape)
@@ -145,13 +145,46 @@ def _bi_square(
     return kernel
 
 
+def _kernel(
+    name: np.str_
+) -> Callable:
+    """Map between kernel names and functions.
+
+    Parameters
+    ----------
+    name: np.str_
+        Name of the kernel.
+
+    Returns
+    -------
+    Callable
+        The kernel function.
+
+    """
+    if name == 'gaussian':
+        return _gaussian
+    elif name == 'epanechnikov':
+        return _epanechnikov
+    elif name == 'tricube':
+        return _tri_cube
+    elif name == 'bisquare':
+        return _bi_square
+    else:
+        raise NotImplementedError(
+            f'The kernel {name} is not implemented'
+        )
+
+
 def _compute_kernel(
     x: npt.NDArray[np.float64],
     x0: npt.NDArray[np.float64],
-    h: Union[np.float64, npt.NDArray[np.float64]],
+    bandwidth: Union[np.float64, npt.NDArray[np.float64]],
     kernel_name: np.str_ = 'gaussian'
 ) -> npt.NDArray[np.float64]:
-    """Compute kernel at point norm(x - x0) / h.
+    """Compute the kernel at a given point.
+
+    The kernel is computed at points ||x - x0|| / h defined in [1]_ equation
+    6.13. The norm used is the Euclidean norm.
 
     Parameters
     ----------
@@ -159,7 +192,7 @@ def _compute_kernel(
         Training data.
     x0: npt.NDArray[np.float64], shape = (n_dim, )
         Number around which compute the kernel.
-    h: Union[np.float64, npt.NDArray[np.float64]], shape = (n_samples, )
+    bandwidth: Union[np.float64, npt.NDArray[np.float64]], shape = (n_samples,)
         Bandwidth to control the importance of points far from x0.
     kernel_name : np.str_, default='gaussian'
         Kernel name used.
@@ -171,10 +204,9 @@ def _compute_kernel(
 
     References
     ----------
-    Hastie, Tibshirani and Friedman, Elements of Statistical Learning, 2009,
-    equation 6.13
-
-    TODO: Possible to simplify this function?
+    .. [1] Hastie, T., Tibshirani, R., Friedman, J., 2009. The Elements of
+        Statistical Learning: Data Mining, Inference, and Prediction,
+        Second Edition, Springer Series in Statistics.
 
     """
     if not np.iterable(x0):
@@ -182,21 +214,10 @@ def _compute_kernel(
     if x.ndim != np.size(x0):
         raise ValueError('x and x0 do not have the same dimension!')
 
-    t = np.sqrt(np.sum(np.power(x - x0[:, np.newaxis], 2), axis=0)) / h
+    t = np.sqrt(np.sum(np.power(x - x0[:, np.newaxis], 2), axis=0)) / bandwidth
 
-    if kernel_name == 'gaussian':
-        kernel = _gaussian(t)
-    elif kernel_name == 'epanechnikov':
-        kernel = _epanechnikov(t)
-    elif kernel_name == 'tricube':
-        kernel = _tri_cube(t)
-    elif kernel_name == 'bisquare':
-        kernel = _bi_square(t)
-    else:
-        raise NotImplementedError(
-            f'The kernel {kernel_name} is not implemented'
-        )
-    return kernel
+    kernel = _kernel(kernel_name)
+    return kernel(t)
 
 
 def _loc_poly(
@@ -206,7 +227,7 @@ def _loc_poly(
     design_matrix: npt.NDArray[np.float64],
     design_matrix_x0: npt.NDArray[np.float64],
     kernel_name: np.str_ = 'epanechnikov',
-    h: Union[np.float64, npt.NDArray[np.float64]] = 0.05
+    bandwidth: Union[np.float64, npt.NDArray[np.float64]] = 0.05
 ) -> np.float64:
     r"""Local polynomial regression for one point.
 
@@ -230,7 +251,7 @@ def _loc_poly(
         Design matrix of the observation point x0.
     kernel_name: np.str_, default='epanechnikov'
         Kernel name used as weight.
-    h: Union[np.float64, npt.NDArray[np.float64]], default=0.05
+    bandwidth: Union[np.float64, npt.NDArray[np.float64]], default=0.05
         Bandwidth for the kernel trick.
 
     Returns
@@ -240,12 +261,14 @@ def _loc_poly(
 
     References
     ----------
-    Zhang and Chen, Statistical Inferences for functional data, The Annals of
-    Statistics, 1052-1079, No. 3, Vol. 35, 2007.
+    .. [1] Zhang, J.-T. and Jianwei C. (2007) Statistical Inferences for
+        Functional Data, The Annals of Statistics, 35(3), 1052--1079.
 
     """
     # Compute kernel.
-    kernel = _compute_kernel(x=x, x0=x0, h=h, kernel_name=kernel_name)
+    kernel = _compute_kernel(
+        x=x, x0=x0, bandwidth=bandwidth, kernel_name=kernel_name
+    )
 
     # Compute the estimation of f (and derivatives) at x0.
     temp = np.dot(design_matrix.T, np.diag(kernel))
@@ -258,7 +281,7 @@ def _loc_poly(
 
 
 class LocalPolynomial():
-    r"""Local polynomial regression.
+    r"""Local Polynomial Regression.
 
     Let :math:`(x_1, Y_1), ..., (x_n, Y_n)` be a random sample of bivariate
     data. For all :math:`i, x_i` belongs to :math:`\mathbb{R}^d` and
@@ -269,7 +292,7 @@ class LocalPolynomial():
 
     Parameters
     ----------
-    kernel: np.str_, default="gaussian"
+    kernel_name: np.str_, default="gaussian"
         Kernel name used as weight (default = 'gaussian').
     bandwidth: np.float64, default=0.05
         Strictly positive. Control the size of the associated neighborhood.
@@ -280,9 +303,12 @@ class LocalPolynomial():
 
     References
     ----------
-    * Zhang and Chen, Statistical Inferences for functional data, The Annals of
-    Statistics, 1052-1079, No. 3, Vol. 35, 2007.
-    * https://github.com/arokem/lowess/blob/master/lowess/lowess.py
+    .. [1] Hastie, T., Tibshirani, R., Friedman, J., 2009. The Elements of
+        Statistical Learning: Data Mining, Inference, and Prediction,
+        Second Edition, Springer Series in Statistics.
+    .. [2] Zhang, J.-T. and Jianwei C. (2007) Statistical Inferences for
+        Functional Data, The Annals of Statistics, 35(3), 1052--1079.
+    .. [3] https://github.com/arokem/lowess/blob/master/lowess/lowess.py
 
     """
 

@@ -138,10 +138,10 @@ def _gcv(
     .. [1] Allen G. (2013), Multi-way Functional Principal Components Analysis,
         IEEE International Workshop on Computational Advances in Multi-Sensor
         Adaptive Processing.
-    .. [2] Happ-Kurz C. (2020) Object-Oriented Software for Functional Data.
+    .. [2] Happ-Kurz C. (2020) Object-Oriented Software for Functional Data,
         Journal of Statistical Software, 93(5): 1--38.
     .. [3] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
-        Functional Data Using Two-Way Regularized Singular Value Decomposition.
+        Functional Data Using Two-Way Regularized Singular Value Decomposition,
         Journal of the American Statistical Association, 104(488): 1609--1620.
 
     """
@@ -228,10 +228,10 @@ def _find_optimal_alpha(
     .. [1] Allen G. (2013), Multi-way Functional Principal Components Analysis,
         IEEE International Workshop on Computational Advances in Multi-Sensor
         Adaptive Processing.
-    .. [2] Happ-Kurz C. (2020) Object-Oriented Software for Functional Data.
+    .. [2] Happ-Kurz C. (2020) Object-Oriented Software for Functional Data,
         Journal of Statistical Software, 93(5): 1--38.
     .. [3] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
-        Functional Data Using Two-Way Regularized Singular Value Decomposition.
+        Functional Data Using Two-Way Regularized Singular Value Decomposition,
         Journal of the American Statistical Association, 104(488): 1609--1620.
 
     """
@@ -267,7 +267,7 @@ def _compute_denominator(
     References
     ----------
     .. [1] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
-        Functional Data Using Two-Way Regularized Singular Value Decomposition.
+        Functional Data Using Two-Way Regularized Singular Value Decomposition,
         Journal of the American Statistical Association, 104(488): 1609--1620.
 
     """
@@ -316,7 +316,7 @@ def _update_vector(
         IEEE International Workshop on Computational Advances in Multi-Sensor
         Adaptive Processing.
     .. [2] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
-        Functional Data Using Two-Way Regularized Singular Value Decomposition.
+        Functional Data Using Two-Way Regularized Singular Value Decomposition,
         Journal of the American Statistical Association, 104(488): 1609--1620.
 
     """
@@ -372,7 +372,7 @@ def _update_components(
         IEEE International Workshop on Computational Advances in Multi-Sensor
         Adaptive Processing.
     .. [2] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
-        Functional Data Using Two-Way Regularized Singular Value Decomposition.
+        Functional Data Using Two-Way Regularized Singular Value Decomposition,
         Journal of the American Statistical Association, 104(488): 1609--1620.
 
     """
@@ -491,10 +491,10 @@ class FCPTPA():
         Component Analysis for Data Observed on Different (Dimensional)
         Domains, Journal of the American Statistical Association, 113(522),
         649--659, DOI: 10.1080/01621459.2016.1273115.
-    .. [3] Happ-Kurz C. (2020) Object-Oriented Software for Functional Data.
+    .. [3] Happ-Kurz C. (2020) Object-Oriented Software for Functional Data,
         Journal of Statistical Software, 93(5): 1--38.
     .. [4] Huang J. Z., Shen H. and Buja A. (2009) The Analysis of Two-Way
-        Functional Data Using Two-Way Regularized Singular Value Decomposition.
+        Functional Data Using Two-Way Regularized Singular Value Decomposition,
         Journal of the American Statistical Association, 104(488): 1609--1620.
 
     """
