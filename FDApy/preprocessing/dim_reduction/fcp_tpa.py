@@ -484,7 +484,7 @@ class FCPTPA():
 
     References
     ----------
-    .. [1] Allen G. (2013), Multi-way Functional Principal Components Analysis,
+    .. [1] Allen G. (2013) Multi-way Functional Principal Components Analysis,
         IEEE International Workshop on Computational Advances in Multi-Sensor
         Adaptive Processing.
     .. [2] Happ C. and Greven S. (2018) Multivariate Functional Principal

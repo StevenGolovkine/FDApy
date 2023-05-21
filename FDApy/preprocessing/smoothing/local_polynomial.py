@@ -68,7 +68,7 @@ def _epanechnikov(
 
     References
     ----------
-    .. [1] Hastie, T., Tibshirani, R., Friedman, J., 2009. The Elements of
+    .. [1] Hastie, T., Tibshirani, R., Friedman, J. (2009) The Elements of
         Statistical Learning: Data Mining, Inference, and Prediction,
         Second Edition, Springer Series in Statistics.
 
@@ -101,7 +101,7 @@ def _tri_cube(
 
     References
     ----------
-    .. [1] Hastie, T., Tibshirani, R., Friedman, J., 2009. The Elements of
+    .. [1] Hastie, T., Tibshirani, R., Friedman, J. (2009) The Elements of
         Statistical Learning: Data Mining, Inference, and Prediction,
         Second Edition, Springer Series in Statistics.
 
@@ -134,7 +134,7 @@ def _bi_square(
 
     References
     ----------
-    ..[1] Cleveland W., 1979. Robust Locally Weighted Regression and Smoothing
+    ..[1] Cleveland W. (1979) Robust Locally Weighted Regression and Smoothing
         Scatterplots. Journal of the American Statistical Association,
         74(368): 829--836.
 
@@ -204,7 +204,7 @@ def _compute_kernel(
 
     References
     ----------
-    .. [1] Hastie, T., Tibshirani, R., Friedman, J., 2009. The Elements of
+    .. [1] Hastie, T., Tibshirani, R., Friedman, J. (2009) The Elements of
         Statistical Learning: Data Mining, Inference, and Prediction,
         Second Edition, Springer Series in Statistics.
 
@@ -261,7 +261,10 @@ def _loc_poly(
 
     References
     ----------
-    .. [1] Zhang, J.-T. and Jianwei C. (2007) Statistical Inferences for
+    .. [1] Hastie, T., Tibshirani, R., Friedman, J. (2009) The Elements of
+        Statistical Learning: Data Mining, Inference, and Prediction,
+        Second Edition, Springer Series in Statistics.
+    .. [2] Zhang, J.-T. and Jianwei C. (2007) Statistical Inferences for
         Functional Data, The Annals of Statistics, 35(3), 1052--1079.
 
     """
@@ -283,6 +286,22 @@ def _loc_poly(
 class LocalPolynomial():
     r"""Local Polynomial Regression.
 
+    This module implements Local Polynomial Regression over different
+    dimensional domain [1]_, [2]_. The idea of local regression is to fit a
+    (simple) different model separetely at each query point :math:`x_0`. Using
+    only the observations close to :math:`x_0`, the resulting estimated
+    function is smooth in the definition domain. Selecting observations close
+    to :math:`x_0` is achieved via a weighted (kernel) function which assigned
+    a weight to each observation based on its (euclidean) distance from the
+    query point.
+
+    Different kernels are defined (`gaussian`, `epanechnikov`, `tricube`,
+    `bisquare`). Each of them has slightly different properties. Kernels are
+    indexed by a parameter (`bandwith`) that controls the width of the
+    neighborhood of :math:`x_0`.
+
+    The code is adapted from [3]_.
+
     Let :math:`(x_1, Y_1), ..., (x_n, Y_n)` be a random sample of bivariate
     data. For all :math:`i, x_i` belongs to :math:`\mathbb{R}^d` and
     :math:`Y_i` in :math:`\mathbb{R}`. Assume the following model:
@@ -296,14 +315,14 @@ class LocalPolynomial():
         Kernel name used as weight (default = 'gaussian').
     bandwidth: np.float64, default=0.05
         Strictly positive. Control the size of the associated neighborhood.
-    degree: np.int64, default=2
+    degree: np.int64, default=1
         Degree of the local polynomial to fit. If degree = 0, we fit the local
         constant estimator (equivalent to the Nadaraya-Watson estimator). If
         degree = 1, we fit the local linear estimator.
 
     References
     ----------
-    .. [1] Hastie, T., Tibshirani, R., Friedman, J., 2009. The Elements of
+    .. [1] Hastie, T., Tibshirani, R., Friedman, J. (2009) The Elements of
         Statistical Learning: Data Mining, Inference, and Prediction,
         Second Edition, Springer Series in Statistics.
     .. [2] Zhang, J.-T. and Jianwei C. (2007) Statistical Inferences for
@@ -316,7 +335,7 @@ class LocalPolynomial():
         self,
         kernel_name: np.str_ = "gaussian",
         bandwidth: np.float64 = 0.05,
-        degree: np.int64 = 2
+        degree: np.int64 = 1
     ) -> None:
         """Initialize LocalPolynomial object."""
         # TODO: Add test on parameters.
