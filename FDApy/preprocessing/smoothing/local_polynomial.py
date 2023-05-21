@@ -298,7 +298,8 @@ class LocalPolynomial():
     Different kernels are defined (`gaussian`, `epanechnikov`, `tricube`,
     `bisquare`). Each of them has slightly different properties. Kernels are
     indexed by a parameter (`bandwith`) that controls the width of the
-    neighborhood of :math:`x_0`.
+    neighborhood of :math:`x_0`. Note that the bandwidth can be adaptive and
+    depend on :math:`x_0`.
 
     The code is adapted from [3]_.
 
