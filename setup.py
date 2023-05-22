@@ -43,7 +43,7 @@ setup(
         'numpy>=1.24.0',
         'pandas>=2.0.0',
         'pygam>=0.8.0',
-        'scikit-learn>=0.23.0',
+        'scikit-learn>=1.2.0',
         "scipy>=1.10.0"
     ],
     test_suite='nose.collector',

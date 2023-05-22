@@ -279,9 +279,9 @@ def _loc_poly(
 
     return np.dot(design_matrix_x0, beta)  # type: ignore
 
+
 #############################################################################
 # Class LocalPolynomial
-
 
 class LocalPolynomial():
     r"""Local Polynomial Regression.
@@ -301,25 +301,33 @@ class LocalPolynomial():
     neighborhood of :math:`x_0`. Note that the bandwidth can be adaptive and
     depend on :math:`x_0`.
 
-    The code is adapted from [3]_.
+    The degree of smoothing functions is controled using the `degree`
+    parameter. A degree of 0 corresponds to locally constant, a degree of 1 to
+    locally linear and a degree of 2 to locally quadratic, etc. High degrees
+    can cause overfitting.
 
-    Let :math:`(x_1, Y_1), ..., (x_n, Y_n)` be a random sample of bivariate
-    data. For all :math:`i, x_i` belongs to :math:`\mathbb{R}^d` and
-    :math:`Y_i` in :math:`\mathbb{R}`. Assume the following model:
-    :math:`Y_i = f(x_i) + e_i`. We would like to estimate the unknown
-    regression function :math:`f(x) = E[Y | X = x]`. We approximate :math`f(x)`
-    using Taylor series.
+    The implementation is adapted from [3]_.
 
     Parameters
     ----------
     kernel_name: np.str_, default="gaussian"
-        Kernel name used as weight (default = 'gaussian').
+        Kernel name used as weight (`gaussian`, `epanechnikov`, `tricube`,
+        `bisquare`).
     bandwidth: np.float64, default=0.05
         Strictly positive. Control the size of the associated neighborhood.
     degree: np.int64, default=1
-        Degree of the local polynomial to fit. If degree = 0, we fit the local
-        constant estimator (equivalent to the Nadaraya-Watson estimator). If
-        degree = 1, we fit the local linear estimator.
+        Degree of the local polynomial to fit. If `degree = 0`, we fit the
+        local constant estimator (equivalent to the Nadaraya-Watson estimator).
+        If `degree = 1`, we fit the local linear estimator. If `degree = 2`, we
+        fit the local quadratic estimator.
+
+    Attributes
+    ----------
+    kernel: Callable
+        Function associated to the kernel name.
+    poly_features: PolynomialFeatures
+        An instance of `sklearn.preprocessing.PolynomialFeatures` used to
+        create design matrices.
 
     References
     ----------
@@ -339,11 +347,9 @@ class LocalPolynomial():
         degree: np.int64 = 1
     ) -> None:
         """Initialize LocalPolynomial object."""
-        # TODO: Add test on parameters.
         self.kernel_name = kernel_name
         self.bandwidth = bandwidth
         self.degree = degree
-        self.poly_features = PolynomialFeatures(degree=degree)
 
     @property
     def kernel_name(self) -> np.str_:
@@ -353,6 +359,7 @@ class LocalPolynomial():
     @kernel_name.setter
     def kernel_name(self, new_kernel_name: np.str_) -> None:
         self._kernel_name = new_kernel_name
+        self._kernel = _kernel(new_kernel_name)
 
     @property
     def bandwidth(self) -> np.float64:
@@ -361,6 +368,8 @@ class LocalPolynomial():
 
     @bandwidth.setter
     def bandwidth(self, new_bandwidth: np.float64) -> None:
+        if new_bandwidth <= 0:
+            raise ValueError('Bandwidth parameter must be strictly positive.')
         self._bandwidth = new_bandwidth
 
     @property
@@ -370,8 +379,20 @@ class LocalPolynomial():
 
     @degree.setter
     def degree(self, new_degree: np.int64) -> None:
+        if new_degree < 0:
+            raise ValueError('Degree parameter must be positive.')
         self._degree = new_degree
         self._poly_features = PolynomialFeatures(degree=new_degree)
+
+    @property
+    def kernel(self) -> Callable:
+        """Getter for `kernel`."""
+        return self._kernel
+
+    @property
+    def poly_features(self) -> PolynomialFeatures:
+        """Getter for `poly_features`."""
+        return self._poly_features
 
     def fit(
         self,

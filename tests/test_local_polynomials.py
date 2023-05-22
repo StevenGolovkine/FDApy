@@ -9,12 +9,15 @@ Written with the help of ChatGPT.
 import numpy as np
 import unittest
 
+from sklearn.preprocessing import PolynomialFeatures
+
 from FDApy.preprocessing.smoothing.local_polynomial import (
     _gaussian,
     _epanechnikov,
     _tri_cube,
     _bi_square,
-    _kernel
+    _kernel,
+    LocalPolynomial
 )
 
 
@@ -112,3 +115,64 @@ class TestKernel(unittest.TestCase):
     def test_unknown_kernel(self):
         with self.assertRaises(NotImplementedError):
             _kernel('unknown_kernel')
+
+
+class LocalPolynomialTest(unittest.TestCase):
+    def test_init(self):
+        # Test default initialization
+        lp = LocalPolynomial()
+        self.assertEqual(lp.kernel_name, "gaussian")
+        self.assertEqual(lp.bandwidth, 0.05)
+        self.assertEqual(lp.degree, 1)
+        self.assertTrue(callable(lp.kernel))
+        self.assertIsInstance(lp.poly_features, PolynomialFeatures)
+
+        # Test custom initialization
+        lp = LocalPolynomial(kernel_name="epanechnikov", bandwidth=0.1, degree=2)
+        self.assertEqual(lp.kernel_name, "epanechnikov")
+        self.assertEqual(lp.bandwidth, 0.1)
+        self.assertEqual(lp.degree, 2)
+        self.assertTrue(callable(lp.kernel))
+        self.assertIsInstance(lp.poly_features, PolynomialFeatures)
+
+    def test_kernel_name(self):
+        lp = LocalPolynomial()
+        lp.kernel_name = "tricube"
+        self.assertEqual(lp.kernel_name, "tricube")
+
+        with self.assertRaises(NotImplementedError):
+            lp.kernel_name = "unknown"
+
+    def test_bandwidth(self):
+        lp = LocalPolynomial()
+        lp.bandwidth = 0.2
+        self.assertEqual(lp.bandwidth, 0.2)
+
+        with self.assertRaises(ValueError):
+            lp.bandwidth = -0.1  # Bandwidth must be strictly positive
+
+        with self.assertRaises(ValueError):
+            lp.bandwidth = 0  # Bandwidth must be strictly positive
+
+    def test_degree(self):
+        lp = LocalPolynomial()
+        lp.degree = 3
+        self.assertEqual(lp.degree, 3)
+        self.assertIsInstance(lp.poly_features, PolynomialFeatures)
+
+        with self.assertRaises(ValueError):
+            lp.degree = -1  # Degree must be positive
+
+    def test_kernel(self):
+        lp = LocalPolynomial()
+        self.assertTrue(callable(lp.kernel))
+
+        with self.assertRaises(AttributeError):
+            lp.kernel = 1  # Can't set attributes
+
+    def test_poly_features(self):
+        lp = LocalPolynomial()
+        self.assertIsInstance(lp.poly_features, PolynomialFeatures)
+
+        with self.assertRaises(AttributeError):
+            lp.poly_features = 1  # Can't set attributes
