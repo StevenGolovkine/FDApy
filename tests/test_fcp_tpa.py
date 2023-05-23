@@ -302,6 +302,73 @@ class TestUpdateComponents(unittest.TestCase):
         np.testing.assert_almost_equal(results_alphas['w'], expected_alpha_w)
 
 
+class FCPTPATest(unittest.TestCase):
+    def setUp(self):
+        kl = KarhunenLoeve(
+            basis_name='bsplines',
+            n_functions=5,
+            dimension='2D',
+            argvals=np.linspace(0, 1, 10),
+            random_state=42
+        )
+        kl.new(n_obs=50)
+        self.data = kl.data
+
+        n_points = self.data.n_points
+        mat_v = np.diff(np.identity(n_points['input_dim_0']))
+        mat_w = np.diff(np.identity(n_points['input_dim_1']))
+        self.penalty_matrices={
+            'v': np.dot(mat_v, mat_v.T),
+            'w': np.dot(mat_w, mat_w.T)
+        }
+        self.alpha_range = {'v': (1e-2, 1e2), 'w': (1e-2, 1e2)}
+
+        self.fcp = FCPTPA()
+        self.fcp.fit(
+            self.data,
+            penalty_matrices=self.penalty_matrices,
+            alpha_range=self.alpha_range,
+            tolerance=1e-4,
+            max_iteration=15,
+            adapt_tolerance=True,
+            verbose=True
+        )
+
+
+    def test_init(self):
+        # Test default initialization
+        fcp = FCPTPA()
+        self.assertEqual(fcp.n_components, 5)
+        self.assertFalse(fcp.normalize)
+
+        # Test custom initialization
+        fcp = FCPTPA(n_components=3, normalize=True)
+        self.assertEqual(fcp.n_components, 3)
+        self.assertTrue(fcp.normalize)
+
+    def test_n_components(self):
+        fcp = FCPTPA()
+        fcp.n_components = 4
+        self.assertEqual(fcp.n_components, 4)
+
+    def test_normalize(self):
+        fcp = FCPTPA()
+        fcp.normalize = True
+        self.assertTrue(fcp.normalize)
+
+    def test_eigenvalues(self):
+        self.assertIsInstance(self.fcp.eigenvalues, np.ndarray)
+
+        with self.assertRaises(AttributeError):
+            self.fcp.eigenvalues = 1  # Can't set attributes
+
+    def test_eigenfunctions(self):
+        self.assertIsInstance(self.fcp.eigenfunctions, DenseFunctionalData)
+
+        with self.assertRaises(AttributeError):
+            self.fcp.eigenfunctions = 1  # Can't set attributes
+
+
 class TestFit(unittest.TestCase):
     def setUp(self):
         kl = KarhunenLoeve(

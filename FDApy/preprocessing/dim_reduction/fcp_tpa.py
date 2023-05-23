@@ -471,11 +471,10 @@ class FCPTPA():
     n_components: np.int64, default=5
         Number of components to be calculated.
     normalize: np.bool_, default=False
+        Should the results be normalied?
 
     Attributes
     ----------
-    mean: DenseFunctionalData
-        An estimation of the mean of the training data.
     eigenvalues: npt.NDArray[np.float64], shape=(n_components,)
         The singular values corresponding to each of selected components.
     eigenfunctions: DenseFunctionalData
@@ -507,6 +506,34 @@ class FCPTPA():
         """Initialize FCPTPA object."""
         self.n_components = n_components
         self.normalize = normalize
+
+    @property
+    def n_components(self) -> np.int64:
+        """Getter for `n_components`."""
+        return self._n_components
+
+    @n_components.setter
+    def n_components(self, new_n_components: np.int64) -> None:
+        self._n_components = new_n_components
+
+    @property
+    def normalize(self) -> np.bool_:
+        """Getter for `normalize`."""
+        return self._normalize
+
+    @normalize.setter
+    def normalize(self, new_normalize: np.bool_) -> None:
+        self._normalize = new_normalize
+
+    @property
+    def eigenvalues(self) -> npt.NDArray[np.float64]:
+        """Getter for `eigenvalues`."""
+        return self._eigenvalues
+
+    @property
+    def eigenfunctions(self) -> DenseFunctionalData:
+        """Getter for `eigenfunctions`."""
+        return self._eigenfunctions
 
     def fit(
         self,
@@ -682,20 +709,20 @@ class FCPTPA():
         eigenimages = np.einsum('ik, jk -> kij', *matrices[1:])
 
         self._scores = np.einsum('j, ij -> ij', coefficients, matrices[0])
-        self.eigenvalues = np.var(self._scores, axis=0)
-        self.eigenfunctions = DenseFunctionalData(
+        self._eigenvalues = np.var(self._scores, axis=0)
+        self._eigenfunctions = DenseFunctionalData(
             data.argvals, eigenimages
         )
 
         if self.normalize:
-            norm_data = self.eigenfunctions.norm(squared=False)
+            norm_data = self._eigenfunctions.norm(squared=False)
             new_eigenimages = (
-                self.eigenfunctions.values / norm_data[:, None, None]
+                self._eigenfunctions.values / norm_data[:, None, None]
             )
             new_scores = self._scores * norm_data
 
-            self.eigenvalues = self.eigenvalues * np.power(norm_data, 2)
-            self.eigenfunctions.values = new_eigenimages
+            self._eigenvalues = self._eigenvalues * np.power(norm_data, 2)
+            self._eigenfunctions.values = new_eigenimages
             self._scores = new_scores
 
     def transform(
