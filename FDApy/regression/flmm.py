@@ -82,6 +82,31 @@ class FLMM():
         self.n_components = n_components
         self.smooth = smooth
 
+    @property
+    def n_components(self) -> Optional[List[Union[np.int64, np.float64]]]:
+        """Getter for `n_components`."""
+        return self._n_components
+
+    @n_components.setter
+    def n_components(
+        self,
+        new_n_components: Optional[List[Union[np.int64, np.float64]]]
+    ) -> None:
+        self._n_components = new_n_components
+
+    @property
+    def smooth(self) -> Optional[np.str_]:
+        """Getter for smooth."""
+        return self._smooth
+
+    @smooth.setter
+    def smooth(
+        self,
+        new_smooth: Optional[np.str_]
+    ) -> None:
+        """Setter for smooth."""
+        self._smooth = new_smooth
+
     def fit(
         self,
         data: FunctionalData,

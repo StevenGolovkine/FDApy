@@ -80,6 +80,53 @@ class UFPCA():
         self.normalize = normalize
         self.weights = 1
 
+    @property
+    def method(self) -> np.str_:
+        """Getter for `method`."""
+        return self._method
+
+    @method.setter
+    def method(self, new_method: np.str_) -> None:
+        self._method = new_method
+
+    @property
+    def n_components(self) -> np.int64:
+        """Getter for `n_components`."""
+        return self._n_components
+
+    @n_components.setter
+    def n_components(self, new_n_components: np.int64) -> None:
+        self._n_components = new_n_components
+
+    @property
+    def normalize(self) -> np.bool_:
+        """Getter for `normalize`."""
+        return self._normalize
+
+    @normalize.setter
+    def normalize(self, new_normalize: np.bool_) -> None:
+        self._normalize = new_normalize
+
+    @property
+    def mean(self) -> DenseFunctionalData:
+        """Getter for `mean`."""
+        return self._mean
+
+    @property
+    def covariance(self) -> DenseFunctionalData:
+        """Getter for `covariance`."""
+        return self._covariance
+
+    @property
+    def eigenvalues(self) -> npt.NDArray[np.float64]:
+        """Getter for `eigenvalues`."""
+        return self._eigenvalues
+
+    @property
+    def eigenfunctions(self) -> DenseFunctionalData:
+        """Getter for `eigenfunctions`."""
+        return self._eigenfunctions
+
     def fit(
         self,
         data: DenseFunctionalData
@@ -115,7 +162,7 @@ class UFPCA():
             data_new, self.weights = data_new.normalize(use_argvals_stand=True)
 
         # Estimate eigencomponents
-        self.mean = data_mean
+        self._mean = data_mean
         if self.method == 'covariance':
             if data_new.n_dim == 1:
                 self._fit_covariance(data_new)
@@ -181,12 +228,14 @@ class UFPCA():
         )
 
         # Save the results
-        self.eigenvalues = eigenvalues
-        self.eigenfunctions = DenseFunctionalData(data.argvals, eigenfunctions)
+        self._eigenvalues = eigenvalues
+        self._eigenfunctions = DenseFunctionalData(
+            data.argvals, eigenfunctions
+        )
 
         # Compute an estimation of the covariance
         covariance = _compute_covariance(eigenvalues, eigenfunctions)
-        self.covariance = DenseFunctionalData(
+        self._covariance = DenseFunctionalData(
             {'input_dim_0': argvals, 'input_dim_1': argvals},
             covariance[np.newaxis]
         )
@@ -213,8 +262,8 @@ class UFPCA():
         )
 
         self._eigenvectors = eigenvectors
-        self.eigenvalues = eigenvalues / data.n_obs
-        self.eigenfunctions = DenseFunctionalData(
+        self._eigenvalues = eigenvalues / data.n_obs
+        self._eigenfunctions = DenseFunctionalData(
             data.argvals, eigenfunctions.T
         )
 
@@ -224,7 +273,7 @@ class UFPCA():
             covariance = _compute_covariance(
                 eigenvalues / data.n_obs, eigenfunctions.T
             )
-            self.covariance = DenseFunctionalData(
+            self._covariance = DenseFunctionalData(
                 {'input_dim_0': argvals, 'input_dim_1': argvals},
                 covariance[np.newaxis]
             )
@@ -514,6 +563,56 @@ class MFPCA():
         self.normalize = normalize
         self.weights = None
 
+    @property
+    def method(self) -> np.str_:
+        """Getter for `method`."""
+        return self._method
+
+    @method.setter
+    def method(self, new_method: np.str_) -> None:
+        self._method = new_method
+
+    @property
+    def n_components(self) -> Optional[List[Union[np.int64, np.float64]]]:
+        """Getter for `n_components`."""
+        return self._n_components
+
+    @n_components.setter
+    def n_components(
+        self,
+        new_n_components: Optional[List[Union[np.int64, np.float64]]]
+    ) -> None:
+        self._n_components = new_n_components
+
+    @property
+    def normalize(self) -> np.bool_:
+        """Getter for `normalize`."""
+        return self._normalize
+
+    @normalize.setter
+    def normalize(self, new_normalize: np.bool_) -> None:
+        self._normalize = new_normalize
+
+    @property
+    def mean(self) -> DenseFunctionalData:
+        """Getter for `mean`."""
+        return self._mean
+
+    @property
+    def covariance(self) -> DenseFunctionalData:
+        """Getter for `covariance`."""
+        return self._covariance
+
+    @property
+    def eigenvalues(self) -> npt.NDArray[np.float64]:
+        """Getter for `eigenvalues`."""
+        return self._eigenvalues
+
+    @property
+    def eigenfunctions(self) -> DenseFunctionalData:
+        """Getter for `eigenfunctions`."""
+        return self._eigenfunctions
+
     def fit(
         self,
         data: MultivariateFunctionalData,
@@ -560,7 +659,7 @@ class MFPCA():
             data_new, self.weights = data_new.normalize(use_argvals_stand=True)
 
         # Estimate eigencomponents
-        self.mean = data_mean
+        self._mean = data_mean
         if self.method == 'covariance':
             self._fit_covariance(data_new, scores_method)
         elif self.method == 'inner-product':

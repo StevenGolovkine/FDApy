@@ -446,7 +446,7 @@ class TestInverseTranform(unittest.TestCase):
                 [[3, 4, 5], [3, 4, 5]]
             ]
         ])
-        uf.eigenfunctions = DenseFunctionalData(argvals, values)
+        uf._eigenfunctions = DenseFunctionalData(argvals, values)
 
         with self.assertRaises(ValueError):
             uf.inverse_transform(scores)

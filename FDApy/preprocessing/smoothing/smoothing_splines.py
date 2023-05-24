@@ -60,7 +60,7 @@ class SmoothingSpline():
         self.smooth = smooth
 
     @property
-    def smooth(self) -> float:
+    def smooth(self) -> np.float64:
         """Getter for smooth."""
         return self._smooth
 
