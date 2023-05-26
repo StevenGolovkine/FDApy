@@ -1,6 +1,6 @@
 """
 Representation of univariate and dense functional data
-============================================
+======================================================
 
 Examples of representation of univariate and dense functional data.
 """
@@ -16,7 +16,7 @@ from FDApy.visualization.plot import plot
 
 ###############################################################################
 # The representation of dense functional data
-# -------------------------------------
+# -------------------------------------------
 # We are showing the building blocks of the representation of univariate and
 # dense functional data. To define a ``FunctionalData`` object, we need a set
 # of ``argvals`` (the sampling points of the curves) and a set of ``values``

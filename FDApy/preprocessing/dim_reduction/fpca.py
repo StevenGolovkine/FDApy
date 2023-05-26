@@ -757,10 +757,10 @@ class MFPCA():
 
         self.ufpca_list = ufpca_list
         self.scores_univariate = scores_univariate
-        self.covariance = covariance
-        self.eigenvalues = eigenvalues
+        self._covariance = covariance
+        self._eigenvalues = eigenvalues
         self.eigenvectors = eigenvectors
-        self.eigenfunctions = MultivariateFunctionalData(eigenfunctions)
+        self._eigenfunctions = MultivariateFunctionalData(eigenfunctions)
 
     def _fit_inner_product(
         self,
@@ -791,8 +791,8 @@ class MFPCA():
         ]
 
         self._eigenvectors = eigenvectors
-        self.eigenvalues = eigenvalues / data.n_obs
-        self.eigenfunctions = MultivariateFunctionalData(eigenfunctions)
+        self._eigenvalues = eigenvalues / data.n_obs
+        self._eigenfunctions = MultivariateFunctionalData(eigenfunctions)
 
         # Compute an estimation of the covariance
 

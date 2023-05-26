@@ -1,6 +1,6 @@
 """
 Representation of multivariate functional data
-============================================
+==============================================
 
 Examples of representation of multivariate functional data.
 """
