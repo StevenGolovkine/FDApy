@@ -126,14 +126,16 @@ class LocalPolynomialTest(unittest.TestCase):
         self.assertEqual(lp.degree, 1)
         self.assertTrue(callable(lp.kernel))
         self.assertIsInstance(lp.poly_features, PolynomialFeatures)
+        self.assertFalse(lp.robust)
 
         # Test custom initialization
-        lp = LocalPolynomial(kernel_name="epanechnikov", bandwidth=0.1, degree=2)
+        lp = LocalPolynomial(kernel_name="epanechnikov", bandwidth=0.1, degree=2, robust=True)
         self.assertEqual(lp.kernel_name, "epanechnikov")
         self.assertEqual(lp.bandwidth, 0.1)
         self.assertEqual(lp.degree, 2)
         self.assertTrue(callable(lp.kernel))
         self.assertIsInstance(lp.poly_features, PolynomialFeatures)
+        self.assertTrue(lp.robust)
 
     def test_kernel_name(self):
         lp = LocalPolynomial()

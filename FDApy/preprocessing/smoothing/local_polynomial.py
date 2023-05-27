@@ -287,7 +287,7 @@ class LocalPolynomial():
     r"""Local Polynomial Regression.
 
     This module implements Local Polynomial Regression over different
-    dimensional domain [1]_, [2]_. The idea of local regression is to fit a
+    dimensional domain [2]_, [3]_. The idea of local regression is to fit a
     (simple) different model separetely at each query point :math:`x_0`. Using
     only the observations close to :math:`x_0`, the resulting estimated
     function is smooth in the definition domain. Selecting observations close
@@ -306,7 +306,7 @@ class LocalPolynomial():
     locally linear and a degree of 2 to locally quadratic, etc. High degrees
     can cause overfitting.
 
-    The implementation is adapted from [3]_.
+    The implementation is adapted from [4]_.
 
     Parameters
     ----------
@@ -320,6 +320,8 @@ class LocalPolynomial():
         local constant estimator (equivalent to the Nadaraya-Watson estimator).
         If `degree = 1`, we fit the local linear estimator. If `degree = 2`, we
         fit the local quadratic estimator.
+    robust: np.bool_
+        Whether to apply the robustification procedure from [1]_, page 831.
 
     Attributes
     ----------
@@ -331,12 +333,15 @@ class LocalPolynomial():
 
     References
     ----------
-    .. [1] Hastie, T., Tibshirani, R., Friedman, J. (2009) The Elements of
+    .. [1] Cleveland W. (1979) Robust Locally Weighted Regression and Smoothing
+        Scatterplots. Journal of the American Statistical Association,
+        74(368): 829--836.
+    .. [2] Hastie, T., Tibshirani, R., Friedman, J. (2009) The Elements of
         Statistical Learning: Data Mining, Inference, and Prediction,
         Second Edition, Springer Series in Statistics.
-    .. [2] Zhang, J.-T. and Jianwei C. (2007) Statistical Inferences for
+    .. [3] Zhang, J.-T. and Jianwei C. (2007) Statistical Inferences for
         Functional Data, The Annals of Statistics, 35(3), 1052--1079.
-    .. [3] https://github.com/arokem/lowess/blob/master/lowess/lowess.py
+    .. [4] https://github.com/arokem/lowess/blob/master/lowess/lowess.py
 
     """
 
@@ -344,12 +349,14 @@ class LocalPolynomial():
         self,
         kernel_name: np.str_ = "gaussian",
         bandwidth: np.float64 = 0.05,
-        degree: np.int64 = 1
+        degree: np.int64 = 1,
+        robust: np.bool_ = False
     ) -> None:
         """Initialize LocalPolynomial object."""
         self.kernel_name = kernel_name
         self.bandwidth = bandwidth
         self.degree = degree
+        self.robust = robust
 
     @property
     def kernel_name(self) -> np.str_:
@@ -383,6 +390,15 @@ class LocalPolynomial():
             raise ValueError('Degree parameter must be positive.')
         self._degree = new_degree
         self._poly_features = PolynomialFeatures(degree=new_degree)
+
+    @property
+    def robust(self) -> np.bool_:
+        """Getter for `robust`."""
+        return self._robust
+
+    @robust.setter
+    def robust(self, new_robust: np.bool_) -> None:
+        self._robust = new_robust
 
     @property
     def kernel(self) -> Callable:
