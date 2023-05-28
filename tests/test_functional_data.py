@@ -15,7 +15,7 @@ from FDApy.representation.functional_data import (
 )
 
 
-class TestDenseFunctionalData(unittest.TestCase):
+class TestConcatenate(unittest.TestCase):
     def setUp(self):
         self.argvals = {'input_dim_0': np.array([1, 2, 3, 4, 5])}
         self.values = np.array([
@@ -25,12 +25,17 @@ class TestDenseFunctionalData(unittest.TestCase):
         ])
         self.func_data = DenseFunctionalData(self.argvals, self.values)
 
-        argvals = {'input_dim_0': {
-            0: np.array([1, 2, 3, 4]),
-            1: np.array([2, 4])
-        }}
-        values = {
-            0: np.array([1, 6, 9, 4]),
-            1: np.array([2, 3])
-        }
-        self.irreg_data = IrregularFunctionalData(argvals, values)
+    def test_concatenate(self):
+        fdata = _concatenate([self.func_data, self.func_data])
+
+        np.testing.assert_equal(fdata.argvals, self.argvals)
+        np.testing.assert_array_equal(
+            fdata.values,
+            np.array([
+                [1, 2, 3, 4, 5],
+                [6, 7, 8, 9, 10],
+                [11, 12, 13, 14, 15],
+                [1, 2, 3, 4, 5],
+                [6, 7, 8, 9, 10],
+                [11, 12, 13, 14, 15]
+            ]))
