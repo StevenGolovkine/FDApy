@@ -78,6 +78,10 @@ class MultivariateFunctionalDataTest(unittest.TestCase):
         self.assertEqual(len(self.multivariate_data), 3)
         self.assertEqual(self.multivariate_data[2], self.fdata3)
 
+        fdata = MultivariateFunctionalData([])
+        fdata.append(self.fdata1)
+        self.assertEqual(fdata[0], self.fdata1)
+
     def test_extend(self):
         self.multivariate_data.extend([self.fdata3])
         self.assertEqual(len(self.multivariate_data), 3)
