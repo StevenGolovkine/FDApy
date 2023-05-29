@@ -10,7 +10,6 @@ import unittest
 
 from FDApy.representation.functional_data import (
     DenseFunctionalData,
-    IrregularFunctionalData,
     _concatenate
 )
 
