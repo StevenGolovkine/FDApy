@@ -12,7 +12,8 @@ from FDApy.representation.functional_data import (
     DenseFunctionalData
 )
 from FDApy.clustering.fcubt import (
-    _Node
+    _Node,
+    FCUBT
 )
 
 
@@ -77,3 +78,13 @@ class NodeTest(unittest.TestCase):
         new_is_leaf = True
         self.node.is_leaf = new_is_leaf
         self.assertEqual(self.node.is_leaf, new_is_leaf)
+
+
+class FCUBTTest(unittest.TestCase):
+    def setUp(self):
+        self.root_node = _Node(...)
+        self.normalize = False
+        self.fcubt = FCUBT(
+            root_node=self.root_node,
+            normalize=self.normalize
+        )
