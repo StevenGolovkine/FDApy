@@ -43,7 +43,7 @@ def _gaussian(
         Values of the kernel.
 
     """
-    return np.exp(- x**2 / 2) / np.sqrt(2 * np.pi)  # type: ignore
+    return np.exp(- np.square(x) / 2) / np.sqrt(2 * np.pi)
 
 
 def _epanechnikov(
@@ -75,7 +75,7 @@ def _epanechnikov(
     """
     kernel = np.zeros(x.shape)
     idx = np.where(np.abs(x) <= 1)
-    kernel[idx] = 0.75 * (1 - x[idx]**2)
+    kernel[idx] = 0.75 * (1 - np.square(x[idx]))
     return kernel
 
 
@@ -92,7 +92,7 @@ def _tri_cube(
     Parameters
     ----------
     x: npt.NDArray[np.float64], shape = (n_samples,)
-        Array on which computes the tri-cube kernel
+        Array on which computes the tri-cube kernel.
 
     Returns
     -------
@@ -108,7 +108,7 @@ def _tri_cube(
     """
     kernel = np.zeros(x.shape)
     idx = np.where(np.abs(x) < 1)
-    kernel[idx] = (1 - np.abs(x[idx])**3)**3
+    kernel[idx] = np.power(1 - np.power(np.abs(x[idx]), 3), 3)
     return kernel
 
 
@@ -125,7 +125,7 @@ def _bi_square(
     Parameters
     ----------
     x: npt.NDArray[np.float64], shape = (n_samples,)
-        Array on which computes the bi-square kernel
+        Array on which computes the bi-square kernel.
 
     Returns
     -------
@@ -141,7 +141,7 @@ def _bi_square(
     """
     kernel = np.zeros(x.shape)
     idx = np.where(np.abs(x) < 1)
-    kernel[idx] = (1 - x[idx]**2)**2
+    kernel[idx] = np.square(1 - np.square(x[idx]))
     return kernel
 
 
