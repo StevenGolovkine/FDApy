@@ -178,28 +178,31 @@ def _kernel(
 def _compute_kernel(
     x: npt.NDArray[np.float64],
     x0: npt.NDArray[np.float64],
-    bandwidth: Union[np.float64, npt.NDArray[np.float64]],
-    kernel_name: np.str_ = 'gaussian'
+    bandwidth: np.float64,
+    kernel: Callable = _epanechnikov
 ) -> npt.NDArray[np.float64]:
-    """Compute the kernel at a given point.
+    r"""Compute the weights at a particular query point.
 
-    The kernel is computed at points ||x - x0|| / h defined in [1]_ equation
-    6.13. The norm used is the Euclidean norm.
+    The weights are defined using a kernel function and are computed at points
+    :math:`\lvert\lvert x - x0\rvert\rvert / \lambda` defined in [1]_, equation
+    6.13. The used norm is the Euclidean norm. The function allows
+    multidimensional inputs. The arguments `x`, `x0` must have a common
+    dimension.
 
     Parameters
     ----------
     x: npt.NDArray[np.float64], shape = (n_dim, n_samples)
         Training data.
-    x0: npt.NDArray[np.float64], shape = (n_dim, )
-        Number around which compute the kernel.
-    bandwidth: Union[np.float64, npt.NDArray[np.float64]], shape = (n_samples,)
-        Bandwidth to control the importance of points far from x0.
-    kernel_name : np.str_, default='gaussian'
-        Kernel name used.
+    x0: npt.NDArray[np.float64], shape = (n_dim,)
+        Query point.
+    bandwidth: np.float64
+        Width of the neighborhood of `x0`.
+    kernel: Callable, default=_epanechnikov
+        Kernel function to used,
 
     Returns
     -------
-    npt.NDArray[np.float64] , shape = (n_samples,)
+    npt.NDArray[np.float64] , shape=(n_samples,)
         Values of the kernel.
 
     References
@@ -215,8 +218,7 @@ def _compute_kernel(
         raise ValueError('x and x0 do not have the same dimension!')
 
     t = np.sqrt(np.sum(np.power(x - x0[:, np.newaxis], 2), axis=0)) / bandwidth
-
-    kernel = _kernel(kernel_name)
+    #t = np.linalg.norm(x - x0[:, np.newaxis]) / bandwidth
     return kernel(t)
 
 
@@ -226,7 +228,7 @@ def _loc_poly(
     x0: npt.NDArray[np.float64],
     design_matrix: npt.NDArray[np.float64],
     design_matrix_x0: npt.NDArray[np.float64],
-    kernel_name: np.str_ = 'epanechnikov',
+    kernel: Callable = _epanechnikov,
     bandwidth: Union[np.float64, npt.NDArray[np.float64]] = 0.05
 ) -> np.float64:
     r"""Local polynomial regression for one point.
@@ -249,8 +251,8 @@ def _loc_poly(
         Design matrix of the matrix x.
     design_matrix_x0: npt.NDArray[np.float64], shape = (n_dim, degree + 1)
         Design matrix of the observation point x0.
-    kernel_name: np.str_, default='epanechnikov'
-        Kernel name used as weight.
+    kernel: Callable, default=_epanechnikov
+        Kernel function to used,
     bandwidth: Union[np.float64, npt.NDArray[np.float64]], default=0.05
         Bandwidth for the kernel trick.
 
@@ -270,7 +272,7 @@ def _loc_poly(
     """
     # Compute kernel.
     kernel = _compute_kernel(
-        x=x, x0=x0, bandwidth=bandwidth, kernel_name=kernel_name
+        x=x, x0=x0, bandwidth=bandwidth, kernel=kernel
     )
 
     # Compute the estimation of f (and derivatives) at x0.
@@ -446,7 +448,7 @@ class LocalPolynomial():
             fit_transform(np.array(x0, ndmin=2).T)
 
         x_fit = [
-            _loc_poly(self.x, self.y, i, design_matrix, j, self.kernel_name, h)
+            _loc_poly(self.x, self.y, i, design_matrix, j, self.kernel, h)
             for (i, j, h) in zip(x0.T, design_matrix_x0, bandwidth)
         ]
         self.X_fit_ = np.array(x_fit)
@@ -481,7 +483,7 @@ class LocalPolynomial():
             fit_transform(np.array(x, ndmin=2).T)
 
         y_pred = [
-            _loc_poly(self.x, self.y, i, design_matrix, j, self.kernel_name, h)
+            _loc_poly(self.x, self.y, i, design_matrix, j, self.kernel, h)
             for (i, j, h) in zip(x.T, design_matrix_x0, bandwidth)
         ]
         return np.array(y_pred)
@@ -526,7 +528,7 @@ class LocalPolynomial():
             fit_transform(np.array(x_pred, ndmin=2).T)
 
         y_pred = [
-            _loc_poly(self.x, self.y, i, design_matrix, j, self.kernel_name, h)
+            _loc_poly(self.x, self.y, i, design_matrix, j, self.kernel, h)
             for (i, j, h) in zip(x_pred.T, design_matrix_x0, bandwidth)
         ]
 
