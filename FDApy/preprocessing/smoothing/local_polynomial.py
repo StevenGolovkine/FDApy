@@ -191,14 +191,16 @@ def _compute_kernel(
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64], shape = (n_dim, n_samples)
+    x: npt.NDArray[np.float64], shape = (n_samples, n_dim)
         Training data.
-    x0: npt.NDArray[np.float64], shape = (n_dim,)
-        Query point.
+    x0: Union[np.float64, npt.NDArray[np.float64]], shape = (n_dim,)
+        Query point. For one-dimensional smoothing, `x0` must be passed as a
+        `np.float64`. For higher-dimensional smoothing, `x0` must be passed as
+        a `npt.NDArray[np.float64]]`.
     bandwidth: np.float64
         Width of the neighborhood of `x0`.
     kernel: Callable, default=_epanechnikov
-        Kernel function to used,
+        Kernel function to used.
 
     Returns
     -------
@@ -212,14 +214,11 @@ def _compute_kernel(
         Second Edition, Springer Series in Statistics.
 
     """
-    if not np.iterable(x0):
-        x0 = np.asarray([x0])
-    if x.ndim != np.size(x0):
-        raise ValueError('x and x0 do not have the same dimension!')
-
-    t = np.sqrt(np.sum(np.power(x - x0[:, np.newaxis], 2), axis=0)) / bandwidth
-    #t = np.linalg.norm(x - x0[:, np.newaxis]) / bandwidth
-    return kernel(t)
+    if x.ndim == 1:
+        xx = np.abs(x - x0)
+    else:
+        xx = np.linalg.norm(x - x0, axis=1)
+    return kernel(xx / bandwidth)
 
 
 def _loc_poly(
