@@ -18,6 +18,7 @@ from FDApy.preprocessing.smoothing.local_polynomial import (
     _bi_square,
     _kernel,
     _compute_kernel,
+    _local_regression,
     LocalPolynomial
 )
 
@@ -152,6 +153,53 @@ class TestComputeKernel(unittest.TestCase):
         output = _compute_kernel(x, x0, bandwidth, kernel)
         expected_output = np.array([0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.515625, 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.28125 , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      , 0.      ])
         np.testing.assert_array_almost_equal(output, expected_output)
+
+
+class TestLocalregression(unittest.TestCase):
+    def test_regression_one_dimensional(self):
+        x = np.linspace(0, 1, 11)
+        y = np.sin(x)
+        x0 = np.array([0.5])
+        bandwidth = 0.8
+        kernel = _epanechnikov
+
+        design_matrix = PolynomialFeatures(degree=2).fit_transform(x.reshape(-1, 1))
+        design_matrix_x0 = PolynomialFeatures(degree=2).fit_transform(x0.reshape(-1, 1))
+
+        output = _local_regression(y, x, x0, design_matrix, design_matrix_x0, bandwidth, kernel)
+        expected_output = 0.47930025640766993
+    
+    def test_regression_two_dimensional(self):
+        x = np.linspace(0, 1, 11)
+        xx, yy = np.meshgrid(x, x)
+        x = np.column_stack([xx.flatten(), yy.flatten()])
+        y = np.sin(x[:, 0]) * np.cos(x[:, 1])
+        x0 = np.array([0.3, 0.1])
+        bandwidth = 0.2
+        kernel = _epanechnikov
+
+        design_matrix = PolynomialFeatures(degree=2).fit_transform(x)
+        design_matrix_x0 = PolynomialFeatures(degree=2).fit_transform(x0.reshape(1, 2))
+
+        output = _local_regression(y, x, x0, design_matrix, design_matrix_x0, bandwidth, kernel)
+        expected_output = 0.29404124636834406
+
+
+    def test_regression_three_dimensional(self):
+        x = np.linspace(0, 1, 5)
+        xx, yy, zz = np.meshgrid(x, x, x)
+        x = np.column_stack([xx.flatten(), yy.flatten(), zz.flatten()])
+        y = np.sin(x[:, 0]) * np.cos(x[:, 1]) * x[:, 2] #+ np.random.normal(0, 0.05, len(x))
+        x0 = np.array([0.3, 0.1, 0.5])
+        bandwidth = 0.2
+        kernel = _epanechnikov
+
+        design_matrix = PolynomialFeatures(degree=2).fit_transform(x)
+        design_matrix_x0 = PolynomialFeatures(degree=2).fit_transform(x0.reshape(1, 3))
+
+        output = _local_regression(y, x, x0, design_matrix, design_matrix_x0, bandwidth, kernel)
+        expected_output = 0.12373018800232748
+
 
 class LocalPolynomialTest(unittest.TestCase):
     def test_init(self):

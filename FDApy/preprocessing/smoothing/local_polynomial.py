@@ -222,8 +222,8 @@ def _compute_kernel(
 
 
 def _local_regression(
-    x: npt.NDArray[np.float64],
     y: npt.NDArray[np.float64],
+    x: npt.NDArray[np.float64],
     x0: npt.NDArray[np.float64],
     design_matrix: npt.NDArray[np.float64],
     design_matrix_x0: npt.NDArray[np.float64],
@@ -232,28 +232,28 @@ def _local_regression(
 ) -> np.float64:
     r"""Local polynomial regression for one point.
 
-    Let :math:`(x_1, Y_1), ..., (x_n, Y_n)` be a random sample of bivariate
-    data. Assume the following model: :math:`Y_i = f(x_i) + e_i`. We would
-    like to estimate the unknown regression function
-    :math:`f(x) = E[Y | X = x]`. We approximate :math:`f(x)` using Taylor
-    series.
-    This function implements a generalized version of the equation (6.8) in
-    [1]_.
+    This function estimates the regression function :math:`f(x)` over the
+    domain `\mathbb{R}^p` at a particular query point `x_0`. A generalized
+    version of the equation (6.8) in [1]_ is implemented. It allows
+    multidimensional inputs for `x` and `x_0`.
 
     Parameters
     ----------
+    y: npt.NDArray[np.float64], shape = (n_samples,)
+        Target values.
     x: npt.NDArray[np.float64], shape = (n_samples, n_dim)
         Training data.
-    y: npt.NDArray[np.float64], shape = (n_samples,)
-        1-D input array such that :math:`y = f(x) + e`.
     x0: Union[np.float64, npt.NDArray[np.float64]], shape = (n_dim,)
         Query point. For one-dimensional smoothing, `x0` must be passed as a
         `np.float64`. For higher-dimensional smoothing, `x0` must be passed as
         a `npt.NDArray[np.float64]]`.
-    design_matrix: npt.NDArray[np.float64], shape = (n_sample, degree + 1)
-        Design matrix of the matrix x.
-    design_matrix_x0: npt.NDArray[np.float64], shape = (n_dim, degree + 1)
-        Design matrix of the observation point x0.
+    design_matrix: npt.NDArray[np.float64], shape = (n_sample, n_features)
+        Design matrix for the training data `x`. The dimension `n_features` is
+        related to the degree of the fitted polynomials. It includes intercept
+        and interaction in the case of multidimensional inputs.
+    design_matrix_x0: npt.NDArray[np.float64], shape = (n_dim, n_features)
+        Design matrix for the query points `x_0`. The dimension `n_features`
+        must be the same as the design matrix of `x`.
     bandwidth: np.float64
         Width of the neighborhood of `x0`.
     kernel: Callable, default=_epanechnikov
@@ -262,7 +262,7 @@ def _local_regression(
     Returns
     -------
     np.float64
-        Prediction of y0, which is f(x0).
+        Estimation of `f(x_0)`.
 
     References
     ----------
@@ -271,16 +271,15 @@ def _local_regression(
         Second Edition, Springer Series in Statistics.
 
     """
-    # Compute kernel.
-    kernel = _compute_kernel(
+    kernel_values = _compute_kernel(
         x=x, x0=x0, bandwidth=bandwidth, kernel=kernel
     )
+    temp = design_matrix.T * kernel_values
+    beta = np.linalg.lstsq(
+        np.dot(temp, design_matrix), np.dot(temp, y), rcond=1e-10
+    )[0]
 
-    # Compute the estimation of f (and derivatives) at x0.
-    temp = np.dot(design_matrix.T, np.diag(kernel))
-    beta = np.dot(np.linalg.pinv(np.dot(temp, design_matrix)), np.dot(temp, y))
-
-    return np.dot(design_matrix_x0, beta)  # type: ignore
+    return np.dot(design_matrix_x0, beta)[0]
 
 
 #############################################################################
@@ -450,7 +449,7 @@ class LocalPolynomial():
 
         x_fit = [
             _local_regression(
-                self.x, self.y, i, design_matrix, j, h, self.kernel
+                self.y, self.x, i, design_matrix, j, h, self.kernel
             ) for (i, j, h) in zip(x0.T, design_matrix_x0, bandwidth)
         ]
         self.X_fit_ = np.array(x_fit)
@@ -486,7 +485,7 @@ class LocalPolynomial():
 
         y_pred = [
             _local_regression(
-                self.x, self.y, i, design_matrix, j, h, self.kernel
+                self.y, self.x, i, design_matrix, j, h, self.kernel
             ) for (i, j, h) in zip(x.T, design_matrix_x0, bandwidth)
         ]
         return np.array(y_pred)
@@ -532,7 +531,7 @@ class LocalPolynomial():
 
         y_pred = [
             _local_regression(
-                self.x, self.y, i, design_matrix, j, h, self.kernel
+                self.y, self.x, i, design_matrix, j, h, self.kernel
             ) for (i, j, h) in zip(x_pred.T, design_matrix_x0, bandwidth)
         ]
 
