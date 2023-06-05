@@ -168,6 +168,7 @@ class TestLocalregression(unittest.TestCase):
 
         output = _local_regression(y, x, x0, design_matrix, design_matrix_x0, bandwidth, kernel)
         expected_output = 0.47930025640766993
+        np.testing.assert_allclose(output, expected_output)
     
     def test_regression_two_dimensional(self):
         x = np.linspace(0, 1, 11)
@@ -183,6 +184,7 @@ class TestLocalregression(unittest.TestCase):
 
         output = _local_regression(y, x, x0, design_matrix, design_matrix_x0, bandwidth, kernel)
         expected_output = 0.29404124636834406
+        np.testing.assert_allclose(output, expected_output)
 
 
     def test_regression_three_dimensional(self):
@@ -199,6 +201,7 @@ class TestLocalregression(unittest.TestCase):
 
         output = _local_regression(y, x, x0, design_matrix, design_matrix_x0, bandwidth, kernel)
         expected_output = 0.12373018800232748
+        np.testing.assert_allclose(output, expected_output)
 
 
 class LocalPolynomialTest(unittest.TestCase):
