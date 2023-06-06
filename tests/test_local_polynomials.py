@@ -186,7 +186,6 @@ class TestLocalregression(unittest.TestCase):
         expected_output = 0.29404124636834406
         np.testing.assert_allclose(output, expected_output)
 
-
     def test_regression_three_dimensional(self):
         x = np.linspace(0, 1, 5)
         xx, yy, zz = np.meshgrid(x, x, x)

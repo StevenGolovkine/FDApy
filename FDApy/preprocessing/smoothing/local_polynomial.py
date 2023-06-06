@@ -5,16 +5,13 @@
 Local Polynomials
 -----------------
 
-TODO: Rename most of the parameters. Propose somehting to estimate the
-bandwith automatically. Parallelize the compuation. Update the references.
-
 """
 from __future__ import annotations
 
 import numpy as np
 import numpy.typing as npt
 
-from typing import Callable, Union
+from typing import Callable, Optional, Union
 
 from sklearn.preprocessing import PolynomialFeatures
 
@@ -225,8 +222,8 @@ def _local_regression(
     y: npt.NDArray[np.float64],
     x: npt.NDArray[np.float64],
     x0: npt.NDArray[np.float64],
-    design_matrix: npt.NDArray[np.float64],
-    design_matrix_x0: npt.NDArray[np.float64],
+    dmat: npt.NDArray[np.float64],
+    dmat_x0: npt.NDArray[np.float64],
     bandwidth: np.float64 = 0.05,
     kernel: Callable = _epanechnikov
 ) -> np.float64:
@@ -247,11 +244,11 @@ def _local_regression(
         Query point. For one-dimensional smoothing, `x0` must be passed as a
         `np.float64`. For higher-dimensional smoothing, `x0` must be passed as
         a `npt.NDArray[np.float64]]`.
-    design_matrix: npt.NDArray[np.float64], shape = (n_sample, n_features)
+    dmat: npt.NDArray[np.float64], shape = (n_sample, n_features)
         Design matrix for the training data `x`. The dimension `n_features` is
         related to the degree of the fitted polynomials. It includes intercept
         and interaction in the case of multidimensional inputs.
-    design_matrix_x0: npt.NDArray[np.float64], shape = (n_dim, n_features)
+    dmat_x0: npt.NDArray[np.float64], shape = (n_dim, n_features)
         Design matrix for the query points `x_0`. The dimension `n_features`
         must be the same as the design matrix of `x`.
     bandwidth: np.float64
@@ -274,12 +271,12 @@ def _local_regression(
     kernel_values = _compute_kernel(
         x=x, x0=x0, bandwidth=bandwidth, kernel=kernel
     )
-    temp = design_matrix.T * kernel_values
+    temp = dmat.T * kernel_values
     beta = np.linalg.lstsq(
-        np.dot(temp, design_matrix), np.dot(temp, y), rcond=1e-10
+        np.dot(temp, dmat), np.dot(temp, y), rcond=1e-10
     )[0]
 
-    return np.dot(design_matrix_x0, beta)[0]
+    return np.dot(dmat_x0, beta)
 
 
 #############################################################################
@@ -289,7 +286,7 @@ class LocalPolynomial():
     r"""Local Polynomial Regression.
 
     This module implements Local Polynomial Regression over different
-    dimensional domain [2]_, [3]_. The idea of local regression is to fit a
+    dimensional domain [2]_. The idea of local regression is to fit a
     (simple) different model separetely at each query point :math:`x_0`. Using
     only the observations close to :math:`x_0`, the resulting estimated
     function is smooth in the definition domain. Selecting observations close
@@ -308,7 +305,7 @@ class LocalPolynomial():
     locally linear and a degree of 2 to locally quadratic, etc. High degrees
     can cause overfitting.
 
-    The implementation is adapted from [4]_.
+    The implementation is adapted from [3]_.
 
     Parameters
     ----------
@@ -318,11 +315,11 @@ class LocalPolynomial():
     bandwidth: np.float64, default=0.05
         Strictly positive. Control the size of the associated neighborhood.
     degree: np.int64, default=1
-        Degree of the local polynomial to fit. If `degree = 0`, we fit the
+        Degree of the local polynomial to fit. If ``degree = 0``, we fit the
         local constant estimator (equivalent to the Nadaraya-Watson estimator).
-        If `degree = 1`, we fit the local linear estimator. If `degree = 2`, we
-        fit the local quadratic estimator.
-    robust: np.bool_
+        If ``degree = 1``, we fit the local linear estimator. If
+        ``degree = 2``, we fit the local quadratic estimator.
+    robust: np.bool_, default=False
         Whether to apply the robustification procedure from [1]_, page 831.
 
     Attributes
@@ -330,8 +327,15 @@ class LocalPolynomial():
     kernel: Callable
         Function associated to the kernel name.
     poly_features: PolynomialFeatures
-        An instance of `sklearn.preprocessing.PolynomialFeatures` used to
-        create design matrices.
+        An instance of ``sklearn.preprocessing.PolynomialFeatures`` used to
+        create design matrices. It includes an intercept and interactions for
+        multidimensional inputs.
+
+    Notes
+    -----
+    This methods is *memory-based* and thus require no training; all the work
+    is performed at evaluation time [2]_. For now, no ``fit`` function is
+    necessary and only a ``predict`` is implemented.
 
     References
     ----------
@@ -341,9 +345,11 @@ class LocalPolynomial():
     .. [2] Hastie, T., Tibshirani, R., Friedman, J. (2009) The Elements of
         Statistical Learning: Data Mining, Inference, and Prediction,
         Second Edition, Springer Series in Statistics.
-    .. [3] Zhang, J.-T. and Jianwei C. (2007) Statistical Inferences for
-        Functional Data, The Annals of Statistics, 35(3), 1052--1079.
-    .. [4] https://github.com/arokem/lowess/blob/master/lowess/lowess.py
+    .. [3] https://github.com/arokem/lowess/blob/master/lowess/lowess.py
+
+    TODO
+    ----
+    Add robustification
 
     """
 
@@ -412,127 +418,80 @@ class LocalPolynomial():
         """Getter for `poly_features`."""
         return self._poly_features
 
-    def fit(
-        self,
-        x: npt.NDArray[np.float64],
-        y: npt.NDArray[np.float64]
-    ) -> LocalPolynomial:
-        """Fit local polynomial regression.
-
-        Parameters
-        ----------
-        x: npt.NDArray[np.float64], shape = (n_dim, n_samples)
-            Training data, input array.
-        y: npt.NDArray[np.float64], shape = (n_samples,)
-            Target values, 1-D input array
-
-        Returns
-        -------
-        LocalPolynomial
-            Returns an instance of self.
-
-        TODO: Change this, it should not return that.
-
-        """
-        # TODO: Add tests on the parameters.
-        self.x = x
-        self.y = y
-
-        x0 = np.unique(self.x, axis=0)
-        if not np.iterable(self.bandwidth):
-            bandwidth = np.repeat(self.bandwidth, np.size(x0) // np.ndim(x0))
-
-        design_matrix = self.poly_features.\
-            fit_transform(np.array(self.x, ndmin=2).T)
-        design_matrix_x0 = self.poly_features.\
-            fit_transform(np.array(x0, ndmin=2).T)
-
-        x_fit = [
-            _local_regression(
-                self.y, self.x, i, design_matrix, j, h, self.kernel
-            ) for (i, j, h) in zip(x0.T, design_matrix_x0, bandwidth)
-        ]
-        self.X_fit_ = np.array(x_fit)
-        return self
-
     def predict(
         self,
-        x: npt.NDArray[np.float64]
+        y: npt.NDArray[np.float64],
+        x: npt.NDArray[np.float64],
+        x_new: Optional[npt.NDArray[np.float64]] = None
     ) -> npt.NDArray[np.float64]:
         """Predict using local polynomial regression.
 
         Parameters
         ----------
-        x: npt.NDArray[np.float64], shape = (n_dim, n_samples)
-            Data
+        y: npt.NDArray[np.float64], shape = (n_samples,)
+            Target values.
+        x: npt.NDArray[np.float64], shape = (n_samples, n_dim)
+            Training data.
+        x_new: Optional[npt.NDArray[np.float64]], default=None
+            Query points at which estimates the function. If ``None``, the
+            (unique) training data are used as query points. The shape of the
+            array must be (n_points, n_dim).
 
         Returns
         -------
         npt.NDArray[np.float64], shape = (n_samples,)
             Return predicted values.
 
-        """
-        if isinstance(x, (int, float, np.int_, np.float_)):
-            x = [x]
+        Notes
+        -----
+        Be careful that, for two-dimensional and higher-dimensional data, not
+        passing a ``x_new`` argument may result to something unexpected as for
+        now, the function ``np.unique`` re-order the columns of the data. To be
+        sure of the results, please provide a ``x_new`` argument.
 
-        if not np.iterable(self.bandwidth):
-            bandwidth = np.repeat(self.bandwidth, np.size(x) // np.ndim(x))
+        Examples
+        --------
+        For one-dimensional data.
 
-        design_matrix = self.poly_features.\
-            fit_transform(np.array(self.x, ndmin=2).T)
-        design_matrix_x0 = self.poly_features.\
-            fit_transform(np.array(x, ndmin=2).T)
+        >>> n_points = 101
+        >>> x = np.linspace(0, 1, n_points)
+        >>> y = np.sin(x) + np.random.normal(0, 0.05, n_points)
+        >>> x_new = np.linspace(0, 1, 11)
 
-        y_pred = [
-            _local_regression(
-                self.y, self.x, i, design_matrix, j, h, self.kernel
-            ) for (i, j, h) in zip(x.T, design_matrix_x0, bandwidth)
-        ]
-        return np.array(y_pred)
+        >>> lp = LocalPolynomial(
+        ...     kernel_name='epanechnikov', bandwidth=0.3, degree=1
+        ... )
+        >>> lp.predict(y=y, x=x, x_new=x_new)
 
-    def fit_predict(
-        self,
-        x: npt.NDArray[np.float64],
-        y: npt.NDArray[np.float64],
-        x_pred: npt.NDArray[np.float64]
-    ) -> npt.NDArray[np.float64]:
-        """Fit the model using `x` and predict on `x_pred`.
+        For two-dimensional data.
 
-        Parameters
-        ----------
-        x: npt.NDArray[np.float64], shape = (n_dim, n_samples)
-            Training data, input array
-        y: npt.NDArray[np.float64], shape = (n_sample,)
-            Target values, 1-D input array
-        x_pred: npt.NDArray[np.float64], shape = (n_dim, n_samples2)
-            Data to predict
+        >>> n_points = 51
+        >>> pts = np.linspace(0, 1, n_points)
+        >>> xx, yy = np.meshgrid(pts, pts, indexing='ij')
+        >>> x = np.column_stack([xx.flatten(), yy.flatten()])
+        >>> eps = np.random.normal(0, 0.1, len(x))
+        >>> y = np.sin(x[:, 0]) * np.cos(x[:, 1]) + eps
 
-        Returns
-        -------
-        npt.NDArray[np.float64], shape = (n_samples2,)
-            Return predicted values.
+        >>> lp = LocalPolynomial(
+        ...     kernel_name='epanechnikov', bandwidth=0.3, degree=2
+        ... )
+        >>> lp.predict(y=y, x=x, x_new=x_new)
 
         """
-        self.x = x
-        self.y = y
+        if x_new is None:
+            x_new = np.unique(x, axis=0)
 
-        if isinstance(x_pred, (int, float, np.int_, np.float_)):
-            x_pred = [x_pred]
+        if x.ndim == 1:  # because PolynomialFeatures wants 2d arrays.
+            x = x.reshape(-1, 1)
+        if x_new.ndim == 1:
+            x_new = x_new.reshape(-1, 1)
 
-        if not np.iterable(self.bandwidth):
-            bandwidth = np.repeat(
-                self.bandwidth, np.size(x_pred) // np.ndim(x_pred)
+        dmat_sampling = self.poly_features.fit_transform(x)
+        dmat_query = self.poly_features.fit_transform(x_new)
+
+        y_pred = np.zeros(x_new.shape[0])
+        for idx, (pts, dmat) in enumerate(zip(x_new, dmat_query)):
+            y_pred[idx] = _local_regression(
+                y, x, pts, dmat_sampling, dmat, self.bandwidth, self.kernel
             )
-
-        design_matrix = self.poly_features.\
-            fit_transform(np.array(self.x, ndmin=2).T)
-        design_matrix_x0 = self.poly_features.\
-            fit_transform(np.array(x_pred, ndmin=2).T)
-
-        y_pred = [
-            _local_regression(
-                self.y, self.x, i, design_matrix, j, h, self.kernel
-            ) for (i, j, h) in zip(x_pred.T, design_matrix_x0, bandwidth)
-        ]
-
-        return np.array(y_pred)
+        return y_pred
