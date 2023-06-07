@@ -1,8 +1,8 @@
 """
-Smoothing of 1D data using local polynomial regression
+Smoothing of 2D data using local polynomial regression
 ======================================================
 
-Examples of smoothing of one-dimensional data using local polynomial
+Examples of smoothing of two-dimensional data using local polynomial
 regression.
 """
 
@@ -16,6 +16,8 @@ regression.
 import matplotlib.pyplot as plt
 import numpy as np
 
+from mpl_toolkits.mplot3d import Axes3D
+
 from FDApy.preprocessing.smoothing.local_polynomial import LocalPolynomial
 
 # Set general parameters
@@ -24,9 +26,10 @@ rnorm = np.random.default_rng(rng).standard_normal
 n_points = 101
 
 # Simulate data
-x = rnorm(n_points)
-y = np.cos(x) + 0.2 * rnorm(n_points)
-x_new = np.linspace(-1, 1, 51)
+x = rnorm((n_points, 2))
+y = -1 * np.sin(x[:, 0]) + 0.5 * np.cos(x[:, 1]) + 0.2 * rnorm(n_points)
+x_new = np.mgrid[-1:1:.1, -1:1:.1]
+x_new = np.column_stack((x_new[0].ravel(), x_new[1].ravel()))
 
 ###############################################################################
 # Assess the influence of the degree of the polynomials.
@@ -49,14 +52,25 @@ lp = LocalPolynomial(
 )
 y_pred_2 = lp.predict(y=y, x=x, x_new=x_new)
 
-
 ###############################################################################
-plt.scatter(x, y, c='grey', alpha=0.2)
-plt.plot(np.sort(x), np.cos(np.sort(x)), c='k', label="True")
-plt.plot(x_new, y_pred_0, c='r', label="Degree 0")
-plt.plot(x_new, y_pred_1, c='g', label="Degree 1")
-plt.plot(x_new, y_pred_2, c='y', label="Degree 2")
-plt.legend()
+fig = plt.figure(figsize=(10, 10))
+# True
+ax1 = fig.add_subplot(2, 2, 1, projection='3d')
+ax1.set_title("True")
+ax1.scatter(x[:, 0], x[:, 1], y, c='grey', alpha=0.2)
+ax1.scatter(x_new[:, 0], x_new[:, 1], -1 * np.sin(x_new[:, 0]) + 0.5 * np.cos(x_new[:, 1]), c='k')
+# Degree 0
+ax2 = fig.add_subplot(2, 2, 2, projection='3d')
+ax2.set_title("Degree 0")
+ax2.scatter(x_new[:, 0], x_new[:, 1], y_pred_0, c='r')
+# Degree 1
+ax3 = fig.add_subplot(2, 2, 3, projection='3d')
+ax3.set_title("Degree 1")
+ax3.scatter(x_new[:, 0], x_new[:, 1], y_pred_1, c='g')
+# Degree 2
+ax4 = fig.add_subplot(2, 2, 4, projection='3d')
+ax4.set_title("Degree 2")
+ax4.scatter(x_new[:, 0], x_new[:, 1], y_pred_2, c='y')
 plt.show()
 
 
@@ -83,10 +97,22 @@ y_pred_2 = lp.predict(y=y, x=x, x_new=x_new)
 
 
 ###############################################################################
-plt.scatter(x, y, c='grey', alpha=0.2)
-plt.plot(np.sort(x), np.cos(np.sort(x)), c='k', label="True")
-plt.plot(x_new, y_pred_0, c='r', label="$\lambda = 0.2$")
-plt.plot(x_new, y_pred_1, c='g', label="$\lambda = 0.5$")
-plt.plot(x_new, y_pred_2, c='y', label="$\lambda = 0.8$")
-plt.legend()
+fig = plt.figure(figsize=(10, 10))
+# True
+ax1 = fig.add_subplot(2, 2, 1, projection='3d')
+ax1.set_title("True")
+ax1.scatter(x[:, 0], x[:, 1], y, c='grey', alpha=0.2)
+ax1.scatter(x_new[:, 0], x_new[:, 1], -1 * np.sin(x_new[:, 0]) + 0.5 * np.cos(x_new[:, 1]), c='k')
+# Bandwidth = 0.2
+ax2 = fig.add_subplot(2, 2, 2, projection='3d')
+ax2.set_title("$\lambda = 0.2$")
+ax2.scatter(x_new[:, 0], x_new[:, 1], y_pred_0, c='r')
+# Bandwidth = 0.5
+ax3 = fig.add_subplot(2, 2, 3, projection='3d')
+ax3.set_title("$\lambda = 0.5$")
+ax3.scatter(x_new[:, 0], x_new[:, 1], y_pred_1, c='g')
+# Bandwidth = 0.8
+ax4 = fig.add_subplot(2, 2, 4, projection='3d')
+ax4.set_title("$\lambda = 0.8$")
+ax4.scatter(x_new[:, 0], x_new[:, 1], y_pred_2, c='y')
 plt.show()
