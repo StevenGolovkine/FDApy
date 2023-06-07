@@ -19,15 +19,15 @@ from FDApy.visualization.plot import plot
 # -----------------------------------------------
 # We are showing the building blocks of the representation of univariate and
 # irregular functional data. To define a ``FunctionalData`` object, we need a
-# set of ``argvals`` (the sampling points of the curves) and a set of ``values``
-# (the observed points of the curves). The sampling points of the data are
-# defined as a dictionary where each entry is another dictionary that
+# set of ``argvals`` (the sampling points of the curves) and a set of
+# ``values`` (the observed points of the curves). The sampling points of the
+# data are defined as a dictionary where each entry is another dictionary that
 # represents an input dimension (one entry corresponds to curves, two entries
 # correspond to surface, ...). Each entry of the dictionary corresponds to the
 # sampling points of one observation.
-# The values of the functional data are defined in a dictionary where each entry
-# represents an observation as an ``npt.NDArray``. Each entry should have the
-# same dimension has the corresponding entry in the ``argvals`` dictionary.
+# The values of the functional data are defined in a dictionary where each
+# entry represents an observation as an ``npt.NDArray``. Each entry should have
+# the same dimension has the corresponding entry in the ``argvals`` dictionary.
 
 ###############################################################################
 # For unidimensional functional data

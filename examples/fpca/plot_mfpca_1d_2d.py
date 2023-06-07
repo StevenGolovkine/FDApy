@@ -52,7 +52,7 @@ kl.new(n_obs=50)
 data = kl.data
 
 # Plot of an observation
-_  = plot_multivariate(data, titles=['1st', '2nd'])
+_ = plot_multivariate(data, titles=['1st', '2nd'])
 
 ###############################################################################
 # Covariance decomposition
