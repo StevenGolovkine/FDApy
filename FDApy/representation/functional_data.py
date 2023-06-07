@@ -903,7 +903,7 @@ class DenseFunctionalData(FunctionalData):
             bandwidth=kwargs.get('bandwidth', 1),
             degree=kwargs.get('degree', 1)
         )
-        var_hat = lp.fit_predict(argvals, cov_diag, argvals)
+        var_hat = lp.predict(argvals, cov_diag, argvals)
         # Estimate noise variance (Staniswalis and Lee, 1998)
         ll = argvals[len(argvals) - 1] - argvals[0]
         lower = np.sum(~(argvals >= (argvals[0] + 0.25 * ll)))

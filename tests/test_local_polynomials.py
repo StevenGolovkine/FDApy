@@ -264,3 +264,45 @@ class LocalPolynomialTest(unittest.TestCase):
 
         with self.assertRaises(AttributeError):
             lp.poly_features = 1  # Can't set attributes
+
+
+class TestLocalPolynomial(unittest.TestCase):
+    def test_predict_one_dimensional_data(self):
+        n_points = 11
+        x = np.linspace(0, 1, n_points)
+        y = np.sin(x) + np.random.default_rng(42).normal(0, 0.05, n_points)
+
+        lp = LocalPolynomial(kernel_name='epanechnikov', bandwidth=0.3, degree=1)
+        y_pred = lp.predict(y=y, x=x)
+        expected_output = np.array([-0.00610104,  0.09962946,  0.19383716,  0.2748045 ,  0.36336718, 0.44248079,  0.52922859,  0.62088602,  0.70524752,  0.7807435 , 0.86891931])
+        
+        np.testing.assert_array_almost_equal(y_pred, expected_output)
+
+    def test_predict_two_dimensional_data(self):
+        n_points = 5
+        pts = np.linspace(0, 1, n_points)
+        xx, yy = np.meshgrid(pts, pts, indexing='ij')
+        x = np.column_stack([xx.flatten(), yy.flatten()])
+        x_new = np.array([[0.3, 0.1], [0.5, 0.5]])
+        eps = np.random.default_rng(42).normal(0, 0.05, len(x))
+        y = np.sin(x[:, 0]) * np.cos(x[:, 1]) + eps
+
+        lp = LocalPolynomial(kernel_name='gaussian', bandwidth=0.8, degree=2)
+        y_pred = lp.predict(y=y, x=x, x_new=x_new)
+        expected_output = np.array([0.293509, 0.4417991])
+
+        np.testing.assert_array_almost_equal(y_pred, expected_output)
+
+    def test_predict_three_dimensional_data(self):
+        n_points = 11
+        x = np.linspace(0, 1, n_points)
+        xx, yy, zz = np.meshgrid(x, x, x, indexing='ij')
+        x = np.column_stack([xx.flatten(), yy.flatten(), zz.flatten()])
+        y = np.sin(x[:, 0]) * np.cos(x[:, 1]) * x[:, 2] + np.random.default_rng(42).normal(0, 0.05, len(x))
+        x_new = np.array([[0.3, 0.1, 0.5], [0.3, 0.1, 0.8], [0.3, 0.2, 0.5]])
+
+        lp = LocalPolynomial(kernel_name='epanechnikov', bandwidth=0.3, degree=1)
+        y_pred = lp.predict(y=y, x=x, x_new=x_new)
+        expected_output = np.array([0.14659093, 0.23125241, 0.13948904])
+
+        np.testing.assert_array_almost_equal(y_pred, expected_output)
