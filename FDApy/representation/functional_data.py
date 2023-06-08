@@ -1026,40 +1026,47 @@ class DenseFunctionalData(FunctionalData):
 
     def smooth(
         self,
-        points: npt.NDArray[np.float64],
-        neighborhood: npt.NDArray[np.float64],
-        points_estim: Optional[npt.NDArray[np.float64]] = None,
-        degree: np.int64 = 0,
-        kernel: np.str_ = "epanechnikov",
-        bandwidth: Optional[List[np.float64]] = None
+        points: Optional[npt.NDArray[np.float64]] = None,
+        kernel_name: np.str_ = "epanechnikov",
+        bandwidth: Optional[np.float64] = None,
+        degree: np.int64 = 1
     ) -> DenseFunctionalData:
         """Smooth the data.
 
         Parameters
         ----------
-        points: npt.NDArray[np.float64]
-            Points at which the Bandwidth is estimated.
-        neighborhood: npt.NDArray[np.float64]
-            Neighborhood considered for each each points. Should have the same
-            shape than points.
-        points_estim: npt.NDArray[np.float64], default=None
+        points: npt.NDArray[np.float64], default=None
             Points at which the curves are estimated. The default is None,
             meaning we use the argvals as estimation points.
-        degree: np.int64, default=2
-            Degree for the local polynomial smoothing.
-        kernel: np.str_, default='epanechnikov'
-            The name of the kernel to use.
-        bandwidth: Optional[List[np.float64]], default=None
-            An instance of Bandwidth for the smoothing.
+        kernel_name: np.str_, default="epanechnikov"
+            Kernel name used as weight (`gaussian`, `epanechnikov`, `tricube`,
+            `bisquare`).
+        bandwidth: np.float64, default=None
+            Strictly positive. Control the size of the associated neighborhood.
+            If ``bandwidth == None``, it is assumed that the curves are twice
+            differentiable and the bandwidth is set to :math:`n^{-1/5}` where
+            :math:`n` is the number of sampling points per curve. Be careful
+            that it will not work if the curves are not sampled on
+            :math:`[0, 1]`.
+        degree: np.int64, default=1
+            Degree of the local polynomial to fit. If ``degree = 0``, we fit
+            the local constant estimator (equivalent to the Nadaraya-Watson
+            estimator). If ``degree = 1``, we fit the local linear estimator.
+            If ``degree = 2``, we fit the local quadratic estimator.
 
         Returns
         -------
         DenseFunctionalData
-            A smoothed version of the data.
+            Smoothed data
+
+        References
+        ----------
+        .. [1] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
+            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
 
         Notes
         -----
-        Only, one dimensional IrregularFunctionalData can be smoothed.
+        Only, one dimensional DenseFunctionalData can be smoothed.
 
         TODO: Modify this function to include different type of smoothing.
 
@@ -1068,14 +1075,21 @@ class DenseFunctionalData(FunctionalData):
             raise NotImplementedError(
                 'Only one dimensional data can be smoothed.'
             )
+        if points is None:
+            points = self.argvals['input_dim_0']
 
-        data = self.as_irregular()
-        data_smooth = data.smooth(points, neighborhood,
-                                  points_estim=points_estim,
-                                  degree=degree,
-                                  kernel=kernel,
-                                  bandwidth=bandwidth)
-        return data_smooth.as_dense()
+        lp = LocalPolynomial(
+            kernel_name=kernel_name, bandwidth=bandwidth, degree=degree
+        )
+
+        smooth = np.zeros_like(self.values)
+        for idx, obs in enumerate(self):
+            smooth[idx, :] = lp.predict(
+                y=obs.values.squeeze(),
+                x=obs.argvals['input_dim_0'],
+                x_new=points
+            )
+        return DenseFunctionalData(self.argvals, smooth)
 
     def pairwise_distance(
         self,
