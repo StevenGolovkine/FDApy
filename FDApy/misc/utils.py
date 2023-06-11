@@ -12,7 +12,7 @@ import scipy
 
 from numpy.linalg import eigh
 
-from typing import Callable, Dict, Optional, Tuple, Union
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 
 #############################################################################
@@ -724,9 +724,6 @@ def _compute_covariance(
     return np.dot(temp, eigenfunctions)
 
 
-##############################################################################
-# Array computation
-##############################################################################
 def _eigh(
     matrix: npt.NDArray[np.float64],
     UPLO: np.str_ = 'L'  # noqa
@@ -762,3 +759,56 @@ def _eigh(
     """
     eigenvalues, eigenvectors = eigh(matrix, UPLO)
     return eigenvalues[::-1], np.fliplr(eigenvectors)
+
+
+def _cartesian_product(
+    *arrays: List[npt.NDArray[np.float64]]
+) -> npt.NDArray[np.float64]:
+    """Compute the cartesian product of a list of arrays.
+
+    Parameters
+    ----------
+    arrays: List[npt.NDArray[np.float64]]
+        List of arrays
+
+    Returns
+    -------
+    npt.NDArray[np.float64]
+        The Cartedian product betwwen the (argument) arrays.
+
+    Example
+    -------
+    >>> _cartesian_product(np.array([1, 2]))
+    array([
+        [1],
+        [2]
+    ])
+
+    >>> _cartesian_product(np.array([0, 1]), np.array([1, 2, 3]))
+    array([
+        [0, 1],
+        [0, 2],
+        [0, 3],
+        [1, 1],
+        [1, 2],
+        [1, 3]
+    ])
+
+    >>> _cartesian_product(
+    ...     np.array([0, 1]), np.array([1, 2]), np.array([2, 3])
+    ... )
+    array([
+        [0, 1, 2],
+        [0, 1, 3],
+        [0, 2, 2],
+        [0, 2, 3],
+        [1, 1, 2],
+        [1, 1, 3],
+        [1, 2, 2],
+        [1, 2, 3]
+    ])
+
+    """
+    meshgrids = np.meshgrid(*arrays, indexing='ij')
+    stacked = np.column_stack([m.ravel() for m in meshgrids])
+    return stacked

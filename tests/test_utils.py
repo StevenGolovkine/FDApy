@@ -11,6 +11,7 @@ import unittest
 from numpy import AxisError
 
 from FDApy.misc.utils import (
+    _cartesian_product,
     _col_mean,
     _col_var,
     _eigh,
@@ -535,3 +536,25 @@ class TestEigh(unittest.TestCase):
             np.matmul(np.matmul(eig_vec, np.diag(eig_val)), eig_vec.T),
             matrix
         )
+
+
+class TestCartesianProduct(unittest.TestCase):
+    def test_single_array(self):
+        result = _cartesian_product(np.array([1, 2]))
+        expected = np.array([[1], [2]])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_multiple_arrays(self):
+        result = _cartesian_product(np.array([0, 1]), np.array([1, 2, 3]))
+        expected = np.array([[0, 1], [0, 2], [0, 3], [1, 1], [1, 2], [1, 3]])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_multiple_arrays_different_sizes(self):
+        result = _cartesian_product(
+            np.array([0, 1]), np.array([1, 2]), np.array([2, 3])
+        )
+        expected = np.array([
+            [0, 1, 2], [0, 1, 3], [0, 2, 2], [0, 2, 3],
+            [1, 1, 2], [1, 1, 3], [1, 2, 2], [1, 2, 3]
+        ])
+        np.testing.assert_array_equal(result, expected)
