@@ -27,7 +27,7 @@ _ = plot(temp_data)
 
 
 # Smooth the data
-points = np.linspace(1, 365, 365)
+points = {'input_dim_0': np.linspace(1, 365, 365)}
 kernel_name = "epanechnikov"
 bandwidth = 30
 degree = 1

@@ -1,6 +1,6 @@
 """
-Smoothing of dense functional data
-==================================
+Smoothing of dense one-dimensional functional data
+==================================================
 
 Examples of smoothing of univariate and dense functional data.
 """
@@ -33,7 +33,7 @@ kl.new(n_obs=n_obs)
 kl.add_noise(0.05)
 
 # Smooth the data
-points = np.linspace(0, 1, 101)
+points = {'input_dim_0': np.linspace(0, 1, 101)}
 kernel_name = "epanechnikov"
 bandwidth = 0.1
 degree = 1

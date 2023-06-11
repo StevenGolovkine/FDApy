@@ -25,6 +25,7 @@ from sklearn.metrics import pairwise_distances
 
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..preprocessing.smoothing.smoothing_splines import SmoothingSpline
+from ..misc.utils import _cartesian_product
 from ..misc.utils import _get_dict_dimension, _get_obs_shape
 from ..misc.utils import _inner_product, _inner_product_2d
 from ..misc.utils import _integrate, _integrate_2d, _integration_weights
@@ -1026,7 +1027,7 @@ class DenseFunctionalData(FunctionalData):
 
     def smooth(
         self,
-        points: Optional[npt.NDArray[np.float64]] = None,
+        points: Optional[DenseArgvals] = None,
         kernel_name: np.str_ = "epanechnikov",
         bandwidth: Optional[np.float64] = None,
         degree: np.int64 = 1
@@ -1035,7 +1036,7 @@ class DenseFunctionalData(FunctionalData):
 
         Parameters
         ----------
-        points: npt.NDArray[np.float64], default=None
+        points: Optional[DenseArgvals], default=None
             Points at which the curves are estimated. The default is None,
             meaning we use the argvals as estimation points.
         kernel_name: np.str_, default="epanechnikov"
@@ -1057,39 +1058,36 @@ class DenseFunctionalData(FunctionalData):
         Returns
         -------
         DenseFunctionalData
-            Smoothed data
+            Smoothed data.
 
         References
         ----------
         .. [1] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
             Functional Data, The Annals of Statistics, Vol. 35, No. 3.
 
-        Notes
-        -----
-        Only, one dimensional DenseFunctionalData can be smoothed.
-
         TODO: Modify this function to include different type of smoothing.
 
         """
-        if self.n_dim != 1:
-            raise NotImplementedError(
-                'Only one dimensional data can be smoothed.'
-            )
         if points is None:
-            points = self.argvals['input_dim_0']
+            points = self.argvals
+
+        argvals_mat = _cartesian_product(*self.argvals.values())
+        points_mat = _cartesian_product(*points.values())
 
         lp = LocalPolynomial(
             kernel_name=kernel_name, bandwidth=bandwidth, degree=degree
         )
 
-        smooth = np.zeros_like(self.values)
+        smooth = np.zeros(
+            (self.n_obs, *(len(value) for value in points.values()))
+        )
         for idx, obs in enumerate(self):
             smooth[idx, :] = lp.predict(
-                y=obs.values.squeeze(),
-                x=obs.argvals['input_dim_0'],
-                x_new=points
-            )
-        return DenseFunctionalData(self.argvals, smooth)
+                y=obs.values.flatten(),
+                x=argvals_mat,
+                x_new=points_mat
+            ).reshape(smooth.shape[1:])
+        return DenseFunctionalData(points, smooth)
 
     def pairwise_distance(
         self,
