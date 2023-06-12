@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*-coding:utf8 -*
-"""Module that contains unit tests for the functions of the utils.py file.
+"""Module that contains unit tests for the functions of the functional_data.py
+file.
 
 Written with the help of ChatGPT.
 
