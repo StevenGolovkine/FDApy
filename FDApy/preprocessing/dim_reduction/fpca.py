@@ -732,7 +732,8 @@ class MFPCA():
         if isinstance(npc, float):
             nb_axis = sum(eigenvalues.cumsum() / eigenvalues.sum() < npc)
         elif isinstance(npc, int):
-            nb_axis = npc
+            #nb_axis = npc
+            nb_axis = np.sum(self.n_components)
         else:
             nb_axis = eigenvectors.shape[1]
         eigenvalues = eigenvalues[:nb_axis]
