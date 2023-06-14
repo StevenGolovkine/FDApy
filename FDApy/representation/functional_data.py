@@ -339,12 +339,10 @@ class FunctionalData(ABC):
     @abstractmethod
     def smooth(
         self,
-        points: npt.NDArray[np.float64],
-        neighborhood: npt.NDArray[np.float64],
-        points_estim: Optional[npt.NDArray[np.float64]] = None,
-        degree: np.int64 = 0,
-        kernel: np.str_ = "epanechnikov",
-        bandwidth: Optional[List[np.float64]] = None
+        points: Optional[DenseArgvals] = None,
+        kernel_name: np.str_ = "epanechnikov",
+        bandwidth: Optional[np.float64] = None,
+        degree: np.int64 = 1
     ) -> Type[FunctionalData]:
         """Smooth the data."""
 
@@ -1730,12 +1728,10 @@ class IrregularFunctionalData(FunctionalData):
 
     def smooth(
         self,
-        points: npt.NDArray[np.float64],
-        neighborhood: npt.NDArray[np.float64],
-        points_estim: Optional[npt.NDArray[np.float64]] = None,
-        degree: np.int64 = 0,
-        kernel: np.str_ = "epanechnikov",
-        bandwidth: Optional[List[np.float64]] = None
+        points: Optional[DenseArgvals] = None,
+        kernel_name: np.str_ = "epanechnikov",
+        bandwidth: Optional[np.float64] = None,
+        degree: np.int64 = 1
     ) -> IrregularFunctionalData:
         """Smooth the data.
 
@@ -1745,20 +1741,24 @@ class IrregularFunctionalData(FunctionalData):
 
         Parameters
         ----------
-        points: npt.NDArray[np.float64]
-            Points at which the Bandwidth is estimated.
-        neighborhood: npt.NDArray[np.float64]
-            Neighborhood considered for each each points. Should have the same
-            shape than points.
-        points_estim: Optional[npt.NDArray[np.float64]], default=None
+        points: Optional[DenseArgvals], default=None
             Points at which the curves are estimated. The default is None,
             meaning we use the argvals as estimation points.
-        degree: np.int64, default=0
-            Degree for the local polynomial smoothing.
-        kernel: np.str_, default='epanechnikov'
-            The name of the kernel to use.
-        bandwidth: Optional[List[np.float64]], default=None
-            An instance of Bandwidth for the smoothing.
+        kernel_name: np.str_, default="epanechnikov"
+            Kernel name used as weight (`gaussian`, `epanechnikov`, `tricube`,
+            `bisquare`).
+        bandwidth: np.float64, default=None
+            Strictly positive. Control the size of the associated neighborhood.
+            If ``bandwidth == None``, it is assumed that the curves are twice
+            differentiable and the bandwidth is set to :math:`n^{-1/5}` where
+            :math:`n` is the number of sampling points per curve. Be careful
+            that it will not work if the curves are not sampled on
+            :math:`[0, 1]`.
+        degree: np.int64, default=1
+            Degree of the local polynomial to fit. If ``degree = 0``, we fit
+            the local constant estimator (equivalent to the Nadaraya-Watson
+            estimator). If ``degree = 1``, we fit the local linear estimator.
+            If ``degree = 2``, we fit the local quadratic estimator.
 
         Returns
         -------
@@ -1782,7 +1782,7 @@ class IrregularFunctionalData(FunctionalData):
             if points_estim is None:
                 points_estim = arg
 
-            lp = LocalPolynomial(kernel_name=kernel,
+            lp = LocalPolynomial(kernel_name=kernel_name,
                                  bandwidth=bandwidth,
                                  degree=degree)
             pred = lp.fit_predict(arg, val, points_estim)

@@ -12,7 +12,7 @@ import numpy.typing as npt
 from typing import Callable, Optional
 
 from ..representation.functional_data import (
-    DenseFunctionalData, MultivariateFunctionalData
+    DenseFunctionalData
 )
 from .simulation import Simulation
 
