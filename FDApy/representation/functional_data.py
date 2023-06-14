@@ -24,7 +24,6 @@ from typing import (
 from sklearn.metrics import pairwise_distances
 
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
-from ..preprocessing.smoothing.smoothing_splines import SmoothingSpline
 from ..misc.utils import _cartesian_product
 from ..misc.utils import _get_dict_dimension, _get_obs_shape
 from ..misc.utils import _inner_product, _inner_product_2d
@@ -794,9 +793,6 @@ class DenseFunctionalData(FunctionalData):
                 mean_estim = pygam.LinearGAM(pygam.s(0, n_splines=n_basis)).\
                     fit(argvals, mean_estim).\
                     predict(argvals)
-            elif smooth == 'SmoothingSpline':
-                ss = SmoothingSpline()
-                mean_estim = ss.fit_predict(argvals, mean_estim)
             else:
                 raise NotImplementedError('Smoothing method not implemented.')
         return DenseFunctionalData(self.argvals, mean_estim[np.newaxis])
