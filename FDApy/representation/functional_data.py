@@ -1768,29 +1768,31 @@ class IrregularFunctionalData(FunctionalData):
         TODO: Modify this function.
 
         """
-        if self.n_dim > 1:
-            raise NotImplementedError('Currently, only one dimensional data'
-                                      ' can be smoothed.')
+        raise NotImplementedError
 
-        # TODO: Provide an estimator for the bandwidth
-        bandwidth = 0.5
+        # if self.n_dim > 1:
+        #     raise NotImplementedError('Currently, only one dimensional data'
+        #                               ' can be smoothed.')
 
-        argvals = self.argvals['input_dim_0'].values()
-        values = self.values.values()
-        smooth_argvals, smooth_values = {}, {}
-        for i, (arg, val) in enumerate(zip(argvals, values)):
-            if points_estim is None:
-                points_estim = arg
+        # # TODO: Provide an estimator for the bandwidth
+        # bandwidth = 0.5
 
-            lp = LocalPolynomial(kernel_name=kernel_name,
-                                 bandwidth=bandwidth,
-                                 degree=degree)
-            pred = lp.fit_predict(arg, val, points_estim)
-            smooth_argvals[i] = points_estim
-            smooth_values[i] = pred
-        return IrregularFunctionalData(
-            {'input_dim_0': smooth_argvals}, smooth_values
-        )
+        # argvals = self.argvals['input_dim_0'].values()
+        # values = self.values.values()
+        # smooth_argvals, smooth_values = {}, {}
+        # for i, (arg, val) in enumerate(zip(argvals, values)):
+        #     if points_estim is None:
+        #         points_estim = arg
+
+        #     lp = LocalPolynomial(kernel_name=kernel_name,
+        #                          bandwidth=bandwidth,
+        #                          degree=degree)
+        #     pred = lp.fit_predict(arg, val, points_estim)
+        #     smooth_argvals[i] = points_estim
+        #     smooth_values[i] = pred
+        # return IrregularFunctionalData(
+        #     {'input_dim_0': smooth_argvals}, smooth_values
+        # )
 
 
 ###############################################################################
