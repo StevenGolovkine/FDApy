@@ -866,13 +866,10 @@ class DenseFunctionalData(FunctionalData):
             train = train_[:, train_[0, :] != train_[1, :]]
 
             if smooth == 'LocalLinear':
-                points = kwargs.get('points', 0.5)
-                neigh = kwargs.get(
-                    'neighborhood',
-                    np.int32(p * np.exp(-(np.log(np.log(p)))**2))
+                data_smooth = self.smooth(
+                    points=None, kernel_name="epanechnikov",
+                    bandwidth=0.5, degree=1
                 )
-                data_smooth = self.smooth(points=points,
-                                          neighborhood=neigh)
                 data = data_smooth.values - mean.values
                 cov = np.dot(data.T, data) / (self.n_obs - 1)
             elif smooth == 'GAM':
