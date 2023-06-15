@@ -24,7 +24,7 @@ class TestBasis(unittest.TestCase):
     def test_getter(self):
         X = Basis(name='legendre', n_functions=2, argvals=self.argvals)
         np.testing.assert_equal(X.name, 'legendre')
-        np.testing.assert_equal(X.norm, False)
+        np.testing.assert_equal(X.is_normalized, False)
         np.testing.assert_equal(X.dimension, '1D')
 
     def test_argvals(self):
@@ -41,8 +41,8 @@ class TestBasis(unittest.TestCase):
             np.array([[1., 1., 1.], [0., 0.5, 1.]])
         )
 
-    def test_basis_legendre_norm(self):
-        X = Basis(name='legendre', n_functions=2, argvals=self.argvals, norm=True)
+    def test_basis_legendre_is_normalized(self):
+        X = Basis(name='legendre', n_functions=2, argvals=self.argvals, is_normalized=True)
         np.testing.assert_allclose(
             X.values,
             np.array([[1., 1., 1.], [0., 0.8660254, 1.73205081]])
@@ -116,14 +116,14 @@ class TestSimulateBasisMultivariateWeighted(unittest.TestCase):
     def setUp(self) -> None:
         self.basis_name = ['fourier', 'legendre']
         self.argvals = [np.linspace(0, 1, 11), np.linspace(-0.5, 0.5, 11)]
-        self.norm = False
+        self.is_normalized = False
         self.n_functions = 3
         self.random_state = np.random.default_rng(42)
 
     def test_simulate_basis_multivariate_weighted(self):
         output = _simulate_basis_multivariate_weighted(
             self.basis_name, self.argvals, self.n_functions,
-            self.norm, self.random_state.uniform
+            self.is_normalized, self.random_state.uniform
         )
         expected1 = np.array([[ 7.67554583e-01,  7.67554583e-01,  7.67554583e-01, 7.67554583e-01,  7.67554583e-01,  7.67554583e-01, 7.67554583e-01,  7.67554583e-01,  7.67554583e-01, 7.67554583e-01,  7.67554583e-01], [-1.08548610e+00, -8.78176703e-01, -3.35433652e-01, 3.35433652e-01,  8.78176703e-01,  1.08548610e+00, 8.78176703e-01,  3.35433652e-01, -3.35433652e-01, -8.78176703e-01, -1.08548610e+00], [-1.32933708e-16, -6.38032722e-01, -1.03235863e+00, -1.03235863e+00, -6.38032722e-01,  0.00000000e+00, 6.38032722e-01,  1.03235863e+00,  1.03235863e+00, 6.38032722e-01,  1.32933708e-16]])
         expected2 = np.array([[ 0.64098359,  0.64098359,  0.64098359,  0.64098359,  0.64098359, 0.64098359,  0.64098359,  0.64098359,  0.64098359,  0.64098359, 0.64098359], [-0.32049179, -0.25639344, -0.19229508, -0.12819672, -0.06409836, 0.        ,  0.06409836,  0.12819672,  0.19229508,  0.25639344, 0.32049179], [-0.08012295, -0.16665573, -0.23395901, -0.28203278, -0.31087704, -0.32049179, -0.31087704, -0.28203278, -0.23395901, -0.16665573, -0.08012295]])
@@ -136,14 +136,14 @@ class TestSimulateBasisMultivariateSplit(unittest.TestCase):
     def setUp(self) -> None:
         self.basis_name = 'fourier'
         self.argvals = [np.linspace(0, 1, 11), np.linspace(-0.5, 0.5, 11)]
-        self.norm = False
+        self.is_normalized = False
         self.n_functions = 3
         self.random_state = np.random.default_rng(42)
 
     def test_simulate_basis_multivariate_split(self):
         output = _simulate_basis_multivariate_split(
             self.basis_name, self.argvals, self.n_functions,
-            self.norm, self.random_state.choice
+            self.is_normalized, self.random_state.choice
         )
         expected1 = np.array([[-7.07106781e-01, -7.07106781e-01, -7.07106781e-01, -7.07106781e-01, -7.07106781e-01, -7.07106781e-01, -7.07106781e-01, -7.07106781e-01, -7.07106781e-01, -7.07106781e-01, -7.07106781e-01], [ 1.00000000e+00,  9.51056516e-01,  8.09016994e-01,   5.87785252e-01,  3.09016994e-01, -6.12323400e-17, -3.09016994e-01, -5.87785252e-01, -8.09016994e-01, -9.51056516e-01, -1.00000000e+00], [ 1.22464680e-16,  3.09016994e-01,  5.87785252e-01,   8.09016994e-01,  9.51056516e-01,  1.00000000e+00,   9.51056516e-01,  8.09016994e-01,  5.87785252e-01,   3.09016994e-01, -0.00000000e+00]])
         expected2 = np.array([[ 7.07106781e-01,  7.07106781e-01,  7.07106781e-01,   7.07106781e-01,  7.07106781e-01,  7.07106781e-01,   7.07106781e-01,  7.07106781e-01,  7.07106781e-01,   7.07106781e-01,  7.07106781e-01], [ 1.00000000e+00,  9.51056516e-01,  8.09016994e-01,   5.87785252e-01,  3.09016994e-01,  6.12323400e-17,  -3.09016994e-01, -5.87785252e-01, -8.09016994e-01,  -9.51056516e-01, -1.00000000e+00], [ 0.00000000e+00,  3.09016994e-01,  5.87785252e-01,   8.09016994e-01,  9.51056516e-01,  1.00000000e+00,   9.51056516e-01,  8.09016994e-01,  5.87785252e-01,   3.09016994e-01,  1.22464680e-16]])
@@ -157,7 +157,7 @@ class TestSimulateBasisMultivariate(unittest.TestCase):
         self.n_components = 2
         self.argvals = [np.linspace(0, 1, 11), np.linspace(-0.5, 0.5, 11)]
         self.n_functions = 3
-        self.norm = False
+        self.is_normalized = False
         self.random_state = np.random.default_rng(42)
 
     def test_simulation_type_split(self):
@@ -166,7 +166,7 @@ class TestSimulateBasisMultivariate(unittest.TestCase):
         
         output = _simulate_basis_multivariate(
             simulation_type, self.n_components, name, self.argvals,
-            self.n_functions, self.norm, rchoice=self.random_state.choice
+            self.n_functions, self.is_normalized, rchoice=self.random_state.choice
         )
         expected1 = np.array([[-7.07106781e-01, -7.07106781e-01, -7.07106781e-01, -7.07106781e-01, -7.07106781e-01, -7.07106781e-01, -7.07106781e-01, -7.07106781e-01, -7.07106781e-01, -7.07106781e-01, -7.07106781e-01], [ 1.00000000e+00,  9.51056516e-01,  8.09016994e-01,   5.87785252e-01,  3.09016994e-01, -6.12323400e-17, -3.09016994e-01, -5.87785252e-01, -8.09016994e-01, -9.51056516e-01, -1.00000000e+00], [ 1.22464680e-16,  3.09016994e-01,  5.87785252e-01,   8.09016994e-01,  9.51056516e-01,  1.00000000e+00,   9.51056516e-01,  8.09016994e-01,  5.87785252e-01,   3.09016994e-01, -0.00000000e+00]])
         expected2 = np.array([[ 7.07106781e-01,  7.07106781e-01,  7.07106781e-01,   7.07106781e-01,  7.07106781e-01,  7.07106781e-01,   7.07106781e-01,  7.07106781e-01,  7.07106781e-01,   7.07106781e-01,  7.07106781e-01], [ 1.00000000e+00,  9.51056516e-01,  8.09016994e-01,   5.87785252e-01,  3.09016994e-01,  6.12323400e-17,  -3.09016994e-01, -5.87785252e-01, -8.09016994e-01,  -9.51056516e-01, -1.00000000e+00], [ 0.00000000e+00,  3.09016994e-01,  5.87785252e-01,   8.09016994e-01,  9.51056516e-01,  1.00000000e+00,   9.51056516e-01,  8.09016994e-01,  5.87785252e-01,   3.09016994e-01,  1.22464680e-16]])
@@ -180,7 +180,7 @@ class TestSimulateBasisMultivariate(unittest.TestCase):
 
         output = _simulate_basis_multivariate(
             simulation_type, self.n_components, name, self.argvals, 
-            self.n_functions, self.norm, runif=self.random_state.uniform
+            self.n_functions, self.is_normalized, runif=self.random_state.uniform
         )
         expected1 = np.array([[ 7.67554583e-01,  7.67554583e-01,  7.67554583e-01, 7.67554583e-01,  7.67554583e-01,  7.67554583e-01, 7.67554583e-01,  7.67554583e-01,  7.67554583e-01, 7.67554583e-01,  7.67554583e-01], [-1.08548610e+00, -8.78176703e-01, -3.35433652e-01, 3.35433652e-01,  8.78176703e-01,  1.08548610e+00, 8.78176703e-01,  3.35433652e-01, -3.35433652e-01, -8.78176703e-01, -1.08548610e+00], [-1.32933708e-16, -6.38032722e-01, -1.03235863e+00, -1.03235863e+00, -6.38032722e-01,  0.00000000e+00, 6.38032722e-01,  1.03235863e+00,  1.03235863e+00, 6.38032722e-01,  1.32933708e-16]])
         expected2 = np.array([[ 0.64098359,  0.64098359,  0.64098359,  0.64098359,  0.64098359, 0.64098359,  0.64098359,  0.64098359,  0.64098359,  0.64098359, 0.64098359], [-0.32049179, -0.25639344, -0.19229508, -0.12819672, -0.06409836, 0.        ,  0.06409836,  0.12819672,  0.19229508,  0.25639344, 0.32049179], [-0.08012295, -0.16665573, -0.23395901, -0.28203278, -0.31087704, -0.32049179, -0.31087704, -0.28203278, -0.23395901, -0.16665573, -0.08012295]])
@@ -194,7 +194,7 @@ class TestSimulateBasisMultivariate(unittest.TestCase):
 
         output = _simulate_basis_multivariate(
             simulation_type, self.n_components, name, self.argvals, 
-            self.n_functions, self.norm, runif=None
+            self.n_functions, self.is_normalized, runif=None
         )
         expected1 = np.array([[ 7.07106781e-01,  7.07106781e-01,  7.07106781e-01,  7.07106781e-01,  7.07106781e-01,  7.07106781e-01,  7.07106781e-01,  7.07106781e-01,  7.07106781e-01,  7.07106781e-01,  7.07106781e-01],[-1.00000000e+00, -8.09016994e-01, -3.09016994e-01,  3.09016994e-01,  8.09016994e-01,  1.00000000e+00,  8.09016994e-01,  3.09016994e-01, -3.09016994e-01, -8.09016994e-01, -1.00000000e+00],[-1.22464680e-16, -5.87785252e-01, -9.51056516e-01, -9.51056516e-01, -5.87785252e-01,  0.00000000e+00,  5.87785252e-01,  9.51056516e-01,  9.51056516e-01,  5.87785252e-01,  1.22464680e-16]])
         expected2 = np.array([[ 0.70710678,  0.70710678,  0.70710678,  0.70710678,  0.70710678,  0.70710678,  0.70710678,  0.70710678,  0.70710678,  0.70710678,  0.70710678],[-0.35355339, -0.28284271, -0.21213203, -0.14142136, -0.07071068,  0.        ,  0.07071068,  0.14142136,  0.21213203,  0.28284271,  0.35355339],[-0.08838835, -0.18384776, -0.25809398, -0.31112698, -0.34294679, -0.35355339, -0.34294679, -0.31112698, -0.25809398, -0.18384776, -0.08838835]])
@@ -208,7 +208,7 @@ class TestSimulateBasisMultivariate(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             _simulate_basis_multivariate(
                 simulation_type, self.n_components, name, self.argvals,
-                self.n_functions, self.norm
+                self.n_functions, self.is_normalized
             )
 
     def test_argvals_length_mismatch(self):
@@ -226,7 +226,7 @@ class TestSimulateBasisMultivariate(unittest.TestCase):
         with self.assertRaises(ValueError):
             _simulate_basis_multivariate(
                 simulation_type, self.n_components, name, self.argvals,
-                self.n_functions, self.norm, rchoice=self.random_state.choice
+                self.n_functions, self.is_normalized, rchoice=self.random_state.choice
             )
     
     def test_simulation_type_weighted_name_failed(self):
@@ -235,7 +235,7 @@ class TestSimulateBasisMultivariate(unittest.TestCase):
         with self.assertRaises(ValueError):
             _simulate_basis_multivariate(
                 simulation_type, self.n_components, name, self.argvals,
-                self.n_functions, self.norm, rchoice=self.random_state.choice
+                self.n_functions, self.is_normalized, rchoice=self.random_state.choice
             )
 
     def test_simulation_type_weighted_name_list_failed(self):
@@ -244,7 +244,7 @@ class TestSimulateBasisMultivariate(unittest.TestCase):
         with self.assertRaises(ValueError):
             _simulate_basis_multivariate(
                 simulation_type, self.n_components, name, self.argvals,
-                self.n_functions, self.norm, rchoice=self.random_state.choice
+                self.n_functions, self.is_normalized, rchoice=self.random_state.choice
             )
 
 
@@ -260,7 +260,7 @@ class TestMultivariateBasis(unittest.TestCase):
         )
         np.testing.assert_equal(X.simulation_type, 'split')
         np.testing.assert_equal(X.name, 'legendre')
-        np.testing.assert_equal(X.norm, False)
+        np.testing.assert_equal(X.is_normalized, False)
         np.testing.assert_equal(X.dimension, ['1D', '1D'])
 
         X = MultivariateBasis(
@@ -269,7 +269,7 @@ class TestMultivariateBasis(unittest.TestCase):
         )
         np.testing.assert_equal(X.simulation_type, 'weighted')
         np.testing.assert_equal(X.name, ['legendre', 'fourier'])
-        np.testing.assert_equal(X.norm, False)
+        np.testing.assert_equal(X.is_normalized, False)
         np.testing.assert_equal(X.dimension, ['1D', '1D'])
 
     def test_setter_fails(self):
@@ -314,7 +314,7 @@ class TestMultivariateBasis(unittest.TestCase):
             n_functions=n_functions,
             dimension=dimension,
             argvals=argvals,
-            norm=False,
+            is_normalized=False,
             rchoice=random_state.choice
         )
 

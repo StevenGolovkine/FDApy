@@ -778,14 +778,10 @@ class DenseFunctionalData(FunctionalData):
             if self.n_dim > 1:
                 raise ValueError('Only one dimensional data can be smoothed.')
             if smooth == 'LocalLinear':
-                p = self.n_points['input_dim_0']
-                points = kwargs.get('points', 0.5)
-                neigh = kwargs.get(
-                    'neighborhood',
-                    np.int32(p * np.exp(-(np.log(np.log(p)))**2))
+                data_smooth = self.smooth(
+                    points=None, kernel_name="epanechnikov",
+                    bandwidth=0.5, degree=1
                 )
-                data_smooth = self.smooth(points=points,
-                                          neighborhood=neigh)
                 mean_estim = data_smooth.values.mean(axis=0)
             elif smooth == 'GAM':
                 n_basis = kwargs.get('n_basis', 10)

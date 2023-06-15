@@ -221,7 +221,7 @@ def _simulate_basis(
     name: np.str_,
     argvals: npt.NDArray[np.float64],
     n_functions: np.int64 = 5,
-    norm: np.bool_ = False,
+    is_normalized: np.bool_ = False,
     add_intercept: np.bool_ = True,
     **kwargs
 ) -> npt.NDArray[np.float64]:
@@ -235,7 +235,7 @@ def _simulate_basis(
         The values on which the basis functions are evaluated.
     n_functions: np.int64, default=5
         Number of functions to compute.
-    norm: np.bool_
+    is_normalized: np.bool_
         Should we normalize the functions?
     add_intercept: np.bool_, default=True
         Should the constant functions be into the basis?
@@ -274,7 +274,7 @@ def _simulate_basis(
     else:
         raise NotImplementedError(f'Basis {name!r} not implemented!')
 
-    if norm:
+    if is_normalized:
         norm2 = np.sqrt(scipy.integrate.simpson(values * values, argvals))
         values = np.divide(values, norm2[:, np.newaxis])
 
@@ -288,7 +288,7 @@ def _simulate_basis_multivariate_weighted(
     basis_name: List[np.str_],
     argvals: List[npt.NDArray[np.float64]],
     n_functions: np.int64 = 5,
-    norm: np.bool_ = False,
+    is_normalized: np.bool_ = False,
     runif: Optional[Callable] = np.random.uniform,
     **kwargs
 ):
@@ -308,7 +308,7 @@ def _simulate_basis_multivariate_weighted(
         The values on which the basis functions are evaluated.
     n_functions: np.int64
         Number of basis functions to used.
-    norm: np.bool_
+    is_normalized: np.bool_
         Should we normalize the functions?
     runif: Optional[Callable], default=np.random.uniform
         Method used to generate uniform distribution. If `None`, all the
@@ -340,8 +340,9 @@ def _simulate_basis_multivariate_weighted(
     weights = np.sqrt(alpha / np.sum(alpha))
 
     return [
-        weight * _simulate_basis(name, argval, n_functions, norm, **kwargs)
-        for name, argval, weight in zip(basis_name, argvals, weights)
+        weight * _simulate_basis(
+            name, argval, n_functions, is_normalized, **kwargs
+        ) for name, argval, weight in zip(basis_name, argvals, weights)
     ]
 
 
@@ -349,7 +350,7 @@ def _simulate_basis_multivariate_split(
     basis_name: List[np.str_],
     argvals: List[npt.NDArray[np.float64]],
     n_functions: np.int64 = 5,
-    norm: np.bool_ = False,
+    is_normalized: np.bool_ = False,
     rchoice: Callable = np.random.choice,
     **kwargs
 ):
@@ -370,7 +371,7 @@ def _simulate_basis_multivariate_split(
         The values on which the basis functions are evaluated.
     n_functions: np.int64
         Number of basis functions to used.
-    norm: np.bool_
+    is_normalized: np.bool_
         Should we normalize the functions?
     rchoice: Callable, default=np.random.choice
         Method used to generate binomial distribution.
@@ -402,7 +403,9 @@ def _simulate_basis_multivariate_split(
 
     # Simulate the "big" basis
     x_concat = np.concatenate(x)
-    values = _simulate_basis(basis_name, x_concat, n_functions, norm, **kwargs)
+    values = _simulate_basis(
+        basis_name, x_concat, n_functions, is_normalized, **kwargs
+    )
 
     flips = rchoice((-1, 1), size=len(argvals))
     return [
@@ -417,7 +420,7 @@ def _simulate_basis_multivariate(
     name: Union[np.str_, List[np.str_]],
     argvals: List[npt.NDArray[np.float64]],
     n_functions: np.int64 = 5,
-    norm: np.bool_ = False,
+    is_normalized: np.bool_ = False,
     **kwargs
 ) -> npt.NDArray[np.float64]:
     """Redirect to the right simulation basis function.
@@ -434,7 +437,7 @@ def _simulate_basis_multivariate(
         The values on which the basis functions are evaluated.
     n_functions: np.int64, default=5
         Number of functions to compute.
-    norm: np.bool_
+    is_normalized: np.bool_
         Should we normalize the functions?
 
     Keyword Args
@@ -477,7 +480,7 @@ def _simulate_basis_multivariate(
                 'should be a str.'
             )
         values = _simulate_basis_multivariate_split(
-            name, argvals, n_functions, norm,
+            name, argvals, n_functions, is_normalized,
             kwargs.pop('rchoice', np.random.choice), **kwargs
         )
     elif simulation_type == 'weighted':
@@ -492,7 +495,7 @@ def _simulate_basis_multivariate(
                 f'should be equal to {n_components}.'
             )
         values = _simulate_basis_multivariate_weighted(
-            name, argvals, n_functions, norm,
+            name, argvals, n_functions, is_normalized,
             kwargs.pop('runif', np.random.uniform), **kwargs
         )
     else:
@@ -522,7 +525,7 @@ class Basis(DenseFunctionalData):
         The sampling points of the functional data. Each entry of the
         dictionary represents an input dimension. The shape of the :math:`j` th
         dimension is :math:`(m_j,)` for :math:`0 \leq j \leq p`.
-    norm: np.bool_, default=False
+    is_normalized: np.bool_, default=False
         Should we normalize the basis function?
     add_intercept: np.bool_, default=True
         Should the constant functions be into the basis?
@@ -540,20 +543,20 @@ class Basis(DenseFunctionalData):
         n_functions: np.int64 = 5,
         dimension: np.str_ = '1D',
         argvals: Optional[npt.NDArray[np.float64]] = None,
-        norm: np.bool_ = False,
+        is_normalized: np.bool_ = False,
         add_intercept: np.bool_ = True,
         **kwargs
     ) -> None:
         """Initialize Basis object."""
         self.name = name
-        self.norm = norm
+        self.is_normalized = is_normalized
         self.dimension = dimension
 
         if argvals is None:
             argvals = np.arange(0, 1.01, 0.01)
 
         values = _simulate_basis(
-            name, argvals, n_functions, norm, add_intercept, **kwargs
+            name, argvals, n_functions, is_normalized, add_intercept, **kwargs
         )
 
         if dimension == '1D':
@@ -585,13 +588,13 @@ class Basis(DenseFunctionalData):
         self._name = new_name
 
     @property
-    def norm(self) -> np.bool_:
-        """Getter for norm."""
-        return self._norm
+    def is_normalized(self) -> np.bool_:
+        """Getter for is_normalized."""
+        return self._is_normalized
 
-    @norm.setter
-    def norm(self, new_norm: np.bool_) -> None:
-        self._norm = new_norm
+    @is_normalized.setter
+    def is_normalized(self, new_is_normalized: np.bool_) -> None:
+        self._is_normalized = new_is_normalized
 
     @property
     def dimension(self) -> np.str_:
@@ -627,7 +630,7 @@ class MultivariateBasis(MultivariateFunctionalData):
         The sampling points of the functional data. Each entry of the
         dictionary represents an input dimension. The shape of the :math:`j` th
         dimension is :math:`(m_j,)` for :math:`0 \leq j \leq p`.
-    norm: np.bool_, default=False
+    is_normalized: np.bool_, default=False
         Should we normalize the basis function?
 
     Keyword Args
@@ -649,13 +652,13 @@ class MultivariateBasis(MultivariateFunctionalData):
         n_functions: np.int64 = 5,
         dimension: Optional[List[np.str_]] = None,
         argvals: Optional[npt.NDArray[np.float64]] = None,
-        norm: np.bool_ = False,
+        is_normalized: np.bool_ = False,
         **kwargs
     ) -> None:
         """Initialize Basis object."""
         self.simulation_type = simulation_type
         self.name = name
-        self.norm = norm
+        self.is_normalized = is_normalized
 
         if argvals is None:
             argvals = n_components * [np.arange(0, 1.01, 0.01)]
@@ -665,7 +668,7 @@ class MultivariateBasis(MultivariateFunctionalData):
 
         values = _simulate_basis_multivariate(
             simulation_type, n_components, name,
-            argvals, n_functions, norm, **kwargs
+            argvals, n_functions, is_normalized, **kwargs
         )
 
         basis_fd = []
@@ -705,13 +708,13 @@ class MultivariateBasis(MultivariateFunctionalData):
             raise TypeError(f'{new_name!r} has to be a `str` or `List[str]`.')
 
     @property
-    def norm(self) -> np.bool_:
-        """Getter for norm."""
-        return self._norm
+    def is_normalized(self) -> np.bool_:
+        """Getter for is_normalized."""
+        return self._is_normalized
 
-    @norm.setter
-    def norm(self, new_norm: np.bool_) -> None:
-        self._norm = new_norm
+    @is_normalized.setter
+    def is_normalized(self, new_is_normalized: np.bool_) -> None:
+        self._is_normalized = new_is_normalized
 
     @property
     def dimension(self) -> List[np.str_]:
