@@ -21,8 +21,6 @@ from typing import (
     Tuple, Type, TYPE_CHECKING, Union
 )
 
-from sklearn.metrics import pairwise_distances
-
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..misc.utils import _cartesian_product
 from ..misc.utils import _get_dict_dimension, _get_obs_shape
@@ -1021,6 +1019,10 @@ class DenseFunctionalData(FunctionalData):
     ) -> DenseFunctionalData:
         """Smooth the data.
 
+        This function smooths each curves individually. Based on [1]_, it fits
+        a local smoother to the data (the argument ``degree`` controls the
+        degree of the local fits).
+
         Parameters
         ----------
         points: Optional[DenseArgvals], default=None
@@ -1037,10 +1039,10 @@ class DenseFunctionalData(FunctionalData):
             that it will not work if the curves are not sampled on
             :math:`[0, 1]`.
         degree: np.int64, default=1
-            Degree of the local polynomial to fit. If ``degree = 0``, we fit
+            Degree of the local polynomial to fit. If ``degree=0``, we fit
             the local constant estimator (equivalent to the Nadaraya-Watson
-            estimator). If ``degree = 1``, we fit the local linear estimator.
-            If ``degree = 2``, we fit the local quadratic estimator.
+            estimator). If ``degree=1``, we fit the local linear estimator.
+            If ``degree=2``, we fit the local quadratic estimator.
 
         Returns
         -------
@@ -1051,8 +1053,6 @@ class DenseFunctionalData(FunctionalData):
         ----------
         .. [1] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
             Functional Data, The Annals of Statistics, Vol. 35, No. 3.
-
-        TODO: Modify this function to include different type of smoothing.
 
         """
         if points is None:
@@ -1075,38 +1075,6 @@ class DenseFunctionalData(FunctionalData):
                 x_new=points_mat
             ).reshape(smooth.shape[1:])
         return DenseFunctionalData(points, smooth)
-
-    def pairwise_distance(
-        self,
-        metric: np.str_ = 'euclidean'
-    ) -> npt.NDArray[np.float64]:
-        """Compute the pairwise distance between the data.
-
-        Parameters
-        ----------
-        metric: np.str_, default='euclidean'
-            The metric to use when calculating distance between instances in a
-            functional data object.
-
-        Returns
-        -------
-        npt.NDArray[np.float64], shape=(n_obs, n_obs)
-            A distance matrix D such that D_{i, j} is the distance between the
-            ith and jth observations of the functional data object,
-
-        TODO: Compare this with the inner-product matrix. Maybe not rely on
-        sklearn for that.
-
-        """
-        if self.n_dim > 1:
-            raise NotImplementedError(
-                'The distance computation is not implemented for data with'
-                ' dimension greater than 1.'
-            )
-        return cast(
-            npt.NDArray[np.float64],
-            pairwise_distances(self.values, metric=metric)
-        )
 
     def concatenate(
         self,
