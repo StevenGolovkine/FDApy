@@ -649,9 +649,7 @@ class DenseFunctionalData(FunctionalData):
                 'y': y
             }
         else:
-            raise ValueError(
-                'The data dimension is not correct.'
-            )
+            raise ValueError('The data dimension is not correct.')
 
         sq_values = np.power(self.values, 2)
         norm_fd = self.n_obs * [None]
@@ -766,8 +764,6 @@ class DenseFunctionalData(FunctionalData):
             An estimate of the mean as a DenseFunctionalData object with the
             same argvals as `self` and one observation.
 
-        TODO: Split into multiple functions. Modify LocalLinear part.
-
         """
         mean_estim = self.values.mean(axis=0)
 
@@ -781,12 +777,6 @@ class DenseFunctionalData(FunctionalData):
                     bandwidth=0.5, degree=1
                 )
                 mean_estim = data_smooth.values.mean(axis=0)
-            elif smooth == 'GAM':
-                n_basis = kwargs.get('n_basis', 10)
-                argvals = self.argvals['input_dim_0']
-                mean_estim = pygam.LinearGAM(pygam.s(0, n_splines=n_basis)).\
-                    fit(argvals, mean_estim).\
-                    predict(argvals)
             else:
                 raise NotImplementedError('Smoothing method not implemented.')
         return DenseFunctionalData(self.argvals, mean_estim[np.newaxis])
