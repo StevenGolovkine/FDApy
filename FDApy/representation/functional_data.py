@@ -1172,13 +1172,13 @@ class IrregularFunctionalData(FunctionalData):
     ...     'input_dim_0': {
     ...         0: np.array([0, 1, 2, 3, 4]),
     ...         1: np.array([0, 2, 4]),
-    ...         2: np.array([2, 4]),
+    ...         2: np.array([2, 4])
     ...     }
     ... }
     >>> values = {
     ...     0: np.array([1, 2, 3, 4, 5]),
     ...     1: np.array([2, 5, 6]),
-    ...     2: np.array([4, 7]),
+    ...     2: np.array([4, 7])
     ... }
     >>> IrregularFunctionalData(argvals, values)
 
@@ -1679,7 +1679,7 @@ class IrregularFunctionalData(FunctionalData):
         kernel_name: np.str_ = "epanechnikov",
         bandwidth: Optional[np.float64] = None,
         degree: np.int64 = 1
-    ) -> IrregularFunctionalData:
+    ) -> DenseFunctionalData:
         """Smooth the data.
 
         Notes
@@ -1709,37 +1709,30 @@ class IrregularFunctionalData(FunctionalData):
 
         Returns
         -------
-        IrregularFunctionalData
+        DenseFunctionalData
             A smoothed version of the data.
 
-        TODO: Modify this function.
-
         """
-        raise NotImplementedError
+        if points is None:
+            points = self.gather_points()
 
-        # if self.n_dim > 1:
-        #     raise NotImplementedError('Currently, only one dimensional data'
-        #                               ' can be smoothed.')
+        points_mat = _cartesian_product(*points.values())
 
-        # # TODO: Provide an estimator for the bandwidth
-        # bandwidth = 0.5
+        lp = LocalPolynomial(
+            kernel_name=kernel_name, bandwidth=bandwidth, degree=degree
+        )
 
-        # argvals = self.argvals['input_dim_0'].values()
-        # values = self.values.values()
-        # smooth_argvals, smooth_values = {}, {}
-        # for i, (arg, val) in enumerate(zip(argvals, values)):
-        #     if points_estim is None:
-        #         points_estim = arg
-
-        #     lp = LocalPolynomial(kernel_name=kernel_name,
-        #                          bandwidth=bandwidth,
-        #                          degree=degree)
-        #     pred = lp.fit_predict(arg, val, points_estim)
-        #     smooth_argvals[i] = points_estim
-        #     smooth_values[i] = pred
-        # return IrregularFunctionalData(
-        #     {'input_dim_0': smooth_argvals}, smooth_values
-        # )
+        smooth = np.zeros(
+            (self.n_obs, *(len(value) for value in points.values()))
+        )
+        for idx, obs in enumerate(self):
+            argvals_mat = _cartesian_product(*obs.argvals.values())
+            smooth[idx, :] = lp.predict(
+                y=obs.values.flatten(),
+                x=argvals_mat,
+                x_new=points_mat
+            ).reshape(smooth.shape[1:])
+        return DenseFunctionalData(points, smooth)
 
 
 ###############################################################################
