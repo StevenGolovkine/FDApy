@@ -768,7 +768,6 @@ class DenseFunctionalData(FunctionalData):
         mean_estim = self.values.mean(axis=0)
 
         if smooth is not None:
-            argvals = self.argvals['input_dim_0']
             if self.n_dim > 1:
                 raise ValueError('Only one dimensional data can be smoothed.')
             if smooth == 'LocalLinear':
@@ -830,7 +829,6 @@ class DenseFunctionalData(FunctionalData):
                 'Only one dimensional functional data are supported'
             )
 
-        p = self.n_points['input_dim_0']
         argvals = self.argvals['input_dim_0']
 
         if mean is None:
