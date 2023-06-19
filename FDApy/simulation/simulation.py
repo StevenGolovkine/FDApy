@@ -284,3 +284,34 @@ class Simulation(ABC):
                     data, percentage, epsilon, runif, rchoice
                 ) for data in self.data
             ])
+
+    def add_noise_and_sparsify(
+        self,
+        noise_variance: np.float64 = 1.0,
+        percentage: np.float64 = 0.9,
+        epsilon: np.float64 = 0.05
+    ) -> None:
+        """Generate a noisy and sparse version of functional data objects.
+
+        This function generates an artificially noisy and sparse version of a
+        functional datasets. From a functional dataset, it first generates the
+        noisy version and then the sparse version based on the noisy one.
+
+        Parameters
+        ----------
+        noise_variance: np.float64, default=1.0
+            The variance :math:`\sigma^2` of the Gaussian noise that is added
+            to the data.
+        percentage: np.float64, default=0.9
+            The percentage of observations to be retained.
+        epsilon: np.float64, default=0.05
+            The uncertainty around the percentage of observations to be
+            retained.
+        
+        """
+        self.add_noise(noise_variance=noise_variance)
+
+        tmp = self.data
+        self.data = self.noisy_data
+        self.sparsify(percentage=percentage, epsilon=epsilon)
+        self.data = tmp
