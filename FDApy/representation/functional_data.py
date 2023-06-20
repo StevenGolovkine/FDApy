@@ -127,6 +127,7 @@ class FunctionalData(ABC):
         self.argvals = argvals
         self.values = values
         self.category = category
+        self._index = 0
 
     def __repr__(self) -> np.str_:
         """Override print function."""
@@ -135,6 +136,18 @@ class FunctionalData(ABC):
             f"{self.n_obs} observations on a {self.n_dim}-dimensional "
             "support."
         )
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._index < self.n_obs:
+            item = self[self._index]
+            self._index += 1
+            return item
+        else:
+            self._index = 0
+            raise StopIteration
 
     @abstractmethod
     def __getitem__(
