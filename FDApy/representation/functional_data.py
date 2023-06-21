@@ -138,9 +138,11 @@ class FunctionalData(ABC):
         )
 
     def __iter__(self):
+        """Initialize the iterator."""
         return self
 
     def __next__(self):
+        """Iterate over the iterator."""
         if self._index < self.n_obs:
             item = self[self._index]
             self._index += 1

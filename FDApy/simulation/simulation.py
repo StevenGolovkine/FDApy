@@ -172,6 +172,7 @@ class Simulation(ABC):
     ) -> None:
         """Initialize Simulation object."""
         super().__init__()
+        self.data = None
         self.basis_name = basis_name
 
         if random_state is not None:
@@ -291,7 +292,7 @@ class Simulation(ABC):
         percentage: np.float64 = 0.9,
         epsilon: np.float64 = 0.05
     ) -> None:
-        """Generate a noisy and sparse version of functional data objects.
+        r"""Generate a noisy and sparse version of functional data objects.
 
         This function generates an artificially noisy and sparse version of a
         functional datasets. From a functional dataset, it first generates the
@@ -307,7 +308,7 @@ class Simulation(ABC):
         epsilon: np.float64, default=0.05
             The uncertainty around the percentage of observations to be
             retained.
-        
+
         """
         self.add_noise(noise_variance=noise_variance)
 
