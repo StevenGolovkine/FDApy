@@ -143,7 +143,7 @@ class Simulation(ABC):
 
     def _check_data(self) -> None:
         """Check if self has the attribut data."""
-        if not hasattr(self, 'data'):
+        if self.data is None:
             raise ValueError(
                 'No data have been found in the simulation.'
                 ' Please run new() before add_noise() or sparsify().'
