@@ -16,6 +16,7 @@ import warnings
 
 from abc import ABC, abstractmethod
 from collections import UserList
+from collections.abc import Iterator
 from typing import (
     Callable, cast, Dict, Iterable, Iterator, Optional, List,
     Tuple, Type, TYPE_CHECKING, Union
@@ -139,17 +140,7 @@ class FunctionalData(ABC):
 
     def __iter__(self):
         """Initialize the iterator."""
-        return self
-
-    def __next__(self):
-        """Iterate over the iterator."""
-        if self._index < self.n_obs:
-            item = self[self._index]
-            self._index += 1
-            return item
-        else:
-            self._index = 0
-            raise StopIteration
+        return FunctionalDataIterator(self)
 
     @abstractmethod
     def __getitem__(
@@ -357,6 +348,26 @@ class FunctionalData(ABC):
         degree: np.int64 = 1
     ) -> Type[FunctionalData]:
         """Smooth the data."""
+
+
+###############################################################################
+# Class FunctionalDataIterator
+class FunctionalDataIterator(Iterator):
+    """Iterator for FunctionalData object."""
+
+    def __init__(self, fdata):
+        """Initialize the Iterator object."""
+        self._fdata = fdata
+        self._index = 0
+
+    def __next__(self):
+        """Return the next item in the sequence."""
+        if self._index < self._fdata.n_obs:
+            item = self._fdata[self._index]
+            self._index += 1
+            return item
+        else:
+            raise StopIteration
 
 
 ###############################################################################
@@ -1158,7 +1169,6 @@ class DenseFunctionalData(FunctionalData):
 
 ###############################################################################
 # Class IrregularFunctionalData
-
 class IrregularFunctionalData(FunctionalData):
     r"""A class for defining Irregular Functional Data.
 
@@ -1750,7 +1760,6 @@ class IrregularFunctionalData(FunctionalData):
 
 ###############################################################################
 # Class MultivariateFunctionalData
-
 class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     r"""A class for defining Multivariate Functional Data.
 
