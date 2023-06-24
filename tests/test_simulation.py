@@ -148,6 +148,14 @@ class TestSimulationUnivariate(unittest.TestCase):
             self.simulation.sparse_data, IrregularFunctionalData
         )
 
+    def test_add_noise_and_sparsify(self):
+        self.simulation.add_noise_and_sparsify(noise_variance=0.1, percentage=0.5, epsilon=0.1)
+        self.assertIsInstance(
+            self.simulation.noisy_data, DenseFunctionalData
+        )
+        self.assertIsInstance(
+            self.simulation.sparse_data, IrregularFunctionalData
+        )
 
 class TestSimulationMultivariate(unittest.TestCase):
     def setUp(self):
@@ -171,6 +179,21 @@ class TestSimulationMultivariate(unittest.TestCase):
         self.simulation.sparsify(percentage=0.5, epsilon=0.1)
         self.assertIsInstance(
             self.simulation.sparse_data, MultivariateFunctionalData
+        )
+
+    def test_add_noise_and_sparsify(self):
+        self.simulation.add_noise_and_sparsify(noise_variance=0.1, percentage=0.5, epsilon=0.1)
+        self.assertIsInstance(
+            self.simulation.noisy_data, MultivariateFunctionalData
+        )
+        self.assertIsInstance(
+            self.simulation.noisy_data.data[0], DenseFunctionalData
+        )
+        self.assertIsInstance(
+            self.simulation.sparse_data, MultivariateFunctionalData
+        )
+        self.assertIsInstance(
+            self.simulation.sparse_data.data[0], IrregularFunctionalData
         )
 
 
