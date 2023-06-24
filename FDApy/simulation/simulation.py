@@ -237,7 +237,7 @@ class Simulation(ABC):
         else:
             self.noisy_data = MultivariateFunctionalData([
                 _add_noise_univariate_data(data, noise_variance, rnorm)
-                for data in self.data
+                for data in self.data.data
             ])
 
     def sparsify(
@@ -283,7 +283,7 @@ class Simulation(ABC):
             self.sparse_data = MultivariateFunctionalData([
                 _sparsify_univariate_data(
                     data, percentage, epsilon, runif, rchoice
-                ) for data in self.data
+                ) for data in self.data.data
             ])
 
     def add_noise_and_sparsify(

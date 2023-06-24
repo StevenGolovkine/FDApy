@@ -655,7 +655,7 @@ class KarhunenLoeve(Simulation):
         else:  # self.basis is MultivariateBasis
             self.data = MultivariateFunctionalData([
                 _compute_data(basis=basis, coefficients=coef)
-                for basis in self.basis
+                for basis in self.basis.data
             ])
         self.labels = labels
         self.eigenvalues = clusters_std[:, 0]

@@ -1794,6 +1794,25 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             f" functions of {self.n_obs} observations."
         )
 
+    def __getitem__(
+        self,
+        index: np.int64
+    ) -> MultivariateFunctionalData:
+        """Overrride getitem function, called when self[index].
+
+        Parameters
+        ----------
+        index: np.int64
+            The observation(s) of the object to retrive.
+
+        Returns
+        -------
+        MultivariateFunctionalData
+            The selected observation(s) as MultivariateFunctionalData object.
+
+        """
+        return MultivariateFunctionalData([obs[index] for obs in self.data])
+
     @property
     def n_obs(self) -> np.int64:
         """Get the number of observations of the functional data.
@@ -1804,7 +1823,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             Number of observations within the functional data.
 
         """
-        return self.data[0].n_obs if len(self) > 0 else 0
+        return self.data[0].n_obs if len(self.data) > 0 else 0
 
     @property
     def n_functional(self) -> np.int64:
@@ -1816,7 +1835,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             Number of functions in the list.
 
         """
-        return len(self)
+        return len(self.data)
 
     @property
     def n_dim(self) -> List[np.int64]:
@@ -1829,7 +1848,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             data.
 
         """
-        return [fdata.n_dim for fdata in self]
+        return [fdata.n_dim for fdata in self.data]
 
     @property
     def range_obs(self) -> List[Tuple[np.float64, np.float64]]:
@@ -1842,7 +1861,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             all the observations for the object for each function.
 
         """
-        return [fdata.range_obs for fdata in self]
+        return [fdata.range_obs for fdata in self.data]
 
     @property
     def n_points(self) -> List[Dict[np.str_, np.int64]]:
@@ -1855,7 +1874,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             number of sampling points along each axis for each function.
 
         """
-        return [fdata.n_points for fdata in self]
+        return [fdata.n_points for fdata in self.data]
 
     @property
     def range_points(self) -> List[Dict[np.str_, Tuple[np.int_, np.int_]]]:
@@ -1868,7 +1887,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             the input dimension for each function.
 
         """
-        return [fdata.range_dim for fdata in self]
+        return [fdata.range_dim for fdata in self.data]
 
     @property
     def shape(self) -> List[Dict[np.str_, np.int64]]:
@@ -1882,7 +1901,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             :math:`0 \leq j \leq p`.
 
         """
-        return [fdata.shape for fdata in self]
+        return [fdata.shape for fdata in self.data]
 
     def append(self, item: Type[FunctionalData]) -> None:
         """Add an item to `self`.
@@ -1933,10 +1952,6 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         for idx in range(self.n_obs):
             yield MultivariateFunctionalData([obs[idx] for obs in self])
 
-    def get_obs(self, idx: np.int64) -> MultivariateFunctionalData:
-        """Return the observation idx."""
-        return MultivariateFunctionalData([obs[idx] for obs in self])
-
     def mean(
         self,
         smooth: Optional[np.str_] = None,
@@ -1958,7 +1973,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         """
         return MultivariateFunctionalData(
-            [fdata.mean(smooth, **kwargs) for fdata in self]
+            [fdata.mean(smooth, **kwargs) for fdata in self.data]
         )
 
     def covariance(

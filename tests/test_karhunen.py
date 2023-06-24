@@ -415,11 +415,11 @@ class TestCreateListBasis(unittest.TestCase):
         self.assertIsInstance(basis_list, MultivariateBasis)
         self.assertEqual(basis_list.name, ['fourier', 'bsplines'])
 
-        self.assertEqual(basis_list[0].n_obs, 5)
-        self.assertEqual(basis_list[0].n_dim, 1)
+        self.assertEqual(basis_list.data[0].n_obs, 5)
+        self.assertEqual(basis_list.data[0].n_dim, 1)
 
-        self.assertEqual(basis_list[1].n_obs, 5)
-        self.assertEqual(basis_list[1].n_dim, 2)
+        self.assertEqual(basis_list.data[1].n_obs, 5)
+        self.assertEqual(basis_list.data[1].n_dim, 2)
 
     def test_create_basis_fourier(self):
         n_functions = 6
@@ -432,11 +432,11 @@ class TestCreateListBasis(unittest.TestCase):
         self.assertIsInstance(basis_list, MultivariateBasis)
         self.assertEqual(basis_list.name, ['fourier', 'bsplines'])
 
-        self.assertEqual(basis_list[0].n_obs, 6)
-        self.assertEqual(basis_list[0].n_dim, 1)
+        self.assertEqual(basis_list.data[0].n_obs, 6)
+        self.assertEqual(basis_list.data[0].n_dim, 1)
 
-        self.assertEqual(basis_list[1].n_obs, 6)
-        self.assertEqual(basis_list[1].n_dim, 2)
+        self.assertEqual(basis_list.data[1].n_obs, 6)
+        self.assertEqual(basis_list.data[1].n_dim, 2)
 
 
 class TestKarhunenLoeveInit(unittest.TestCase):

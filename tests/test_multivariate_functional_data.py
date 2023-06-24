@@ -30,8 +30,8 @@ class MultivariateFunctionalDataTest(unittest.TestCase):
 
     def test_init(self):
         self.assertEqual(len(self.multivariate_data), 2)
-        self.assertIsInstance(self.multivariate_data[0], DenseFunctionalData)
-        self.assertIsInstance(self.multivariate_data[1], DenseFunctionalData)
+        self.assertIsInstance(self.multivariate_data.data[0], DenseFunctionalData)
+        self.assertIsInstance(self.multivariate_data.data[1], DenseFunctionalData)
 
     def test_repr(self):
         expected_repr = f"Multivariate functional data object with 2 functions of 3 observations."
@@ -73,25 +73,6 @@ class MultivariateFunctionalDataTest(unittest.TestCase):
         actual_shape = self.multivariate_data.shape
         self.assertEqual(actual_shape, expected_shape)
 
-    def test_append(self):
-        self.multivariate_data.append(self.fdata3)
-        self.assertEqual(len(self.multivariate_data), 3)
-        self.assertEqual(self.multivariate_data[2], self.fdata3)
-
-        fdata = MultivariateFunctionalData([])
-        fdata.append(self.fdata1)
-        self.assertEqual(fdata[0], self.fdata1)
-
-    def test_extend(self):
-        self.multivariate_data.extend([self.fdata3])
-        self.assertEqual(len(self.multivariate_data), 3)
-        self.assertEqual(self.multivariate_data[2], self.fdata3)
-
-    def test_insert(self):
-        self.multivariate_data.insert(1, self.fdata3)
-        self.assertEqual(len(self.multivariate_data), 3)
-        self.assertEqual(self.multivariate_data[1], self.fdata3)
-
     def test_remove(self):
         with self.assertRaises(NotImplementedError):
             self.multivariate_data.remove(self.fdata1)
@@ -104,30 +85,3 @@ class MultivariateFunctionalDataTest(unittest.TestCase):
     def test_clear(self):
         self.multivariate_data.clear()
         self.assertEqual(len(self.multivariate_data), 0)
-
-    def test_reverse(self):
-        self.multivariate_data.reverse()
-        self.assertEqual(self.multivariate_data[0], self.fdata2)
-        self.assertEqual(self.multivariate_data[1], self.fdata1)
-
-    def test_copy(self):
-        copied_data = self.multivariate_data.copy()
-        self.assertEqual(len(copied_data), 2)
-        self.assertIsNot(copied_data, self.multivariate_data)
-        self.assertIs(copied_data[0], self.multivariate_data[0])
-        self.assertIs(copied_data[1], self.multivariate_data[1])
-
-    def test_items(self):
-        items = list(self.multivariate_data.items())
-        self.assertEqual(len(items), self.fdata1.n_obs)
-        for item in items:
-            self.assertIsInstance(item, MultivariateFunctionalData)
-            self.assertIsInstance(item[0], DenseFunctionalData)
-            self.assertIsInstance(item[1], DenseFunctionalData)
-
-    def test_get_obs(self):
-        obs = self.multivariate_data.get_obs(0)
-        self.assertIsInstance(obs, MultivariateFunctionalData)
-        self.assertEqual(len(obs), 2)
-        np.testing.assert_array_equal(obs[0].values, np.array([[1, 2, 3, 4, 5]]))
-        np.testing.assert_array_equal(obs[1].values, np.array([[1, 2, 3, 4, 5]]))

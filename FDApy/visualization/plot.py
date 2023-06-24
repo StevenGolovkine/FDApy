@@ -244,7 +244,7 @@ def plot_multivariate(
     plt.subplots_adjust(wspace=0.7, hspace=0.2)
 
     axes = []
-    for n, data in enumerate(data):
+    for n, data in enumerate(data.data):
         ax = plt.subplot(nrows, ncols, n + 1)
         ax.set_title(titles[n])
         if data.n_dim == 1:
