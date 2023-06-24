@@ -1749,9 +1749,11 @@ class IrregularFunctionalData(FunctionalData):
             (self.n_obs, *(len(value) for value in points.values()))
         )
         for idx, obs in enumerate(self):
-            argvals_mat = _cartesian_product(*obs.argvals.values())
+            argvals_mat = _cartesian_product(
+                *obs.argvals['input_dim_0'].values()
+            )
             smooth[idx, :] = lp.predict(
-                y=obs.values.flatten(),
+                y=obs.values[idx].flatten(),
                 x=argvals_mat,
                 x_new=points_mat
             ).reshape(smooth.shape[1:])
