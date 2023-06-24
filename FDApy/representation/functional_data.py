@@ -18,7 +18,7 @@ from abc import ABC, abstractmethod
 from collections import UserList
 from collections.abc import Iterator
 from typing import (
-    Callable, cast, Dict, Iterable, Iterator, Optional, List,
+    Callable, cast, Dict, Iterable, Optional, List,
     Tuple, Type, TYPE_CHECKING, Union
 )
 
@@ -1948,11 +1948,6 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     def copy(self) -> MultivariateFunctionalData:
         """Return a shallow copy of the list."""
         return super().copy()
-
-    def items(self) -> Iterator[MultivariateFunctionalData]:
-        """Return a generator over the observation."""
-        for idx in range(self.n_obs):
-            yield MultivariateFunctionalData([obs[idx] for obs in self])
 
     def mean(
         self,
