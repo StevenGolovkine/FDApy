@@ -651,7 +651,7 @@ class MFPCA():
             DenseFunctionalData(
                 data_uni.argvals,
                 data_uni.values - mean.values
-            ) for data_uni, mean in zip(data, data_mean)
+            ) for data_uni, mean in zip(data.data, data_mean.data)
         ])
 
         # Normalize the data
@@ -788,7 +788,7 @@ class MFPCA():
                         data_uni.values.T, eigenvectors
                     ) / np.sqrt(eigenvalues)
                 )
-            ) for data_uni in data
+            ) for data_uni in data.data
         ]
 
         self._eigenvectors = eigenvectors

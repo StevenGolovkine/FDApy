@@ -2070,11 +2070,11 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         )
 
         """
-        if not all([isinstance(data, DenseFunctionalData) for data in self]):
+        if not all([isinstance(data, DenseFunctionalData) for data in self.data]):
             raise TypeError(
                 "All the univariate data must be DenseFunctionalData"
             )
-        return np.sum([data.inner_product() for data in self], axis=0)
+        return np.sum([data.inner_product() for data in self.data], axis=0)
 
     def concatenate(
         self,
