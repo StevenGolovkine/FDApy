@@ -2070,7 +2070,9 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         )
 
         """
-        if not all([isinstance(data, DenseFunctionalData) for data in self.data]):
+        if not all(
+            [isinstance(data, DenseFunctionalData) for data in self.data]
+        ):
             raise TypeError(
                 "All the univariate data must be DenseFunctionalData"
             )
