@@ -89,32 +89,32 @@ class TestDenseFunctionalData(unittest.TestCase):
         np.testing.assert_array_equal(irreg_data.values[2],expected_values[2])
 
     def test_is_compatible(self):
-        self.assertTrue(self.func_data.is_compatible(self.func_data))
+        self.assertTrue(DenseFunctionalData._is_compatible(self.func_data, self.func_data))
 
     def test_non_compatible_type(self):
         with self.assertRaises(TypeError):
-            self.func_data.is_compatible(self.irreg_data)
+            DenseFunctionalData._is_compatible(self.func_data, self.irreg_data)
 
     def test_non_compatible_nobs(self):
         argvals = {'input_dim_0': np.array([1, 2, 3, 4, 5])}
         values = np.array([[1, 2, 3, 4, 5]])
         func_data = DenseFunctionalData(argvals, values)
         with self.assertRaises(ValueError):
-            self.func_data.is_compatible(func_data)
+            DenseFunctionalData._is_compatible(self.func_data, func_data)
 
     def test_non_compatible_ndim(self):
         argvals = {'input_dim_0': np.array([1, 2, 3, 4]), 'input_dim_1': np.array([5, 6, 7])}
         values = np.array([[[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]],[[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]],[[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]]])
         func_data = DenseFunctionalData(argvals, values)
         with self.assertRaises(ValueError):
-            self.func_data.is_compatible(func_data)
+            DenseFunctionalData._is_compatible(self.func_data, func_data)
 
     def test_non_compatible_argvals_equality(self):
         argvals = {'input_dim_0': np.array([1, 2, 3, 4, 6])}
         values = np.array([[1, 2, 3, 4, 5],[6, 7, 8, 9, 10],[11, 12, 13, 14, 15]])
         func_data = DenseFunctionalData(argvals, values)
         with self.assertRaises(ValueError):
-            self.func_data.is_compatible(func_data)
+            DenseFunctionalData._is_compatible(self.func_data, func_data)
 
     def test_inner_product(self):
         result = self.func_data.inner_product()
@@ -218,7 +218,7 @@ class TestDenseFunctionalData2D(unittest.TestCase):
         self.assertEqual(irregu_fd.n_obs, 5)
 
     def test_is_compatible(self):
-        self.assertTrue(self.dense_fd.is_compatible(self.dense_fd))
+        self.assertTrue(DenseFunctionalData._is_compatible(self.dense_fd, self.dense_fd))
 
     def test_mean(self):
         mean_fd = self.dense_fd.mean()

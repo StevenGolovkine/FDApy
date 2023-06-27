@@ -54,6 +54,8 @@ class FunctionalData(ABC):
 
     """
 
+    ###########################################################################
+    # Checkers
     @staticmethod
     def _check_same_type(
         argv1: Type[FunctionalData],
@@ -110,6 +112,21 @@ class FunctionalData(ABC):
 
     @staticmethod
     @abstractmethod
+    def _is_compatible(
+        fdata1: Type[FunctionalData],
+        fdata2: Type[FunctionalData]
+    ) -> None:
+        """Check if `fdata` is compatible with `self`."""
+        FunctionalData._check_same_type(fdata1, fdata2)
+        FunctionalData._check_same_nobs(fdata1, fdata2)
+        FunctionalData._check_same_ndim(fdata1, fdata2)
+
+    ###########################################################################
+
+    ###########################################################################
+    # Static methods
+    @staticmethod
+    @abstractmethod
     def _perform_computation(
         fdata1: Type[FunctionalData],
         fdata2: Type[FunctionalData],
@@ -117,6 +134,8 @@ class FunctionalData(ABC):
     ) -> Type[FunctionalData]:
         """Perform computation."""
 
+    ###########################################################################
+    # Magic methods
     def __init__(
         self,
         argvals: Union[DenseArgvals, IrregArgvals],
@@ -191,6 +210,10 @@ class FunctionalData(ABC):
         """Override floordiv function."""
         return self._perform_computation(self, obj, np.floor_divide)
 
+    ###########################################################################
+
+    ###########################################################################
+    # Properties
     @property
     def argvals(
         self
@@ -290,6 +313,10 @@ class FunctionalData(ABC):
     def shape(self) -> Dict[np.str_, np.int64]:
         """Shape of the data for each dimension."""
 
+    ###########################################################################
+
+    ###########################################################################
+    # Abstract methods
     @abstractmethod
     def norm(
         self,
@@ -297,24 +324,24 @@ class FunctionalData(ABC):
         method: np.str_ = 'trapz',
         use_argvals_stand: np.bool_ = False
     ) -> npt.NDArray[np.float64]:
-        """Norm of each observation of the data."""
+        """Norm of each observation of the data.
 
-    @abstractmethod
-    def is_compatible(
-        self,
-        fdata: Type[FunctionalData]
-    ) -> None:
-        """Check if `fdata` is compatible with `self`."""
-        FunctionalData._check_same_type(self, fdata)
-        FunctionalData._check_same_nobs(self, fdata)
-        FunctionalData._check_same_ndim(self, fdata)
+        TODO: Incorporate different type of norms. Especially, the one from the
+        paper.
+
+        """
 
     @abstractmethod
     def to_basis(
         self,
         basis: Basis
     ) -> None:
-        """Expand the FunctionalData into a basis."""
+        """Expand the FunctionalData into a basis.
+
+        TODO: Remove and create a specific class for data with basis
+        representation.
+
+        """
 
     @abstractmethod
     def mean(
@@ -337,7 +364,10 @@ class FunctionalData(ABC):
     def inner_product(
         self
     ) -> npt.NDArray[np.float64]:
-        """Compute an estimate of the inner product matrix."""
+        """Compute an estimate of the inner product matrix.
+
+        TODO: Make more general to accept kernel transformation.
+        """
 
     @abstractmethod
     def smooth(
@@ -348,6 +378,8 @@ class FunctionalData(ABC):
         degree: np.int64 = 1
     ) -> Type[FunctionalData]:
         """Smooth the data."""
+
+    ###########################################################################
 
 
 ###############################################################################
@@ -417,6 +449,8 @@ class DenseFunctionalData(FunctionalData):
 
     """
 
+    ###########################################################################
+    # Checkers
     @staticmethod
     def _check_argvals_equality(
         argv1: DenseArgvals,
@@ -480,16 +514,57 @@ class DenseFunctionalData(FunctionalData):
             )
 
     @staticmethod
+    def _is_compatible(
+        fdata1: DenseFunctionalData,
+        fdata2: DenseFunctionalData
+    ) -> np.bool_:
+        """Check if `fdata1` is compatible with `fdata2`.
+
+        Two DenseFunctionalData object are said to be compatible if they
+        have the same number of observations and dimensions. Moreover, they
+        must have (strictly) the same sampling points.
+
+        Parameters
+        ----------
+        fdata1: DenseFunctionalData
+            The first object to compare.
+        fdata2: DenseFunctionalData
+            The second object to compare.
+
+        Returns
+        -------
+        True
+            If the objects are compatible, otherwise an error is raised before
+            the return statement.
+
+        TODO: Change returns statement, it seems akward to return True.
+
+        """
+        super()._is_compatible(fdata1, fdata2)
+        DenseFunctionalData._check_argvals_equality(
+            fdata1.argvals, fdata2.argvals
+        )
+        return True
+
+    ###########################################################################
+
+    ###########################################################################
+    # Static methods
+    @staticmethod
     def _perform_computation(
         fdata1: DenseFunctionalData,
         fdata2: DenseFunctionalData,
         func: Callable
     ) -> DenseFunctionalData:
         """Perform computation defined by `func`."""
-        if fdata1.is_compatible(fdata2):
+        if DenseFunctionalData._is_compatible(fdata1, fdata2):
             new_values = func(fdata1.values, fdata2.values)
         return DenseFunctionalData(fdata1.argvals, new_values)
 
+    ###########################################################################
+
+    ###########################################################################
+    # Magic methods
     def __init__(
         self,
         argvals: DenseArgvals,
@@ -522,6 +597,8 @@ class DenseFunctionalData(FunctionalData):
             values = values[np.newaxis]
         return DenseFunctionalData(argvals, values)
 
+    ###########################################################################
+    # Properties
     @property
     def argvals(self) -> DenseArgvals:
         """Getter for argvals."""
@@ -624,6 +701,10 @@ class DenseFunctionalData(FunctionalData):
         """
         return self.n_points
 
+    ###########################################################################
+
+    ###########################################################################
+    # Methods
     def norm(
         self,
         squared: np.bool_ = False,
@@ -698,6 +779,8 @@ class DenseFunctionalData(FunctionalData):
         IrregularFunctionalData
             An object of the class IrregularFunctionalData.
 
+        TODO: Consider removing
+
         """
         new_argvals: IrregArgvals = dict.fromkeys(self.argvals.keys(), {})
         for dim in new_argvals:
@@ -711,36 +794,6 @@ class DenseFunctionalData(FunctionalData):
             new_values[idx] = self.values[idx]
 
         return IrregularFunctionalData(new_argvals, new_values)
-
-    def is_compatible(
-        self,
-        fdata: DenseFunctionalData
-    ) -> np.bool_:
-        """Check if `fdata` is compatible with `self`.
-
-        Two DenseFunctionalData object are said to be compatible if they
-        have the same number of observations and dimensions. Moreover, they
-        must have (strictly) the same sampling points.
-
-        Parameters
-        ----------
-        fdata: DenseFunctionalData
-            The object to compare with `self`.
-
-        Returns
-        -------
-        True
-            If the objects are compatible, otherwise an error is raised before
-            the return statement.
-
-        TODO: Change returns statement, it seems akward to return True.
-
-        """
-        super().is_compatible(fdata)
-        DenseFunctionalData._check_argvals_equality(
-            self.argvals, fdata.argvals
-        )
-        return True
 
     def to_basis(
         self,
@@ -1106,6 +1159,8 @@ class DenseFunctionalData(FunctionalData):
         DenseFunctionalData
             The concatenation of self and data.
 
+        TODO: Consider as a static method
+
         """
         return cast(DenseFunctionalData, _concatenate([self, data]))
 
@@ -1166,6 +1221,8 @@ class DenseFunctionalData(FunctionalData):
         new_values = self.values / weights
         return DenseFunctionalData(self.argvals, new_values), weights
 
+    ###########################################################################
+
 
 ###############################################################################
 # Class IrregularFunctionalData
@@ -1225,6 +1282,8 @@ class IrregularFunctionalData(FunctionalData):
 
     """
 
+    ###########################################################################
+    # Checkers
     @staticmethod
     def _check_argvals_length(
         argv: IrregArgvals
@@ -1317,13 +1376,54 @@ class IrregularFunctionalData(FunctionalData):
             )
 
     @staticmethod
+    def _is_compatible(
+        fdata1: IrregularFunctionalData,
+        fdata2: IrregularFunctionalData
+    ) -> np.bool_:
+        """Check if `fdata1` is compatible with `fdata2`.
+
+        Two IrregularFunctionalData object are said to be compatible if they
+        have the same number of observations and dimensions. Moreover, they
+        must have (strictly) the same sampling points.
+
+        Parameters
+        ----------
+        fdata1: IrregularFunctionalData
+            The first object to compare.
+        fdata2: IrregularFunctionalData
+            The second object to compare.
+
+        Raises
+        ------
+        ValueError
+            When the data are not compatible.
+
+        Returns
+        -------
+        True
+            If the objects are compatible.
+
+        TODO: Should not return True? Just raise an error.
+
+        """
+        super()._is_compatible(fdata1, fdata2)
+        IrregularFunctionalData._check_argvals_equality(
+            fdata1.argvals, fdata2.argvals
+        )
+        return True
+
+    ###########################################################################
+
+    ###########################################################################
+    # Static methods
+    @staticmethod
     def _perform_computation(
         fdata1: IrregularFunctionalData,
         fdata2: IrregularFunctionalData,
         func: Callable
     ) -> IrregularFunctionalData:
         """Perform computation defined by `func`."""
-        if fdata1.is_compatible(fdata2):
+        if IrregularFunctionalData._is_compatible(fdata1, fdata2):
             new_values = {}
             for (idx, obs1), (_, obs2) in zip(
                 fdata1.values.items(), fdata2.values.items()
@@ -1331,6 +1431,10 @@ class IrregularFunctionalData(FunctionalData):
                 new_values[idx] = func(obs1, obs2)
         return IrregularFunctionalData(fdata1.argvals, new_values)
 
+    ###########################################################################
+
+    ###########################################################################
+    # Magic methods
     def __init__(
         self,
         argvals: IrregArgvals,
@@ -1371,6 +1475,10 @@ class IrregularFunctionalData(FunctionalData):
             values = {index: self.values.get(index)}
         return IrregularFunctionalData(argvals, values)
 
+    ###########################################################################
+
+    ###########################################################################
+    # Properties
     @property
     def argvals(self) -> IrregArgvals:
         """Getter for argvals."""
@@ -1482,6 +1590,10 @@ class IrregularFunctionalData(FunctionalData):
             idx: len(dim) for idx, dim in self.gather_points().items()
         }
 
+    ###########################################################################
+
+    ###########################################################################
+    # Methods
     def norm(
         self,
         squared: np.bool_ = False,
@@ -1547,7 +1659,7 @@ class IrregularFunctionalData(FunctionalData):
         DenseFunctionalData
             An object of the class DenseFunctionalData
 
-        TODO: Simplify this.
+        TODO: Consider removing this
 
         """
         new_argvals = self.gather_points()
@@ -1581,37 +1693,6 @@ class IrregularFunctionalData(FunctionalData):
             new_values[obs][mask_obs[obs]] = self.values[obs].flatten()
 
         return DenseFunctionalData(new_argvals, new_values)
-
-    def is_compatible(self, fdata: FunctionalData) -> np.bool_:
-        """Check if `fdata` is compatible with `self`.
-
-        Two IrregularFunctionalData object are said to be compatible if they
-        have the same number of observations and dimensions. Moreover, they
-        must have (strictly) the same sampling points.
-
-        Parameters
-        ----------
-        fdata: IrregularFunctionalData
-            The object to compare with `self`.
-
-        Raises
-        ------
-        ValueError
-            When the data are not compatible.
-
-        Returns
-        -------
-        True
-            If the objects are compatible.
-
-        TODO: Should not return True? Just raise an error.
-
-        """
-        super().is_compatible(fdata)
-        IrregularFunctionalData._check_argvals_equality(
-            self.argvals, fdata.argvals
-        )
-        return True
 
     def to_basis(
         self,
@@ -1759,6 +1840,8 @@ class IrregularFunctionalData(FunctionalData):
             ).reshape(smooth.shape[1:])
         return DenseFunctionalData(points, smooth)
 
+    ###########################################################################
+
 
 ###############################################################################
 # Class MultivariateFunctionalData
@@ -1782,6 +1865,8 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     """
 
+    ###########################################################################
+    # Magic methods
     def __init__(
         self,
         initlist: List[Type[FunctionalData]]
@@ -1815,6 +1900,10 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         """
         return MultivariateFunctionalData([obs[index] for obs in self.data])
 
+    ###########################################################################
+
+    ###########################################################################
+    # Properties
     @property
     def n_obs(self) -> np.int64:
         """Get the number of observations of the functional data.
@@ -1905,6 +1994,10 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         """
         return [fdata.shape for fdata in self.data]
 
+    ###########################################################################
+
+    ###########################################################################
+    # List related functions
     def append(self, item: Type[FunctionalData]) -> None:
         """Add an item to `self`.
 
@@ -1949,6 +2042,8 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         """Return a shallow copy of the list."""
         return super().copy()
 
+    ###########################################################################
+    # Methods
     def mean(
         self,
         smooth: Optional[np.str_] = None,
@@ -2131,6 +2226,8 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         data_norm = [data for data, _ in normalization]
         weights = np.array([weight for _, weight in normalization])
         return MultivariateFunctionalData(data_norm), weights
+
+    ###########################################################################
 
 
 ##############################################################################
