@@ -19,7 +19,7 @@ from collections import UserList
 from collections.abc import Iterator
 from typing import (
     Callable, cast, Dict, Iterable, Optional, List,
-    Tuple, Type, TYPE_CHECKING, Union
+    Tuple, Type, Union
 )
 
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
@@ -28,9 +28,6 @@ from ..misc.utils import _get_dict_dimension, _get_obs_shape
 from ..misc.utils import _inner_product, _inner_product_2d
 from ..misc.utils import _integrate, _integrate_2d, _integration_weights
 from ..misc.utils import _normalization, _outer
-
-if TYPE_CHECKING:
-    from ..representation.basis import Basis
 
 DenseArgvals = Dict[np.str_, npt.NDArray[np.float64]]
 DenseValues = npt.NDArray[np.float64]
@@ -328,18 +325,6 @@ class FunctionalData(ABC):
 
         TODO: Incorporate different type of norms. Especially, the one from the
         paper.
-
-        """
-
-    @abstractmethod
-    def to_basis(
-        self,
-        basis: Basis
-    ) -> None:
-        """Expand the FunctionalData into a basis.
-
-        TODO: Remove and create a specific class for data with basis
-        representation.
 
         """
 
@@ -794,25 +779,6 @@ class DenseFunctionalData(FunctionalData):
             new_values[idx] = self.values[idx]
 
         return IrregularFunctionalData(new_argvals, new_values)
-
-    def to_basis(
-        self,
-        basis: Basis
-    ) -> None:
-        """Convert to basis.
-
-        Parameters
-        ----------
-        basis: Basis
-            Basis used to simulate the data.
-
-        TODO: Work on this function to incorporate smoothing.
-
-        """
-        xtx = np.linalg.inv(np.matmul(basis.values, basis.values.T))
-        xty = np.matmul(basis.values, self.values.T)
-        self.basis = basis
-        self.coefs = np.matmul(xtx, xty).T
 
     def mean(
         self,
@@ -1693,22 +1659,6 @@ class IrregularFunctionalData(FunctionalData):
             new_values[obs][mask_obs[obs]] = self.values[obs].flatten()
 
         return DenseFunctionalData(new_argvals, new_values)
-
-    def to_basis(
-        self,
-        basis: Basis
-    ) -> None:
-        """Convert to basis.
-
-        Raises
-        ------
-        NotImplementedError
-            Currently not implemented.
-
-        TODO: Implement this function.
-
-        """
-        raise NotImplementedError()
 
     def mean(
         self,
