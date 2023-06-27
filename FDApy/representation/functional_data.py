@@ -347,12 +347,11 @@ class FunctionalData(ABC):
 
     @abstractmethod
     def inner_product(
-        self
+        self,
+        kernel: np.str_ = 'identity',
+        **kernel_args
     ) -> npt.NDArray[np.float64]:
-        """Compute an estimate of the inner product matrix.
-
-        TODO: Make more general to accept kernel transformation.
-        """
+        """Compute an estimate of the inner product matrix."""
 
     @abstractmethod
     def smooth(
@@ -753,33 +752,6 @@ class DenseFunctionalData(FunctionalData):
         else:
             return np.power(norm_fd, 0.5)
 
-    def as_irregular(self) -> IrregularFunctionalData:
-        """Convert `self` from Dense to Irregular functional data.
-
-        Coerce a DenseFunctionalData object into an IrregularFunctionalData
-        object.
-
-        Returns
-        -------
-        IrregularFunctionalData
-            An object of the class IrregularFunctionalData.
-
-        TODO: Consider removing
-
-        """
-        new_argvals: IrregArgvals = dict.fromkeys(self.argvals.keys(), {})
-        for dim in new_argvals:
-            temp = {}
-            for idx in range(self.n_obs):
-                temp[idx] = self.argvals[dim]
-            new_argvals[dim] = temp
-
-        new_values: IrregValues = {}
-        for idx in range(self.n_obs):
-            new_values[idx] = self.values[idx]
-
-        return IrregularFunctionalData(new_argvals, new_values)
-
     def mean(
         self,
         smooth: Optional[np.str_] = None,
@@ -935,7 +907,9 @@ class DenseFunctionalData(FunctionalData):
         return DenseFunctionalData(new_argvals, cov[np.newaxis])
 
     def inner_product(
-        self
+        self,
+        kernel: np.str_ = 'identity',
+        **kernel_args
     ) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
 
@@ -947,6 +921,11 @@ class DenseFunctionalData(FunctionalData):
             t \in \mathcal{T},
 
         where :math:`\mathcal{T}` is a one- or multi-dimensional domain.
+
+        Parameters
+        ----------
+        kernel: np.str_, default=None
+            The name of the kernel to used.
 
         Returns
         -------
@@ -1707,7 +1686,11 @@ class IrregularFunctionalData(FunctionalData):
         """
         raise NotImplementedError()
 
-    def inner_product(self) -> npt.NDArray[np.float64]:
+    def inner_product(
+        self,
+        kernel: np.str_ = 'identity',
+        **kernel_args
+    ) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
 
         The inner product matrix is a ``n_obs`` by ``n_obs`` matrix where each
