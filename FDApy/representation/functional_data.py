@@ -55,33 +55,33 @@ class FunctionalData(ABC):
     # Checkers
     @staticmethod
     def _check_same_type(
-        argv1: Type[FunctionalData],
-        argv2: Type[FunctionalData]
+        *fdata: Type[FunctionalData]
     ) -> None:
-        """Raise an error if `argv1` and `argv2` have different type.
-
-        Parameters
-        ----------
-        argv1: Type[FunctionalData]
-            An object.
-        argv2: Type[FunctionalData]
-            An object.
+        """Raise an error if elements in `fdata` have different type.
 
         Raises
         ------
         TypeError
-            When `argv1` and `argv2` do not have the same type.
+            When all `fdata` do not have the same type.
 
         """
-        if not isinstance(argv2, type(argv1)):
-            raise TypeError(f"{argv1} and {argv2} do not have the same type.")
+        types = set(type(obj) for obj in fdata)
+        if len(types) > 1:
+            raise TypeError("Elements do not have the same types.")
 
     @staticmethod
     def _check_same_nobs(
-        *argv: Type[FunctionalData]
+        *fdata: Type[FunctionalData]
     ) -> None:
-        """Raise an arror if elements in argv have different number of obs."""
-        n_obs = set(obj.n_obs for obj in argv)
+        """Raise an arror if elements in `fdata` have different number of obs.
+
+        Raises
+        ------
+        ValueError
+            When all `fdata` do not have the same number of observations.
+
+        """
+        n_obs = set(obj.n_obs for obj in fdata)
         if len(n_obs) > 1:
             raise ValueError(
                 "Elements do not have the same number of observations."
@@ -89,15 +89,19 @@ class FunctionalData(ABC):
 
     @staticmethod
     def _check_same_ndim(
-        argv1: Type[FunctionalData],
-        argv2: Type[FunctionalData]
+        *fdata: Type[FunctionalData]
     ) -> None:
-        """Raise an error if `argv1` and `argv2` have different dim."""
-        if argv1.n_dim != argv2.n_dim:
-            raise ValueError(
-                f"{argv1} and {argv2} do not have the same number"
-                " of dimensions."
-            )
+        """Raise an error if elements in `fdata` have different dimension.
+
+        Raises
+        ------
+        ValueError
+            When all `fdata` do not have the same dimension.
+
+        """
+        n_dim = set(obj.n_dim for obj in fdata)
+        if len(n_dim) > 1:
+            raise ValueError("Elements do not have the same dimensions.")
 
     @staticmethod
     @abstractmethod
@@ -110,13 +114,22 @@ class FunctionalData(ABC):
     @staticmethod
     @abstractmethod
     def _is_compatible(
-        fdata1: Type[FunctionalData],
-        fdata2: Type[FunctionalData]
+        *fdata: Type[FunctionalData]
     ) -> None:
-        """Check if `fdata` is compatible with `self`."""
-        FunctionalData._check_same_type(fdata1, fdata2)
-        FunctionalData._check_same_nobs(fdata1, fdata2)
-        FunctionalData._check_same_ndim(fdata1, fdata2)
+        """Raise an error if elements in `fdata` are not compatible.
+
+        Raises
+        ------
+        ValueError
+            When all `fdata` do not have the same number of observations or
+            when all `fdata` do not have the same dimension.
+        TypeError
+            When all `fdata` do not have the same type.
+
+        """
+        FunctionalData._check_same_type(*fdata)
+        FunctionalData._check_same_nobs(*fdata)
+        FunctionalData._check_same_ndim(*fdata)
 
     ###########################################################################
 
