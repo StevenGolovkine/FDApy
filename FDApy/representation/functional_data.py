@@ -150,21 +150,18 @@ class FunctionalData(ABC):
         self,
         argvals: Union[DenseArgvals, IrregArgvals],
         values: Union[DenseValues, IrregValues],
-        category: np.str_
     ) -> None:
         """Initialize FunctionalData object."""
         super().__init__()
         self.argvals = argvals
         self.values = values
-        self.category = category
         self._index = 0
 
     def __repr__(self) -> np.str_:
         """Override print function."""
         return (
-            f"{self.category.capitalize()} functional data object with "
-            f"{self.n_obs} observations on a {self.n_dim}-dimensional "
-            "support."
+            f"Functional data object with {self.n_obs} observations on a "
+            f"{self.n_dim}-dimensional support."
         )
 
     def __iter__(self):
@@ -269,15 +266,6 @@ class FunctionalData(ABC):
         if hasattr(self, 'argvals'):
             self._check_argvals_values(self.argvals, new_values)
         self._values = new_values
-
-    @property
-    def category(self) -> np.str_:
-        """Getter for category."""
-        return self._category
-
-    @category.setter
-    def category(self, new_category: np.str_) -> None:
-        self._category = new_category
 
     @property
     def n_obs(self) -> np.int64:
@@ -568,7 +556,7 @@ class DenseFunctionalData(FunctionalData):
         values: DenseValues
     ) -> None:
         """Initialize UnivariateFunctionalData object."""
-        super().__init__(argvals, values, 'univariate')
+        super().__init__(argvals, values)
 
     def __getitem__(
         self,
@@ -1399,7 +1387,7 @@ class IrregularFunctionalData(FunctionalData):
         values: IrregValues
     ) -> None:
         """Initialize IrregularFunctionalData object."""
-        super().__init__(argvals, values, 'irregular')
+        super().__init__(argvals, values)
 
     def __getitem__(
         self,
