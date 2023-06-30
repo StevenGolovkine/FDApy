@@ -13,7 +13,10 @@ import numpy.typing as npt
 
 from abc import abstractmethod
 from collections import UserDict
-from typing import Any, Type
+from typing import Any, Type, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ._values import Values, DenseValues, IrregularValues
 
 
 ###############################################################################
@@ -69,13 +72,13 @@ class Argvals(UserDict):
         return True
 
     @abstractmethod
-    def compatible_with(self, values: np.NDArray[np.float64]) -> None:
+    def compatible_with(self, values: Type[Values]) -> None:
         """Raise an error if Argvals is not compatible with values.
 
         Parameters
         ----------
-        values: np.NDArray[np.float64]
-            A numpy array.
+        values: Values
+            An object of Values.
 
         """
 
@@ -173,13 +176,13 @@ class DenseArgvals(Argvals):
         """Get the number of sampling points of each dimension."""
         return tuple(dim.shape[0] for dim in self.values())
 
-    def compatible_with(self, values: np.NDArray[np.float64]) -> None:
+    def compatible_with(self, values: DenseValues) -> None:
         """Raise an error if DenseArgvals is not compatible with values.
 
         Parameters
         ----------
-        values: np.NDArray[np.float64]
-            An array.
+        values: Densevalues
+            A DenseValues object.
 
         Raises
         ------
@@ -284,14 +287,14 @@ class IrregularArgvals(Argvals):
 
     def compatible_with(
         self,
-        values: UserDict[int, npt.NDArray[np.float64]]
+        values: IrregularValues
     ) -> None:
         """Raise an error if IrregularArgvals is not compatible with values.
 
         Parameters
         ----------
-        values: Dict[int, npt.NDArray[np.float64]]
-            A dictionary.
+        values: IrregularValues
+            An IrregularValues object.
 
         Raises
         ------
