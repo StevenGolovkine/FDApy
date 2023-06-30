@@ -44,8 +44,29 @@ class Argvals(UserDict):
         super().__setitem__(key, value)
 
     @abstractmethod
-    def __eq__(self, other: Type[Argvals]) -> np.bool_:
-        """Check if two Argvals are equals."""
+    def __eq__(self, other: Type[Argvals]) -> bool:
+        """Check if two Argvals are equals.
+
+        This method if two Argvals objects have the same type and if their
+        length are equals.
+
+        Parameters
+        ----------
+        other: Type[Argvals]
+            The object to compare with the current Argvals object.
+
+        Returns
+        -------
+        bool
+            False if the objects have different types or different lengths,
+            True otherwise.
+
+        """
+        if not isinstance(self, type(other)):
+            return False
+        if len(self) != len(other):
+            return False
+        return True
 
 
 ###############################################################################
@@ -110,39 +131,31 @@ class DenseArgvals(Argvals):
 
         Examples
         --------
-        >>> argvals1 = DenseArgvals(
-        ...     {
-        ...         'key1': np.array([1, 2, 3]),
-        ...         'key2': np.array([4, 5, 6])
-        ...     }
-        ... )
-        >>> argvals2 = DenseArgvals(
-        ...     {
-        ...         'key1': np.array([1, 2, 3]),
-        ...         'key2': np.array([4, 5, 6])
-        ...     }
-        ... )
+        >>> argvals1 = DenseArgvals({
+        ...     'input_dim_0': np.array([1, 2, 3]),
+        ...     'input_dim_0': np.array([4, 5, 6])
+        ... })
+        >>> argvals2 = DenseArgvals({
+        ...     'input_dim_0': np.array([1, 2, 3]),
+        ...     'input_dim_1': np.array([4, 5, 6])
+        ... })
         >>> argvals1 == argvals2
         True
 
-        >>> argvals3 = DenseArgvals(
-        ...     {
-        ...         'key1': np.array([1, 2, 3]),
-        ...         'key2': np.array([4, 5, 7])
-        ...     }
-        ... )
+        >>> argvals3 = DenseArgvals({
+        ...     'input_dim_0': np.array([1, 2, 3]),
+        ...     'input_dim_1': np.array([4, 5, 7])
+        ... })
         >>> argvals1 == argvals3
         False
 
         """
-        if isinstance(other, DenseArgvals):
-            for key, value in self.data.items():
-                if key not in other.data:
-                    return False
-                if not np.array_equal(value, other.data[key]):
-                    return False
-            return True
-        return False
+        if not super(DenseArgvals, self).__eq__(other):
+            return False
+        for key, value in self.items():
+            if key not in other or not np.array_equal(value, other[key]):
+                return False
+        return True
 
 
 ###############################################################################
@@ -166,7 +179,7 @@ class IrregularArgvals(Argvals):
 
         Parameters
         ----------
-        key: np.int64
+        key: int
             The key to set or update.
         value: DenseArgvals
             The value to associate with the key.
@@ -182,7 +195,7 @@ class IrregularArgvals(Argvals):
         None
 
         """
-        if not isinstance(key, np.int64):
+        if not isinstance(key, int):
             raise TypeError("Key must be an integer")
         if not isinstance(value, DenseArgvals):
             raise TypeError("Value must be a DenseArgvals")
@@ -201,10 +214,30 @@ class IrregularArgvals(Argvals):
         bool
             True if the objects are equal, False otherwise.
 
+        Examples
+        --------
+        >>> argvals_1 = DenseArgvals({
+        ...     'input_dim_0': np.random.randn(10),
+        ...     'input_dim_1': np.random.randn(11)
+        ... })
+        >>> argvals_2 = DenseArgvals({
+        ...     'input_dim_0': np.random.randn(5),
+        ...     'input_dim_1': np.random.randn(7)
+        ... })
+        >>> argvals_2 = DenseArgvals(argvals)
+
+        >>> argvals_irr = IrregularArgvals({0: argvals_1, 1: argvals_2})
+        >>> argvals_irr_2 = IrregularArgvals({0: argvals_1, 1: argvals_2})
+        >>> argvals_irr_3 = IrregularArgvals({0: argvals_2, 1: argvals_1})
+
+        >>> argvals_irr == argvals_irr_2
+        True
+
+        >>> argvals_irr == argvals_irr_3
+        False
+
         """
-        if not isinstance(other, IrregularArgvals):
-            return False
-        if len(self) != len(other):
+        if not super(IrregularArgvals, self).__eq__(other):
             return False
         for key, value in self.items():
             if key not in other or value != other[key]:
