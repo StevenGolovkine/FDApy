@@ -68,6 +68,17 @@ class Argvals(UserDict):
             return False
         return True
 
+    @abstractmethod
+    def compatible_with(self, values: np.NDArray[np.float64]) -> None:
+        """Raise an error if Argvals is not compatible with values.
+
+        Parameters
+        ----------
+        values: np.NDArray[np.float64]
+            A numpy array.
+
+        """
+
 
 ###############################################################################
 # Class DenseArgvals
@@ -157,6 +168,33 @@ class DenseArgvals(Argvals):
                 return False
         return True
 
+    @property
+    def n_points(self):
+        """Get the number of sampling points of each dimension."""
+        return tuple(dim.shape[0] for dim in self.values())
+
+    def compatible_with(self, values: np.NDArray[np.float64]) -> None:
+        """Raise an error if DenseArgvals is not compatible with values.
+
+        Parameters
+        ----------
+        values: np.NDArray[np.float64]
+            An array.
+
+        Raises
+        ------
+        ValueError
+            When `self` and `values` do not have coherent common
+            sampling points. The first dimension of `values` is assumed to
+            represented the number of observations.
+
+        """
+        if self.n_points != values.shape[1:]:
+            raise ValueError(
+                "The DenseArgvals and the values do not have coherent number"
+                " of sampling points."
+            )
+
 
 ###############################################################################
 # Class IrregularArgvals
@@ -243,3 +281,29 @@ class IrregularArgvals(Argvals):
             if key not in other or value != other[key]:
                 return False
         return True
+
+    def compatible_with(
+        self,
+        values: UserDict[int, npt.NDArray[np.float64]]
+    ) -> None:
+        """Raise an error if IrregularArgvals is not compatible with values.
+
+        Parameters
+        ----------
+        values: Dict[int, npt.NDArray[np.float64]]
+            A dictionary.
+
+        Raises
+        ------
+        ValueError
+            When `self` and `values` do not have coherent common
+            sampling points. The first dimension of `values` is assumed to
+            represented the number of observations.
+
+        """
+        for obs, argvals in self.items():
+            if argvals.n_points != values[obs].shape:
+                raise ValueError(
+                    "The IrregularArgvals and the values do not have coherent"
+                    f" number of sampling points for observation {obs}."
+                )
