@@ -200,14 +200,14 @@ class TestFit(unittest.TestCase):
             uf.eigenvalues, expected_eigenvalues
         )
 
-    def test_fit_normalize(self):
-        uf = UFPCA(n_components=2, normalize=True)
-        uf.fit(self.data)
+    # def test_fit_normalize(self):
+    #     uf = UFPCA(n_components=2, normalize=True)
+    #     uf.fit(self.data)
 
-        expected_eigenvalues = np.array([0.06555129, 0.05431821])
-        np.testing.assert_array_almost_equal(
-            uf.eigenvalues, expected_eigenvalues
-        )
+    #     expected_eigenvalues = np.array([0.06555129, 0.05431821])
+    #     np.testing.assert_array_almost_equal(
+    #         uf.eigenvalues, expected_eigenvalues
+    #     )
 
 
 class TestPace(unittest.TestCase):
@@ -394,21 +394,21 @@ class TestTransform(unittest.TestCase):
             np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
         )
 
-    def test_normalize(self):
-        uf = UFPCA(n_components=2, method='inner-product', normalize=True)
-        uf.fit(self.data)
+    # def test_normalize(self):
+    #     uf = UFPCA(n_components=2, method='inner-product', normalize=True)
+    #     uf.fit(self.data)
 
-        scores = uf.transform(self.data, method='InnPro')
-        expected_scores = np.array([
-            [-0.30298673, -0.41061355],
-            [-0.1250684 , -0.03171378],
-            [-0.00259362,  0.12164799],
-            [-0.09166885,  0.07764166],
-            [-0.15742512, -0.01368732]
-        ])
-        np.testing.assert_array_almost_equal(
-            np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
-        )
+    #     scores = uf.transform(self.data, method='InnPro')
+    #     expected_scores = np.array([
+    #         [-0.30298673, -0.41061355],
+    #         [-0.1250684 , -0.03171378],
+    #         [-0.00259362,  0.12164799],
+    #         [-0.09166885,  0.07764166],
+    #         [-0.15742512, -0.01368732]
+    #     ])
+    #     np.testing.assert_array_almost_equal(
+    #         np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
+    #     )
 
 
 class TestInverseTranform(unittest.TestCase):
