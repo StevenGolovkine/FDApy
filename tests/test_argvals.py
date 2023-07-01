@@ -9,7 +9,7 @@ import numpy as np
 import unittest
 
 from FDApy.representation._argvals import DenseArgvals, IrregularArgvals
-
+from FDApy.representation._values import DenseValues, IrregularValues
 
 class TestDenseArgvals(unittest.TestCase):
 
@@ -68,10 +68,10 @@ class TestDenseArgvals(unittest.TestCase):
         argvals1['key1'] = np.array([1, 2, 3])
         argvals1['key2'] = np.array([4, 5, 6])
 
-        values = np.random.randn(10, 3, 3)
+        values = DenseValues(np.random.randn(10, 3, 3))
         argvals1.compatible_with(values)
 
-        values = np.random.randn(10, 4, 3)
+        values = DenseValues(np.random.randn(10, 4, 3))
         with self.assertRaises(ValueError):
             argvals1.compatible_with(values)
 
@@ -154,6 +154,19 @@ class TestIrregularArgvals(unittest.TestCase):
         argvals_irr_3 = IrregularArgvals({0: argvals_1, 1: argvals_2, 2: argvals_1})
         self.assertNotEqual(argvals_irr_1, argvals_irr_3)
 
+    def test_n_points(self):
+        argvals_1 = DenseArgvals({
+            'input_dim_0': np.random.randn(10),
+            'input_dim_1': np.random.randn(11)
+        })
+        argvals_2 = DenseArgvals({
+            'input_dim_0': np.random.randn(5),
+            'input_dim_1': np.random.randn(7)
+        })
+        argvals_irr = IrregularArgvals({0: argvals_1, 1: argvals_2})
+
+        np.testing.assert_equal(argvals_irr.n_points, {0: (10, 11), 1: (5, 7)})
+
     def test_compatible_with(self):
         argvals_1 = DenseArgvals({
             'input_dim_0': np.random.randn(10),
@@ -165,9 +178,9 @@ class TestIrregularArgvals(unittest.TestCase):
         })
         argvals_irr = IrregularArgvals({0: argvals_1, 1: argvals_2})
 
-        values = {0: np.random.randn(10, 11), 1: np.random.randn(5, 7)}
+        values = IrregularValues({0: np.random.randn(10, 11), 1: np.random.randn(5, 7)})
         argvals_irr.compatible_with(values)
 
-        values = {0: np.random.randn(10, 10), 1: np.random.randn(5, 7)}
+        values = IrregularValues({0: np.random.randn(10, 10), 1: np.random.randn(5, 7)})
         with self.assertRaises(ValueError):
             argvals_irr.compatible_with(values)

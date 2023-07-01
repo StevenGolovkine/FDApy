@@ -8,6 +8,7 @@ Written with the help of ChatGPT.
 import numpy as np
 import unittest
 
+from FDApy.representation._argvals import DenseArgvals, IrregularArgvals
 from FDApy.representation._values import DenseValues, IrregularValues
 
 
@@ -17,12 +18,33 @@ class TestDenseValues(unittest.TestCase):
         values = DenseValues(array)
         self.assertEqual(values.n_obs, 2)
 
+    def test_n_points(self):
+        array = np.array([[1, 2, 3], [4, 5, 6]])
+        values = DenseValues(array)
+        self.assertEqual(values.n_points, (3,))
+
+    def test_compatible_with(self):
+        argvals1 = DenseArgvals()
+        argvals1['key1'] = np.array([1, 2, 3])
+        argvals1['key2'] = np.array([4, 5, 6])
+
+        values = DenseValues(np.random.randn(10, 3, 3))
+        values.compatible_with(argvals1)
+
+        values = DenseValues(np.random.randn(10, 4, 3))
+        with self.assertRaises(ValueError):
+            values.compatible_with(argvals1)
 
 class TestIrregularValues(unittest.TestCase):
     def test_n_obs(self):
         values_dict = {0: np.array([1, 2, 3]), 1: np.array([4, 5, 6])}
         values = IrregularValues(values_dict)
         self.assertEqual(values.n_obs, 2)
+
+    def test_n_points(self):
+        values_dict = {0: np.array([1, 2, 3]), 1: np.array([4, 5, 6])}
+        values = IrregularValues(values_dict)
+        self.assertEqual(values.n_points, {0: (3,), 1: (3,)})
 
     def test_setitem(self):
         values = IrregularValues()
@@ -39,3 +61,21 @@ class TestIrregularValues(unittest.TestCase):
         values = IrregularValues()
         with self.assertRaises(TypeError):
             values[0] = 'value'
+
+    def test_compatible_with(self):
+        argvals_1 = DenseArgvals({
+            'input_dim_0': np.random.randn(10),
+            'input_dim_1': np.random.randn(11)
+        })
+        argvals_2 = DenseArgvals({
+            'input_dim_0': np.random.randn(5),
+            'input_dim_1': np.random.randn(7)
+        })
+        argvals_irr = IrregularArgvals({0: argvals_1, 1: argvals_2})
+
+        values = IrregularValues({0: np.random.randn(10, 11), 1: np.random.randn(5, 7)})
+        values.compatible_with(argvals_irr)
+
+        values = IrregularValues({0: np.random.randn(10, 10), 1: np.random.randn(5, 7)})
+        with self.assertRaises(ValueError):
+            values.compatible_with(argvals_irr)

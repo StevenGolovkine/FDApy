@@ -13,7 +13,10 @@ import numpy.typing as npt
 
 from abc import ABC, abstractmethod
 from collections import UserDict
-from typing import Any, Type
+from typing import Type, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ._argvals import Argvals
 
 
 ###############################################################################
@@ -25,6 +28,32 @@ class Values(ABC):
     @abstractmethod
     def n_obs(self) -> int:
         """Return the number of observations."""
+
+    @property
+    @abstractmethod
+    def n_points(self):
+        """Return the number of sampling points for each dimension."""
+
+    def compatible_with(self, argvals: Type[Argvals]) -> None:
+        """Raise an error if Values is not compatible with Argvals.
+
+        Parameters
+        ----------
+        argvals: Type[Argvals]
+            A Argvals object.
+
+        Raises
+        ------
+        ValueError
+            When `self` and `argvals` do not have coherent common
+            sampling points.
+
+        """
+        if self.n_points != argvals.n_points:
+            raise ValueError(
+                "The Values and the Argvals do not have coherent number"
+                " of sampling points."
+            )
 
 
 ###############################################################################
@@ -77,6 +106,16 @@ class DenseValues(Values, np.ndarray):
 
         """
         return self.shape[0]
+
+    @property
+    def n_points(self):
+        """Return the number of sampling points for each dimension.
+
+        The number of sampling points is the dimensions of the array,
+        except the first.
+
+        """
+        return self.shape[1:]
 
 
 ###############################################################################
@@ -140,3 +179,13 @@ class IrregularValues(Values, UserDict):
 
         """
         return len(self)
+
+    @property
+    def n_points(self):
+        """Return the number of sampling points for each dimension.
+
+        The number of sampling points is the dimension of the array for each
+        entry of the dictionary.
+
+        """
+        return {obs: pts.shape for obs, pts in self.items()}

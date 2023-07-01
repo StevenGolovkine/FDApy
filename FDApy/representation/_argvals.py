@@ -16,7 +16,7 @@ from collections import UserDict
 from typing import Any, Type, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ._values import Values, DenseValues, IrregularValues
+    from ._values import Values
 
 
 ###############################################################################
@@ -71,16 +71,32 @@ class Argvals(UserDict):
             return False
         return True
 
+    @property
     @abstractmethod
+    def n_points(self):
+        """Get the number of sampling points of each dimension."""
+
     def compatible_with(self, values: Type[Values]) -> None:
-        """Raise an error if Argvals is not compatible with values.
+        """Raise an error if Argvals is not compatible with Values.
 
         Parameters
         ----------
-        values: Values
-            An object of Values.
+        values: Type[Values]
+            A Values object.
+
+        Raises
+        ------
+        ValueError
+            When `self` and `values` do not have coherent common
+            sampling points. The first dimension of `values` is assumed to
+            represented the number of observations.
 
         """
+        if self.n_points != values.n_points:
+            raise ValueError(
+                "The DenseArgvals and the values do not have coherent number"
+                " of sampling points."
+            )
 
 
 ###############################################################################
@@ -176,28 +192,6 @@ class DenseArgvals(Argvals):
         """Get the number of sampling points of each dimension."""
         return tuple(dim.shape[0] for dim in self.values())
 
-    def compatible_with(self, values: DenseValues) -> None:
-        """Raise an error if DenseArgvals is not compatible with values.
-
-        Parameters
-        ----------
-        values: Densevalues
-            A DenseValues object.
-
-        Raises
-        ------
-        ValueError
-            When `self` and `values` do not have coherent common
-            sampling points. The first dimension of `values` is assumed to
-            represented the number of observations.
-
-        """
-        if self.n_points != values.shape[1:]:
-            raise ValueError(
-                "The DenseArgvals and the values do not have coherent number"
-                " of sampling points."
-            )
-
 
 ###############################################################################
 # Class IrregularArgvals
@@ -210,7 +204,7 @@ class IrregularArgvals(Argvals):
 
     """
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: int, value: DenseArgvals):
         """Set the value for a given key.
 
         This method sets the value for the specified key in the
@@ -285,28 +279,7 @@ class IrregularArgvals(Argvals):
                 return False
         return True
 
-    def compatible_with(
-        self,
-        values: IrregularValues
-    ) -> None:
-        """Raise an error if IrregularArgvals is not compatible with values.
-
-        Parameters
-        ----------
-        values: IrregularValues
-            An IrregularValues object.
-
-        Raises
-        ------
-        ValueError
-            When `self` and `values` do not have coherent common
-            sampling points. The first dimension of `values` is assumed to
-            represented the number of observations.
-
-        """
-        for obs, argvals in self.items():
-            if argvals.n_points != values[obs].shape:
-                raise ValueError(
-                    "The IrregularArgvals and the values do not have coherent"
-                    f" number of sampling points for observation {obs}."
-                )
+    @property
+    def n_points(self):
+        """Get the number of sampling points of each dimension."""
+        return {obs: argvals.n_points for obs, argvals in self.items()}
