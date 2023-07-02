@@ -267,13 +267,13 @@ def _get_axis_dimension(
 
 
 def _get_dict_dimension(
-    x: Dict[np.str_, npt.NDArray[np.float64]]
+    x: Dict[str, npt.NDArray[np.float64]]
 ) -> Tuple[int, ...]:
     """Return the shape of an object defined as a dict of np.ndarray.
 
     Parameters
     ----------
-    x: Dict[np.str_, npt.NDArray[np.float64]]
+    x: Dict[str, npt.NDArray[np.float64]]
         Dictionary containing keys as string and values as numpy array.
 
     Returns
@@ -295,14 +295,14 @@ def _get_dict_dimension(
 
 
 def _get_obs_shape(
-    x: Dict[np.str_, Dict[int, npt.NDArray[np.float64]]],
+    x: Dict[str, Dict[int, npt.NDArray[np.float64]]],
     obs: int
 ) -> Tuple[int, ...]:
     """Get the shape of `obs` if `X` is a nested dict.
 
     Parameters
     ----------
-    x: Dict[np.str_, Dict[int, npt.NDArray[np.float64]]]
+    x: Dict[str, Dict[int, npt.NDArray[np.float64]]]
         Nested dictionary containing the data, where the first level of keys
         are strings and the second level of keys are integers representing the
         observation number.
@@ -383,7 +383,7 @@ def _shift(
 def _integrate(
     y: npt.NDArray[np.float64],
     x: npt.NDArray[np.float64],
-    method: np.str_ = 'simpson'
+    method: str = 'simpson'
 ) -> float:
     r"""Compute an estimate of the integral of 1-dimensional curve.
 
@@ -398,7 +398,7 @@ def _integrate(
         Domain for the integration, it has to be ordered.
     y: npt.NDArray[np.float64], shape=(n_features,)
         Observations
-    method: np.str_, {'simpson', 'trapz'}, default = 'simpson'
+    method: str, {'simpson', 'trapz'}, default = 'simpson'
         The method used to integrated.
 
     Returns
@@ -426,7 +426,7 @@ def _integrate_2d(
     z: npt.NDArray[np.float64],
     x: npt.NDArray[np.float64],
     y: npt.NDArray[np.float64],
-    method: np.str_ = 'simpson'
+    method: str = 'simpson'
 ) -> float:
     r"""Compute an estimate of the integral of 2- dimensional surface.
 
@@ -441,7 +441,7 @@ def _integrate_2d(
         First domain for the integration, it has to be ordered.
     y: npt.NDArray[np.float64], shape=(n_features_2,)
         Second domain for the integration, it has to be ordered.
-    method: np.str_, {'simpson', 'trapz'}, default = 'simpson'
+    method: str, {'simpson', 'trapz'}, default = 'simpson'
         The method used to integrated.
 
     Returns
@@ -600,7 +600,7 @@ def _outer(
 
 def _integration_weights(
     x: npt.NDArray[np.float64],
-    method: Union[np.str_, Callable] = 'trapz'
+    method: Union[str, Callable] = 'trapz'
 ) -> npt.NDArray[np.float64]:
     """Compute integration weights.
 
@@ -611,7 +611,7 @@ def _integration_weights(
     ----------
     x: npt.NDArray[np.float64], shape=(n_points,)
         Domain on which compute the weights.
-    method: Union[np.str_, Callable], default='trapz'
+    method: Union[str, Callable], default='trapz'
         The method to compute the weights.
 
     Returns
@@ -662,7 +662,7 @@ def _integration_weights(
 
 def _select_number_eigencomponents(
     eigenvalues: npt.NDArray[np.float64],
-    percentage: Optional[Union[np.float64, np.int64]] = None
+    percentage: Optional[Union[float, int]] = None
 ) -> int:
     """Select the number of eigencomponents.
 
@@ -670,7 +670,7 @@ def _select_number_eigencomponents(
     ----------
     eigenvalues: npt.NDArray[np.float64]
         An estimation of the eigenvalues.
-    percentage: Optional[Union[np.float64, np.int]], default=None
+    percentage: Optional[Union[float, int]], default=None
         Number of components to keep. If `percentage` is `None`, all
         components are kept, ``percentage == len(eigenvalues)``.
         If `percentage` is an integer, `percentage` components are kept. If
@@ -726,8 +726,8 @@ def _compute_covariance(
 
 def _eigh(
     matrix: npt.NDArray[np.float64],
-    UPLO: np.str_ = 'L'  # noqa
-) -> Tuple[npt.NDArray, npt.NDArray]:
+    UPLO: str = 'L'  # noqa
+) -> Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
     """Return the eigenvalues and eigenvectors of a real symmetrix matrix.
 
     Returns two objects, a 1-D array containing the eigenvalues of `matrix`,
@@ -740,7 +740,7 @@ def _eigh(
     matrix: npt.NDArray[np.float64], shape=(M, M)
         Hermitian or real symmetric matrices whose eigenvalues and eigenvectors
         are to be computed.
-    UPLO: np.str_, {'L', 'U'}, default='L'
+    UPLO: str, {'L', 'U'}, default='L'
         Specifies whether the calculation is done with the lower triangular
         part of a ('L', default) or the upper triangular part ('U').
         Irrespective of this value only the real parts of the diagonal will be
@@ -750,7 +750,7 @@ def _eigh(
 
     Returns
     -------
-    Tuple[npt.NDArray, npt.NDArray]:
+    Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
         The first element represents the eigenvalues in descending order, each
         repeated according to its multiplicity. The second element represents
         the normalized eigenvectors. The column ``v[:, i]`` of the eigenvectors

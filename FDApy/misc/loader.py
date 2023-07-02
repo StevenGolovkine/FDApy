@@ -21,7 +21,7 @@ from FDApy.representation.functional_data import (
 ###############################################################################
 # Loader for csv
 def read_csv(
-    filepath: np.str_,
+    filepath: str,
     **kwargs
 ) -> Union[DenseFunctionalData, IrregularFunctionalData]:
     """Read a comma-separated values (csv) file into Functional Data.
@@ -35,7 +35,7 @@ def read_csv(
 
     Parameters
     ----------
-    filepath: np.str_
+    filepath: str
         Any valid string path is acceptable.
     **kwargs
         Keywords arguments to passed to the pd.read_csv function.

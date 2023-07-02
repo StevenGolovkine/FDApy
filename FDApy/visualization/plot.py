@@ -23,7 +23,7 @@ from ..representation.functional_data import (
 # Utility functions
 def _init_ax(
     ax: Optional[Axes] = None,
-    projection: np.str_ = 'rectilinear'
+    projection: str = 'rectilinear'
 ) -> Axes:
     """Initialize axes."""
     if ax is None:
@@ -202,7 +202,7 @@ def plot(
 def plot_multivariate(
     data: MultivariateFunctionalData,
     labels: Optional[npt.NDArray[np.float64]] = None,
-    titles: Optional[List[np.str_]] = None,
+    titles: Optional[List[str]] = None,
     colors: Optional[npt.NDArray[np.float64]] = None,
     ax: Optional[Axes] = None,
     **plt_kwargs
