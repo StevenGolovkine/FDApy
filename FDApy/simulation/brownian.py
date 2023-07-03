@@ -20,7 +20,7 @@ from .simulation import Simulation
 
 def _init_brownian(
     argvals: npt.NDArray[np.float64]
-) -> Tuple[np.float64, npt.NDArray[np.float64]]:
+) -> Tuple[float, npt.NDArray[np.float64]]:
     """Initialize Brownian motions.
 
     Initialize different parameters used for the simulation of different
@@ -33,7 +33,7 @@ def _init_brownian(
 
     Returns
     -------
-    Tuple[np.float64, npt.NDArray[np.float64]]
+    Tuple[float, npt.NDArray[np.float64]]
         A tuple containing the step size, ``delta``, and the sampling points
         ``argvals``.
 
@@ -44,7 +44,7 @@ def _init_brownian(
 
 def _standard_brownian(
     argvals: npt.NDArray[np.float64],
-    init_point: np.float64 = 0.0,
+    init_point: float = 0.0,
     rnorm: Callable = np.random.normal
 ) -> npt.NDArray[np.float64]:
     """Generate standard Brownian motion.
@@ -53,7 +53,7 @@ def _standard_brownian(
     ----------
     argvals: npt.NDArray[np.float64], shape=(n,)
         Values at which Brownian motions are evaluated.
-    init_point: np.float64, default=0.0
+    init_point: float, default=0.0
         Start value of the Brownian motion.
     rnorm: Callable, default=np.random.normal
         Function to use for normal random variables generation (used for
@@ -90,9 +90,9 @@ def _standard_brownian(
 
 def _geometric_brownian(
     argvals: npt.NDArray[np.float64],
-    init_point: np.float64 = 1.0,
-    mu: np.float64 = 0.0,
-    sigma: np.float64 = 1.0,
+    init_point: float = 1.0,
+    mu: float = 0.0,
+    sigma: float = 1.0,
     rnorm: Callable = np.random.normal
 ) -> npt.NDArray[np.float64]:
     """Generate geometric Brownian motion.
@@ -101,12 +101,12 @@ def _geometric_brownian(
     ----------
     argvals: npt.NDArray[np.float64], shape=(n,)
         Values at which Brownian motions are evaluated.
-    init_point: np.float64, default=1.0
+    init_point: float, default=1.0
         Start value of the Brownian motion. For geometric Brownian motion,
         ``init_point`` should be stricly positive.
-    mu: np.float64, default=0
+    mu: float, default=0
         Interest rate (or percentage drift).
-    sigma: np.float64, default=1
+    sigma: float, default=1
         Diffusion coefficient (or percentage volatility).
     rnorm: Callable, default=np.random.normal
         Function to use for normal random variables generation (used for
@@ -146,7 +146,7 @@ def _geometric_brownian(
 
 def _fractional_brownian(
     argvals: npt.NDArray[np.float64],
-    hurst: np.float64 = 0.5,
+    hurst: float = 0.5,
     rnorm: Callable = np.random.normal
 ) -> npt.NDArray[np.float64]:
     """Generate fractional Brownian motion.
@@ -155,7 +155,7 @@ def _fractional_brownian(
     ----------
     argvals: npt.NDArray[np.float64], shape=(n,)
         Values at which Brownian motions are evaluated.
-    hurst: np.float64, default=0.5
+    hurst: float, default=0.5
         Hurst parameter. If ``hurst = 0.5``. the fractional Brownian motion is
         equivalent to the standard Brownian motion.
     rnorm: Callable, default=np.random.normal
@@ -205,7 +205,7 @@ def _fractional_brownian(
 
 
 def _simulate_brownian(
-    name: np.str_,
+    name: str,
     argvals: npt.NDArray[np.float64],
     rnorm: Callable = np.random.normal,
     **kwargs
@@ -214,7 +214,7 @@ def _simulate_brownian(
 
     Parameters
     ----------
-    name: np.str_, {'standard', 'geometric', 'fractional'}
+    name: str, {'standard', 'geometric', 'fractional'}
         Name of the Brownian motion type to simulate.
     argvals: npt.NDArray[np.float64], shape=(n,)
         Values at which Brownian motions are evaluated.
@@ -224,14 +224,14 @@ def _simulate_brownian(
 
     Keyword Args
     ------------
-    init_point: np.float64, default=0.0 or 1.0
+    init_point: float, default=0.0 or 1.0
         Start value of the Brownian motion. For geometric Brownian motion,
         ``init_point`` should be stricly positive.
-    mu: np.float64, default=0
+    mu: float, default=0
         Interest rate (or percentage drift).
-    sigma: np.float64, default=1
+    sigma: float, default=1
         Diffusion coefficient (or percentage volatility).
-    hurst: np.float64, default=0.5
+    hurst: float, default=0.5
         Hurst parameter. If ``hurst = 0.5``. the fractional Brownian motion is
         equivalent to the standard Brownian motion.
 
