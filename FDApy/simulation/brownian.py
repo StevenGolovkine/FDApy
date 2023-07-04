@@ -278,9 +278,9 @@ class Brownian(Simulation):
 
     Parameters
     ----------
-    name: np.str_, {'standard', 'geometric', 'fractional'}
+    name: str, {'standard', 'geometric', 'fractional'}
         Name of the Brownian motion type to simulate.
-    random_state: np.int64, default=None
+    random_state: int, default=None
         A seed to initialize the random number generator.
 
     Attributes
@@ -307,16 +307,16 @@ class Brownian(Simulation):
 
     def __init__(
         self,
-        name: np.str_,
-        random_state: Optional[np.int64] = None,
+        name: str,
+        random_state: Optional[int] = None,
     ) -> None:
         """Initialize Brownian object."""
         super().__init__(name, random_state)
 
     def new(
         self,
-        n_obs: np.int64,
-        n_clusters: np.int64 = 1,
+        n_obs: int,
+        n_clusters: int = 1,
         argvals: Optional[npt.NDArray[np.float64]] = None,
         **kwargs
     ) -> None:
@@ -327,9 +327,9 @@ class Brownian(Simulation):
 
         Parameters
         ----------
-        n_obs: np.int64
+        n_obs: int
             Number of observations to simulate.
-        n_clusters: np.int64
+        n_clusters: int
             Not used.
         argvals: Optional[npt.NDArray[np.float64]], shape=(n,)
             Values at which Brownian motions are evaluated. If ``None``, the
@@ -338,15 +338,15 @@ class Brownian(Simulation):
 
         Keyword Args
         ------------
-        init_point: np.float64
+        init_point: float
             Start value of the Brownian motion. For geometric Brownian motion,
             ``init_point`` should be stricly positive. Default value is 0 for
             standard Brownian motion and 1 for geometric Brownian motion.
-        mu: np.float64, default=0
+        mu: float, default=0
             Interest rate (or percentage drift).
-        sigma: np.float64, default=1
+        sigma: float, default=1
             Diffusion coefficient (or percentage volatility).
-        hurst: np.float64, default=0.5
+        hurst: float, default=0.5
             Hurst parameter. If ``hurst = 0.5``. the fractional Brownian motion
             is equivalent to the standard Brownian motion.
 

@@ -22,13 +22,13 @@ from .simulation import Simulation
 # Definition of the decreasing of the eigenvalues
 
 def _eigenvalues_linear(
-    n: np.int64 = 3
+    n: int = 3
 ) -> npt.NDArray[np.float64]:
     """Generate linear decreasing eigenvalues.
 
     Parameters
     ----------
-    n: np.int64, default=3
+    n: int, default=3
         Number of eigenvalues to generates.
 
     Returns
@@ -46,13 +46,13 @@ def _eigenvalues_linear(
 
 
 def _eigenvalues_exponential(
-    n: np.int64 = 3
+    n: int = 3
 ) -> npt.NDArray[np.float64]:
     """Generate exponential decreasing eigenvalues.
 
     Parameters
     ----------
-    n: np.int64, default=3
+    n: int, default=3
         Number of eigenvalues to generates.
 
     Returns
@@ -70,13 +70,13 @@ def _eigenvalues_exponential(
 
 
 def _eigenvalues_quadratic(
-    n: np.int64 = 3
+    n: int = 3
 ) -> npt.NDArray[np.float64]:
     """Generate quadratic decreasing eigenvalues.
 
     Parameters
     ----------
-    n: np.int64, default=3
+    n: int, default=3
         Number of eigenvalues to generates.
 
     Returns
@@ -94,13 +94,13 @@ def _eigenvalues_quadratic(
 
 
 def _eigenvalues_inverse(
-    n: np.int64 = 3
+    n: int = 3
 ) -> npt.NDArray[np.float64]:
     """Generate inverse decreasing eigenvalues.
 
     Parameters
     ----------
-    n: np.int64, default=3
+    n: int, default=3
         Number of eigenvalues to generates.
 
     Returns
@@ -118,13 +118,13 @@ def _eigenvalues_inverse(
 
 
 def _eigenvalues_sqrt(
-    n: np.int64 = 3
+    n: int = 3
 ) -> npt.NDArray[np.float64]:
     """Generate square-root decreasing eigenvalues.
 
     Parameters
     ----------
-    n: np.int64, default=3
+    n: int, default=3
         Number of eigenvalues to generates.
 
     Returns
@@ -142,13 +142,13 @@ def _eigenvalues_sqrt(
 
 
 def _eigenvalues_wiener(
-    n: np.int64 = 3
+    n: int = 3
 ) -> npt.NDArray[np.float64]:
     """Generate eigenvalues from a Wiener process.
 
     Parameters
     ----------
-    n: np.int64, default=3
+    n: int, default=3
         Number of eigenvalues to generates.
 
     Returns
@@ -166,17 +166,17 @@ def _eigenvalues_wiener(
 
 
 def _simulate_eigenvalues(
-    name: np.str_,
-    n: np.int64 = 3
+    name: str,
+    n: int = 3
 ) -> npt.NDArray[np.float64]:
     """Generate eigenvalues.
 
     Parameters
     ----------
-    name: np.str_,
+    name: str,
         Name of the eigenvalues generation process to use. One of
         `{'linear', 'exponential', 'wiener', 'quadratic', 'inverse', 'sqrt'}`.
-    n: np.int64, default=3
+    n: int, default=3
         Number of eigenvalues to generates. Should be strictly positive.
 
     Returns
@@ -213,8 +213,8 @@ def _simulate_eigenvalues(
 #############################################################################
 # Definition of clusters
 def _make_coef(
-    n_obs: np.int64,
-    n_features: np.int64,
+    n_obs: int,
+    n_features: int,
     centers: npt.NDArray[np.float64],
     clusters_std: npt.NDArray[np.float64],
     rnorm: Callable = np.random.multivariate_normal
@@ -223,9 +223,9 @@ def _make_coef(
 
     Parameters
     ----------
-    n_obs: np.int64
+    n_obs: int
         Number of observations to simulate.
-    n_features: np.int64
+    n_features: int
         Number of features to simulate.
     centers: npt.NDArray[np.float64], shape=(n_features, n_clusters)
         The centers of the clusters to generate. The ``n_features`` parameter
@@ -284,17 +284,17 @@ def _make_coef(
 
 
 def _initialize_centers(
-    n_features: np.int64,
-    n_clusters: np.int64,
+    n_features: int,
+    n_clusters: int,
     centers: Optional[npt.NDArray[np.float64]] = None
 ) -> npt.NDArray[np.float64]:
     """Initialize the centers of the clusters.
 
     Parameters
     ----------
-    n_features: np.int64
+    n_features: int
         Number of features to simulate.
-    n_clusters: np.int64
+    n_clusters: int
         Number of clusters to simulate.
     centers: Optional[npt.NDArray[np.float64]], shape=(n_features, n_clusters)
         The centers of each cluster per feature.
@@ -310,19 +310,19 @@ def _initialize_centers(
 
 
 def _initialize_clusters_std(
-    n_features: np.int64,
-    n_clusters: np.int64,
-    clusters_std: Optional[Union[np.str_, npt.NDArray[np.float64]]] = None
+    n_features: int,
+    n_clusters: int,
+    clusters_std: Optional[Union[str, npt.NDArray[np.float64]]] = None
 ) -> npt.NDArray[np.float64]:
     """Initialize the standard deviation of the clusters.
 
     Parameters
     ----------
-    n_features: np.int64
+    n_features: int
         Number of features to simulate.
-    n_clusters: np.int64
+    n_clusters: int
         Number of clusters to simulate.
-    clusters_std: Optional[Union[np.str_, npt.NDArray[np.float64]]]
+    clusters_std: Optional[Union[str, npt.NDArray[np.float64]]]
         The standard deviation of each cluster per feature. If the parameter
         is given as a string, it has to be one of {`linear`, `exponential`,
         `wiener`}. If `None`, the standard deviation of each cluster per
@@ -422,23 +422,23 @@ class KarhunenLoeve(Simulation):
 
     Parameters
     ----------
-    name: Sequence[np.str_], {'legendre', 'wiener', 'fourier', 'bsplines'}
+    name: Sequence[str], {'legendre', 'wiener', 'fourier', 'bsplines'}
         Name of the basis to use. For multivariate functional data, this is a
         list of `str` of length `n_features`.
-    n_functions: Sequence[np.int64], default=5
+    n_functions: Sequence[int], default=5
         Number of functions to use to generate the basis. For multivariate
         functional data, this is a list of `int` of length `n_features`.
-    dimension: Sequence[np.str_], {'1D', '2D'}, default='1D'
+    dimension: Sequence[str], {'1D', '2D'}, default='1D'
         Dimension of the basis to generate. For multivariate functional data,
         this is a list of `str` of length `n_features`.
-    argvals: Dict[np.str_, npt.NDArray[np.float64]]
+    argvals: Dict[str, npt.NDArray[np.float64]]
         The sampling points of the functional data. Each entry of the
         dictionary represents an input dimension. The shape of the :math:`j`th
         dimension is :math:`(m_j,)` for :math:`0 \leq j \leq p`.
     basis: Optional[Union[Basis, MultivariateBasis]], default=None
         Basis of functions as a Basis object. Used to have a user-defined basis
         of function.
-    random_state: np.int64, default=None
+    random_state: int, default=None
         A seed to initialize the random number generator.
 
     Attributes
@@ -467,14 +467,14 @@ class KarhunenLoeve(Simulation):
 
     @staticmethod
     def _check_basis_none(
-        basis_name: Optional[Union[np.str_, Sequence[np.str_]]],
+        basis_name: Optional[Union[str, Sequence[str]]],
         basis: Optional[Union[Basis, MultivariateBasis]]
     ) -> None:
         """Check if `basis_name` of `basis` is `None`.
 
         Parameters
         ----------
-        basis_name: Optional[Union[np.str_, Sequence[np.str_]]]
+        basis_name: Optional[Union[str, Sequence[str]]]
             A str or a sequence of str indicating the name or names of the
             basis.
         basis: Optional[Union[Basis, MultivariateBasis]]
@@ -523,9 +523,9 @@ class KarhunenLoeve(Simulation):
 
     @staticmethod
     def _create_basis(
-        basis_name: Union[np.str_, Sequence[np.str_]],
-        dimension: Union[np.str_, Sequence[np.str_]],
-        n_functions: np.int64,
+        basis_name: Union[str, Sequence[str]],
+        dimension: Union[str, Sequence[str]],
+        n_functions: int,
         argvals: Optional[npt.NDArray[np.float64]] = None,
         **kwargs_basis
     ) -> Union[Basis, MultivariateBasis]:
@@ -533,13 +533,13 @@ class KarhunenLoeve(Simulation):
 
         Parameters
         ----------
-        basis_name: Union[np.str_, Sequence[np.str_]]
+        basis_name: Union[str, Sequence[str]]
             Basis name for Basis or sequence of basis names for
             MultivariateBasis.
-        dimension: Union[np.str_, Sequence[np.str_]]
+        dimension: Union[str, Sequence[str]]
             Dimension for Basis or sequence of basis dimensions for
             MultivariateBasis.
-        n_functions: np.int64
+        n_functions: int
             The number of functions to generate for each basis object.
         argvals: Optional[npt.NDArray[np.float64]]
             The argument values used to generate the basis functions.
@@ -575,12 +575,12 @@ class KarhunenLoeve(Simulation):
 
     def __init__(
         self,
-        basis_name: Union[np.str_, Sequence[np.str_]],
+        basis_name: Union[str, Sequence[str]],
         n_functions: np.int_ = 5,
-        dimension: Union[np.str_, Sequence[np.str_]] = '1D',
+        dimension: Union[str, Sequence[str]] = '1D',
         argvals: Optional[npt.NDArray[np.float64]] = None,
         basis: Optional[Union[Basis, Sequence[Basis]]] = None,
-        random_state: Optional[np.int64] = None,
+        random_state: Optional[int] = None,
         **kwargs_basis: Any
     ) -> None:
         """Initialize KarhunenLoeve object."""
@@ -598,8 +598,8 @@ class KarhunenLoeve(Simulation):
 
     def new(
         self,
-        n_obs: np.int64,
-        n_clusters: np.int64 = 1,
+        n_obs: int,
+        n_clusters: int = 1,
         argvals: Optional[npt.NDArray[np.float64]] = None,
         **kwargs
     ) -> None:
@@ -610,9 +610,9 @@ class KarhunenLoeve(Simulation):
 
         Parameters
         ----------
-        n_obs: np.int64
+        n_obs: int
             Number of observations to simulate.
-        n_clusters: np.int64, default=1
+        n_clusters: int, default=1
             Number of clusters to generate.
         argvals: None
             Not used in this context. We will use the ``argvals`` from the

@@ -21,7 +21,7 @@ from .simulation import Simulation
 # Definition of the simulation settings
 
 def _zhang_chen(
-    n_obs: np.int64,
+    n_obs: int,
     argvals: npt.NDArray[np.float64],
     rnorm: Callable = np.random.normal
 ) -> npt.NDArray[np.float64]:
@@ -57,23 +57,23 @@ class Datasets(Simulation):
 
     Parameters
     ----------
-    basis_name: np.str_
+    basis_name: str
         Name of the datasets to simulate.
 
     """
 
     def __init__(
         self,
-        basis_name: np.str_,
-        random_state: Optional[np.int64] = None
+        basis_name: str,
+        random_state: Optional[int] = None
     ) -> None:
         """Initialize Datasets object."""
         super().__init__(basis_name, random_state)
 
     def new(
         self,
-        n_obs: np.int64,
-        n_clusters: np.int64 = 1,
+        n_obs: int,
+        n_clusters: int = 1,
         argvals: Optional[npt.NDArray[np.float64]] = None,
         **kwargs
     ) -> None:
@@ -83,7 +83,7 @@ class Datasets(Simulation):
 
         Parameters
         ----------
-        n_obs: np.int64
+        n_obs: int
             Number of observations to simulate.
         n_clusters: None
             Not used in this context.
