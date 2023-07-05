@@ -21,7 +21,7 @@ from .functional_data import _tensor_product
 
 def _basis_legendre(
     argvals: npt.NDArray[np.float64],
-    n_functions: np.int64 = 3,
+    n_functions: int = 3,
 ) -> npt.NDArray[np.float64]:
     r"""Define Legendre basis of function.
 
@@ -32,7 +32,7 @@ def _basis_legendre(
     ----------
     argvals: npt.NDArray[np.float64]
         The values on which evaluated the Legendre polynomials.
-    n_functions: np.int64, default=3
+    n_functions: int, default=3
         Maximum degree of the Legendre polynomials.
 
     Returns
@@ -65,7 +65,7 @@ def _basis_legendre(
 
 def _basis_wiener(
     argvals: npt.NDArray[np.float64],
-    n_functions: np.int64 = 3
+    n_functions: int = 3
 ) -> npt.NDArray[np.float64]:
     r"""Define Wiener basis of function.
 
@@ -77,7 +77,7 @@ def _basis_wiener(
     argvals: npt.NDArray[np.float64]
         The values on which the eigenfunctions of a Wiener process are
         evaluated.
-    n_functions: np.int64, default=3
+    n_functions: int, default=3
         Number of functions to consider.
 
     Returns
@@ -108,7 +108,7 @@ def _basis_wiener(
 
 def _basis_fourier(
     argvals: npt.NDArray[np.float64],
-    n_functions: np.int64 = 3
+    n_functions: int = 3
 ) -> npt.NDArray[np.float64]:
     r"""Define Fourier basis of function.
 
@@ -119,7 +119,7 @@ def _basis_fourier(
     ----------
     argvals: npt.NDArray[np.float64]
         The values on which evaluated the Fourier series.
-    n_functions: np.int64, default=3
+    n_functions: int, default=3
         Number of considered Fourier series. Should be odd.
 
     Returns
@@ -157,8 +157,8 @@ def _basis_fourier(
 
 def _basis_bsplines(
     argvals: npt.NDArray[np.float64],
-    n_functions: np.int64 = 5,
-    degree: np.int64 = 3,
+    n_functions: int = 5,
+    degree: int = 3,
 ) -> npt.NDArray[np.float64]:
     """Define B-splines basis of function.
 
@@ -170,9 +170,9 @@ def _basis_bsplines(
     ----------
     argvals: npt.NDArray[np.float64]
         The values on which evaluated the B-splines.
-    n_functions: np.int64, default=5
+    n_functions: int, default=5
         Number of considered B-splines.
-    degree: np.int64, default=3
+    degree: int, default=3
         Degree of the B-splines. The default gives cubic splines.
 
     Returns
@@ -203,46 +203,46 @@ def _basis_bsplines(
 
 def _basis_natural_cubic_splines(
     argvals: npt.NDArray[np.float64],
-    n_functions: np.int64 = 5,
-    degree: np.int64 = 3
+    n_functions: int = 5,
+    degree: int = 3
 ) -> npt.NDArray[np.float64]:
     """Define natural cubic splines basis of functions."""
 
 
 def _basis_cyclic_cubic_splines(
     argvals: npt.NDArray[np.float64],
-    n_functions: np.int64 = 5,
-    degree: np.int64 = 3
+    n_functions: int = 5,
+    degree: int = 3
 ) -> npt.NDArray[np.float64]:
     """Define cyclic cubic splines basis of functions."""
 
 
 def _simulate_basis(
-    name: np.str_,
+    name: str,
     argvals: npt.NDArray[np.float64],
-    n_functions: np.int64 = 5,
-    is_normalized: np.bool_ = False,
-    add_intercept: np.bool_ = True,
+    n_functions: int = 5,
+    is_normalized: bool = False,
+    add_intercept: bool = True,
     **kwargs
 ) -> npt.NDArray[np.float64]:
     """Redirect to the right simulation basis function.
 
     Parameters
     ----------
-    name: np.str_, {'legendre', 'wiener', 'fourier', 'bsplines'}
+    name: str, {'legendre', 'wiener', 'fourier', 'bsplines'}
         Name of the basis to use.
     argvals: npt.NDArray[np.float64]
         The values on which the basis functions are evaluated.
-    n_functions: np.int64, default=5
+    n_functions: int, default=5
         Number of functions to compute.
-    is_normalized: np.bool_
+    is_normalized: bool
         Should we normalize the functions?
-    add_intercept: np.bool_, default=True
+    add_intercept: bool, default=True
         Should the constant functions be into the basis?
 
     Keyword Args
     ------------
-    degree: np.int64, default=3
+    degree: int, default=3
         Degree of the B-splines. The default gives cubic splines.
 
     Returns
@@ -285,10 +285,10 @@ def _simulate_basis(
 
 
 def _simulate_basis_multivariate_weighted(
-    basis_name: List[np.str_],
+    basis_name: List[str],
     argvals: List[npt.NDArray[np.float64]],
-    n_functions: np.int64 = 5,
-    is_normalized: np.bool_ = False,
+    n_functions: int = 5,
+    is_normalized: bool = False,
     runif: Optional[Callable] = np.random.uniform,
     **kwargs
 ):
@@ -302,13 +302,13 @@ def _simulate_basis_multivariate_weighted(
 
     Parameters
     ----------
-    basis_name: List[np.str_]
+    basis_name: List[str]
         Name of the basis to used.
     argvals: List[npt.NDArray[np.float64]]
         The values on which the basis functions are evaluated.
-    n_functions: np.int64
+    n_functions: int
         Number of basis functions to used.
-    is_normalized: np.bool_
+    is_normalized: bool
         Should we normalize the functions?
     runif: Optional[Callable], default=np.random.uniform
         Method used to generate uniform distribution. If `None`, all the
@@ -316,7 +316,7 @@ def _simulate_basis_multivariate_weighted(
 
     Keyword Args
     ------------
-    degree: np.int64, default=3
+    degree: int, default=3
         Degree of the B-splines. The default gives cubic splines.
 
     Returns
@@ -347,10 +347,10 @@ def _simulate_basis_multivariate_weighted(
 
 
 def _simulate_basis_multivariate_split(
-    basis_name: List[np.str_],
+    basis_name: List[str],
     argvals: List[npt.NDArray[np.float64]],
-    n_functions: np.int64 = 5,
-    is_normalized: np.bool_ = False,
+    n_functions: int = 5,
+    is_normalized: bool = False,
     rchoice: Callable = np.random.choice,
     **kwargs
 ):
@@ -365,20 +365,20 @@ def _simulate_basis_multivariate_split(
 
     Parameters
     ----------
-    basis_name: List[np.str_]
+    basis_name: List[str]
         Name of the basis to used.
     argvals: List[npt.NDArray[np.float64]]
         The values on which the basis functions are evaluated.
-    n_functions: np.int64
+    n_functions: int
         Number of basis functions to used.
-    is_normalized: np.bool_
+    is_normalized: bool
         Should we normalize the functions?
     rchoice: Callable, default=np.random.choice
         Method used to generate binomial distribution.
 
     Keyword Args
     ------------
-    degree: np.int64, default=3
+    degree: int, default=3
         Degree of the B-splines. The default gives cubic splines.
 
     Returns
@@ -415,29 +415,29 @@ def _simulate_basis_multivariate_split(
 
 
 def _simulate_basis_multivariate(
-    simulation_type: np.str_,
-    n_components: np.int64,
-    name: Union[np.str_, List[np.str_]],
+    simulation_type: str,
+    n_components: int,
+    name: Union[str, List[str]],
     argvals: List[npt.NDArray[np.float64]],
-    n_functions: np.int64 = 5,
-    is_normalized: np.bool_ = False,
+    n_functions: int = 5,
+    is_normalized: bool = False,
     **kwargs
 ) -> npt.NDArray[np.float64]:
     """Redirect to the right simulation basis function.
 
     Parameters
     ----------
-    simulation_type: np.str_, {'split', 'weighted'}
+    simulation_type: str, {'split', 'weighted'}
         Type of the simulation.
-    n_components: np.int64
+    n_components: int
         Number of components to generate.
-    name: Union[np.str_, List[np.str_]]
+    name: Union[str, List[str]]
         Basis names to use, {'legendre', 'wiener', 'fourier', 'bsplines'}.
     argvals: npt.NDArray[np.float64]
         The values on which the basis functions are evaluated.
-    n_functions: np.int64, default=5
+    n_functions: int, default=5
         Number of functions to compute.
-    is_normalized: np.bool_
+    is_normalized: bool
         Should we normalize the functions?
 
     Keyword Args
@@ -446,7 +446,7 @@ def _simulate_basis_multivariate(
         Method used to generate binomial distribution.
     runif: Callable, default=np.random.uniform
         Method used to generate uniform distribution.
-    degree: np.int64, default=3
+    degree: int, default=3
         Degree of the B-splines. The default gives cubic splines.
 
     Returns
@@ -474,7 +474,7 @@ def _simulate_basis_multivariate(
         raise ValueError(f'`len(argvals)` should be equal to {n_components}.')
 
     if simulation_type == 'split':
-        if not isinstance(name, (str, np.str_)):
+        if not isinstance(name, (str, str)):
             raise ValueError(
                 'For the `split` simulation type, `basis_name` '
                 'should be a str.'
@@ -513,11 +513,11 @@ class Basis(DenseFunctionalData):
 
     Parameters
     ----------
-    name: np.str_, {'legendre', 'wiener', 'fourier', 'bsplines'}
+    name: str, {'legendre', 'wiener', 'fourier', 'bsplines'}
         Denotes the basis of functions to use.
-    n_functions: np.int64
+    n_functions: int
         Number of functions in the basis.
-    dimension: np.str_, {'1D', '2D'}, default='1D'
+    dimension: str, {'1D', '2D'}, default='1D'
         Dimension of the basis to simulate. If '2D', the basis is simulated as
         the tensor product of the one dimensional basis of functions by itself.
         The number of functions in the 2D basis will be :math:`n_function^2`.
@@ -525,26 +525,26 @@ class Basis(DenseFunctionalData):
         The sampling points of the functional data. Each entry of the
         dictionary represents an input dimension. The shape of the :math:`j` th
         dimension is :math:`(m_j,)` for :math:`0 \leq j \leq p`.
-    is_normalized: np.bool_, default=False
+    is_normalized: bool, default=False
         Should we normalize the basis function?
-    add_intercept: np.bool_, default=True
+    add_intercept: bool, default=True
         Should the constant functions be into the basis?
 
     Keyword Args
     ------------
-    degree: np.int64, default=3
+    degree: int, default=3
         Degree of the B-splines. The default gives cubic splines.
 
     """
 
     def __init__(
         self,
-        name: np.str_,
-        n_functions: np.int64 = 5,
-        dimension: np.str_ = '1D',
+        name: str,
+        n_functions: int = 5,
+        dimension: str = '1D',
         argvals: Optional[npt.NDArray[np.float64]] = None,
-        is_normalized: np.bool_ = False,
-        add_intercept: np.bool_ = True,
+        is_normalized: bool = False,
+        add_intercept: bool = True,
         **kwargs
     ) -> None:
         """Initialize Basis object."""
@@ -577,32 +577,32 @@ class Basis(DenseFunctionalData):
             raise ValueError(f"{dimension} is not a valid dimension!")
 
     @property
-    def name(self) -> np.str_:
+    def name(self) -> str:
         """Getter for name."""
         return self._name
 
     @name.setter
-    def name(self, new_name: np.str_) -> None:
+    def name(self, new_name: str) -> None:
         if not isinstance(new_name, str):
             raise TypeError(f'{new_name!r} has to be `str`.')
         self._name = new_name
 
     @property
-    def is_normalized(self) -> np.bool_:
+    def is_normalized(self) -> bool:
         """Getter for is_normalized."""
         return self._is_normalized
 
     @is_normalized.setter
-    def is_normalized(self, new_is_normalized: np.bool_) -> None:
+    def is_normalized(self, new_is_normalized: bool) -> None:
         self._is_normalized = new_is_normalized
 
     @property
-    def dimension(self) -> np.str_:
+    def dimension(self) -> str:
         """Getter for dimension."""
         return self._dimension
 
     @dimension.setter
-    def dimension(self, new_dimension: np.str_) -> None:
+    def dimension(self, new_dimension: str) -> None:
         self._dimension = new_dimension
 
 
@@ -613,24 +613,24 @@ class MultivariateBasis(MultivariateFunctionalData):
 
     Parameters
     ----------
-    simulation_type: np.str_, {'split', 'weighted'}
+    simulation_type: str, {'split', 'weighted'}
         Type of the simulation.
-    n_components: np.int64
+    n_components: int
         Number of components to generate.
-    name: Union[np.str_, List[np.str_]]
+    name: Union[str, List[str]]
         Name of the basis to use. One of
         `{'legendre', 'wiener', 'fourier', 'bsplines'}`.
-    n_functions: np.int64
+    n_functions: int
         Number of functions in the basis.
-    dimension: Optional[List[np.str_]], {'1D', '2D'}, default=None
+    dimension: Optional[List[str]], {'1D', '2D'}, default=None
         Dimension of the basis to simulate. If '2D', the basis is simulated as
         the tensor product of the one dimensional basis of functions by itself.
         The number of functions in the 2D basis will be :math:`n_function^2`.
-    argvals: Optional[Dict[np.str_, npt.NDArray[np.float64]]]
+    argvals: Optional[Dict[str, npt.NDArray[np.float64]]]
         The sampling points of the functional data. Each entry of the
         dictionary represents an input dimension. The shape of the :math:`j` th
         dimension is :math:`(m_j,)` for :math:`0 \leq j \leq p`.
-    is_normalized: np.bool_, default=False
+    is_normalized: bool, default=False
         Should we normalize the basis function?
 
     Keyword Args
@@ -639,20 +639,20 @@ class MultivariateBasis(MultivariateFunctionalData):
         Method used to generate binomial distribution.
     runif: Callable, default=np.random.uniform
         Method used to generate uniform distribution.
-    degree: np.int64, default=3
+    degree: int, default=3
         Degree of the B-splines. The default gives cubic splines.
 
     """
 
     def __init__(
         self,
-        simulation_type: np.str_,
-        n_components: np.int64,
-        name: Union[np.str_, List[np.str_]],
-        n_functions: np.int64 = 5,
-        dimension: Optional[List[np.str_]] = None,
+        simulation_type: str,
+        n_components: int,
+        name: Union[str, List[str]],
+        n_functions: int = 5,
+        dimension: Optional[List[str]] = None,
         argvals: Optional[npt.NDArray[np.float64]] = None,
-        is_normalized: np.bool_ = False,
+        is_normalized: bool = False,
         **kwargs
     ) -> None:
         """Initialize Basis object."""
@@ -680,23 +680,23 @@ class MultivariateBasis(MultivariateFunctionalData):
         super().__init__(basis_fd)
 
     @property
-    def simulation_type(self) -> np.str_:
+    def simulation_type(self) -> str:
         """Getter for simulation_type."""
         return self._simulation_type
 
     @simulation_type.setter
-    def simulation_type(self, new_simulation_type: np.str_) -> None:
+    def simulation_type(self, new_simulation_type: str) -> None:
         if not isinstance(new_simulation_type, str):
             raise TypeError(f'{new_simulation_type!r} has to be `str`.')
         self._simulation_type = new_simulation_type
 
     @property
-    def name(self) -> Union[np.str_, List[np.str_]]:
+    def name(self) -> Union[str, List[str]]:
         """Getter for name."""
         return self._name
 
     @name.setter
-    def name(self, new_name: Union[np.str_, List[np.str_]]) -> None:
+    def name(self, new_name: Union[str, List[str]]) -> None:
         if isinstance(new_name, str):
             self._name = new_name
         elif (
@@ -708,19 +708,19 @@ class MultivariateBasis(MultivariateFunctionalData):
             raise TypeError(f'{new_name!r} has to be a `str` or `List[str]`.')
 
     @property
-    def is_normalized(self) -> np.bool_:
+    def is_normalized(self) -> bool:
         """Getter for is_normalized."""
         return self._is_normalized
 
     @is_normalized.setter
-    def is_normalized(self, new_is_normalized: np.bool_) -> None:
+    def is_normalized(self, new_is_normalized: bool) -> None:
         self._is_normalized = new_is_normalized
 
     @property
-    def dimension(self) -> List[np.str_]:
+    def dimension(self) -> List[str]:
         """Getter for dimension."""
         return self._dimension
 
     @dimension.setter
-    def dimension(self, new_dimension: List[np.str_]) -> None:
+    def dimension(self, new_dimension: List[str]) -> None:
         self._dimension = new_dimension

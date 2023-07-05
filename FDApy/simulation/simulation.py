@@ -21,7 +21,7 @@ from ..representation.functional_data import (
 # Noise for univariate functional data
 def _add_noise_univariate_data(
     data: DenseFunctionalData,
-    noise_variance: np.float64 = 1.0,
+    noise_variance: float = 1.0,
     rnorm: Callable = np.random.normal
 ) -> DenseFunctionalData:
     r"""Add noise to univariate functional data.
@@ -39,7 +39,7 @@ def _add_noise_univariate_data(
     ----------
     data: DenseFunctionalData
         Functional data to add the noise.
-    noise_variance: np.float64, default=1.0
+    noise_variance: float, default=1.0
         The variance :math:`\sigma^2` of the Gaussian noise that is added
         to the data.
     rnorm: Callable, default=np.random.normal
@@ -64,8 +64,8 @@ def _add_noise_univariate_data(
 # Sparsify univariate functional data
 def _sparsify_univariate_data(
     data: DenseFunctionalData,
-    percentage: np.float64 = 0.9,
-    epsilon: np.float64 = 0.05,
+    percentage: float = 0.9,
+    epsilon: float = 0.05,
     runif: Callable = np.random.uniform,
     rchoice: Callable = np.random.choice
 ) -> IrregularFunctionalData:
@@ -83,9 +83,9 @@ def _sparsify_univariate_data(
     ----------
     data: DenseFunctionalData
         Functional data to sparsify.
-    percentage: np.float64, default=0.9
+    percentage: float, default=0.9
         The percentage of observations to be retained.
-    epsilon: np.float64, default=0.05
+    epsilon: float, default=0.05
         The uncertainty around the percentage of observations to be
         retained.
     runif: Callable, default=np.random.uniform
@@ -125,9 +125,9 @@ class Simulation(ABC):
 
     Parameters
     ----------
-    basis_name: np.str_
+    basis_name: str
         Name of the simulation
-    random_state: np.int64, default=None
+    random_state: int, default=None
         A seed to initialize the random number generator.
 
     Attributes
@@ -167,8 +167,8 @@ class Simulation(ABC):
 
     def __init__(
         self,
-        basis_name: np.str_,
-        random_state: Optional[np.int64] = None
+        basis_name: str,
+        random_state: Optional[int] = None
     ) -> None:
         """Initialize Simulation object."""
         super().__init__()
@@ -181,19 +181,19 @@ class Simulation(ABC):
             self.random_state = None
 
     @property
-    def basis_name(self) -> np.str_:
+    def basis_name(self) -> str:
         """Getter for basis_name."""
         return self._basis_name
 
     @basis_name.setter
-    def basis_name(self, new_basis_name: np.str_) -> None:
+    def basis_name(self, new_basis_name: str) -> None:
         self._basis_name = new_basis_name
 
     @abstractmethod
     def new(
         self,
-        n_obs: np.int64,
-        n_clusters: np.int64 = 1,
+        n_obs: int,
+        n_clusters: int = 1,
         argvals: Optional[npt.NDArray[np.float64]] = None,
         **kwargs
     ) -> None:
@@ -201,7 +201,7 @@ class Simulation(ABC):
 
     def add_noise(
         self,
-        noise_variance: np.float64 = 1.0
+        noise_variance: float = 1.0
     ) -> None:
         r"""Add noise to functional data objects.
 
@@ -217,7 +217,7 @@ class Simulation(ABC):
 
         Parameters
         ----------
-        noise_variance: np.float64, default=1.0
+        noise_variance: float, default=1.0
             The variance :math:`\sigma^2` of the Gaussian noise that is added
             to the data.
 
@@ -242,8 +242,8 @@ class Simulation(ABC):
 
     def sparsify(
         self,
-        percentage: np.float64 = 0.9,
-        epsilon: np.float64 = 0.05
+        percentage: float = 0.9,
+        epsilon: float = 0.05
     ) -> None:
         r"""Generate a sparse version of functional data objects.
 
@@ -257,9 +257,9 @@ class Simulation(ABC):
 
         Parameters
         ----------
-        percentage: np.float64, default=0.9
+        percentage: float, default=0.9
             The percentage of observations to be retained.
-        epsilon: np.float64, default=0.05
+        epsilon: float, default=0.05
             The uncertainty around the percentage of observations to be
             retained.
 
@@ -288,9 +288,9 @@ class Simulation(ABC):
 
     def add_noise_and_sparsify(
         self,
-        noise_variance: np.float64 = 1.0,
-        percentage: np.float64 = 0.9,
-        epsilon: np.float64 = 0.05
+        noise_variance: float = 1.0,
+        percentage: float = 0.9,
+        epsilon: float = 0.05
     ) -> None:
         r"""Generate a noisy and sparse version of functional data objects.
 
@@ -300,12 +300,12 @@ class Simulation(ABC):
 
         Parameters
         ----------
-        noise_variance: np.float64, default=1.0
+        noise_variance: float, default=1.0
             The variance :math:`\sigma^2` of the Gaussian noise that is added
             to the data.
-        percentage: np.float64, default=0.9
+        percentage: float, default=0.9
             The percentage of observations to be retained.
-        epsilon: np.float64, default=0.05
+        epsilon: float, default=0.05
             The uncertainty around the percentage of observations to be
             retained.
 
