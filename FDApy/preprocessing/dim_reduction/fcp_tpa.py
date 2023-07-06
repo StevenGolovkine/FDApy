@@ -23,13 +23,13 @@ from ...misc.utils import _eigh
 # Utility functions
 
 def _initialize_vectors(
-    shape: Tuple[np.int64, np.int64, np.int64]
+    shape: Tuple[int, int, int]
 ) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
     r"""Init u, v and w in the FCP-TPA algorithm.
 
     Parameters
     ----------
-    shape: Tuple[np.int64, np.int64, np.int64]
+    shape: Tuple[int, int, int]
         Shape of the dataset. It should be in the format :math:`(N, M_1, M_2)`.
 
     Returns
@@ -44,14 +44,14 @@ def _initialize_vectors(
 
 
 def _initalize_output(
-    shape: Tuple[np.int64, np.int64, np.int64],
+    shape: Tuple[int, int, int],
     n_components: int
 ) -> Tuple[npt.NDArray, List[npt.NDArray]]:
     """Init coefficients and u, v and w eigenvectors matrices.
 
     Parameters
     ----------
-    shape: Tuple[np.int64, np.int64, np.int64]
+    shape: Tuple[int, int, int]
         Shape of the dataset. It should be in the format :math:`(N, M_1, M_2)`.
     n_components: int
         Number of components to retain.
@@ -92,10 +92,10 @@ def _eigendecomposition_penalty_matrices(
 
 
 def _gcv(
-    alpha: np.float64,
-    dimension_length: np.int64,
+    alpha: float,
+    dimension_length: int,
     vector: npt.NDArray[np.float64],
-    smoother: np.float64,
+    smoother: float,
     rayleigh: npt.NDArray[np.float64]
 ) -> float:
     r"""Generalized cross-validation for the FCP-TPA algortihm.
@@ -107,11 +107,11 @@ def _gcv(
 
     Parameters
     ----------
-    alpha: np.float64
+    alpha: float
         The current value of the smoothing parameter. It corresponds to
         :math:`\alpha_u` and :math:`\alpha_v` in Equations (19) and (20) in
         [3]_.
-    dimension_length: np.int64
+    dimension_length: int
         The length of the dimension, for which the smoothing parameter is to
         be optimized. It corresponds to :math:`m` and :math:`n` in Equations
         (19) and (20) in [3]_.
@@ -119,7 +119,7 @@ def _gcv(
         Solutions to the least square problem. It corresponds to
         :math:`Xv / ||v||^2` and :math:`X^\top u / ||u||^2` in Equations (19)
         and (20) in [3]_.
-    smoother: np.float64
+    smoother: float
         Nornalization parameter. It corresponds to :math:`S_u` and :math:`S_v`
         in Equations (19) and (20) in [3]_.
     rayleigh: npt.NDArray[np.float64], shape=(dimension_length,)
@@ -152,14 +152,14 @@ def _gcv(
 
 
 def _find_optimal_alpha(
-    alpha_range: Tuple[np.float64, np.float64],
+    alpha_range: Tuple[float, float],
     data: npt.NDArray[np.float64],
     u: npt.NDArray[np.float64],
     v: npt.NDArray[np.float64],
-    alpha: np.float64,
+    alpha: float,
     penalty_matrix: npt.NDArray[np.float64],
     eigencomponents: Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]],
-    formula: np.str_
+    formula: str
 ) -> float:
     r"""Find the optimal smoothing parameters in FCP-TPA using GCV.
 
@@ -173,7 +173,7 @@ def _find_optimal_alpha(
 
     Parameters
     ----------
-    alpha_range: Tuple[np.float64, np.float64]
+    alpha_range: Tuple[float, float]
         A tuple with two elements, containing the minimal and maximal
         values for the smoothing parameter that is to be optimized. It
         corresponds to minimal and maximal values of :math:`\alpha_u` and
@@ -190,7 +190,7 @@ def _find_optimal_alpha(
         The current value of the eigenvectors :math:`v_k` (or :math:`w_k`) (not
         normalized) of dimensions :math:`m_1` (or :math:`m_2`). It corresponds
         to :math:`v_k` (or :math:`w_k`) in Algorithm in [1]_.
-    alpha: np.float64
+    alpha: float
         The current value of the smoothing parameter for the other image
         direction (:math:`\alpha_w` if the optimization is performed with
         respect to the vector :math:`v_k` and :math:`\alpha_v` if the
@@ -209,7 +209,7 @@ def _find_optimal_alpha(
         :math:`m \times m`. The eigenvalues corresponds to the Rayleight
         quotients :math:`\mathcal{R}_u(u)` and :math:`\mathcal{R}_v(v)` in
         Equations (19) and (20) in [3]_.
-    formula: np.str_
+    formula: str
         The formula to be passed to the ``np.einsum`` function regarding the
         direction to optimize.
 
@@ -252,9 +252,9 @@ def _find_optimal_alpha(
 
 def _compute_denominator(
     a: npt.NDArray,
-    alpha: np.float64,
+    alpha: float,
     penalty_matrix: npt.NDArray
-) -> np.float64:
+) -> float:
     r"""Compute denominator of equations (17) and (18) in [1]_.
 
     This function computes the denominator of equations (17) and (18) in [1]_,
@@ -275,12 +275,12 @@ def _compute_denominator(
 
 
 def _update_vector(
-    data: npt.NDArray,
+    data: npt.NDArray[np.float64],
     vectors: Tuple[npt.NDArray, npt.NDArray, npt.NDArray],
     penalty_matrix: npt.NDArray,
-    alpha: np.float64,
-    denominator: np.float64,
-    formula: np.str_
+    alpha: float,
+    denominator: float,
+    formula: str
 ) -> npt.NDArray:
     r"""Update individual vector in FCP-TPA.
 
@@ -297,11 +297,11 @@ def _update_vector(
         other two are the remaining dimensions of the tensor.
     penalty_matrix: npt.NDArray[np.float64]
         A roughness penalty matrix for the direction of the image to update.
-    alpha: np.float64
+    alpha: float
         The smoothing parameter for the dimension to be updated.
-    denominator: np.float64
+    denominator: float
         The denominator of equations (17) and (18) in [2]_.
-    formula: np.str_
+    formula: str
         The formula to be passed to the ``np.einsum`` function regarding the
         direction to optimize.
 
@@ -329,10 +329,10 @@ def _update_components(
     data: npt.NDArray[np.float64],
     vectors: Tuple[npt.NDArray, npt.NDArray, npt.NDArray],
     penalty_matrices: Dict[str, npt.NDArray[np.float64]],
-    alphas: Dict[str, Tuple[np.float64, np.float64]],
-    alpha_range: Dict[str, Tuple[np.float64, np.float64]],
+    alphas: Dict[str, Tuple[float, float]],
+    alpha_range: Dict[str, Tuple[float, float]],
     eigens: Dict[str, Tuple[npt.NDArray, npt.NDArray]]
-) -> Tuple[Tuple[npt.NDArray], Dict[str, np.float64]]:
+) -> Tuple[Tuple[npt.NDArray], Dict[str, float]]:
     r"""Update the components in FCP-TPA.
 
     This function corresponds to one pass of the step (2.a) in the FCP-TPA
@@ -351,10 +351,10 @@ def _update_components(
         A dictionary with entries :math:`v` and :math:`w`, containing a
         roughness penalty matrix for each direction of the image. The
         algorithm does not induce smoothness along observations.
-    alphas: Dict[str, Tuple[np.float64, np.float64]]
+    alphas: Dict[str, Tuple[float, float]]
         A dictionary with entries :math:`v` and :math:`w`, containing the
         smoothing parameters for both dimension of the images.
-    alpha_range: Dict[str, Tuple[np.float64, np.float64]]
+    alpha_range: Dict[str, Tuple[float, float]]
         A dictionary with entries :math:`v` and :math:`w`, containing the
         range of smoothness parameters :math:`\alpha_{v_k}, \alpha_{w_k}`
         as a tuple.
@@ -363,7 +363,7 @@ def _update_components(
 
     Returns
     -------
-    Tuple[Tuple[npt.NDArray], Dict[str, np.float64]]
+    Tuple[Tuple[npt.NDArray], Dict[str, float]]
         The updated parameters.
 
     References
@@ -468,9 +468,9 @@ class FCPTPA():
 
     Parameters
     ----------
-    n_components: np.int64, default=5
+    n_components: int, default=5
         Number of components to be calculated.
-    normalize: np.bool_, default=False
+    normalize: bool, default=False
         Should the results be normalied?
 
     Attributes
@@ -500,29 +500,29 @@ class FCPTPA():
 
     def __init__(
         self,
-        n_components: np.int64 = 5,
-        normalize: np.bool_ = False
+        n_components: int = 5,
+        normalize: bool = False
     ) -> None:
         """Initialize FCPTPA object."""
         self.n_components = n_components
         self.normalize = normalize
 
     @property
-    def n_components(self) -> np.int64:
+    def n_components(self) -> int:
         """Getter for `n_components`."""
         return self._n_components
 
     @n_components.setter
-    def n_components(self, new_n_components: np.int64) -> None:
+    def n_components(self, new_n_components: int) -> None:
         self._n_components = new_n_components
 
     @property
-    def normalize(self) -> np.bool_:
+    def normalize(self) -> bool:
         """Getter for `normalize`."""
         return self._normalize
 
     @normalize.setter
-    def normalize(self, new_normalize: np.bool_) -> None:
+    def normalize(self, new_normalize: bool) -> None:
         self._normalize = new_normalize
 
     @property
@@ -539,11 +539,11 @@ class FCPTPA():
         self,
         data: DenseFunctionalData,
         penalty_matrices: Dict[str, npt.NDArray[np.float64]],
-        alpha_range: Dict[str, Tuple[np.float64, np.float64]],
-        tolerance: np.float64 = 1e-4,
-        max_iteration: np.int64 = 15,
-        adapt_tolerance: np.bool_ = True,
-        verbose: np.bool_ = False
+        alpha_range: Dict[str, Tuple[float, float]],
+        tolerance: float = 1e-4,
+        max_iteration: int = 15,
+        adapt_tolerance: bool = True,
+        verbose: bool = False
     ) -> None:
         r"""Fit the model on data.
 
@@ -558,22 +558,22 @@ class FCPTPA():
             A dictionary with entries :math:`v` and :math:`w`, containing a
             roughness penalty matrix for each direction of the image. The
             algorithm does not induce smoothness along observations.
-        alpha_range: Dict[str, Tuple[np.float64, np.float64]]
+        alpha_range: Dict[str, Tuple[float, float]]
             A dictionary with entries :math:`v` and :math:`w`, containing the
             range of smoothness parameters :math:`\alpha_{v_k}, \alpha_{w_k}`
             as a tuple.
-        tolerance: np.float64, default=1e-4
+        tolerance: float, default=1e-4
             A numeric value, giving the tolerance for relative error values
             in the algorithm. It is automatically multiplyed by 10 after
             ``max_iter`` steps, if ``adapt_tol = True``.
-        max_iteration: np.int64, default=15
+        max_iteration: int, default=15
             An integer, the maximal iteration steps. Can be doubled, if
             ``adapt_tol = True``.
-        adapt_tolerance: np.bool_, default=True
+        adapt_tolerance: bool, default=True
             If True, the tolerance is adapted (multiply by 10), if the
             algorithm has not converged after ``max_iter`` steps and another
             ``max_iter`` steps are allowed with the increased tolerance.
-        verbose: np.bool_, default=False
+        verbose: bool, default=False
             If True, computational details are given on the standard output
             during the computation. Here for debug purpose.
 

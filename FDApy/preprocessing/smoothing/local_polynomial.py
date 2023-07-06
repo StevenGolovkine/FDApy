@@ -174,8 +174,8 @@ def _kernel(
 
 def _compute_kernel(
     x: npt.NDArray[np.float64],
-    x0: Union[np.float64, npt.NDArray[np.float64]],
-    bandwidth: np.float64,
+    x0: Union[float, npt.NDArray[np.float64]],
+    bandwidth: float,
     kernel: Callable = _epanechnikov
 ) -> npt.NDArray[np.float64]:
     r"""Compute the weights at a particular query point.
@@ -190,11 +190,11 @@ def _compute_kernel(
     ----------
     x: npt.NDArray[np.float64], shape = (n_samples, n_dim)
         Training data.
-    x0: Union[np.float64, npt.NDArray[np.float64]], shape = (n_dim,)
+    x0: Union[float, npt.NDArray[np.float64]], shape = (n_dim,)
         Query point. For one-dimensional smoothing, `x0` must be passed as a
-        `np.float64`. For higher-dimensional smoothing, `x0` must be passed as
+        `float`. For higher-dimensional smoothing, `x0` must be passed as
         a `npt.NDArray[np.float64]]`.
-    bandwidth: np.float64
+    bandwidth: float
         Width of the neighborhood of `x0`.
     kernel: Callable, default=_epanechnikov
         Kernel function to used.
@@ -224,9 +224,9 @@ def _local_regression(
     x0: npt.NDArray[np.float64],
     dmat: npt.NDArray[np.float64],
     dmat_x0: npt.NDArray[np.float64],
-    bandwidth: np.float64 = 0.05,
+    bandwidth: float = 0.05,
     kernel: Callable = _epanechnikov
-) -> np.float64:
+) -> float:
     r"""Local polynomial regression for one point.
 
     This function estimates the regression function :math:`f(x)` over the
@@ -240,9 +240,9 @@ def _local_regression(
         Target values.
     x: npt.NDArray[np.float64], shape = (n_samples, n_dim)
         Training data.
-    x0: Union[np.float64, npt.NDArray[np.float64]], shape = (n_dim,)
+    x0: Union[float, npt.NDArray[np.float64]], shape = (n_dim,)
         Query point. For one-dimensional smoothing, `x0` must be passed as a
-        `np.float64`. For higher-dimensional smoothing, `x0` must be passed as
+        `float`. For higher-dimensional smoothing, `x0` must be passed as
         a `npt.NDArray[np.float64]]`.
     dmat: npt.NDArray[np.float64], shape = (n_sample, n_features)
         Design matrix for the training data `x`. The dimension `n_features` is
@@ -251,14 +251,14 @@ def _local_regression(
     dmat_x0: npt.NDArray[np.float64], shape = (n_dim, n_features)
         Design matrix for the query points `x_0`. The dimension `n_features`
         must be the same as the design matrix of `x`.
-    bandwidth: np.float64
+    bandwidth: float
         Width of the neighborhood of `x0`.
     kernel: Callable, default=_epanechnikov
         Kernel function to used.
 
     Returns
     -------
-    np.float64
+    float
         Estimation of `f(x_0)`.
 
     References
@@ -312,14 +312,14 @@ class LocalPolynomial():
     kernel_name: np.str_, default="gaussian"
         Kernel name used as weight (`gaussian`, `epanechnikov`, `tricube`,
         `bisquare`).
-    bandwidth: np.float64, default=0.05
+    bandwidth: float, default=0.05
         Strictly positive. Control the size of the associated neighborhood.
-    degree: np.int64, default=1
+    degree: int, default=1
         Degree of the local polynomial to fit. If ``degree = 0``, we fit the
         local constant estimator (equivalent to the Nadaraya-Watson estimator).
         If ``degree = 1``, we fit the local linear estimator. If
         ``degree = 2``, we fit the local quadratic estimator.
-    robust: np.bool_, default=False
+    robust: bool, default=False
         Whether to apply the robustification procedure from [1]_, page 831.
 
     Attributes
@@ -356,9 +356,9 @@ class LocalPolynomial():
     def __init__(
         self,
         kernel_name: np.str_ = "gaussian",
-        bandwidth: np.float64 = 0.05,
-        degree: np.int64 = 1,
-        robust: np.bool_ = False
+        bandwidth: float = 0.05,
+        degree: int = 1,
+        robust: bool = False
     ) -> None:
         """Initialize LocalPolynomial object."""
         self.kernel_name = kernel_name
@@ -377,35 +377,35 @@ class LocalPolynomial():
         self._kernel = _kernel(new_kernel_name)
 
     @property
-    def bandwidth(self) -> np.float64:
+    def bandwidth(self) -> float:
         """Getter for `bandwidth`."""
         return self._bandwidth
 
     @bandwidth.setter
-    def bandwidth(self, new_bandwidth: np.float64) -> None:
+    def bandwidth(self, new_bandwidth: float) -> None:
         if new_bandwidth <= 0:
             raise ValueError('Bandwidth parameter must be strictly positive.')
         self._bandwidth = new_bandwidth
 
     @property
-    def degree(self) -> np.float64:
+    def degree(self) -> float:
         """Getter for `degree`."""
         return self._degree
 
     @degree.setter
-    def degree(self, new_degree: np.int64) -> None:
+    def degree(self, new_degree: int) -> None:
         if new_degree < 0:
             raise ValueError('Degree parameter must be positive.')
         self._degree = new_degree
         self._poly_features = PolynomialFeatures(degree=new_degree)
 
     @property
-    def robust(self) -> np.bool_:
+    def robust(self) -> bool:
         """Getter for `robust`."""
         return self._robust
 
     @robust.setter
-    def robust(self, new_robust: np.bool_) -> None:
+    def robust(self, new_robust: bool) -> None:
         self._robust = new_robust
 
     @property
