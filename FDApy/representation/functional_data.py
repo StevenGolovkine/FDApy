@@ -22,6 +22,9 @@ from typing import (
     Tuple, Type, Union
 )
 
+from ._argvals import Argvals, DenseArgvals, IrregularArgvals
+from ._values import Values, DenseValues, IrregularValues
+
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..misc.utils import _cartesian_product
 from ..misc.utils import _get_dict_dimension, _get_obs_shape
@@ -29,8 +32,8 @@ from ..misc.utils import _inner_product, _inner_product_2d
 from ..misc.utils import _integrate, _integrate_2d, _integration_weights
 from ..misc.utils import _normalization, _outer
 
-DenseArgvals = Dict[np.str_, npt.NDArray[np.float64]]
-DenseValues = npt.NDArray[np.float64]
+# DenseArgvals = Dict[np.str_, npt.NDArray[np.float64]]
+# DenseValues = npt.NDArray[np.float64]
 IrregArgvals = Dict[np.str_, Dict[np.int64, npt.NDArray[np.float64]]]
 IrregValues = Dict[np.int64, npt.NDArray[np.float64]]
 
