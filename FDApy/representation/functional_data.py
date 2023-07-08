@@ -45,12 +45,10 @@ class FunctionalData(ABC):
 
     Parameters
     ----------
-    argvals: Union[DenseArgvals, IrregArgvals]
+    argvals: Type[Argvals]
         Sampling points of the functional data.
-    values: Union[DenseValues, IrregValues]
+    values: Type[Values]
         Values of the functional data.
-    category: np.str_, {'univariate', 'irregular'}
-        Type of the functional data.
 
     """
 
@@ -151,8 +149,8 @@ class FunctionalData(ABC):
     # Magic methods
     def __init__(
         self,
-        argvals: Union[DenseArgvals, IrregArgvals],
-        values: Union[DenseValues, IrregValues],
+        argvals: Type[Argvals],
+        values: Type[Values],
     ) -> None:
         """Initialize FunctionalData object."""
         super().__init__()
@@ -160,7 +158,7 @@ class FunctionalData(ABC):
         self.values = values
         self._index = 0
 
-    def __repr__(self) -> np.str_:
+    def __repr__(self) -> str:
         """Override print function."""
         return (
             f"Functional data object with {self.n_obs} observations on a "
@@ -174,7 +172,7 @@ class FunctionalData(ABC):
     @abstractmethod
     def __getitem__(
         self,
-        index: np.int_
+        index: int
     ) -> Type[FunctionalData]:
         """Override getitem function, called when self[index]."""
 
@@ -227,56 +225,57 @@ class FunctionalData(ABC):
     @property
     def argvals(
         self
-    ) -> Union[DenseArgvals, IrregArgvals]:
+    ) -> Type[Argvals]:
         """Getter for argvals."""
         return self._argvals
 
     @argvals.setter
     def argvals(
         self,
-        new_argvals: Union[DenseArgvals, IrregArgvals]
+        new_argvals: Type[Argvals]
     ) -> None:
-        if hasattr(self, 'values'):
-            self._check_argvals_values(new_argvals, self.values)
-        self._argvals = new_argvals
+        """Setter for argvals."""
+        # if hasattr(self, 'values'):
+        #    self._check_argvals_values(new_argvals, self.values)
+        #self._argvals = new_argvals
 
     @property
     def argvals_stand(
         self
-    ) -> Union[DenseArgvals, IrregArgvals]:
+    ) -> Type[Argvals]:
         """Getter for argvals_stand."""
         return self._argvals_stand
 
     @argvals_stand.setter
     def argvals_stand(
         self,
-        new_argvals_stand: Union[DenseArgvals, IrregArgvals]
+        new_argvals_stand: Type[Argvals]
     ) -> None:
         self._argvals_stand = new_argvals_stand
 
     @property
     def values(
         self
-    ) -> Union[DenseValues, IrregValues]:
+    ) -> Type[Values]:
         """Getter for values."""
         return self._values
 
     @values.setter
     def values(
         self,
-        new_values: Union[DenseValues, IrregValues]
+        new_values: Type[Values]
     ) -> None:
         if hasattr(self, 'argvals'):
             self._check_argvals_values(self.argvals, new_values)
         self._values = new_values
 
     @property
-    def n_obs(self) -> np.int64:
+    def n_obs(self) -> int:
         """Get the number of observations of the functional data.
 
         Returns
         -------
-        np.int64
+        int
             Number of observations within the functional data.
 
         """
@@ -284,16 +283,16 @@ class FunctionalData(ABC):
 
     @property
     @abstractmethod
-    def range_obs(self) -> Tuple[np.float64, np.float64]:
+    def range_obs(self) -> Tuple[float, float]:
         """Get the range of the observations of the object."""
 
     @property
-    def n_dim(self) -> np.int64:
+    def n_dim(self) -> int:
         """Get the number of input dimension of the functional data.
 
         Returns
         -------
-        np.int64
+        int
             Number of input dimension with the functional data.
 
         """
@@ -301,17 +300,17 @@ class FunctionalData(ABC):
 
     @property
     @abstractmethod
-    def n_points(self) -> Dict[np.str_, np.int64]:
+    def n_points(self) -> Dict[str, int]:
         """Get the mean number of sampling points."""
 
     @property
     @abstractmethod
-    def range_dim(self) -> Dict[np.str_, Tuple[np.int64, np.int64]]:
+    def range_dim(self) -> Dict[str, Tuple[int, int]]:
         """Range of the `argvals` for each of the dimension."""
 
     @property
     @abstractmethod
-    def shape(self) -> Dict[np.str_, np.int64]:
+    def shape(self) -> Dict[str, int]:
         """Shape of the data for each dimension."""
 
     ###########################################################################
@@ -321,9 +320,9 @@ class FunctionalData(ABC):
     @abstractmethod
     def norm(
         self,
-        squared: np.bool_ = False,
-        method: np.str_ = 'trapz',
-        use_argvals_stand: np.bool_ = False
+        squared: bool = False,
+        method: str = 'trapz',
+        use_argvals_stand: bool = False
     ) -> npt.NDArray[np.float64]:
         """Norm of each observation of the data.
 
@@ -335,7 +334,7 @@ class FunctionalData(ABC):
     @abstractmethod
     def mean(
         self,
-        smooth: Optional[np.str_] = None,
+        smooth: Optional[str] = None,
         **kwargs
     ) -> Type[FunctionalData]:
         """Compute an estimate of the mean."""
@@ -344,7 +343,7 @@ class FunctionalData(ABC):
     def covariance(
         self,
         mean: Optional[Type[FunctionalData]] = None,
-        smooth: Optional[np.str_] = None,
+        smooth: Optional[str] = None,
         **kwargs
     ) -> Type[FunctionalData]:
         """Compute an estimate of the covariance."""
@@ -352,7 +351,7 @@ class FunctionalData(ABC):
     @abstractmethod
     def inner_product(
         self,
-        kernel: np.str_ = 'identity',
+        kernel: str = 'identity',
         **kernel_args
     ) -> npt.NDArray[np.float64]:
         """Compute an estimate of the inner product matrix."""
@@ -361,9 +360,9 @@ class FunctionalData(ABC):
     def smooth(
         self,
         points: Optional[DenseArgvals] = None,
-        kernel_name: np.str_ = "epanechnikov",
-        bandwidth: Optional[np.float64] = None,
-        degree: np.int64 = 1
+        kernel_name: Optional[str] = "epanechnikov",
+        bandwidth: Optional[float] = None,
+        degree: Optional[int] = 1
     ) -> Type[FunctionalData]:
         """Smooth the data."""
 
@@ -440,34 +439,6 @@ class DenseFunctionalData(FunctionalData):
     ###########################################################################
     # Checkers
     @staticmethod
-    def _check_argvals_equality(
-        argv1: DenseArgvals,
-        argv2: DenseArgvals
-    ) -> None:
-        """Check if `argv1` and `argv2` are equal.
-
-        Parameters
-        ----------
-        argv1: DenseArgvals
-            The first set of argument values.
-        argv2: DenseArgvals
-            The second set of argument values.
-
-        Raises
-        ------
-        ValueError
-            If `argv1` and `argv2` do not have the same sampling points.
-
-        """
-        argvs_equal = all(
-            np.array_equal(argv1[key], argv2[key]) for key in argv1
-        )
-        if not argvs_equal:
-            raise ValueError(
-                f"{argv1} and {argv2} do not have the same sampling points."
-            )
-
-    @staticmethod
     def _check_argvals_values(
         argvals: DenseArgvals,
         values: DenseValues
@@ -503,10 +474,9 @@ class DenseFunctionalData(FunctionalData):
 
     @staticmethod
     def _is_compatible(
-        fdata1: DenseFunctionalData,
-        fdata2: DenseFunctionalData
-    ) -> np.bool_:
-        """Check if `fdata1` is compatible with `fdata2`.
+        *fdata: DenseFunctionalData
+    ) -> None:
+        """Raise an error if elements in `fdata` are not compatible.
 
         Two DenseFunctionalData object are said to be compatible if they
         have the same number of observations and dimensions. Moreover, they
@@ -514,25 +484,22 @@ class DenseFunctionalData(FunctionalData):
 
         Parameters
         ----------
-        fdata1: DenseFunctionalData
-            The first object to compare.
-        fdata2: DenseFunctionalData
-            The second object to compare.
+        *fdata: DenseFunctionalData
+            Functional data to compare.
 
-        Returns
-        -------
-        True
-            If the objects are compatible, otherwise an error is raised before
-            the return statement.
-
-        TODO: Change returns statement, it seems akward to return True.
+        Raises
+        ------
+        ValueError
+            When all `fdata` do not have the same number of observations or
+            when all `fdata` do not have the same dimension or
+            When all `fdata` do not have the same argvals.
+        TypeError
+            When all `fdata` do not have the same type.
 
         """
-        super()._is_compatible(fdata1, fdata2)
-        DenseFunctionalData._check_argvals_equality(
-            fdata1.argvals, fdata2.argvals
-        )
-        return True
+        super(DenseFunctionalData, DenseFunctionalData)._is_compatible(*fdata)
+        if not all(data.argvals == fdata[0].argvals for data in fdata):
+            raise ValueError("Argvals are not equals.")
 
     ###########################################################################
 
@@ -544,9 +511,25 @@ class DenseFunctionalData(FunctionalData):
         fdata2: DenseFunctionalData,
         func: Callable
     ) -> DenseFunctionalData:
-        """Perform computation defined by `func`."""
-        if DenseFunctionalData._is_compatible(fdata1, fdata2):
-            new_values = func(fdata1.values, fdata2.values)
+        """Perform computation defined by `func` if they are compatible.
+        
+        Parameters
+        ----------
+        fdata1: DenseFunctionalData
+            First functional data to consider.
+        fdata2: DenseFunctionalData
+            Second functional data to consider.
+        func: Callable
+            The function to apply to combine `fdata1` and `fdata2`.
+
+        Returns
+        -------
+        DenseFunctionalData
+            The resulting functional data.
+
+        """
+        DenseFunctionalData._is_compatible(fdata1, fdata2)
+        new_values = func(fdata1.values, fdata2.values)
         return DenseFunctionalData(fdata1.argvals, new_values)
 
     ###########################################################################
@@ -563,13 +546,13 @@ class DenseFunctionalData(FunctionalData):
 
     def __getitem__(
         self,
-        index: np.int64
+        index: int
     ) -> DenseFunctionalData:
         """Overrride getitem function, called when self[index].
 
         Parameters
         ----------
-        index: np.int64
+        index: int
             The observation(s) of the object to retrive.
 
         Returns
@@ -598,9 +581,10 @@ class DenseFunctionalData(FunctionalData):
         new_argvals: DenseArgvals
     ) -> None:
         """Setter for argvals."""
-        super(DenseFunctionalData, self.__class__).argvals.fset(
-            self, new_argvals
-        )
+        self._argvals = DenseArgvals(new_argvals)
+        # super(DenseFunctionalData, self.__class__).argvals.fset(
+        #     self, new_argvals
+        # )
         argvals_stand = {}
         for dim, points in new_argvals.items():
             argvals_stand[dim] = _normalization(points)
@@ -621,9 +605,10 @@ class DenseFunctionalData(FunctionalData):
         """Setter for values."""
         if hasattr(self, 'argvals'):
             self._check_argvals_values(self.argvals, new_values)
-        super(DenseFunctionalData, self.__class__).values.fset(
-            self, new_values
-        )
+        self._values = DenseValues(new_values)
+        # super(DenseFunctionalData, self.__class__).values.fset(
+        #    self, new_values
+        # )
 
     @property
     def range_obs(self) -> Tuple[np.float64, np.float64]:

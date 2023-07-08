@@ -27,7 +27,7 @@ class TestConcatenate(unittest.TestCase):
     def test_concatenate(self):
         fdata = _concatenate([self.func_data, self.func_data])
 
-        np.testing.assert_equal(fdata.argvals, self.argvals)
+        np.testing.assert_equal(fdata.argvals, self.func_data.argvals)
         np.testing.assert_array_equal(
             fdata.values,
             np.array([

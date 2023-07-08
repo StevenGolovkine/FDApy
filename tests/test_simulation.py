@@ -50,7 +50,7 @@ class TestAddNoiseUnivariateData(unittest.TestCase):
 
         diff = self.data - noisy_data
         output = np.var(diff.values)
-        self.assertAlmostEqual(output, noise_variance, places=1)
+        np.testing.assert_almost_equal(output, noise_variance, decimal=1)
 
     def test_output_mean(self):
         # Test if the output mean is close to the input mean
@@ -61,7 +61,7 @@ class TestAddNoiseUnivariateData(unittest.TestCase):
         )
         diff = self.data - noisy_data
         output = np.mean(diff.values)
-        self.assertAlmostEqual(output, 0, places=1)
+        np.testing.assert_almost_equal(output, 0, decimal=1)
 
 
 class TestSparsifyUnivariateData(unittest.TestCase):
