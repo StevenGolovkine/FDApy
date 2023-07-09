@@ -34,8 +34,8 @@ from ..misc.utils import _normalization, _outer
 
 # DenseArgvals = Dict[np.str_, npt.NDArray[np.float64]]
 # DenseValues = npt.NDArray[np.float64]
-IrregArgvals = Dict[np.str_, Dict[np.int64, npt.NDArray[np.float64]]]
-IrregValues = Dict[np.int64, npt.NDArray[np.float64]]
+IrregArgvals = Dict[np.str_, Dict[int, npt.NDArray[np.float64]]]
+IrregValues = Dict[int, npt.NDArray[np.float64]]
 
 
 ###############################################################################
@@ -624,12 +624,12 @@ class DenseFunctionalData(FunctionalData):
         return np.min(self.values), np.max(self.values)
 
     @property
-    def n_points(self) -> Dict[np.str_, np.int64]:
+    def n_points(self) -> Dict[np.str_, int]:
         """Get the mean number of sampling points.
 
         Returns
         -------
-        Dict[np.str_, np.int64]
+        Dict[np.str_, int]
             A dictionary with the same shape than argvals with the number of
             sampling points along each axis.
 
@@ -641,12 +641,12 @@ class DenseFunctionalData(FunctionalData):
         return {idx: len(points) for idx, points in self.argvals.items()}
 
     @property
-    def range_dim(self) -> Dict[np.str_, Tuple[np.int64, np.int64]]:
+    def range_dim(self) -> Dict[np.str_, Tuple[int, int]]:
         """Get the range of the `argvals` for each of the dimension.
 
         Returns
         -------
-        Dict[np.str_, Tuple[np.int64, np.int64]]
+        Dict[np.str_, Tuple[int, int]]
             Dictionary containing the range of the argvals for each of the
             input dimension.
 
@@ -657,12 +657,12 @@ class DenseFunctionalData(FunctionalData):
         }
 
     @property
-    def shape(self) -> Dict[np.str_, np.int64]:
+    def shape(self) -> Dict[np.str_, int]:
         r"""Get the shape of the data for each dimension.
 
         Returns
         -------
-        Dict[np.str_, np.int64]
+        Dict[np.str_, int]
             Dictionary containing the number of points for each of the
             dimension. It corresponds to :math:`m_j` for
             :math:`0 \leq j \leq p`.
@@ -757,11 +757,11 @@ class DenseFunctionalData(FunctionalData):
         ------------
         kernel_name: np.str_, default='epanechnikov'
             Name of the kernel used for local polynomial smoothing.
-        degree: np.int64, default=1
+        degree: int, default=1
             Degree used for local polynomial smoothing.
         bandwidth: np.float64, default=1
             Bandwidth used for local polynomial smoothing.
-        n_basis: np.int64, default=10
+        n_basis: int, default=10
             Number of splines basis used for GAM smoothing.
 
         Returns
@@ -811,11 +811,11 @@ class DenseFunctionalData(FunctionalData):
         ------------
         kernel_name: np.str_, default='epanechnikov'
             Name of the kernel used for local polynomial smoothing.
-        degree: np.int64, default=1
+        degree: int, default=1
             Degree used for local polynomial smoothing.
         bandwidth: np.float64, default=1
             Bandwidth used for local polynomial smoothing.
-        n_basis: np.int64, default=10
+        n_basis: int, default=10
             Number of splines basis used for GAM smoothing.
 
         References
@@ -1016,7 +1016,7 @@ class DenseFunctionalData(FunctionalData):
         points: Optional[DenseArgvals] = None,
         kernel_name: np.str_ = "epanechnikov",
         bandwidth: Optional[np.float64] = None,
-        degree: np.int64 = 1
+        degree: int = 1
     ) -> DenseFunctionalData:
         """Smooth the data.
 
@@ -1039,7 +1039,7 @@ class DenseFunctionalData(FunctionalData):
             :math:`n` is the number of sampling points per curve. Be careful
             that it will not work if the curves are not sampled on
             :math:`[0, 1]`.
-        degree: np.int64, default=1
+        degree: int, default=1
             Degree of the local polynomial to fit. If ``degree=0``, we fit
             the local constant estimator (equivalent to the Nadaraya-Watson
             estimator). If ``degree=1``, we fit the local linear estimator.
@@ -1379,13 +1379,13 @@ class IrregularFunctionalData(FunctionalData):
 
     def __getitem__(
         self,
-        index: np.int64
+        index: int
     ) -> IrregularFunctionalData:
         """Overrride getitem function, called when self[index].
 
         Parameters
         ----------
-        index: np.int64
+        index: int
             The observation(s) of the object to retrive.
 
         Returns
@@ -1471,12 +1471,12 @@ class IrregularFunctionalData(FunctionalData):
         return min(min(ranges)), max(max(ranges))
 
     @property
-    def n_points(self) -> Dict[np.str_, np.int64]:
+    def n_points(self) -> Dict[np.str_, int]:
         """Get the mean number of sampling points.
 
         Returns
         -------
-        Dict[np.str_, np.int64]
+        Dict[np.str_, int]
             A dictionary with the same shape than argvals with the number of
             sampling points along each axis.
 
@@ -1487,12 +1487,12 @@ class IrregularFunctionalData(FunctionalData):
         return n_points
 
     @property
-    def range_dim(self) -> Dict[np.str_, Tuple[np.int64, np.int64]]:
+    def range_dim(self) -> Dict[np.str_, Tuple[int, int]]:
         """Get the range of the `argvals` for each of the dimension.
 
         Returns
         -------
-        Dict[np.str_, Tuple[np.int64, np.int64]]
+        Dict[np.str_, Tuple[int, int]]
             Dictionary containing the range of the argvals for each of the
             input dimension.
 
@@ -1509,12 +1509,12 @@ class IrregularFunctionalData(FunctionalData):
         }
 
     @property
-    def shape(self) -> Dict[np.str_, np.int64]:
+    def shape(self) -> Dict[np.str_, int]:
         r"""Get the shape of the data for each dimension.
 
         Returns
         -------
-        Dict[np.str_, np.int64]
+        Dict[np.str_, int]
             Dictionary containing the number of points for each of the
             dimension. It corresponds to :math:`m_j` for
             :math:`0 \leq j \leq p`.
@@ -1704,7 +1704,7 @@ class IrregularFunctionalData(FunctionalData):
         points: Optional[DenseArgvals] = None,
         kernel_name: np.str_ = "epanechnikov",
         bandwidth: Optional[np.float64] = None,
-        degree: np.int64 = 1
+        degree: int = 1
     ) -> DenseFunctionalData:
         """Smooth the data.
 
@@ -1727,7 +1727,7 @@ class IrregularFunctionalData(FunctionalData):
             :math:`n` is the number of sampling points per curve. Be careful
             that it will not work if the curves are not sampled on
             :math:`[0, 1]`.
-        degree: np.int64, default=1
+        degree: int, default=1
             Degree of the local polynomial to fit. If ``degree = 0``, we fit
             the local constant estimator (equivalent to the Nadaraya-Watson
             estimator). If ``degree = 1``, we fit the local linear estimator.
@@ -1805,13 +1805,13 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     def __getitem__(
         self,
-        index: np.int64
+        index: int
     ) -> MultivariateFunctionalData:
         """Overrride getitem function, called when self[index].
 
         Parameters
         ----------
-        index: np.int64
+        index: int
             The observation(s) of the object to retrive.
 
         Returns
@@ -1827,36 +1827,36 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     ###########################################################################
     # Properties
     @property
-    def n_obs(self) -> np.int64:
+    def n_obs(self) -> int:
         """Get the number of observations of the functional data.
 
         Returns
         -------
-        np.int64
+        int
             Number of observations within the functional data.
 
         """
         return self.data[0].n_obs if len(self.data) > 0 else 0
 
     @property
-    def n_functional(self) -> np.int64:
+    def n_functional(self) -> int:
         """Get the number of functional data with `self`.
 
         Returns
         -------
-        np.int64
+        int
             Number of functions in the list.
 
         """
         return len(self.data)
 
     @property
-    def n_dim(self) -> List[np.int64]:
+    def n_dim(self) -> List[int]:
         """Get the dimension of the functional data.
 
         Returns
         -------
-        List[np.int64]
+        List[int]
             List containing the dimension of each component in the functional
             data.
 
@@ -1877,12 +1877,12 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         return [fdata.range_obs for fdata in self.data]
 
     @property
-    def n_points(self) -> List[Dict[np.str_, np.int64]]:
+    def n_points(self) -> List[Dict[np.str_, int]]:
         """Get the mean number of sampling points.
 
         Returns
         -------
-        List[Dict[np.str_, np.int64]]
+        List[Dict[np.str_, int]]
             A list of dictionary with the same shape than argvals with the
             number of sampling points along each axis for each function.
 
@@ -1903,12 +1903,12 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         return [fdata.range_dim for fdata in self.data]
 
     @property
-    def shape(self) -> List[Dict[np.str_, np.int64]]:
+    def shape(self) -> List[Dict[np.str_, int]]:
         r"""Get the shape of the data for each dimension.
 
         Returns
         -------
-        List[Dict[np.str_, np.int64]]
+        List[Dict[np.str_, int]]
             List of dictionary containing the number of points for each of the
             dimension for each function. It corresponds to :math:`m_j` for
             :math:`0 \leq j \leq p`.
@@ -1939,7 +1939,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         """Extend the list of FunctionalData by appending from iterable."""
         super().extend(other)
 
-    def insert(self, i: np.int64, item: Type[FunctionalData]) -> None:
+    def insert(self, i: int, item: Type[FunctionalData]) -> None:
         """Insert an item `item` at a given position `i`."""
         FunctionalData._check_same_nobs(*self, item)
         self.data.insert(i, item)
