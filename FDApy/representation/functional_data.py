@@ -32,9 +32,9 @@ from ..misc.utils import _inner_product, _inner_product_2d
 from ..misc.utils import _integrate, _integrate_2d, _integration_weights
 from ..misc.utils import _normalization, _outer
 
-# DenseArgvals = Dict[np.str_, npt.NDArray[np.float64]]
+# DenseArgvals = Dict[str, npt.NDArray[np.float64]]
 # DenseValues = npt.NDArray[np.float64]
-IrregArgvals = Dict[np.str_, Dict[int, npt.NDArray[np.float64]]]
+IrregArgvals = Dict[str, Dict[int, npt.NDArray[np.float64]]]
 IrregValues = Dict[int, npt.NDArray[np.float64]]
 
 
@@ -512,7 +512,7 @@ class DenseFunctionalData(FunctionalData):
         func: Callable
     ) -> DenseFunctionalData:
         """Perform computation defined by `func` if they are compatible.
-        
+
         Parameters
         ----------
         fdata1: DenseFunctionalData
@@ -611,12 +611,12 @@ class DenseFunctionalData(FunctionalData):
         # )
 
     @property
-    def range_obs(self) -> Tuple[np.float64, np.float64]:
+    def range_obs(self) -> Tuple[float, float]:
         """Get the range of the observations of the object.
 
         Returns
         -------
-        Tuple[np.float64, np.float64]
+        Tuple[float, float]
             Tuple containing the mimimum and maximum values taken by all the
             observations for the object.
 
@@ -624,12 +624,12 @@ class DenseFunctionalData(FunctionalData):
         return np.min(self.values), np.max(self.values)
 
     @property
-    def n_points(self) -> Dict[np.str_, int]:
+    def n_points(self) -> Dict[str, int]:
         """Get the mean number of sampling points.
 
         Returns
         -------
-        Dict[np.str_, int]
+        Dict[str, int]
             A dictionary with the same shape than argvals with the number of
             sampling points along each axis.
 
@@ -641,12 +641,12 @@ class DenseFunctionalData(FunctionalData):
         return {idx: len(points) for idx, points in self.argvals.items()}
 
     @property
-    def range_dim(self) -> Dict[np.str_, Tuple[int, int]]:
+    def range_dim(self) -> Dict[str, Tuple[int, int]]:
         """Get the range of the `argvals` for each of the dimension.
 
         Returns
         -------
-        Dict[np.str_, Tuple[int, int]]
+        Dict[str, Tuple[int, int]]
             Dictionary containing the range of the argvals for each of the
             input dimension.
 
@@ -657,12 +657,12 @@ class DenseFunctionalData(FunctionalData):
         }
 
     @property
-    def shape(self) -> Dict[np.str_, int]:
+    def shape(self) -> Dict[str, int]:
         r"""Get the shape of the data for each dimension.
 
         Returns
         -------
-        Dict[np.str_, int]
+        Dict[str, int]
             Dictionary containing the number of points for each of the
             dimension. It corresponds to :math:`m_j` for
             :math:`0 \leq j \leq p`.
@@ -680,9 +680,9 @@ class DenseFunctionalData(FunctionalData):
     # Methods
     def norm(
         self,
-        squared: np.bool_ = False,
-        method: np.str_ = 'trapz',
-        use_argvals_stand: np.bool_ = False
+        squared: bool = False,
+        method: str = 'trapz',
+        use_argvals_stand: bool = False
     ) -> npt.NDArray[np.float64]:
         r"""Norm of each observation of the data.
 
@@ -694,12 +694,12 @@ class DenseFunctionalData(FunctionalData):
 
         Parameters
         ----------
-        squared: np.bool_, default=False
+        squared: bool, default=False
             If `True`, the function calculates the squared norm, otherwise the
             result is not squared.
-        method: np.str_, default='trapz'
+        method: str, default='trapz'
             Integration method to be used.
-        use_argvals_stand: np.bool_, default=False
+        use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
 
 
@@ -743,23 +743,23 @@ class DenseFunctionalData(FunctionalData):
 
     def mean(
         self,
-        smooth: Optional[np.str_] = None,
+        smooth: Optional[str] = None,
         **kwargs
     ) -> DenseFunctionalData:
         """Compute an estimate of the mean.
 
         Parameters
         ----------
-        smooth: Optional[np.str_], default=None
+        smooth: Optional[str], default=None
             Name of the smoothing method to use. Currently, not implemented.
 
         Keyword Args
         ------------
-        kernel_name: np.str_, default='epanechnikov'
+        kernel_name: str, default='epanechnikov'
             Name of the kernel used for local polynomial smoothing.
         degree: int, default=1
             Degree used for local polynomial smoothing.
-        bandwidth: np.float64, default=1
+        bandwidth: float, default=1
             Bandwidth used for local polynomial smoothing.
         n_basis: int, default=10
             Number of splines basis used for GAM smoothing.
@@ -789,14 +789,14 @@ class DenseFunctionalData(FunctionalData):
     def covariance(
         self,
         mean: Optional[DenseFunctionalData] = None,
-        smooth: Optional[np.str_] = None,
+        smooth: Optional[str] = None,
         **kwargs
     ) -> DenseFunctionalData:
         """Compute an estimate of the covariance.
 
         Parameters
         ----------
-        smooth: Optional[np.str_], default=None
+        smooth: Optional[str], default=None
             Name of the smoothing method to use. Currently, not implemented.
         mean: Optional[DenseFunctionalData], default=None
             An estimate of the mean of self. If None, an estimate is computed.
@@ -809,11 +809,11 @@ class DenseFunctionalData(FunctionalData):
 
         Keyword Args
         ------------
-        kernel_name: np.str_, default='epanechnikov'
+        kernel_name: str, default='epanechnikov'
             Name of the kernel used for local polynomial smoothing.
         degree: int, default=1
             Degree used for local polynomial smoothing.
-        bandwidth: np.float64, default=1
+        bandwidth: float, default=1
             Bandwidth used for local polynomial smoothing.
         n_basis: int, default=10
             Number of splines basis used for GAM smoothing.
@@ -897,7 +897,7 @@ class DenseFunctionalData(FunctionalData):
 
     def inner_product(
         self,
-        kernel: np.str_ = 'identity',
+        kernel: str = 'identity',
         **kernel_args
     ) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
@@ -913,7 +913,7 @@ class DenseFunctionalData(FunctionalData):
 
         Parameters
         ----------
-        kernel: np.str_, default=None
+        kernel: str, default=None
             The name of the kernel to used.
 
         Returns
@@ -1014,8 +1014,8 @@ class DenseFunctionalData(FunctionalData):
     def smooth(
         self,
         points: Optional[DenseArgvals] = None,
-        kernel_name: np.str_ = "epanechnikov",
-        bandwidth: Optional[np.float64] = None,
+        kernel_name: str = "epanechnikov",
+        bandwidth: Optional[float] = None,
         degree: int = 1
     ) -> DenseFunctionalData:
         """Smooth the data.
@@ -1029,10 +1029,10 @@ class DenseFunctionalData(FunctionalData):
         points: Optional[DenseArgvals], default=None
             Points at which the curves are estimated. The default is None,
             meaning we use the argvals as estimation points.
-        kernel_name: np.str_, default="epanechnikov"
+        kernel_name: str, default="epanechnikov"
             Kernel name used as weight (`gaussian`, `epanechnikov`, `tricube`,
             `bisquare`).
-        bandwidth: np.float64, default=None
+        bandwidth: float, default=None
             Strictly positive. Control the size of the associated neighborhood.
             If ``bandwidth == None``, it is assumed that the curves are twice
             differentiable and the bandwidth is set to :math:`n^{-1/5}` where
@@ -1100,8 +1100,8 @@ class DenseFunctionalData(FunctionalData):
 
     def normalize(
         self,
-        use_argvals_stand: np.bool_ = False
-    ) -> Tuple[DenseFunctionalData, np.float64]:
+        use_argvals_stand: bool = False
+    ) -> Tuple[DenseFunctionalData, float]:
         r"""Normalize the data.
 
         The normalization is performed by divising each functional datum by
@@ -1109,12 +1109,12 @@ class DenseFunctionalData(FunctionalData):
 
         Parameters
         ----------
-        use_argvals_stand: np.bool_, default=False
+        use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
 
         Returns
         -------
-        Tuple[DenseFunctionalData, np.float64]
+        Tuple[DenseFunctionalData, float]
             The normalized data.
 
         TODO: Add other normalization schames and Add the possibility to
@@ -1313,7 +1313,7 @@ class IrregularFunctionalData(FunctionalData):
     def _is_compatible(
         fdata1: IrregularFunctionalData,
         fdata2: IrregularFunctionalData
-    ) -> np.bool_:
+    ) -> bool:
         """Check if `fdata1` is compatible with `fdata2`.
 
         Two IrregularFunctionalData object are said to be compatible if they
@@ -1457,12 +1457,12 @@ class IrregularFunctionalData(FunctionalData):
         self._values = new_values
 
     @property
-    def range_obs(self) -> Tuple[np.float64, np.float64]:
+    def range_obs(self) -> Tuple[float, float]:
         """Get the range of the observations of the object.
 
         Returns
         -------
-        Tuple[np.float64, np.float64]
+        Tuple[float, float]
             Tuple containing the mimimum and maximum values taken by all the
             observations for the object.
 
@@ -1471,12 +1471,12 @@ class IrregularFunctionalData(FunctionalData):
         return min(min(ranges)), max(max(ranges))
 
     @property
-    def n_points(self) -> Dict[np.str_, int]:
+    def n_points(self) -> Dict[str, int]:
         """Get the mean number of sampling points.
 
         Returns
         -------
-        Dict[np.str_, int]
+        Dict[str, int]
             A dictionary with the same shape than argvals with the number of
             sampling points along each axis.
 
@@ -1487,12 +1487,12 @@ class IrregularFunctionalData(FunctionalData):
         return n_points
 
     @property
-    def range_dim(self) -> Dict[np.str_, Tuple[int, int]]:
+    def range_dim(self) -> Dict[str, Tuple[int, int]]:
         """Get the range of the `argvals` for each of the dimension.
 
         Returns
         -------
-        Dict[np.str_, Tuple[int, int]]
+        Dict[str, Tuple[int, int]]
             Dictionary containing the range of the argvals for each of the
             input dimension.
 
@@ -1509,12 +1509,12 @@ class IrregularFunctionalData(FunctionalData):
         }
 
     @property
-    def shape(self) -> Dict[np.str_, int]:
+    def shape(self) -> Dict[str, int]:
         r"""Get the shape of the data for each dimension.
 
         Returns
         -------
-        Dict[np.str_, int]
+        Dict[str, int]
             Dictionary containing the number of points for each of the
             dimension. It corresponds to :math:`m_j` for
             :math:`0 \leq j \leq p`.
@@ -1530,9 +1530,9 @@ class IrregularFunctionalData(FunctionalData):
     # Methods
     def norm(
         self,
-        squared: np.bool_ = False,
-        method: np.str_ = 'trapz',
-        use_argvals_stand: np.bool_ = False
+        squared: bool = False,
+        method: str = 'trapz',
+        use_argvals_stand: bool = False
     ) -> npt.NDArray[np.float64]:
         r"""Norm of each observation of the data.
 
@@ -1544,12 +1544,12 @@ class IrregularFunctionalData(FunctionalData):
 
         Parameters
         ----------
-        squared: np.bool_, default=False
+        squared: bool, default=False
             If `True`, the function calculates the squared norm, otherwise the
             result is not squared.
-        method: np.str_, default='trapz'
+        method: str, default='trapz'
             Integration method to be used.
-        use_argvals_stand: np.bool_, default=False
+        use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
 
         Raises
@@ -1630,14 +1630,14 @@ class IrregularFunctionalData(FunctionalData):
 
     def mean(
         self,
-        smooth: Optional[np.str_] = None,
+        smooth: Optional[str] = None,
         **kwargs
     ) -> DenseFunctionalData:
         """Compute an estimate of the mean.
 
         Parameters
         ----------
-        smooth: np.str_, default=None
+        smooth: str, default=None
             Name of the smoothing method. Currently, not implemented.
 
         Returns
@@ -1660,7 +1660,7 @@ class IrregularFunctionalData(FunctionalData):
     def covariance(
         self,
         mean: Optional[IrregularFunctionalData] = None,
-        smooth: Optional[np.str_] = None,
+        smooth: Optional[str] = None,
         **kwargs
     ) -> IrregularFunctionalData:
         """Compute an estimate of the covariance.
@@ -1677,7 +1677,7 @@ class IrregularFunctionalData(FunctionalData):
 
     def inner_product(
         self,
-        kernel: np.str_ = 'identity',
+        kernel: str = 'identity',
         **kernel_args
     ) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
@@ -1702,8 +1702,8 @@ class IrregularFunctionalData(FunctionalData):
     def smooth(
         self,
         points: Optional[DenseArgvals] = None,
-        kernel_name: np.str_ = "epanechnikov",
-        bandwidth: Optional[np.float64] = None,
+        kernel_name: str = "epanechnikov",
+        bandwidth: Optional[float] = None,
         degree: int = 1
     ) -> DenseFunctionalData:
         """Smooth the data.
@@ -1717,10 +1717,10 @@ class IrregularFunctionalData(FunctionalData):
         points: Optional[DenseArgvals], default=None
             Points at which the curves are estimated. The default is None,
             meaning we use the argvals as estimation points.
-        kernel_name: np.str_, default="epanechnikov"
+        kernel_name: str, default="epanechnikov"
             Kernel name used as weight (`gaussian`, `epanechnikov`, `tricube`,
             `bisquare`).
-        bandwidth: np.float64, default=None
+        bandwidth: float, default=None
             Strictly positive. Control the size of the associated neighborhood.
             If ``bandwidth == None``, it is assumed that the curves are twice
             differentiable and the bandwidth is set to :math:`n^{-1/5}` where
@@ -1796,7 +1796,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         """Initialize MultivariateFunctionalData object."""
         self.data = initlist
 
-    def __repr__(self) -> np.str_:
+    def __repr__(self) -> str:
         """Override print function."""
         return (
             f"Multivariate functional data object with {self.n_functional}"
@@ -1864,12 +1864,12 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         return [fdata.n_dim for fdata in self.data]
 
     @property
-    def range_obs(self) -> List[Tuple[np.float64, np.float64]]:
+    def range_obs(self) -> List[Tuple[float, float]]:
         """Get the range of the observations of the object.
 
         Returns
         -------
-        List[Tuple[np.float64, np.float64]]
+        List[Tuple[float, float]]
             List of tuples containing the mimimum and maximum values taken by
             all the observations for the object for each function.
 
@@ -1877,12 +1877,12 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         return [fdata.range_obs for fdata in self.data]
 
     @property
-    def n_points(self) -> List[Dict[np.str_, int]]:
+    def n_points(self) -> List[Dict[str, int]]:
         """Get the mean number of sampling points.
 
         Returns
         -------
-        List[Dict[np.str_, int]]
+        List[Dict[str, int]]
             A list of dictionary with the same shape than argvals with the
             number of sampling points along each axis for each function.
 
@@ -1890,12 +1890,12 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         return [fdata.n_points for fdata in self.data]
 
     @property
-    def range_points(self) -> List[Dict[np.str_, Tuple[np.int_, np.int_]]]:
+    def range_points(self) -> List[Dict[str, Tuple[int, int]]]:
         """Get the range of the `argvals` for each of the dimension.
 
         Returns
         -------
-        List[Dict[np.str_, Tuple[np.int_, np.int_]]]
+        List[Dict[str, Tuple[int, int]]]
             List of dictionary containing the range of the argvals for each of
             the input dimension for each function.
 
@@ -1903,12 +1903,12 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         return [fdata.range_dim for fdata in self.data]
 
     @property
-    def shape(self) -> List[Dict[np.str_, int]]:
+    def shape(self) -> List[Dict[str, int]]:
         r"""Get the shape of the data for each dimension.
 
         Returns
         -------
-        List[Dict[np.str_, int]]
+        List[Dict[str, int]]
             List of dictionary containing the number of points for each of the
             dimension for each function. It corresponds to :math:`m_j` for
             :math:`0 \leq j \leq p`.
@@ -1948,7 +1948,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         """Remove the first item from `self` where value is `item`."""
         raise NotImplementedError
 
-    def pop(self, i: np.int_ = -1) -> Type[FunctionalData]:
+    def pop(self, i: int = -1) -> Type[FunctionalData]:
         """Remove the item at the given position in the list, and return it."""
         return super().pop(i)
 
@@ -1968,14 +1968,14 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     # Methods
     def mean(
         self,
-        smooth: Optional[np.str_] = None,
+        smooth: Optional[str] = None,
         **kwargs
     ) -> MultivariateFunctionalData:
         """Compute an estimate of the mean.
 
         Parameters
         ----------
-        smooth: Optional[np.str_], default=None
+        smooth: Optional[str], default=None
             Name of the smoothing method. Currently, not implemented.
 
         Returns
@@ -1993,7 +1993,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     def covariance(
         self,
         mean: Optional[MultivariateFunctionalData] = None,
-        smooth: Optional[np.str_] = None,
+        smooth: Optional[str] = None,
         **kwargs
     ) -> MultivariateFunctionalData:
         """Compute an estimate of the covariance.
@@ -2002,7 +2002,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         ----------
         mean: Optional[MultivariateFunctionalData], default=None
             An estimate of the mean of self. If None, an estimate is computed.
-        smooth: Optional[np.str_], default=None
+        smooth: Optional[str], default=None
             Name of the smoothing method to use. Currently, not implemented.
 
         Returns
@@ -2117,7 +2117,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     def normalize(
         self,
-        use_argvals_stand: np.bool_ = False
+        use_argvals_stand: bool = False
     ) -> Tuple[MultivariateFunctionalData, npt.NDArray[np.float64]]:
         r"""Normalize the data.
 
@@ -2126,7 +2126,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Parameters
         ----------
-        use_argvals_stand: np.bool_, default=False
+        use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
 
         Returns
