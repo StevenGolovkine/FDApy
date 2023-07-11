@@ -14,6 +14,8 @@ from FDApy.representation.functional_data import (
     DenseFunctionalData,
     IrregularFunctionalData
 )
+from FDApy.representation._argvals import DenseArgvals
+from FDApy.representation._values import DenseValues
 
 
 class TestDenseFunctionalData(unittest.TestCase):
@@ -28,19 +30,19 @@ class TestDenseFunctionalData(unittest.TestCase):
 
     def test_getitem_dense_functional_data(self):
         data = self.func_data[1]
-        expected_argvals = self.argvals
-        expected_values = np.array([[6, 7, 8, 9, 10]])
+        expected_argvals = DenseArgvals(self.argvals)
+        expected_values = DenseValues(np.array([[6, 7, 8, 9, 10]]))
         np.testing.assert_array_equal(data.argvals, expected_argvals)
         np.testing.assert_array_equal(data.values, expected_values)
 
     def test_argvals_property(self):
         argvals = self.func_data.argvals
-        self.assertDictEqual(argvals, self.argvals)
+        self.assertEqual(argvals, DenseArgvals(self.argvals))
 
     def test_argvals_setter(self):
         new_argvals = {'x': np.linspace(0, 5, 5)}
         self.func_data.argvals = new_argvals
-        self.assertDictEqual(self.func_data._argvals, new_argvals)
+        self.assertEqual(self.func_data._argvals, DenseArgvals(new_argvals))
 
         expected_argvals_stand = {"x": np.linspace(0, 1, 5),}
         np.testing.assert_array_almost_equal(self.func_data._argvals_stand['x'], expected_argvals_stand['x'])
@@ -75,7 +77,8 @@ class TestDenseFunctionalData(unittest.TestCase):
         self.assertDictEqual(result, expected_output)
 
     def test_is_compatible(self):
-        self.assertTrue(DenseFunctionalData._is_compatible(self.func_data, self.func_data))
+        DenseFunctionalData._is_compatible(self.func_data, self.func_data)
+        self.assertTrue(True)
 
     def test_non_compatible_type(self):
         with self.assertRaises(TypeError):
@@ -122,42 +125,42 @@ class TestPerformComputation(unittest.TestCase):
         result = self.func_data1 + self.func_data2
 
         expected_values = np.array([[7, 9, 11, 13, 15],[17, 19, 21, 23, 25],[12, 14, 16, 18, 20]])
-        self.assertDictEqual(result.argvals, self.argvals1)
+        self.assertEqual(result.argvals, DenseArgvals(self.argvals1))
         np.testing.assert_array_equal(result.values, expected_values)
 
     def test_substraction(self):
         result = self.func_data1 - self.func_data2
 
         expected_values = np.array([[-5, -5, -5, -5, -5],[-5, -5, -5, -5, -5],[10, 10, 10, 10, 10]])
-        self.assertDictEqual(result.argvals, self.argvals1)
+        self.assertEqual(result.argvals, DenseArgvals(self.argvals1))
         np.testing.assert_array_equal(result.values, expected_values)
 
     def test_multiplication(self):
         result = self.func_data1 * self.func_data2
 
         expected_values = np.array([[6, 14, 24, 36, 50],[66, 84, 104, 126, 150],[11, 24, 39, 56, 75]])
-        self.assertDictEqual(result.argvals, self.argvals1)
+        self.assertEqual(result.argvals, DenseArgvals(self.argvals1))
         np.testing.assert_array_equal(result.values, expected_values)
 
     def test_right_multiplication(self):
         result = FunctionalData.__rmul__(self.func_data1, self.func_data2)
 
         expected_values = np.array([[6, 14, 24, 36, 50],[66, 84, 104, 126, 150],[11, 24, 39, 56, 75]])
-        self.assertDictEqual(result.argvals, self.argvals1)
+        self.assertEqual(result.argvals, DenseArgvals(self.argvals1))
         np.testing.assert_array_equal(result.values, expected_values)
 
     def test_true_divide(self):
         result = self.func_data1 / self.func_data2
 
         expected_values = np.array([[0.16666667, 0.28571429, 0.375, 0.44444444, 0.5],[0.54545455, 0.58333333, 0.61538462, 0.64285714, 0.66666667],[11., 6., 4.33333333, 3.5, 3.]])
-        self.assertDictEqual(result.argvals, self.argvals1)
+        self.assertEqual(result.argvals, DenseArgvals(self.argvals1))
         np.testing.assert_array_almost_equal(result.values, expected_values)
 
     def test_floor_divide(self):
         result = self.func_data1 // self.func_data2
 
         expected_values = np.array([ [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [11, 6, 4, 3, 3]])
-        self.assertDictEqual(result.argvals, self.argvals1)
+        self.assertEqual(result.argvals, DenseArgvals(self.argvals1))
         np.testing.assert_array_almost_equal(result.values, expected_values)
 
 
@@ -199,7 +202,8 @@ class TestDenseFunctionalData2D(unittest.TestCase):
         self.assertEqual(new_dense_fd.n_obs, 3)
 
     def test_is_compatible(self):
-        self.assertTrue(DenseFunctionalData._is_compatible(self.dense_fd, self.dense_fd))
+        DenseFunctionalData._is_compatible(self.dense_fd, self.dense_fd)
+        self.assertTrue(True)
 
     def test_mean(self):
         mean_fd = self.dense_fd.mean()
