@@ -34,8 +34,8 @@ from ..misc.utils import _normalization, _outer
 
 # DenseArgvals = Dict[str, npt.NDArray[np.float64]]
 # DenseValues = npt.NDArray[np.float64]
-IrregArgvals = Dict[str, Dict[int, npt.NDArray[np.float64]]]
-IrregValues = Dict[int, npt.NDArray[np.float64]]
+# IrregArgvals = Dict[str, Dict[int, npt.NDArray[np.float64]]]
+# IrregValues = Dict[int, npt.NDArray[np.float64]]
 
 
 ###############################################################################
@@ -107,8 +107,8 @@ class FunctionalData(ABC):
     @staticmethod
     @abstractmethod
     def _check_argvals_values(
-        argvals: Union[DenseArgvals, IrregArgvals],
-        values: Union[DenseValues, IrregValues]
+        argvals: Union[DenseArgvals, IrregularArgvals],
+        values: Union[DenseValues, IrregularValues]
     ) -> None:
         """Check argvals values."""
 
@@ -237,7 +237,7 @@ class FunctionalData(ABC):
         """Setter for argvals."""
         # if hasattr(self, 'values'):
         #    self._check_argvals_values(new_argvals, self.values)
-        #self._argvals = new_argvals
+        # self._argvals = new_argvals
 
     @property
     def argvals_stand(
@@ -1165,14 +1165,14 @@ class IrregularFunctionalData(FunctionalData):
 
     Parameters
     ----------
-    argvals: IrregArgvals
+    argvals: IrregularArgvals
         The sampling points of the functional data. Each entry of the
         dictionary represents an input dimension. Then, each dimension is a
         dictionary where entries are the different observations. So, the
         observation :math:`i` for the dimension :math:`j` is a `np.ndarray`
         with shape :math:`(m^i_j,)` for :math:`0 \leq i \leq n` and
         :math:`0 \leq j \leq p`.
-    values: IrregValues
+    values: IrregularValues
         The values of the functional data. Each entry of the dictionary is an
         observation of the process. And, an observation is represented by a
         `np.ndarray` of shape :math:`(n, m_1, \dots, m_p)`. It should not
@@ -1220,13 +1220,13 @@ class IrregularFunctionalData(FunctionalData):
     # Checkers
     @staticmethod
     def _check_argvals_length(
-        argv: IrregArgvals
+        argv: IrregularArgvals
     ) -> None:
         """Raise an error if all elements of `argv` do not have equal length.
 
         Parameters
         ----------
-        argv: IrregArgvals
+        argv: IrregularArgvals
             A nested dictionary with key as string and value as dictionary with
             key as integer and value as numpy array.
 
@@ -1246,16 +1246,16 @@ class IrregularFunctionalData(FunctionalData):
 
     @staticmethod
     def _check_argvals_equality(
-        argv1: IrregArgvals,
-        argv2: IrregArgvals
+        argv1: IrregularArgvals,
+        argv2: IrregularArgvals
     ) -> None:
         """Check if `argv1` and `argv2` are equal.
 
         Parameters
         ----------
-        argv1: IrregArgvals
+        argv1: IrregularArgvals
             The first set of argument values.
-        argv2: IrregArgvals
+        argv2: IrregularArgvals
             The second set of argument values.
 
         Raises
@@ -1279,17 +1279,17 @@ class IrregularFunctionalData(FunctionalData):
 
     @staticmethod
     def _check_argvals_values(
-        argvals: IrregArgvals,
-        values: IrregValues
+        argvals: IrregularArgvals,
+        values: IrregularValues
     ) -> None:
         """Raise an error in case of dimension conflicts between the arguments.
 
         Parameters
         ----------
-        argvals: IrregArgvals
+        argvals: IrregularArgvals
             A nested dictionary with key as string and value as dictionary with
             key as integer and value as numpy array.
-        values: IrregValues
+        values: IrregularValues
             A dictionary with key as integer and value as numpy array.
 
         Raises
@@ -1371,8 +1371,8 @@ class IrregularFunctionalData(FunctionalData):
     # Magic methods
     def __init__(
         self,
-        argvals: IrregArgvals,
-        values: IrregValues
+        argvals: IrregularArgvals,
+        values: IrregularValues
     ) -> None:
         """Initialize IrregularFunctionalData object."""
         super().__init__(argvals, values)
@@ -1394,7 +1394,7 @@ class IrregularFunctionalData(FunctionalData):
             The selected observation(s) as IrregularFunctionalData object.
 
         """
-        argvals: IrregArgvals = {}
+        argvals: IrregularArgvals = {}
         if isinstance(index, slice):
             indices = index.indices(self.n_obs)
             for idx, dim in self.argvals.items():
@@ -1414,21 +1414,21 @@ class IrregularFunctionalData(FunctionalData):
     ###########################################################################
     # Properties
     @property
-    def argvals(self) -> IrregArgvals:
+    def argvals(self) -> IrregularArgvals:
         """Getter for argvals."""
-        return cast(IrregArgvals, super().argvals)
+        return cast(IrregularArgvals, super().argvals)
 
     @argvals.setter
     def argvals(
         self,
-        new_argvals: IrregArgvals
+        new_argvals: IrregularArgvals
     ) -> None:
         """Setter for argvals."""
         IrregularFunctionalData._check_argvals_length(new_argvals)
         self._argvals = new_argvals
         points = self.gather_points()
 
-        argvals_stand: IrregArgvals = {}
+        argvals_stand: IrregularArgvals = {}
         for dim, obss in new_argvals.items():
             max_x, min_x = np.max(points[dim]), np.min(points[dim])
 
@@ -1442,14 +1442,14 @@ class IrregularFunctionalData(FunctionalData):
     @property
     def values(
         self
-    ) -> IrregValues:
+    ) -> IrregularValues:
         """Getter for values."""
-        return cast(IrregValues, self._values)
+        return cast(IrregularValues, self._values)
 
     @values.setter
     def values(
         self,
-        new_values: IrregValues
+        new_values: IrregularValues
     ) -> None:
         """Setter for values."""
         if hasattr(self, 'argvals'):
