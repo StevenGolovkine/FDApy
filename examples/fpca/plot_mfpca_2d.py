@@ -1,34 +1,34 @@
-# """
-# MFPCA of 2-dimensional data
-# ===========================
+"""
+MFPCA of 2-dimensional data
+===========================
 
-# Example of multivariate functional principal components analysis of
-# 2-dimensional data.
-# """
+Example of multivariate functional principal components analysis of
+2-dimensional data.
+"""
 
-# ###############################################################################
-# #
+###############################################################################
+#
 
-# # Author: Steven Golovkine <steven_golovkine@icloud.com>
-# # License: MIT
+# Author: Steven Golovkine <steven_golovkine@icloud.com>
+# License: MIT
 
-# # Load packages
-# import matplotlib.pyplot as plt
+# Load packages
+import matplotlib.pyplot as plt
 
-# from FDApy.simulation.karhunen import KarhunenLoeve
-# from FDApy.preprocessing.dim_reduction.fpca import MFPCA
-# from FDApy.visualization.plot import plot_multivariate
+from FDApy.simulation.karhunen import KarhunenLoeve
+from FDApy.preprocessing.dim_reduction.fpca import MFPCA
+from FDApy.visualization.plot import plot_multivariate
 
-# # Set general parameters
-# rng = 42
-# n_obs = 50
-# idx = 5
+# Set general parameters
+rng = 42
+n_obs = 50
+idx = 5
 
 
-# # Parameters of the basis
-# name = ['bsplines', 'fourier']
-# n_functions = 5
-# dimension = ['2D', '2D']
+# Parameters of the basis
+name = ['bsplines', 'fourier']
+n_functions = 5
+dimension = ['2D', '2D']
 
 # ###############################################################################
 # # We simulate :math:`N = 50` curves of a 2-dimensional process. The first

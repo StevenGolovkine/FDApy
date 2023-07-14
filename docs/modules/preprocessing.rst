@@ -9,6 +9,3 @@ Preprocessing
 
 .. automodule:: FDApy.preprocessing.smoothing.local_polynomial
     :members:
-
-.. automodule:: FDApy.preprocessing.smoothing.smoothing_splines
-    :members:
