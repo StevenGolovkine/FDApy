@@ -1785,6 +1785,8 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     data: List[Type[FunctionalData]]
         The list containing the elements of the MultivariateFunctionalData.
 
+    TODO: Loop through MultivariateFunctionalData and through components.
+
     """
 
     ###########################################################################
