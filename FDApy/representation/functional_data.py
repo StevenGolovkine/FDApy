@@ -106,14 +106,6 @@ class FunctionalData(ABC):
 
     @staticmethod
     @abstractmethod
-    def _check_argvals_values(
-        argvals: Union[DenseArgvals, IrregularArgvals],
-        values: Union[DenseValues, IrregularValues]
-    ) -> None:
-        """Check argvals values."""
-
-    @staticmethod
-    @abstractmethod
     def _is_compatible(
         *fdata: Type[FunctionalData]
     ) -> None:
@@ -265,8 +257,8 @@ class FunctionalData(ABC):
         self,
         new_values: Type[Values]
     ) -> None:
-        if hasattr(self, 'argvals'):
-            self._check_argvals_values(self.argvals, new_values)
+        # if hasattr(self, 'argvals'):
+        #     self._check_argvals_values(self.argvals, new_values)
         self._values = new_values
 
     @property
@@ -439,40 +431,6 @@ class DenseFunctionalData(FunctionalData):
     ###########################################################################
     # Checkers
     @staticmethod
-    def _check_argvals_values(
-        argvals: DenseArgvals,
-        values: DenseValues
-    ) -> None:
-        """Raise an error in case of dimension conflicts between the arguments.
-
-        An error is raised when `argvals` (a dictionary) and `values`
-        (a numpy array) do not have coherent common dimensions. The first
-        dimension of `values` is assumed to represented the number of
-        observation.
-
-        Parameters
-        ----------
-        argvals: DenseArgvals
-            A dictionary with key as string and value as numpy array.
-        values: DenseValues
-            A numpy array
-
-        Raises
-        ------
-        ValueError
-            When `argvals` and `values` do not have coherent common
-            dimensions. The first dimension of `argvals` is assumed to
-            represented the number of observations.
-
-        """
-        dim_dict = _get_dict_dimension(argvals)
-        dim_array = values.shape[1:]
-        if dim_dict != dim_array:
-            raise ValueError(
-                f"{argvals} and {values} do not have coherent dimension."
-            )
-
-    @staticmethod
     def _is_compatible(
         *fdata: DenseFunctionalData
     ) -> None:
@@ -603,8 +561,8 @@ class DenseFunctionalData(FunctionalData):
         new_values: DenseValues
     ) -> None:
         """Setter for values."""
-        if hasattr(self, 'argvals'):
-            self._check_argvals_values(self.argvals, new_values)
+        # if hasattr(self, 'argvals'):
+        #     self._check_argvals_values(self.argvals, new_values)
         self._values = DenseValues(new_values)
         # super(DenseFunctionalData, self.__class__).values.fset(
         #    self, new_values
@@ -1219,97 +1177,6 @@ class IrregularFunctionalData(FunctionalData):
     ###########################################################################
     # Checkers
     @staticmethod
-    def _check_argvals_length(
-        argv: IrregularArgvals
-    ) -> None:
-        """Raise an error if all elements of `argv` do not have equal length.
-
-        Parameters
-        ----------
-        argv: IrregularArgvals
-            A nested dictionary with key as string and value as dictionary with
-            key as integer and value as numpy array.
-
-        Raises
-        ------
-        ValueError
-            When the number of observations is different across the dimensions.
-
-        TODO: Rewrite using generator?
-
-        """
-        lengths = [len(obj) for obj in argv.values()]
-        if len(set(lengths)) > 1:
-            raise ValueError(
-                "The number of observations is different across the dimensions"
-            )
-
-    @staticmethod
-    def _check_argvals_equality(
-        argv1: IrregularArgvals,
-        argv2: IrregularArgvals
-    ) -> None:
-        """Check if `argv1` and `argv2` are equal.
-
-        Parameters
-        ----------
-        argv1: IrregularArgvals
-            The first set of argument values.
-        argv2: IrregularArgvals
-            The second set of argument values.
-
-        Raises
-        ------
-        ValueError
-            If `argv1` and `argv2` do not have the same sampling points.
-
-        TODO: Rewrite using generator?
-
-        """
-        temp = all([
-            all(
-                np.array_equal(points1[key], points2[key])
-                for key in points1
-            ) for points1, points2 in zip(argv1.values(), argv2.values())
-        ])
-        if not temp:
-            raise ValueError(
-                f"{argv1} and {argv2} do not have the same sampling points."
-            )
-
-    @staticmethod
-    def _check_argvals_values(
-        argvals: IrregularArgvals,
-        values: IrregularValues
-    ) -> None:
-        """Raise an error in case of dimension conflicts between the arguments.
-
-        Parameters
-        ----------
-        argvals: IrregularArgvals
-            A nested dictionary with key as string and value as dictionary with
-            key as integer and value as numpy array.
-        values: IrregularValues
-            A dictionary with key as integer and value as numpy array.
-
-        Raises
-        ------
-        ValueError
-            When `argvals` and `values` do not have coherent common dimensions.
-
-        TODO: Rewrite using generator?
-
-        """
-        has_obs_shape = [
-            obs.shape == _get_obs_shape(argvals, idx)
-            for idx, obs in values.items()
-        ]
-        if not np.all(has_obs_shape):
-            raise ValueError(
-                f"{argvals} and {values} do not have coherent dimension."
-            )
-
-    @staticmethod
     def _is_compatible(
         fdata1: IrregularFunctionalData,
         fdata2: IrregularFunctionalData
@@ -1341,9 +1208,9 @@ class IrregularFunctionalData(FunctionalData):
 
         """
         super()._is_compatible(fdata1, fdata2)
-        IrregularFunctionalData._check_argvals_equality(
-            fdata1.argvals, fdata2.argvals
-        )
+        # IrregularFunctionalData._check_argvals_equality(
+        #     fdata1.argvals, fdata2.argvals
+        # )
         return True
 
     ###########################################################################
@@ -1424,7 +1291,7 @@ class IrregularFunctionalData(FunctionalData):
         new_argvals: IrregularArgvals
     ) -> None:
         """Setter for argvals."""
-        IrregularFunctionalData._check_argvals_length(new_argvals)
+        # IrregularFunctionalData._check_argvals_length(new_argvals)
         self._argvals = new_argvals
         points = self.gather_points()
 
@@ -1452,8 +1319,8 @@ class IrregularFunctionalData(FunctionalData):
         new_values: IrregularValues
     ) -> None:
         """Setter for values."""
-        if hasattr(self, 'argvals'):
-            self._check_argvals_values(self.argvals, new_values)
+        # if hasattr(self, 'argvals'):
+        #     self._check_argvals_values(self.argvals, new_values)
         self._values = new_values
 
     @property

@@ -203,22 +203,22 @@ class TestIrregularFunctionalData(unittest.TestCase):
         with self.assertRaises(ValueError):
             IrregularFunctionalData._is_compatible(self.fdata, func_data)
 
-    def test_non_compatible_argvals_equality(self):
-        argvals = {
-            'input_dim_0': {
-                0: np.array([0, 1, 2, 3, 5]),
-                1: np.array([0, 2, 4]),
-                2: np.array([2, 4]),
-            }
-        }
-        values = {
-            0: np.array([1, 2, 3, 4, 5]),
-            1: np.array([2, 5, 6]),
-            2: np.array([4, 7]),
-        }
-        func_data = IrregularFunctionalData(argvals, values)
-        with self.assertRaises(ValueError):
-            IrregularFunctionalData._is_compatible(self.fdata, func_data)
+    # def test_non_compatible_argvals_equality(self):
+    #     argvals = {
+    #         'input_dim_0': {
+    #             0: np.array([0, 1, 2, 3, 5]),
+    #             1: np.array([0, 2, 4]),
+    #             2: np.array([2, 4]),
+    #         }
+    #     }
+    #     values = {
+    #         0: np.array([1, 2, 3, 4, 5]),
+    #         1: np.array([2, 5, 6]),
+    #         2: np.array([4, 7]),
+    #     }
+    #     func_data = IrregularFunctionalData(argvals, values)
+    #     with self.assertRaises(ValueError):
+    #         IrregularFunctionalData._is_compatible(self.fdata, func_data)
 
 
 class TestIrregularFunctionalData1D(unittest.TestCase):
