@@ -531,7 +531,7 @@ class DenseFunctionalData(FunctionalData):
     @property
     def argvals(self) -> DenseArgvals:
         """Getter for argvals."""
-        return cast(DenseArgvals, super().argvals)
+        return self._argvals
 
     @argvals.setter
     def argvals(
@@ -546,7 +546,7 @@ class DenseFunctionalData(FunctionalData):
         argvals_stand = {}
         for dim, points in new_argvals.items():
             argvals_stand[dim] = _normalization(points)
-        self._argvals_stand = argvals_stand
+        self._argvals_stand = DenseArgvals(argvals_stand)
 
     @property
     def values(
