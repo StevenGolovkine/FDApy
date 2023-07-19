@@ -553,7 +553,7 @@ class DenseFunctionalData(FunctionalData):
         self
     ) -> DenseValues:
         """Getter for values."""
-        return cast(DenseValues, super().values)
+        return self._values
 
     @values.setter
     def values(
