@@ -1283,7 +1283,7 @@ class IrregularFunctionalData(FunctionalData):
     @property
     def argvals(self) -> IrregularArgvals:
         """Getter for argvals."""
-        return cast(IrregularArgvals, super().argvals)
+        return self._argvals
 
     @argvals.setter
     def argvals(
