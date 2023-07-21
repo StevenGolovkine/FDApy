@@ -1311,7 +1311,7 @@ class IrregularFunctionalData(FunctionalData):
         self
     ) -> IrregularValues:
         """Getter for values."""
-        return cast(IrregularValues, self._values)
+        return self._values
 
     @values.setter
     def values(
