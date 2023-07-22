@@ -19,7 +19,7 @@ from collections import UserList
 from collections.abc import Iterator
 from typing import (
     Callable, cast, Dict, Iterable, Optional, List,
-    Tuple, Type, Union
+    Tuple, Type
 )
 
 from ._argvals import Argvals, DenseArgvals, IrregularArgvals
@@ -27,7 +27,6 @@ from ._values import Values, DenseValues, IrregularValues
 
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..misc.utils import _cartesian_product
-from ..misc.utils import _get_dict_dimension, _get_obs_shape
 from ..misc.utils import _inner_product, _inner_product_2d
 from ..misc.utils import _integrate, _integrate_2d, _integration_weights
 from ..misc.utils import _normalization, _outer
@@ -105,17 +104,22 @@ class FunctionalData(ABC):
             raise ValueError("Elements do not have the same dimensions.")
 
     @staticmethod
-    @abstractmethod
     def _is_compatible(
         *fdata: Type[FunctionalData]
     ) -> None:
         """Raise an error if elements in `fdata` are not compatible.
+
+        Parameters
+        ----------
+        *fdata: FunctionalData
+            Functional data to compare.
 
         Raises
         ------
         ValueError
             When all `fdata` do not have the same number of observations or
             when all `fdata` do not have the same dimension.
+            When all `fdata` do not have the same argvals.
         TypeError
             When all `fdata` do not have the same type.
 
@@ -123,6 +127,8 @@ class FunctionalData(ABC):
         FunctionalData._check_same_type(*fdata)
         FunctionalData._check_same_nobs(*fdata)
         FunctionalData._check_same_ndim(*fdata)
+        if not all(data.argvals == fdata[0].argvals for data in fdata):
+            raise ValueError("Argvals are not equals.")
 
     ###########################################################################
 
@@ -430,34 +436,6 @@ class DenseFunctionalData(FunctionalData):
 
     ###########################################################################
     # Checkers
-    @staticmethod
-    def _is_compatible(
-        *fdata: DenseFunctionalData
-    ) -> None:
-        """Raise an error if elements in `fdata` are not compatible.
-
-        Two DenseFunctionalData object are said to be compatible if they
-        have the same number of observations and dimensions. Moreover, they
-        must have (strictly) the same sampling points.
-
-        Parameters
-        ----------
-        *fdata: DenseFunctionalData
-            Functional data to compare.
-
-        Raises
-        ------
-        ValueError
-            When all `fdata` do not have the same number of observations or
-            when all `fdata` do not have the same dimension or
-            When all `fdata` do not have the same argvals.
-        TypeError
-            When all `fdata` do not have the same type.
-
-        """
-        super(DenseFunctionalData, DenseFunctionalData)._is_compatible(*fdata)
-        if not all(data.argvals == fdata[0].argvals for data in fdata):
-            raise ValueError("Argvals are not equals.")
 
     ###########################################################################
 
@@ -1176,42 +1154,6 @@ class IrregularFunctionalData(FunctionalData):
 
     ###########################################################################
     # Checkers
-    @staticmethod
-    def _is_compatible(
-        fdata1: IrregularFunctionalData,
-        fdata2: IrregularFunctionalData
-    ) -> bool:
-        """Check if `fdata1` is compatible with `fdata2`.
-
-        Two IrregularFunctionalData object are said to be compatible if they
-        have the same number of observations and dimensions. Moreover, they
-        must have (strictly) the same sampling points.
-
-        Parameters
-        ----------
-        fdata1: IrregularFunctionalData
-            The first object to compare.
-        fdata2: IrregularFunctionalData
-            The second object to compare.
-
-        Raises
-        ------
-        ValueError
-            When the data are not compatible.
-
-        Returns
-        -------
-        True
-            If the objects are compatible.
-
-        TODO: Should not return True? Just raise an error.
-
-        """
-        super()._is_compatible(fdata1, fdata2)
-        # IrregularFunctionalData._check_argvals_equality(
-        #     fdata1.argvals, fdata2.argvals
-        # )
-        return True
 
     ###########################################################################
 

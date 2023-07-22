@@ -158,7 +158,8 @@ class TestIrregularFunctionalData(unittest.TestCase):
         )
 
     def test_is_compatible(self):
-        self.assertTrue(IrregularFunctionalData._is_compatible(self.fdata, self.fdata))
+        IrregularFunctionalData._is_compatible(self.fdata, self.fdata)
+        self.assertTrue(True)
 
     def test_non_compatible_type(self):
         with self.assertRaises(TypeError):
@@ -271,7 +272,8 @@ class TestIrregularFunctionalData1D(unittest.TestCase):
         self.assertEqual(dense_fd.n_obs, 3)
 
     def test_is_compatible(self):
-        self.assertTrue(IrregularFunctionalData._is_compatible(self.irregu_fd, self.irregu_fd))
+        IrregularFunctionalData._is_compatible(self.irregu_fd, self.irregu_fd)
+        self.assertTrue(True)
 
     def test_mean(self):
         mean_fd = self.irregu_fd.mean()
@@ -341,7 +343,8 @@ class TestIrregularFunctionalData2D(unittest.TestCase):
         self.assertEqual(dense_fd.n_obs, 3)
 
     def test_is_compatible(self):
-        self.assertTrue(IrregularFunctionalData._is_compatible(self.irregu_fd, self.irregu_fd))
+        IrregularFunctionalData._is_compatible(self.irregu_fd, self.irregu_fd)
+        self.assertTrue(True)
 
     def test_mean(self):
         N = np.nan
