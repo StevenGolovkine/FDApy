@@ -76,6 +76,10 @@ class Argvals(UserDict):
     def n_points(self):
         """Get the number of sampling points of each dimension."""
 
+    @abstractmethod
+    def normalization(self):
+        """Normalize the Argvals."""
+
     def compatible_with(self, values: Type[Values]) -> None:
         """Raise an error if Argvals is not compatible with Values.
 
@@ -193,7 +197,7 @@ class DenseArgvals(Argvals):
         return tuple(dim.shape[0] for dim in self.values())
 
     def normalization(self):
-        r"""Normalize the Argvals.
+        r"""Normalize the DenseArgvals.
 
         This function normalizes the Argvals by applying the following
         transformation to each dimension of the Argvals:
@@ -304,3 +308,21 @@ class IrregularArgvals(Argvals):
     def n_points(self):
         """Get the number of sampling points of each dimension."""
         return {obs: argvals.n_points for obs, argvals in self.items()}
+
+    def normalization(self):
+        r"""Normalize the IrregularArgvals.
+
+        This function normalizes the Argvals by applying the following
+        transformation to each observation:
+
+        ..math:: X_{norm} = \frac{X - \min{X}}{\max{X} - \min{X}}.
+
+        Returns
+        -------
+        IrregularArgvals
+            Normalized argvals.
+
+        """
+        return IrregularArgvals(
+            {obs: argvals.normalization() for obs, argvals in self.items()}
+        )

@@ -191,3 +191,20 @@ class TestIrregularArgvals(unittest.TestCase):
         values = IrregularValues({0: np.random.randn(10, 10), 1: np.random.randn(5, 7)})
         with self.assertRaises(ValueError):
             argvals_irr.compatible_with(values)
+
+    def test_normalization(self):
+        argvals = {'input_dim_0': np.arange(10), 'input_dim_1': np.arange(11)}
+        argvals_1 = DenseArgvals(argvals)
+
+        argvals = {'input_dim_0': np.arange(5), 'input_dim_1': np.arange(7)}
+        argvals_2 = DenseArgvals(argvals)
+
+        argvals = IrregularArgvals({0: argvals_1, 1: argvals_2})
+
+        expected_output = IrregularArgvals(
+            {
+                0: DenseArgvals({'input_dim_0': np.array([0., 0.11111111, 0.22222222, 0.33333333, 0.44444444, 0.55555556, 0.66666667, 0.77777778, 0.88888889, 1.]), 'input_dim_1': np.array([0. , 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1. ])}),
+                1: DenseArgvals({'input_dim_0': np.array([0.  , 0.25, 0.5 , 0.75, 1.  ]), 'input_dim_1': np.array([0., 0.16666667, 0.33333333, 0.5, 0.66666667, 0.83333333, 1.])})
+            }
+        )
+        np.testing.assert_allclose(argvals.normalization(), expected_output)
