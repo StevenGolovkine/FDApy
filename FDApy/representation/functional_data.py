@@ -540,7 +540,7 @@ class DenseFunctionalData(FunctionalData):
     ) -> None:
         """Setter for values."""
         # if hasattr(self, 'argvals'):
-        #     self._check_argvals_values(self.argvals, new_values)
+        #     self._argvals.compatible_with(new_values)
         self._values = DenseValues(new_values)
         # super(DenseFunctionalData, self.__class__).values.fset(
         #    self, new_values

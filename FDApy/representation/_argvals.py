@@ -94,7 +94,7 @@ class Argvals(UserDict):
         """
         if self.n_points != values.n_points:
             raise ValueError(
-                "The DenseArgvals and the values do not have coherent number"
+                "The Argvals and the Values do not have coherent number"
                 " of sampling points."
             )
 
@@ -191,6 +191,27 @@ class DenseArgvals(Argvals):
     def n_points(self):
         """Get the number of sampling points of each dimension."""
         return tuple(dim.shape[0] for dim in self.values())
+
+    def normalization(self):
+        r"""Normalize the Argvals.
+
+        This function normalizes the Argvals by applying the following
+        transformation to each dimension of the Argvals:
+
+        ..math:: X_{norm} = \frac{X - \min{X}}{\max{X} - \min{X}}.
+
+        Returns
+        -------
+        DenseArgvals
+            Normalized argvals.
+
+        """
+        return DenseArgvals(
+            {
+                dim: (points - min(points)) / (max(points) - min(points))
+                for dim, points in self.items()
+            }
+        )
 
 
 ###############################################################################
