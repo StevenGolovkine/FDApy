@@ -31,11 +31,6 @@ from ..misc.utils import _inner_product, _inner_product_2d
 from ..misc.utils import _integrate, _integrate_2d, _integration_weights
 from ..misc.utils import _normalization, _outer
 
-# DenseArgvals = Dict[str, npt.NDArray[np.float64]]
-# DenseValues = npt.NDArray[np.float64]
-# IrregArgvals = Dict[str, Dict[int, npt.NDArray[np.float64]]]
-# IrregValues = Dict[int, npt.NDArray[np.float64]]
-
 
 ###############################################################################
 # Class FunctionalData
@@ -233,9 +228,7 @@ class FunctionalData(ABC):
         new_argvals: Type[Argvals]
     ) -> None:
         """Setter for argvals."""
-        # if hasattr(self, 'values'):
-        #    self._check_argvals_values(new_argvals, self.values)
-        # self._argvals = new_argvals
+        self._argvals = new_argvals
 
     @property
     def argvals_stand(
@@ -263,8 +256,6 @@ class FunctionalData(ABC):
         self,
         new_values: Type[Values]
     ) -> None:
-        # if hasattr(self, 'argvals'):
-        #     self._check_argvals_values(self.argvals, new_values)
         self._values = new_values
 
     @property
@@ -517,14 +508,10 @@ class DenseFunctionalData(FunctionalData):
         new_argvals: DenseArgvals
     ) -> None:
         """Setter for argvals."""
+        if hasattr(self, 'values'):
+            self._values.compatible_with(DenseArgvals(new_argvals))
         self._argvals = DenseArgvals(new_argvals)
-        # super(DenseFunctionalData, self.__class__).argvals.fset(
-        #     self, new_argvals
-        # )
-        argvals_stand = {}
-        for dim, points in new_argvals.items():
-            argvals_stand[dim] = _normalization(points)
-        self._argvals_stand = DenseArgvals(argvals_stand)
+        self._argvals_stand = self._argvals.normalization()
 
     @property
     def values(
@@ -539,12 +526,9 @@ class DenseFunctionalData(FunctionalData):
         new_values: DenseValues
     ) -> None:
         """Setter for values."""
-        # if hasattr(self, 'argvals'):
-        #     self._argvals.compatible_with(new_values)
+        if hasattr(self, 'argvals'):
+            self._argvals.compatible_with(DenseValues(new_values))
         self._values = DenseValues(new_values)
-        # super(DenseFunctionalData, self.__class__).values.fset(
-        #    self, new_values
-        # )
 
     @property
     def range_obs(self) -> Tuple[float, float]:

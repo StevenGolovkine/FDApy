@@ -28,6 +28,11 @@ class TestDenseFunctionalData(unittest.TestCase):
         values = {0: np.array([1, 6, 9, 4]),1: np.array([2, 3])}
         self.irreg_data = IrregularFunctionalData(argvals, values)
 
+    def test_repr(self):
+        expected_repr = "Functional data object with 3 observations on a 1-dimensional support."
+        actual_repr = repr(self.func_data)
+        self.assertEqual(actual_repr, expected_repr)
+
     def test_getitem_dense_functional_data(self):
         data = self.func_data[1]
         expected_argvals = DenseArgvals(self.argvals)
