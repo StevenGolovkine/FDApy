@@ -22,8 +22,8 @@ from typing import (
     Tuple, Type
 )
 
-from ._argvals import Argvals, DenseArgvals, IrregularArgvals
-from ._values import Values, DenseValues, IrregularValues
+from .argvals import Argvals, DenseArgvals, IrregularArgvals
+from .values import Values, DenseValues, IrregularValues
 
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..misc.utils import _cartesian_product
@@ -402,25 +402,25 @@ class DenseFunctionalData(FunctionalData):
     --------
     For 1-dimensional dense data:
 
-    >>> argvals = {'input_dim_0': np.array([1, 2, 3, 4, 5])}
-    >>> values = np.array([
+    >>> argvals = DenseArgvals({'input_dim_0': np.array([1, 2, 3, 4, 5])})
+    >>> values = DenseValues(np.array([
     ...     [1, 2, 3, 4, 5],
     ...     [6, 7, 8, 9, 10],
     ...     [11, 12, 13, 14, 15]
-    ... ])
+    ... ]))
     >>> DenseFunctionalData(argvals, values)
 
     For 2-dimensional dense data:
 
-    >>> argvals = {
+    >>> argvals = DenseArgvals({
     ...     'input_dim_0': np.array([1, 2, 3, 4]),
     ...     'input_dim_1': np.array([5, 6, 7])
-    ... }
-    >>> values = np.array([
+    ... })
+    >>> values = DenseValues(np.array([
     ...     [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]],
     ...     [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]],
     ...     [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]]
-    ... ])
+    ... ]))
     >>> DenseFunctionalData(argvals, values)
 
     """
@@ -508,9 +508,11 @@ class DenseFunctionalData(FunctionalData):
         new_argvals: DenseArgvals
     ) -> None:
         """Setter for argvals."""
+        if not isinstance(new_argvals, DenseArgvals):
+            raise TypeError('new_argvals must be a DenseArgvals object.')
         if hasattr(self, 'values'):
-            self._values.compatible_with(DenseArgvals(new_argvals))
-        self._argvals = DenseArgvals(new_argvals)
+            self._values.compatible_with(new_argvals)
+        self._argvals = new_argvals
         self._argvals_stand = self._argvals.normalization()
 
     @property
@@ -526,9 +528,11 @@ class DenseFunctionalData(FunctionalData):
         new_values: DenseValues
     ) -> None:
         """Setter for values."""
+        if not isinstance(new_values, DenseValues):
+            raise TypeError('new_values must be a DenseValues object.')
         if hasattr(self, 'argvals'):
-            self._argvals.compatible_with(DenseValues(new_values))
-        self._values = DenseValues(new_values)
+            self._argvals.compatible_with(new_values)
+        self._values = new_values
 
     @property
     def range_obs(self) -> Tuple[float, float]:
@@ -1976,7 +1980,10 @@ def _concatenate(
     """
     new_argvals = data[0].argvals
     new_values = np.vstack([d.values for d in data])
-    return DenseFunctionalData(new_argvals, new_values)
+    return DenseFunctionalData(
+        DenseArgvals(new_argvals),
+        DenseValues(new_values)
+    )
 
 
 def _tensor_product(
@@ -2012,4 +2019,4 @@ def _tensor_product(
         'input_dim_1': data2.argvals['input_dim_0']
     }
     val = [_outer(i, j) for i in data1.values for j in data2.values]
-    return DenseFunctionalData(arg, np.array(val))
+    return DenseFunctionalData(DenseArgvals(arg), DenseValues(np.array(val)))

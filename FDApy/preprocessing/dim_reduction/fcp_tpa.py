@@ -15,6 +15,8 @@ from typing import Dict, List, Tuple
 from numpy.linalg import norm
 from scipy.optimize import minimize_scalar
 
+from ...representation.argvals import DenseArgvals
+from ...representation.values import DenseValues
 from ...representation.functional_data import DenseFunctionalData
 from ...misc.utils import _eigh
 
@@ -711,7 +713,7 @@ class FCPTPA():
         self._scores = np.einsum('j, ij -> ij', coefficients, matrices[0])
         self._eigenvalues = np.var(self._scores, axis=0)
         self._eigenfunctions = DenseFunctionalData(
-            data.argvals, eigenimages
+            DenseArgvals(data.argvals), DenseValues(eigenimages)
         )
 
         if self.normalize:
@@ -803,4 +805,4 @@ class FCPTPA():
             scores,
             self.eigenfunctions.values
         )
-        return DenseFunctionalData(argvals, values)
+        return DenseFunctionalData(DenseArgvals(argvals), DenseValues(values))

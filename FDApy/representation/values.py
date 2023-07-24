@@ -16,7 +16,7 @@ from collections import UserDict
 from typing import Type, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ._argvals import Argvals
+    from .argvals import Argvals
 
 
 ###############################################################################

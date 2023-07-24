@@ -15,6 +15,8 @@ from typing import Callable, Optional, List, Union
 from .functional_data import DenseFunctionalData, MultivariateFunctionalData
 from .functional_data import _tensor_product
 
+from .argvals import DenseArgvals
+from .values import DenseValues
 
 #######################################################################
 # Definition of the basis (eigenfunctions)
@@ -560,19 +562,27 @@ class Basis(DenseFunctionalData):
         )
 
         if dimension == '1D':
-            super().__init__({'input_dim_0': argvals}, values)
+            super().__init__(
+                DenseArgvals({'input_dim_0': argvals}),
+                DenseValues(values)
+            )
         elif dimension == '2D':
             cut = np.ceil(np.sqrt(n_functions)).astype(int)
             rest = (n_functions / cut + 1).astype(int)
 
             basis_first_dim = DenseFunctionalData(
-                {'input_dim_0': argvals}, values[:cut]
+                DenseArgvals({'input_dim_0': argvals}),
+                DenseValues(values[:cut])
             )
             basis_second_dim = DenseFunctionalData(
-                {'input_dim_0': argvals}, values[1:(rest + 1)]
+                DenseArgvals({'input_dim_0': argvals}),
+                DenseValues(values[1:(rest + 1)])
             )
             basis2d = _tensor_product(basis_first_dim, basis_second_dim)
-            super().__init__(basis2d.argvals, basis2d.values[:n_functions])
+            super().__init__(
+                DenseArgvals(basis2d.argvals),
+                DenseValues(basis2d.values[:n_functions])
+            )
         else:
             raise ValueError(f"{dimension} is not a valid dimension!")
 
@@ -673,7 +683,10 @@ class MultivariateBasis(MultivariateFunctionalData):
 
         basis_fd = []
         for argval, basis, dim in zip(argvals, values, self.dimension):
-            temp = DenseFunctionalData({'input_dim_0': argval}, basis)
+            temp = DenseFunctionalData(
+                DenseArgvals({'input_dim_0': argval}),
+                DenseValues(basis)
+            )
             if dim == '2D':
                 temp = _tensor_product(temp, temp)
             basis_fd.append(temp[:n_functions])

@@ -8,8 +8,8 @@ Written with the help of ChatGPT.
 import numpy as np
 import unittest
 
-from FDApy.representation._argvals import DenseArgvals, IrregularArgvals
-from FDApy.representation._values import DenseValues, IrregularValues
+from FDApy.representation.argvals import DenseArgvals, IrregularArgvals
+from FDApy.representation.values import DenseValues, IrregularValues
 
 
 class TestDenseValues(unittest.TestCase):

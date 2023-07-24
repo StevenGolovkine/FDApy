@@ -12,6 +12,8 @@ import numpy.typing as npt
 from abc import ABC, abstractmethod
 from typing import Callable, Optional
 
+from ..representation.argvals import DenseArgvals, IrregularArgvals
+from ..representation.values import DenseValues, IrregularValues
 from ..representation.functional_data import (
     DenseFunctionalData, IrregularFunctionalData, MultivariateFunctionalData
 )
@@ -57,7 +59,10 @@ def _add_noise_univariate_data(
     noisy_data = rnorm(0, 1, shape_simu)
     std_noise = np.sqrt(noise_variance)
     noisy_data = data.values + np.multiply(std_noise, noisy_data)
-    return DenseFunctionalData(data.argvals, noisy_data)
+    return DenseFunctionalData(
+        DenseArgvals(data.argvals),
+        DenseValues(noisy_data)
+    )
 
 
 #############################################################################
@@ -113,9 +118,14 @@ def _sparsify_univariate_data(
     for idx, (obs, perc_obs) in enumerate(zip(data, perc)):
         size = np.around(n_points * perc_obs).astype(int)
         indices = np.sort(rchoice(n_points, size=size, replace=False))
-        argvals[idx] = obs.argvals['input_dim_0'][points[indices]]
+        argvals[idx] = DenseArgvals({
+            'input_dim_0': obs.argvals['input_dim_0'][points[indices]]
+        })
         values[idx] = obs.values[0][points[indices]]
-    return IrregularFunctionalData({'input_dim_0': argvals}, values)
+    return IrregularFunctionalData(
+        IrregularArgvals(argvals),
+        IrregularValues(values)
+    )
 
 
 #############################################################################

@@ -14,14 +14,14 @@ from FDApy.representation.functional_data import (
     DenseFunctionalData,
     IrregularFunctionalData
 )
-from FDApy.representation._argvals import DenseArgvals
-from FDApy.representation._values import DenseValues
+from FDApy.representation.argvals import DenseArgvals
+from FDApy.representation.values import DenseValues
 
 
 class TestDenseFunctionalData(unittest.TestCase):
     def setUp(self):
-        self.argvals = {'input_dim_0': np.array([1, 2, 3, 4, 5])}
-        self.values = np.array([[1, 2, 3, 4, 5],[6, 7, 8, 9, 10],[11, 12, 13, 14, 15]])
+        self.argvals = DenseArgvals({'input_dim_0': np.array([1, 2, 3, 4, 5])})
+        self.values = DenseValues(np.array([[1, 2, 3, 4, 5],[6, 7, 8, 9, 10],[11, 12, 13, 14, 15]]))
         self.func_data = DenseFunctionalData(self.argvals, self.values)
 
         argvals = {'input_dim_0': {0: np.array([1, 2, 3, 4]),1: np.array([2, 4])}}
@@ -45,7 +45,7 @@ class TestDenseFunctionalData(unittest.TestCase):
         self.assertEqual(argvals, DenseArgvals(self.argvals))
 
     def test_argvals_setter(self):
-        new_argvals = {'x': np.linspace(0, 5, 5)}
+        new_argvals = DenseArgvals({'x': np.linspace(0, 5, 5)})
         self.func_data.argvals = new_argvals
         self.assertEqual(self.func_data._argvals, DenseArgvals(new_argvals))
 
@@ -57,7 +57,7 @@ class TestDenseFunctionalData(unittest.TestCase):
         np.testing.assert_array_equal(dense_values, self.values)
 
     def test_values_setter(self):
-        new_values = np.array([[11, 12, 13, 14, 15]])
+        new_values = DenseValues(np.array([[11, 12, 13, 14, 15]]))
         self.func_data.values = new_values
         np.testing.assert_array_equal(self.func_data.values, new_values)
 
@@ -90,22 +90,22 @@ class TestDenseFunctionalData(unittest.TestCase):
             DenseFunctionalData._is_compatible(self.func_data, self.irreg_data)
 
     def test_non_compatible_nobs(self):
-        argvals = {'input_dim_0': np.array([1, 2, 3, 4, 5])}
-        values = np.array([[1, 2, 3, 4, 5]])
+        argvals = DenseArgvals({'input_dim_0': np.array([1, 2, 3, 4, 5])})
+        values = DenseValues(np.array([[1, 2, 3, 4, 5]]))
         func_data = DenseFunctionalData(argvals, values)
         with self.assertRaises(ValueError):
             DenseFunctionalData._is_compatible(self.func_data, func_data)
 
     def test_non_compatible_ndim(self):
-        argvals = {'input_dim_0': np.array([1, 2, 3, 4]), 'input_dim_1': np.array([5, 6, 7])}
-        values = np.array([[[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]],[[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]],[[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]]])
+        argvals = DenseArgvals({'input_dim_0': np.array([1, 2, 3, 4]), 'input_dim_1': np.array([5, 6, 7])})
+        values = DenseValues(np.array([[[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]],[[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]],[[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]]]))
         func_data = DenseFunctionalData(argvals, values)
         with self.assertRaises(ValueError):
             DenseFunctionalData._is_compatible(self.func_data, func_data)
 
     def test_non_compatible_argvals_equality(self):
-        argvals = {'input_dim_0': np.array([1, 2, 3, 4, 6])}
-        values = np.array([[1, 2, 3, 4, 5],[6, 7, 8, 9, 10],[11, 12, 13, 14, 15]])
+        argvals = DenseArgvals({'input_dim_0': np.array([1, 2, 3, 4, 6])})
+        values = DenseValues(np.array([[1, 2, 3, 4, 5],[6, 7, 8, 9, 10],[11, 12, 13, 14, 15]]))
         func_data = DenseFunctionalData(argvals, values)
         with self.assertRaises(ValueError):
             DenseFunctionalData._is_compatible(self.func_data, func_data)
@@ -118,12 +118,12 @@ class TestDenseFunctionalData(unittest.TestCase):
 
 class TestPerformComputation(unittest.TestCase):
     def setUp(self):
-        self.argvals1 = {'input_dim_0': np.array([1, 2, 3, 4, 5])}
-        self.values1 = np.array([[1, 2, 3, 4, 5],[6, 7, 8, 9, 10],[11, 12, 13, 14, 15]])
+        self.argvals1 = DenseArgvals({'input_dim_0': np.array([1, 2, 3, 4, 5])})
+        self.values1 = DenseValues(np.array([[1, 2, 3, 4, 5],[6, 7, 8, 9, 10],[11, 12, 13, 14, 15]]))
         self.func_data1 = DenseFunctionalData(self.argvals1, self.values1)
 
-        self.argvals2 = {'input_dim_0': np.array([1, 2, 3, 4, 5])}
-        self.values2 = np.array([[6, 7, 8, 9, 10],[11, 12, 13, 14, 15],[1, 2, 3, 4, 5]])
+        self.argvals2 = DenseArgvals({'input_dim_0': np.array([1, 2, 3, 4, 5])})
+        self.values2 = DenseValues(np.array([[6, 7, 8, 9, 10],[11, 12, 13, 14, 15],[1, 2, 3, 4, 5]]))
         self.func_data2 = DenseFunctionalData(self.argvals2, self.values2)
 
     def test_addition(self):
@@ -173,9 +173,9 @@ class TestDenseFunctionalData2D(unittest.TestCase):
     """Test class for the class DenseFunctionalData in two dimension."""
 
     def setUp(self):
-        argvals = {'input_dim_0': np.array([1, 2, 3, 4]), 'input_dim_1': np.array([5, 6, 7])}
+        argvals = DenseArgvals({'input_dim_0': np.array([1, 2, 3, 4]), 'input_dim_1': np.array([5, 6, 7])})
 
-        values = np.array([[[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]], [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]], [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]], [[3, 4, 6], [3, 4, 5], [3, 4, 5], [3, 4, 5]], [[3, 4, 7], [3, 4, 5], [3, 4, 5], [3, 4, 5]]])
+        values = DenseValues(np.array([[[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]], [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]], [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]], [[3, 4, 6], [3, 4, 5], [3, 4, 5], [3, 4, 5]], [[3, 4, 7], [3, 4, 5], [3, 4, 5], [3, 4, 5]]]))
         self.dense_fd = DenseFunctionalData(argvals, values)
 
     def test_argvals_stand(self):

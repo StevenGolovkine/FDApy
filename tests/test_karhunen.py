@@ -9,6 +9,8 @@ import numpy as np
 import unittest
 
 from FDApy.representation.basis import Basis, MultivariateBasis
+from FDApy.representation.argvals import DenseArgvals
+from FDApy.representation.values import DenseValues
 from FDApy.representation.functional_data import (
     DenseFunctionalData,
     MultivariateFunctionalData
@@ -346,8 +348,8 @@ class TestComputeData(unittest.TestCase):
         np.testing.assert_array_almost_equal(output.values, expected)
 
     def test_raise_value_error(self):
-        argvals = {'input_dim_0': np.array([0, 1, 2]), 'input_dim_1': np.array([0, 1]), 'input_dim_2': np.array([0, 1])}
-        values = np.zeros((1, 3, 2, 2))
+        argvals = DenseArgvals({'input_dim_0': np.array([0, 1, 2]), 'input_dim_1': np.array([0, 1]), 'input_dim_2': np.array([0, 1])})
+        values = DenseValues(np.zeros((1, 3, 2, 2)))
         basis = DenseFunctionalData(argvals, values)  # n_dim = 3
 
         with self.assertRaises(ValueError):

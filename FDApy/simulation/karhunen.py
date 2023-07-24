@@ -11,6 +11,8 @@ import numpy.typing as npt
 
 from typing import Any, Callable, Optional, Sequence, Tuple, Union
 
+from ..representation.argvals import DenseArgvals
+from ..representation.values import DenseValues
 from ..representation.functional_data import (
     DenseFunctionalData, MultivariateFunctionalData
 )
@@ -388,7 +390,10 @@ def _compute_data(
         raise ValueError(
             f"The basis dimension {basis.n_dim} has to be 1D or 2D."
         )
-    return DenseFunctionalData(basis.argvals, values)
+    return DenseFunctionalData(
+        DenseArgvals(basis.argvals),
+        DenseValues(values)
+    )
 
 
 #############################################################################

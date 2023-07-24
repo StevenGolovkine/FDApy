@@ -11,9 +11,9 @@ import numpy.typing as npt
 
 from typing import Callable, Optional
 
-from ..representation.functional_data import (
-    DenseFunctionalData
-)
+from ..representation.argvals import DenseArgvals
+from ..representation.values import DenseValues
+from ..representation.functional_data import DenseFunctionalData
 from .simulation import Simulation
 
 
@@ -95,8 +95,8 @@ class Datasets(Simulation):
         """
         if self.basis_name == 'zhang_chen':
             self.data = DenseFunctionalData(
-                argvals={'input_dim_0': argvals},
-                values=_zhang_chen(n_obs=n_obs, argvals=argvals)
+                argvals=DenseArgvals({'input_dim_0': argvals}),
+                values=DenseValues(_zhang_chen(n_obs=n_obs, argvals=argvals))
             )
         else:
             raise NotImplementedError

@@ -12,6 +12,8 @@ import warnings
 
 from typing import Optional, List, Tuple, Union
 
+from ...representation.argvals import DenseArgvals
+from ...representation.values import DenseValues
 from ...representation.functional_data import (
     FunctionalData, DenseFunctionalData, MultivariateFunctionalData
 )
@@ -154,7 +156,8 @@ class UFPCA():
         # Center the data
         data_mean = data.mean()
         data_new = DenseFunctionalData(
-            data.argvals, data.values - data_mean.values
+            DenseArgvals(data.argvals),
+            DenseValues(data.values - data_mean.values)
         )
 
         # Normalize the data
@@ -230,7 +233,7 @@ class UFPCA():
         # Save the results
         self._eigenvalues = eigenvalues
         self._eigenfunctions = DenseFunctionalData(
-            data.argvals, eigenfunctions
+            DenseArgvals(data.argvals), DenseValues(eigenfunctions)
         )
 
         # Compute an estimation of the covariance
@@ -264,7 +267,7 @@ class UFPCA():
         self._eigenvectors = eigenvectors
         self._eigenvalues = eigenvalues / data.n_obs
         self._eigenfunctions = DenseFunctionalData(
-            data.argvals, eigenfunctions.T
+            DenseArgvals(data.argvals), DenseValues(eigenfunctions.T)
         )
 
         # Compute an estimation of the covariance
@@ -274,8 +277,8 @@ class UFPCA():
                 eigenvalues / data.n_obs, eigenfunctions.T
             )
             self._covariance = DenseFunctionalData(
-                {'input_dim_0': argvals, 'input_dim_1': argvals},
-                covariance[np.newaxis]
+                DenseArgvals({'input_dim_0': argvals, 'input_dim_1': argvals}),
+                DenseValues(covariance[np.newaxis])
             )
         else:
             warnings.warn((
@@ -361,13 +364,17 @@ class UFPCA():
 
         # Center the data using the estimated mean in the fitting step.
         data_new = DenseFunctionalData(
-            data.argvals, data.values - self.mean.values
+            DenseArgvals(data.argvals),
+            DenseValues(data.values - self.mean.values)
         )
 
         # TODO: Add checkers
         if self.normalize:
             values = data_new.values / self.weights
-            data_new = DenseFunctionalData(data_new.argvals, values)
+            data_new = DenseFunctionalData(
+                DenseArgvals(data_new.argvals),
+                DenseValues(values)
+            )
 
         if method == 'PACE':
             return self._pace(data_new, parameters['tol'])
@@ -496,7 +503,8 @@ class UFPCA():
         else:
             raise ValueError("The dimension of the data have to be 1 or 2.")
         return DenseFunctionalData(
-            argvals, self.weights * values + self.mean.values
+            DenseArgvals(argvals),
+            DenseValues(self.weights * values + self.mean.values)
         )
 
 
@@ -649,8 +657,8 @@ class MFPCA():
         data_mean = data.mean()
         data_new = MultivariateFunctionalData([
             DenseFunctionalData(
-                data_uni.argvals,
-                data_uni.values - mean.values
+                DenseArgvals(data_uni.argvals),
+                DenseValues(data_uni.values - mean.values)
             ) for data_uni, mean in zip(data.data, data_mean.data)
         ])
 
@@ -754,7 +762,9 @@ class MFPCA():
             argvals = function.eigenfunctions.argvals
             values = np.dot(function.eigenfunctions.values.T,
                             eigenvectors[start:end, :]).T
-            eigenfunctions.append(DenseFunctionalData(argvals, values))
+            eigenfunctions.append(
+                DenseFunctionalData(DenseArgvals(argvals), DenseValues(values))
+            )
 
         self.ufpca_list = ufpca_list
         self.scores_univariate = scores_univariate
@@ -782,12 +792,12 @@ class MFPCA():
         )
         eigenfunctions = [
             DenseFunctionalData(
-                data_uni.argvals,
-                np.transpose(
+                DenseArgvals(data_uni.argvals),
+                DenseValues(np.transpose(
                     np.matmul(
                         data_uni.values.T, eigenvectors
                     ) / np.sqrt(eigenvalues)
-                )
+                ))
             ) for data_uni in data.data
         ]
 
@@ -886,8 +896,8 @@ class MFPCA():
         # Center the data using the estimated mean in the fitting step.
         data_new = MultivariateFunctionalData([
             DenseFunctionalData(
-                data_uni.argvals,
-                data_uni.values - mean.values
+                DenseArgvals(data_uni.argvals),
+                DenseValues(data_uni.values - mean.values)
             ) for data_uni, mean in zip(data, self.mean)
         ])
 
@@ -997,7 +1007,8 @@ class MFPCA():
                     "The dimension of the data have to be 1 or 2."
                 )
             res[idx] = DenseFunctionalData(
-                eigenfunction.argvals, weight * values + mean.values
+                DenseArgvals(eigenfunction.argvals),
+                DenseValues(weight * values + mean.values)
             )
         return MultivariateFunctionalData(res)
 

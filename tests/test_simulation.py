@@ -9,6 +9,8 @@ import numpy as np
 import unittest
 from unittest.mock import patch
 
+from FDApy.representation.argvals import DenseArgvals
+from FDApy.representation.values import DenseValues
 from FDApy.representation.functional_data import (
     DenseFunctionalData,
     IrregularFunctionalData,
@@ -71,7 +73,7 @@ class TestSparsifyUnivariateData(unittest.TestCase):
         self.x = np.linspace(0, 1, num=101)
         self.y = np.sin(2 * np.pi * self.x)
         self.data = DenseFunctionalData(
-            {'input_dim_0': self.x}, self.y[np.newaxis]
+            DenseArgvals({'input_dim_0': self.x}), DenseValues(self.y[np.newaxis])
         )
 
     def test_sparsify(self):

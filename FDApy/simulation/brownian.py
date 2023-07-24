@@ -11,6 +11,8 @@ import numpy.typing as npt
 
 from typing import Callable, Optional, Tuple
 
+from ..representation.argvals import DenseArgvals
+from ..representation.values import DenseValues
 from ..representation.functional_data import DenseFunctionalData
 from .simulation import Simulation
 
@@ -367,4 +369,7 @@ class Brownian(Simulation):
                 rnorm=rnorm,
                 **kwargs
             )
-        self.data = DenseFunctionalData({'input_dim_0': argvals}, values)
+        self.data = DenseFunctionalData(
+            DenseArgvals({'input_dim_0': argvals}),
+            DenseValues(values)
+        )
