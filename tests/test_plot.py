@@ -11,6 +11,8 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 
+from FDApy.representation.argvals import DenseArgvals, IrregularArgvals
+from FDApy.representation.values import DenseValues, IrregularValues
 from FDApy.representation.functional_data import (
     DenseFunctionalData,
     IrregularFunctionalData,
@@ -48,13 +50,15 @@ class TestPlot1D(unittest.TestCase):
         self.arg_den = np.linspace(0, 1, 100)
         self.val_den = np.sin(2 * np.pi * self.arg_den)
         self.data_dense = DenseFunctionalData(
-            {'input_dim_0': self.arg_den}, self.val_den[np.newaxis]
+            DenseArgvals({'input_dim_0': self.arg_den}),
+            DenseValues(self.val_den[np.newaxis])
         )
 
         self.arg_irr = np.array([0, 1, 2, 3, 4])
         self.val_irr = np.array([1, 2, 3, 4, 5])
         self.data_irreg = IrregularFunctionalData(
-            {'input_dim_0': {0: self.arg_irr}}, {0: self.val_irr}
+            IrregularArgvals({0: DenseValues({'input_dim_0': self.arg_irr})}),
+            IrregularValues({0: self.val_irr})
         )
 
         self.labels = np.array([0])
@@ -122,16 +126,24 @@ class TestPlot2D(unittest.TestCase):
             [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]],
             [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]]
         ])
-        self.data_dense = DenseFunctionalData(self.arg_den, self.val_den)
+        self.data_dense = DenseFunctionalData(
+            DenseArgvals(self.arg_den), 
+            DenseValues(self.val_den)
+        )
 
-        self.arg_irr = {
-            'input_dim_0': {0: np.array([1, 2, 3, 4])},
-            'input_dim_1': {0: np.array([5, 6, 7])}
-        }
+        self.arg_irr = {0: DenseArgvals(
+            {
+                'input_dim_0': np.array([1, 2, 3, 4]),
+                'input_dim_1': np.array([5, 6, 7])
+            }
+        )}
         self.val_irr = {
             0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]])
         }
-        self.data_irreg = IrregularFunctionalData(self.arg_irr, self.val_irr)
+        self.data_irreg = IrregularFunctionalData(
+            IrregularArgvals(self.arg_irr),
+            IrregularValues(self.val_irr)
+        )
 
         self.labels = np.array([0, 1])
 
@@ -201,16 +213,25 @@ class TestPlot(unittest.TestCase):
     def setUp(self):
         self.arg_den_1d = np.linspace(0, 1, 100)
         self.val_den_1d = np.sin(2 * np.pi * self.arg_den_1d)
-        self.data_dense_1d = DenseFunctionalData({'input_dim_0': self.arg_den_1d}, self.val_den_1d[np.newaxis])
+        self.data_dense_1d = DenseFunctionalData(
+            DenseArgvals({'input_dim_0': self.arg_den_1d}),
+            DenseValues(self.val_den_1d[np.newaxis])
+        )
 
         self.arg_den_2d = {'input_dim_0': np.array([1, 2, 3, 4]), 'input_dim_1': np.array([5, 6, 7])}
         self.val_den_2d = np.array([[[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]], [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]]])
-        self.data_dense_2d = DenseFunctionalData(self.arg_den_2d, self.val_den_2d)
+        self.data_dense_2d = DenseFunctionalData(
+            DenseArgvals(self.arg_den_2d),
+            DenseValues(self.val_den_2d)
+        )
 
     def test_plot_error(self):
         arg_den_3d = {'input_dim_0': np.array([1, 2]), 'input_dim_1': np.array([5, 6]), 'input_dim_2': np.array([3, 4])}
         val_den_3d = np.array([[[[1, 2], [1, 2]], [[1, 2], [1, 2]]], [[[5, 6], [5, 6]], [[5, 6], [5, 6]]]])
-        data_dense_3d = DenseFunctionalData(arg_den_3d, val_den_3d)
+        data_dense_3d = DenseFunctionalData(
+            DenseArgvals(arg_den_3d),
+            DenseValues(val_den_3d)
+        )
         with self.assertRaises(ValueError):
             plot(data_dense_3d)
 
@@ -278,11 +299,17 @@ class TestPlotMultivariate(unittest.TestCase):
     def setUp(self):
         self.arg_den_1d = np.linspace(0, 1, 100)
         self.val_den_1d = np.stack([np.sin(2 * np.pi * self.arg_den_1d),np.sin(-2 * np.pi * self.arg_den_1d)])
-        self.data_dense_1d = DenseFunctionalData({'input_dim_0': self.arg_den_1d}, self.val_den_1d)
+        self.data_dense_1d = DenseFunctionalData(
+            DenseArgvals({'input_dim_0': self.arg_den_1d}),
+            DenseValues(self.val_den_1d)
+        )
 
         self.arg_den_2d = {'input_dim_0': np.array([1, 2, 3, 4]), 'input_dim_1': np.array([5, 6, 7])}
         self.val_den_2d = np.array([[[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]], [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]]])
-        self.data_dense_2d = DenseFunctionalData(self.arg_den_2d, self.val_den_2d)
+        self.data_dense_2d = DenseFunctionalData(
+            DenseArgvals(self.arg_den_2d),
+            DenseValues(self.val_den_2d)
+        )
 
         self.data = MultivariateFunctionalData([self.data_dense_1d, self.data_dense_2d])
 
@@ -335,7 +362,10 @@ class TestPlotMultivariate(unittest.TestCase):
     def test_plot_multivariate_error(self):
         arg_den_3d = {'input_dim_0': np.array([1, 2]), 'input_dim_1': np.array([5, 6]), 'input_dim_2': np.array([3, 4])}
         val_den_3d = np.array([[[[1, 2], [1, 2]], [[1, 2], [1, 2]]], [[[5, 6], [5, 6]], [[5, 6], [5, 6]]]])
-        data_dense_3d = DenseFunctionalData(arg_den_3d, val_den_3d)
+        data_dense_3d = DenseFunctionalData(
+            DenseArgvals(arg_den_3d),
+            DenseValues(val_den_3d)
+        )
 
         data = MultivariateFunctionalData([self.data_dense_1d, data_dense_3d])
         with self.assertRaises(ValueError):
