@@ -74,12 +74,16 @@ def _plot_1d(
             )
     elif isinstance(data, IrregularFunctionalData):
         for argval, value, l in zip(
-            data.argvals['input_dim_0'].values(),
+            data.argvals.values(),
             data.values.values(),
             labels
         ):
-            ax.plot(argval, value, c=colors[l], **plt_kwargs)
-            ax.scatter(argval, value, c=[colors[l]], **plt_kwargs)
+            ax.plot(
+                argval['input_dim_0'], value, c=colors[l], **plt_kwargs
+            )
+            ax.scatter(
+                argval['input_dim_0'], value, c=[colors[l]], **plt_kwargs
+            )
     else:
         raise TypeError('Data type not recognized!')
     return ax

@@ -8,6 +8,8 @@ Written with the help of ChatGPT.
 import numpy as np
 import unittest
 
+from FDApy.representation.argvals import DenseArgvals, IrregularArgvals
+from FDApy.representation.values import DenseValues, IrregularValues
 from FDApy.representation.functional_data import (
     DenseFunctionalData,
     MultivariateFunctionalData
@@ -23,9 +25,9 @@ class MultivariateFunctionalDataTest(unittest.TestCase):
             [11, 12, 13, 14, 15]
         ])
 
-        self.fdata1 = DenseFunctionalData(self.argvals, self.values)
-        self.fdata2 = DenseFunctionalData(self.argvals, self.values)
-        self.fdata3 = DenseFunctionalData(self.argvals, self.values)
+        self.fdata1 = DenseFunctionalData(DenseArgvals(self.argvals), DenseValues(self.values))
+        self.fdata2 = DenseFunctionalData(DenseArgvals(self.argvals), DenseValues(self.values))
+        self.fdata3 = DenseFunctionalData(DenseArgvals(self.argvals), DenseValues(self.values))
         self.multivariate_data = MultivariateFunctionalData([self.fdata1, self.fdata2])
 
     def test_init(self):

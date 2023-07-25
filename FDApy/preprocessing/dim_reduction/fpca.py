@@ -239,8 +239,8 @@ class UFPCA():
         # Compute an estimation of the covariance
         covariance = _compute_covariance(eigenvalues, eigenfunctions)
         self._covariance = DenseFunctionalData(
-            {'input_dim_0': argvals, 'input_dim_1': argvals},
-            covariance[np.newaxis]
+            DenseArgvals({'input_dim_0': argvals, 'input_dim_1': argvals}),
+            DenseValues(covariance[np.newaxis])
         )
 
     def _fit_inner_product(

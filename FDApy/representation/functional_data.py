@@ -817,7 +817,10 @@ class DenseFunctionalData(FunctionalData):
         self.var_noise = np.maximum(nume / argvals[upper] - argvals[lower], 0)
 
         new_argvals = {'input_dim_0': argvals, 'input_dim_1': argvals}
-        return DenseFunctionalData(new_argvals, cov[np.newaxis])
+        return DenseFunctionalData(
+            DenseArgvals(new_argvals),
+            DenseValues(cov[np.newaxis])
+        )
 
     def inner_product(
         self,

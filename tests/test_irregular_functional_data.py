@@ -4,6 +4,8 @@
 import numpy as np
 import unittest
 
+from FDApy.representation.argvals import DenseArgvals, IrregularArgvals
+from FDApy.representation.values import DenseValues, IrregularValues
 from FDApy.representation.functional_data import (
     FunctionalData,
     DenseFunctionalData,
@@ -14,18 +16,18 @@ from FDApy.representation.functional_data import (
 class TestIrregularFunctionalData(unittest.TestCase):
     def setUp(self):
         self.argvals = {
-            'input_dim_0': {
-                0: np.array([0, 1, 2, 3, 4]),
-                1: np.array([0, 2, 4]),
-                2: np.array([2, 4]),
-            }
+            0: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4])}),
+            1: DenseArgvals({'input_dim_0': np.array([0, 2, 4])}),
+            2: DenseArgvals({'input_dim_0': np.array([2, 4])}),
         }
         self.values = {
             0: np.array([1, 2, 3, 4, 5]),
             1: np.array([2, 5, 6]),
             2: np.array([4, 7]),
         }
-        self.fdata = IrregularFunctionalData(self.argvals, self.values)
+        self.fdata = IrregularFunctionalData(
+            IrregularArgvals(self.argvals), IrregularValues(self.values)
+        )
 
         self.dense_argvals = {'input_dim_0': np.array([1, 2, 3, 4, 5])}
         self.dense_values = np.array([
@@ -34,7 +36,7 @@ class TestIrregularFunctionalData(unittest.TestCase):
             [11, 12, 13, 14, 15]
         ])
         self.dense_data = DenseFunctionalData(
-            self.dense_argvals, self.dense_values
+            DenseArgvals(self.dense_argvals), DenseValues(self.dense_values)
         )
 
     def test_get_item_slice(self):
@@ -43,12 +45,12 @@ class TestIrregularFunctionalData(unittest.TestCase):
         self.assertEqual(fdata.n_obs, 2)
         self.assertEqual(fdata.n_dim, 1)
         np.testing.assert_equal(
-            fdata.argvals['input_dim_0'][1],
-            self.argvals['input_dim_0'][1]
+            fdata.argvals[1]['input_dim_0'],
+            self.argvals[1]['input_dim_0']
         )
         np.testing.assert_equal(
-            fdata.argvals['input_dim_0'][2],
-            self.argvals['input_dim_0'][2]
+            fdata.argvals[2]['input_dim_0'],
+            self.argvals[2]['input_dim_0']
         )
         np.testing.assert_equal(
             fdata.values[1],
@@ -61,8 +63,8 @@ class TestIrregularFunctionalData(unittest.TestCase):
         self.assertEqual(fdata.n_obs, 1)
         self.assertEqual(fdata.n_dim, 1)
         np.testing.assert_equal(
-            fdata.argvals['input_dim_0'][1],
-            self.argvals['input_dim_0'][1]
+            fdata.argvals[1]['input_dim_0'],
+            self.argvals[1]['input_dim_0']
         )
         np.testing.assert_equal(
             fdata.values[1],
@@ -75,13 +77,11 @@ class TestIrregularFunctionalData(unittest.TestCase):
 
     def test_argvals_setter(self):
         new_argvals = {
-            'input_dim_0': {
-                0: np.array([5, 6, 7, 8, 9]),
-                1: np.array([6, 8, 10]),
-                2: np.array([6, 8]),
-            }
+            0: DenseArgvals({'input_dim_0': np.array([5, 6, 7, 8, 9])}),
+            1: DenseArgvals({'input_dim_0': np.array([6, 8, 10])}),
+            2: DenseArgvals({'input_dim_0': np.array([6, 8])}),
         }
-        self.fdata.argvals = new_argvals
+        self.fdata.argvals = IrregularArgvals(new_argvals)
         self.assertEqual(self.fdata._argvals, new_argvals)
 
         expected_argvals_stand = {
@@ -92,16 +92,16 @@ class TestIrregularFunctionalData(unittest.TestCase):
             }
         }
         np.testing.assert_array_almost_equal(
-            self.fdata._argvals_stand['input_dim_0'][0],
-            expected_argvals_stand['input_dim_0'][0]
+            self.fdata._argvals_stand[0]['input_dim_0'],
+            expected_argvals_stand[0]['input_dim_0']
         )
         np.testing.assert_array_almost_equal(
-            self.fdata._argvals_stand['input_dim_0'][1],
-            expected_argvals_stand['input_dim_0'][1]
+            self.fdata._argvals_stand[1]['input_dim_0'],
+            expected_argvals_stand[1]['input_dim_0']
         )
         np.testing.assert_array_almost_equal(
-            self.fdata._argvals_stand['input_dim_0'][1],
-            expected_argvals_stand['input_dim_0'][1]
+            self.fdata._argvals_stand[1]['input_dim_0'],
+            expected_argvals_stand[1]['input_dim_0']
         )
 
     def test_values_property(self):

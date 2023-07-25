@@ -29,7 +29,8 @@ class TestAddNoiseUnivariateData(unittest.TestCase):
         self.x = np.linspace(0, 1, num=1001)
         self.y = np.sin(2 * np.pi * self.x)
         self.data = DenseFunctionalData(
-            {'input_dim_0': self.x}, self.y[np.newaxis]
+            DenseArgvals({'input_dim_0': self.x}),
+            DenseValues(self.y[np.newaxis])
         )
 
     def test_output_shape(self):
@@ -91,7 +92,7 @@ class TestSparsifyUnivariateData(unittest.TestCase):
         expected_max_perc = min(1, expected_percentage + expected_epsilon)
 
         actual_percentage = (
-            sparse_data[0].n_points['input_dim_0'] / 
+            sparse_data.argvals.n_points[0][0] / 
             self.data.n_points['input_dim_0']
         )
         self.assertGreaterEqual(actual_percentage, expected_min_perc)

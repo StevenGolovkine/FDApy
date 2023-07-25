@@ -18,6 +18,7 @@ from .functional_data import _tensor_product
 from .argvals import DenseArgvals
 from .values import DenseValues
 
+
 #######################################################################
 # Definition of the basis (eigenfunctions)
 

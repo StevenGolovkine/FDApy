@@ -9,6 +9,8 @@ import numpy as np
 import unittest
 import warnings
 
+from FDApy.representation.argvals import DenseArgvals
+from FDApy.representation.values import DenseValues
 from FDApy.representation.functional_data import DenseFunctionalData
 from FDApy.simulation.karhunen import KarhunenLoeve
 from FDApy.preprocessing.dim_reduction.fpca import (
@@ -309,7 +311,7 @@ class TestNumericalIntegration(unittest.TestCase):
                 [[3, 4, 5], [3, 4, 5]]
             ]
         ])
-        data = DenseFunctionalData(argvals, values)
+        data = DenseFunctionalData(DenseArgvals(argvals), DenseValues(values))
 
         uf = UFPCA(n_components=2, method='inner-product')
         uf.fit(self.data)
@@ -477,7 +479,7 @@ class TestInverseTranform(unittest.TestCase):
                 [[3, 4, 5], [3, 4, 5]]
             ]
         ])
-        uf._eigenfunctions = DenseFunctionalData(argvals, values)
+        uf._eigenfunctions = DenseFunctionalData(DenseArgvals(argvals), DenseValues(values))
 
         with self.assertRaises(ValueError):
             uf.inverse_transform(scores)

@@ -12,7 +12,9 @@ import pandas as pd
 
 from typing import Union
 
-from FDApy.representation.functional_data import (
+from ..representation.argvals import Argvals, DenseArgvals, IrregularArgvals
+from ..representation.values import Values, DenseValues, IrregularValues
+from ..representation.functional_data import (
     DenseFunctionalData,
     IrregularFunctionalData
 )
@@ -78,8 +80,8 @@ def _read_csv_dense(
         The loaded csv file
 
     """
-    argvals_ = {'input_dim_0': argvals}
-    values = np.array(data)
+    argvals_ = DenseArgvals({'input_dim_0': argvals})
+    values = DenseValues(np.array(data))
     return DenseFunctionalData(argvals_, values)
 
 
@@ -102,7 +104,12 @@ def _read_csv_irregular(
         The loaded csv file.
 
     """
-    tt = {idx: argvals[~np.isnan(row)] for idx, row in enumerate(data.values)}
-    argvals_ = {'input_dim_0': tt}
+    argvals_ = {
+        idx: DenseArgvals({'input_dim_0': argvals[~np.isnan(row)]})
+        for idx, row in enumerate(data.values)
+    }
     values = {idx: row[~np.isnan(row)] for idx, row in enumerate(data.values)}
-    return IrregularFunctionalData(argvals_, values)
+    return IrregularFunctionalData(
+        IrregularArgvals(argvals_),
+        IrregularValues(values)
+    )

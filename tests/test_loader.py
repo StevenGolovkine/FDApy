@@ -9,6 +9,8 @@ import pandas as pd
 import numpy as np
 import unittest
 
+from FDApy.representation.argvals import DenseArgvals, IrregularArgvals
+from FDApy.representation.values import DenseValues, IrregularValues
 from FDApy.representation.functional_data import (
     DenseFunctionalData, IrregularFunctionalData
 )
@@ -42,20 +44,18 @@ class TestReadCsvIrregular(unittest.TestCase):
             'col3': [9, 10, 11, 12]
         })
         self.argvals = np.array([0, 1, 2])
-        self.expected_argvals = {
-            'input_dim_0': {
-                0: np.array([0, 1, 2]),
-                1: np.array([0, 2]),
-                2: np.array([1, 2]),
-                3: np.array([0, 1, 2])
-            }
-        }
-        self.expected_values = {
+        self.expected_argvals = IrregularArgvals({
+            0: DenseArgvals({'input_dim_0': np.array([0, 1, 2])}),
+            1: DenseArgvals({'input_dim_0': np.array([0, 2])}),
+            2: DenseArgvals({'input_dim_0': np.array([1, 2])}),
+            3: DenseArgvals({'input_dim_0': np.array([0, 1, 2])})
+        })
+        self.expected_values = IrregularValues({
             0: np.array([1, 5, 9]),
             1: np.array([2, 10]),
             2: np.array([7, 11]),
             3: np.array([4, 8, 12])
-        }
+        })
 
     def test_read_csv_irregular(self):
         # read csv file
@@ -68,7 +68,7 @@ class TestReadCsvIrregular(unittest.TestCase):
         np.testing.assert_equal(obj.argvals, self.expected_argvals)
 
         # check if the values match
-        np.testing.assert_equal(obj.values, self.expected_values)
+        np.testing.assert_allclose(obj.values, self.expected_values)
 
 
 class TestReadCsv(unittest.TestCase):
@@ -98,16 +98,16 @@ class TestReadCsv(unittest.TestCase):
         irregular_obj = read_csv('irregular_test.csv')
         self.assertIsInstance(irregular_obj, IrregularFunctionalData)
         np.testing.assert_array_equal(
-            irregular_obj.argvals['input_dim_0'][0], np.array([0, 1])
+            irregular_obj.argvals[0]['input_dim_0'], np.array([0, 1])
         )
         np.testing.assert_array_equal(
-            irregular_obj.argvals['input_dim_0'][1], np.array([0])
+            irregular_obj.argvals[1]['input_dim_0'], np.array([0])
         )
         np.testing.assert_array_equal(
-            irregular_obj.argvals['input_dim_0'][2], np.array([1])
+            irregular_obj.argvals[2]['input_dim_0'], np.array([1])
         )
         np.testing.assert_array_equal(
-            irregular_obj.argvals['input_dim_0'][3], np.array([0, 1])
+            irregular_obj.argvals[3]['input_dim_0'], np.array([0, 1])
         )
 
         np.testing.assert_array_equal(

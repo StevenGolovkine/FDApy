@@ -57,7 +57,7 @@ class TestPlot1D(unittest.TestCase):
         self.arg_irr = np.array([0, 1, 2, 3, 4])
         self.val_irr = np.array([1, 2, 3, 4, 5])
         self.data_irreg = IrregularFunctionalData(
-            IrregularArgvals({0: DenseValues({'input_dim_0': self.arg_irr})}),
+            IrregularArgvals({0: DenseArgvals({'input_dim_0': self.arg_irr})}),
             IrregularValues({0: self.val_irr})
         )
 
