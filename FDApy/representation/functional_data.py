@@ -223,12 +223,12 @@ class FunctionalData(ABC):
         return self._argvals
 
     @argvals.setter
+    @abstractmethod
     def argvals(
         self,
         new_argvals: Type[Argvals]
     ) -> None:
         """Setter for argvals."""
-        self._argvals = new_argvals
 
     @property
     def argvals_stand(
@@ -242,6 +242,7 @@ class FunctionalData(ABC):
         self,
         new_argvals_stand: Type[Argvals]
     ) -> None:
+        """Setter for argvals_stand."""
         self._argvals_stand = new_argvals_stand
 
     @property
@@ -252,11 +253,12 @@ class FunctionalData(ABC):
         return self._values
 
     @values.setter
+    @abstractmethod
     def values(
         self,
         new_values: Type[Values]
     ) -> None:
-        self._values = new_values
+        """Setter for values."""
 
     @property
     def n_obs(self) -> int:
@@ -497,12 +499,7 @@ class DenseFunctionalData(FunctionalData):
 
     ###########################################################################
     # Properties
-    @property
-    def argvals(self) -> DenseArgvals:
-        """Getter for argvals."""
-        return self._argvals
-
-    @argvals.setter
+    @FunctionalData.argvals.setter
     def argvals(
         self,
         new_argvals: DenseArgvals
@@ -515,14 +512,7 @@ class DenseFunctionalData(FunctionalData):
         self._argvals = new_argvals
         self._argvals_stand = self._argvals.normalization()
 
-    @property
-    def values(
-        self
-    ) -> DenseValues:
-        """Getter for values."""
-        return self._values
-
-    @values.setter
+    @FunctionalData.values.setter
     def values(
         self,
         new_values: DenseValues
@@ -1213,12 +1203,7 @@ class IrregularFunctionalData(FunctionalData):
 
     ###########################################################################
     # Properties
-    @property
-    def argvals(self) -> IrregularArgvals:
-        """Getter for argvals."""
-        return self._argvals
-
-    @argvals.setter
+    @FunctionalData.argvals.setter
     def argvals(
         self,
         new_argvals: IrregularArgvals
@@ -1239,14 +1224,7 @@ class IrregularFunctionalData(FunctionalData):
                 )
         self.argvals_stand = argvals_stand
 
-    @property
-    def values(
-        self
-    ) -> IrregularValues:
-        """Getter for values."""
-        return self._values
-
-    @values.setter
+    @FunctionalData.values.setter
     def values(
         self,
         new_values: IrregularValues

@@ -326,3 +326,13 @@ class IrregularArgvals(Argvals):
         return IrregularArgvals(
             {obs: argvals.normalization() for obs, argvals in self.items()}
         )
+
+    def switch(self) -> dict[str, dict[int, npt.NDArray[np.float64]]]:
+        """Switch the dictionary."""
+        switched_dict = {}
+        for outer_key, inner_dict in self.items():
+            for inner_key, value in inner_dict.items():
+                if inner_key not in switched_dict:
+                    switched_dict[inner_key] = {}
+                switched_dict[inner_key][outer_key] = value
+        return switched_dict
