@@ -50,10 +50,10 @@ class MultivariateFunctionalDataTest(unittest.TestCase):
         actual_n_functional = self.multivariate_data.n_functional
         self.assertEqual(actual_n_functional, expected_n_functional)
 
-    def test_n_dim(self):
-        expected_n_dim = [1, 1]
-        actual_n_dim = self.multivariate_data.n_dim
-        self.assertEqual(actual_n_dim, expected_n_dim)
+    def test_n_dimension(self):
+        expected_n_dimension = [1, 1]
+        actual_n_dimension = self.multivariate_data.n_dimension
+        self.assertEqual(actual_n_dimension, expected_n_dimension)
 
     def test_range_obs(self):
         expected_range_obs = [(1, 15), (1, 15)]

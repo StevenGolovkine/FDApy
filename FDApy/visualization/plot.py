@@ -186,10 +186,10 @@ def plot(
     """
     if labels is None:
         labels = np.arange(data.n_obs)
-    if data.n_dim == 1:
+    if data.n_dimension == 1:
         ax = _init_ax(ax, projection='rectilinear')
         ax = _plot_1d(data, labels, colors, ax, **plt_kwargs)
-    elif data.n_dim == 2:
+    elif data.n_dimension == 2:
         if data.n_obs == 1:
             ax = _init_ax(ax, projection='rectilinear')
         else:
@@ -197,7 +197,7 @@ def plot(
         ax = _plot_2d(data, labels, colors, ax, **plt_kwargs)
     else:
         raise ValueError(
-            f"Can not plot functions of dimension {data.n_dim},"
+            f"Can not plot functions of dimension {data.n_dimension},"
             " limited to dimension 2."
         )
     return ax
@@ -251,13 +251,13 @@ def plot_multivariate(
     for n, data in enumerate(data.data):
         ax = plt.subplot(nrows, ncols, n + 1)
         ax.set_title(titles[n])
-        if data.n_dim == 1:
+        if data.n_dimension == 1:
             axes.append(plot(data, labels=labels, colors=colors, ax=ax))
-        elif data.n_dim == 2:
+        elif data.n_dimension == 2:
             axes.append(plot(data[0], labels=labels, colors=colors, ax=ax))
         else:
             raise ValueError(
-                f"Can not plot functions of dimension {data.n_dim},"
+                f"Can not plot functions of dimension {data.n_dimension},"
                 " limited to dimension 2."
             )
     return axes

@@ -382,13 +382,13 @@ def _compute_data(
     Maybe, at some point, this function should be in functionaldata.py
 
     """
-    if basis.n_dim == 1:
+    if basis.n_dimension == 1:
         values = np.matmul(coefficients, basis.values)
-    elif basis.n_dim == 2:
+    elif basis.n_dimension == 2:
         values = np.tensordot(coefficients, basis.values, axes=1)
     else:
         raise ValueError(
-            f"The basis dimension {basis.n_dim} has to be 1D or 2D."
+            f"The basis dimension {basis.n_dimension} has to be 1D or 2D."
         )
     return DenseFunctionalData(
         DenseArgvals(basis.argvals),

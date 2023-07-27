@@ -164,10 +164,10 @@ class Simulation(ABC):
         if (
             (
                 isinstance(self.data, DenseFunctionalData) and
-                self.data.n_dim > 1
+                self.data.n_dimension > 1
             ) or (
                 isinstance(self.data, MultivariateFunctionalData) and
-                all(n_dim > 1 for n_dim in self.data.n_dim)
+                all(n_dim > 1 for n_dim in self.data.n_dimension)
             )
         ):
             raise ValueError(

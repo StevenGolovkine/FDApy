@@ -186,8 +186,8 @@ class TestDenseFunctionalData2D(unittest.TestCase):
     def test_n_obs(self):
         self.assertEqual(self.dense_fd.n_obs, 5)
 
-    def test_n_dim(self):
-        self.assertEqual(self.dense_fd.n_dim, 2)
+    def test_n_dimension(self):
+        self.assertEqual(self.dense_fd.n_dimension, 2)
 
     def test_range_obs(self):
         self.assertEqual(self.dense_fd.range_obs, (1, 7))

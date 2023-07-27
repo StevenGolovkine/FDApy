@@ -167,12 +167,12 @@ class UFPCA():
         # Estimate eigencomponents
         self._mean = data_mean
         if self.method == 'covariance':
-            if data_new.n_dim == 1:
+            if data_new.n_dimension == 1:
                 self._fit_covariance(data_new)
             else:
                 raise ValueError((
                     "Estimation of the eigencomponents is not implemented "
-                    f"for {data_new.n_dim}-dimensional data."
+                    f"for {data_new.n_dimension}-dimensional data."
                 ))
         elif self.method == 'inner-product':
             self._fit_inner_product(data_new)
@@ -271,7 +271,7 @@ class UFPCA():
         )
 
         # Compute an estimation of the covariance
-        if data.n_dim == 1:
+        if data.n_dimension == 1:
             argvals = data.argvals['input_dim_0']
             covariance = _compute_covariance(
                 eigenvalues / data.n_obs, eigenfunctions.T
@@ -283,7 +283,7 @@ class UFPCA():
         else:
             warnings.warn((
                 "The estimation of the covariance is not performed for "
-                f"{data.n_dim}-dimensional data."
+                f"{data.n_dimension}-dimensional data."
             ), UserWarning)
 
     def transform(
@@ -447,7 +447,7 @@ class UFPCA():
             functions defined by the eigenfunctions.
 
         """
-        if data.n_dim > 2:
+        if data.n_dimension > 2:
             raise ValueError("The dimension of the data have to be 1 or 2.")
 
         projection = _integrate(
@@ -455,7 +455,7 @@ class UFPCA():
             y=[traj * self.eigenfunctions.values for traj in data.values],
             method=method
         )
-        if data.n_dim == 2:
+        if data.n_dimension == 2:
             return _integrate(
                 x=data.argvals['input_dim_1'],
                 y=projection,
@@ -492,9 +492,9 @@ class UFPCA():
 
         """
         argvals = self.eigenfunctions.argvals
-        if self.eigenfunctions.n_dim == 1:
+        if self.eigenfunctions.n_dimension == 1:
             values = np.dot(scores, self.eigenfunctions.values)
-        elif self.eigenfunctions.n_dim == 2:
+        elif self.eigenfunctions.n_dimension == 2:
             values = np.einsum(
                 'ij,jkl->ikl',
                 scores,
@@ -695,13 +695,13 @@ class MFPCA():
         # Step 1: Perform univariate fPCA on each functions.
         ufpca_list, scores = [], []
         for function, n in zip(data, self.n_components):
-            if function.n_dim == 1:
+            if function.n_dimension == 1:
                 ufpca = UFPCA(n_components=n, normalize=True)
                 ufpca.fit(data=function)
                 scores_uni = ufpca.transform(
                     data=function, method=scores_method
                 )
-            elif function.n_dim == 2:
+            elif function.n_dimension == 2:
                 n_points = function.n_points
                 mat_v = np.diff(np.identity(n_points['input_dim_0']))
                 mat_w = np.diff(np.identity(n_points['input_dim_1']))
@@ -949,9 +949,9 @@ class MFPCA():
                 y=[traj * eigen.values for traj in dat_uni.values],
                 method=method
             )
-            if eigen.n_dim == 1:
+            if eigen.n_dimension == 1:
                 scores_uni[idx] = projection
-            elif eigen.n_dim == 2:
+            elif eigen.n_dimension == 2:
                 scores_uni[idx] = _integrate(
                     x=dat_uni.argvals['input_dim_1'],
                     y=projection,
@@ -998,9 +998,9 @@ class MFPCA():
         for idx, (mean, eigenfunction, weight) in enumerate(
             zip(self.mean, self.eigenfunctions, self.weights)
         ):
-            if eigenfunction.n_dim == 1:
+            if eigenfunction.n_dimension == 1:
                 values = np.dot(scores, eigenfunction.values)
-            elif eigenfunction.n_dim == 2:
+            elif eigenfunction.n_dimension == 2:
                 values = np.einsum('ij,jkl->ikl', scores, eigenfunction.values)
             else:
                 raise ValueError(

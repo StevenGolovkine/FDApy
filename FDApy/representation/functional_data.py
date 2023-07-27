@@ -94,7 +94,7 @@ class FunctionalData(ABC):
             When all `fdata` do not have the same dimension.
 
         """
-        n_dim = set(obj.n_dim for obj in fdata)
+        n_dim = set(obj.n_dimension for obj in fdata)
         if len(n_dim) > 1:
             raise ValueError("Elements do not have the same dimensions.")
 
@@ -155,7 +155,7 @@ class FunctionalData(ABC):
         """Override print function."""
         return (
             f"Functional data object with {self.n_obs} observations on a "
-            f"{self.n_dim}-dimensional support."
+            f"{self.n_dimension}-dimensional support."
         )
 
     def __iter__(self):
@@ -270,15 +270,10 @@ class FunctionalData(ABC):
             Number of observations within the functional data.
 
         """
-        return len(self.values)
+        return self.values.n_obs
 
     @property
-    @abstractmethod
-    def range_obs(self) -> Tuple[float, float]:
-        """Get the range of the observations of the object."""
-
-    @property
-    def n_dim(self) -> int:
+    def n_dimension(self) -> int:
         """Get the number of input dimension of the functional data.
 
         Returns
@@ -287,12 +282,17 @@ class FunctionalData(ABC):
             Number of input dimension with the functional data.
 
         """
-        return len(self.argvals)
+        return self.argvals.n_dimension
 
     @property
     @abstractmethod
     def n_points(self) -> Dict[str, int]:
         """Get the mean number of sampling points."""
+
+    @property
+    @abstractmethod
+    def range_obs(self) -> Tuple[float, float]:
+        """Get the range of the observations of the object."""
 
     @property
     @abstractmethod
@@ -525,19 +525,6 @@ class DenseFunctionalData(FunctionalData):
         self._values = new_values
 
     @property
-    def range_obs(self) -> Tuple[float, float]:
-        """Get the range of the observations of the object.
-
-        Returns
-        -------
-        Tuple[float, float]
-            Tuple containing the mimimum and maximum values taken by all the
-            observations for the object.
-
-        """
-        return np.min(self.values), np.max(self.values)
-
-    @property
     def n_points(self) -> Dict[str, int]:
         """Get the mean number of sampling points.
 
@@ -553,6 +540,19 @@ class DenseFunctionalData(FunctionalData):
 
         """
         return {idx: len(points) for idx, points in self.argvals.items()}
+
+    @property
+    def range_obs(self) -> Tuple[float, float]:
+        """Get the range of the observations of the object.
+
+        Returns
+        -------
+        Tuple[float, float]
+            Tuple containing the mimimum and maximum values taken by all the
+            observations for the object.
+
+        """
+        return np.min(self.values), np.max(self.values)
 
     @property
     def range_dim(self) -> Dict[str, Tuple[int, int]]:
@@ -623,14 +623,14 @@ class DenseFunctionalData(FunctionalData):
             The norm of each observations.
 
         """
-        if self.n_dim == 1:
+        if self.n_dimension == 1:
             int_func = _integrate
             if use_argvals_stand:
                 x = self.argvals_stand['input_dim_0']
             else:
                 x = self.argvals['input_dim_0']
             params = {'x': x}
-        elif self.n_dim == 2:
+        elif self.n_dimension == 2:
             int_func = _integrate_2d
             if use_argvals_stand:
                 x = self.argvals_stand['input_dim_0']
@@ -688,7 +688,7 @@ class DenseFunctionalData(FunctionalData):
         mean_estim = self.values.mean(axis=0)
 
         if smooth is not None:
-            if self.n_dim > 1:
+            if self.n_dimension > 1:
                 raise ValueError('Only one dimensional data can be smoothed.')
             if smooth == 'LocalLinear':
                 data_smooth = self.smooth(
@@ -744,7 +744,7 @@ class DenseFunctionalData(FunctionalData):
         TODO: Split into multiple functions. Modify LocalLinear part.
 
         """
-        if self.n_dim > 1:
+        if self.n_dimension > 1:
             raise ValueError(
                 'Only one dimensional functional data are supported'
             )
@@ -899,11 +899,11 @@ class DenseFunctionalData(FunctionalData):
         """
         # Get parameters
         n_obs = self.n_obs
-        if self.n_dim == 1:
+        if self.n_dimension == 1:
             inner_func = _inner_product
             axis = self.argvals['input_dim_0']
             params = {'axis': axis}
-        elif self.n_dim == 2:
+        elif self.n_dimension == 2:
             inner_func = _inner_product_2d
             primary_axis = self.argvals['input_dim_0']
             secondary_axis = self.argvals['input_dim_1']
@@ -1044,14 +1044,14 @@ class DenseFunctionalData(FunctionalData):
         American Statistical Association.
 
         """
-        if self.n_dim == 1:
+        if self.n_dimension == 1:
             int_func = _integrate
             if use_argvals_stand:
                 x = self.argvals_stand['input_dim_0']
             else:
                 x = self.argvals['input_dim_0']
             params = {'x': x}
-        elif self.n_dim == 2:
+        elif self.n_dimension == 2:
             int_func = _integrate_2d
             if use_argvals_stand:
                 x = self.argvals_stand['input_dim_0']
@@ -1235,20 +1235,6 @@ class IrregularFunctionalData(FunctionalData):
         self._values = new_values
 
     @property
-    def range_obs(self) -> Tuple[float, float]:
-        """Get the range of the observations of the object.
-
-        Returns
-        -------
-        Tuple[float, float]
-            Tuple containing the mimimum and maximum values taken by all the
-            observations for the object.
-
-        """
-        ranges = [(np.min(obs), np.max(obs)) for obs in self.values.values()]
-        return min(min(ranges)), max(max(ranges))
-
-    @property
     def n_points(self) -> Dict[str, int]:
         """Get the mean number of sampling points.
 
@@ -1263,6 +1249,20 @@ class IrregularFunctionalData(FunctionalData):
         for idx, points in self.argvals.items():
             n_points[idx] = np.mean([len(p) for p in points.values()])
         return n_points
+
+    @property
+    def range_obs(self) -> Tuple[float, float]:
+        """Get the range of the observations of the object.
+
+        Returns
+        -------
+        Tuple[float, float]
+            Tuple containing the mimimum and maximum values taken by all the
+            observations for the object.
+
+        """
+        ranges = [(np.min(obs), np.max(obs)) for obs in self.values.values()]
+        return min(min(ranges)), max(max(ranges))
 
     @property
     def range_dim(self) -> Dict[str, Tuple[int, int]]:
@@ -1631,7 +1631,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         return len(self.data)
 
     @property
-    def n_dim(self) -> List[int]:
+    def n_dimension(self) -> List[int]:
         """Get the dimension of the functional data.
 
         Returns
@@ -1641,7 +1641,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             data.
 
         """
-        return [fdata.n_dim for fdata in self.data]
+        return [fdata.n_dimension for fdata in self.data]
 
     @property
     def range_obs(self) -> List[Tuple[float, float]]:
