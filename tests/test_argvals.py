@@ -209,6 +209,25 @@ class TestIrregularArgvals(unittest.TestCase):
         )
         np.testing.assert_allclose(argvals.normalization(), expected_output)
 
+    def test_to_dense(self):
+        argvals_1 = DenseArgvals({
+            'input_dim_0': np.array([1, 2, 3]),
+            'input_dim_1': np.array([4, 5, 6])
+        })
+        argvals_2 = DenseArgvals({
+            'input_dim_0': np.array([2, 4, 6]),
+            'input_dim_1': np.array([1, 3, 5])
+        })
+        argvals = IrregularArgvals({0: argvals_1, 1: argvals_2})
+        result = argvals.to_dense()
+
+        expected_result = DenseArgvals({
+            'input_dim_0': np.array([1, 2, 3, 4, 6]),
+            'input_dim_1': np.array([1, 3, 4, 5, 6])
+        })
+
+        np.testing.assert_equal(result, expected_result)
+
 
 class TestSwitchMethod(unittest.TestCase):
     def setUp(self):

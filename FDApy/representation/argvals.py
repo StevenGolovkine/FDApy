@@ -13,7 +13,7 @@ import numpy.typing as npt
 
 from abc import abstractmethod
 from collections import UserDict
-from typing import Any, Type, TYPE_CHECKING
+from typing import Any, Dict, Tuple, Type, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .values import Values
@@ -192,11 +192,11 @@ class DenseArgvals(Argvals):
         return True
 
     @property
-    def n_points(self):
+    def n_points(self) -> Tuple[int, ...]:
         """Get the number of sampling points of each dimension."""
         return tuple(dim.shape[0] for dim in self.values())
 
-    def normalization(self):
+    def normalization(self) -> DenseArgvals:
         r"""Normalize the DenseArgvals.
 
         This function normalizes the Argvals by applying the following
@@ -229,7 +229,7 @@ class IrregularArgvals(Argvals):
 
     """
 
-    def __setitem__(self, key: int, value: DenseArgvals):
+    def __setitem__(self, key: int, value: DenseArgvals) -> None:
         """Set the value for a given key.
 
         This method sets the value for the specified key in the
@@ -305,11 +305,11 @@ class IrregularArgvals(Argvals):
         return True
 
     @property
-    def n_points(self):
+    def n_points(self) -> Dict[int, Tuple[int, ...]]:
         """Get the number of sampling points of each dimension."""
         return {obs: argvals.n_points for obs, argvals in self.items()}
 
-    def normalization(self):
+    def normalization(self) -> IrregularArgvals:
         r"""Normalize the IrregularArgvals.
 
         This function normalizes the Argvals by applying the following
@@ -327,7 +327,7 @@ class IrregularArgvals(Argvals):
             {obs: argvals.normalization() for obs, argvals in self.items()}
         )
 
-    def switch(self) -> dict[str, dict[int, npt.NDArray[np.float64]]]:
+    def switch(self) -> Dict[str, Dict[int, npt.NDArray[np.float64]]]:
         """Switch the dictionary.
 
         This function switches nested dictionaries. It convert an
@@ -370,3 +370,42 @@ class IrregularArgvals(Argvals):
                     switched_dict[inner_key] = {}
                 switched_dict[inner_key][outer_key] = value
         return switched_dict
+
+    def to_dense(self) -> DenseArgvals:
+        """Concatenate IrregularArgvals to DenseArgvals.
+
+        This function concatenates the sampling points of IrregularArgvals into
+        a DenseArgvals object. The duplicated sampling points are dropped.
+
+        Returns
+        -------
+        DenseArgvals
+            The concatenation of the IrregularArgvals.
+
+        Examples
+        --------
+        >>> argvals_1 = DenseArgvals(
+        ...     {
+        ...         'input_dim_0': np.array([1, 2, 3]),
+        ...         'input_dim_1': np.array([4, 5, 6])
+        ...     }
+        ... )
+        >>> argvals_2 = DenseArgvals(
+        ...     {
+        ...         'input_dim_0': np.array([2, 4, 6]),
+        ...         'input_dim_1': np.array([1, 3, 5])
+        ...     }
+        ... )
+        >>> argvals = IrregularArgvals({0: argvals_1, 1: argvals_2})
+
+        >>> argvals.to_dense()
+        {
+            'input_dim_0': array([1, 2, 3, 4, 6]),
+            'input_dim_1': array([1, 3, 4, 5, 6])
+        }
+
+        """
+        dense_dict = {}
+        for idx, dim in self.switch().items():
+            dense_dict[idx] = np.unique(np.concatenate(list(dim.values())))
+        return DenseArgvals(dense_dict)
