@@ -15,29 +15,25 @@ from FDApy.representation.functional_data import (
 
 class TestIrregularFunctionalData(unittest.TestCase):
     def setUp(self):
-        self.argvals = {
+        self.argvals = IrregularArgvals({
             0: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4])}),
             1: DenseArgvals({'input_dim_0': np.array([0, 2, 4])}),
             2: DenseArgvals({'input_dim_0': np.array([2, 4])}),
-        }
-        self.values = {
+        })
+        self.values = IrregularValues({
             0: np.array([1, 2, 3, 4, 5]),
             1: np.array([2, 5, 6]),
             2: np.array([4, 7]),
-        }
-        self.fdata = IrregularFunctionalData(
-            IrregularArgvals(self.argvals), IrregularValues(self.values)
-        )
+        })
+        self.fdata = IrregularFunctionalData(self.argvals, self.values)
 
-        self.dense_argvals = {'input_dim_0': np.array([1, 2, 3, 4, 5])}
-        self.dense_values = np.array([
+        self.dense_argvals = DenseArgvals({'input_dim_0': np.array([1, 2, 3, 4, 5])})
+        self.dense_values = DenseValues(np.array([
             [1, 2, 3, 4, 5],
             [6, 7, 8, 9, 10],
             [11, 12, 13, 14, 15]
-        ])
-        self.dense_data = DenseFunctionalData(
-            DenseArgvals(self.dense_argvals), DenseValues(self.dense_values)
-        )
+        ]))
+        self.dense_data = DenseFunctionalData(self.dense_argvals, self.dense_values)
 
     def test_get_item_slice(self):
         fdata = self.fdata[1:3]
@@ -73,47 +69,34 @@ class TestIrregularFunctionalData(unittest.TestCase):
 
     def test_argvals_getter(self):
         argvals = self.fdata.argvals
-        self.assertEqual(argvals, self.argvals)
+        np.testing.assert_equal(argvals, self.argvals)
 
     def test_argvals_setter(self):
-        new_argvals = {
+        new_argvals = IrregularArgvals({
             0: DenseArgvals({'input_dim_0': np.array([5, 6, 7, 8, 9])}),
             1: DenseArgvals({'input_dim_0': np.array([6, 8, 10])}),
             2: DenseArgvals({'input_dim_0': np.array([6, 8])}),
-        }
-        self.fdata.argvals = IrregularArgvals(new_argvals)
-        self.assertEqual(self.fdata._argvals, new_argvals)
+        })
+        self.fdata.argvals = new_argvals
+        np.testing.assert_equal(self.fdata._argvals, new_argvals)
 
-        expected_argvals_stand = {
-            'input_dim_0': {
-                0: np.array([0, 0.2, 0.4, 0.6, 0.8]),
-                1: np.array([0.2, 0.6, 1]),
-                2: np.array([0.2, 0.6]),
-            }
-        }
-        np.testing.assert_array_almost_equal(
-            self.fdata._argvals_stand[0]['input_dim_0'],
-            expected_argvals_stand[0]['input_dim_0']
-        )
-        np.testing.assert_array_almost_equal(
-            self.fdata._argvals_stand[1]['input_dim_0'],
-            expected_argvals_stand[1]['input_dim_0']
-        )
-        np.testing.assert_array_almost_equal(
-            self.fdata._argvals_stand[1]['input_dim_0'],
-            expected_argvals_stand[1]['input_dim_0']
-        )
+        expected_argvals_stand = IrregularArgvals({
+            0: DenseArgvals({'input_dim_0': np.array([0, 0.2, 0.4, 0.6, 0.8])}),
+            1: DenseArgvals({'input_dim_0': np.array([0.2, 0.6, 1])}),
+            2: DenseArgvals({'input_dim_0': np.array([0.2, 0.6])}),
+        })
+        np.testing.assert_equal(self.fdata.argvals_stand, expected_argvals_stand)
 
     def test_values_property(self):
         values = self.fdata.values
         np.testing.assert_array_equal(values, self.values)
 
     def test_values_setter(self):
-        new_values = {
+        new_values = IrregularValues({
             0: np.array([1, 4, 3, 4, 9]),
             1: np.array([1, 5, 3]),
             2: np.array([7, 7]),
-        }
+        })
         self.fdata.values = new_values
         np.testing.assert_array_equal(self.fdata.values, new_values)
 
@@ -124,10 +107,6 @@ class TestIrregularFunctionalData(unittest.TestCase):
     def test_n_points(self):
         expected_n_points = {'input_dim_0': 10 / 3}
         self.assertDictEqual(self.fdata.n_points, expected_n_points)
-
-    def test_range_dim(self):
-        expected_range_dim = {'input_dim_0': (0, 4)}
-        self.assertDictEqual(expected_range_dim, self.fdata.range_dim)
 
     def test_shape(self):
         expected_shape = {'input_dim_0': 5}
@@ -226,13 +205,19 @@ class TestIrregularFunctionalData1D(unittest.TestCase):
     """Test class for the class IrregularFunctionalData in one dimension."""
 
     def setUp(self):
-        argvals = {'input_dim_0': {0: np.array([1, 2, 3, 4]),
-                                   1: np.array([2, 4]),
-                                   2: np.array([0, 2, 3])}}
-        values = {0: np.array([1, 2, 3, 4]),
-                  1: np.array([5, 6]),
-                  2: np.array([8, 9, 7],)}
-        self.irregu_fd = IrregularFunctionalData(argvals, values)
+        self.argvals = {
+            0: DenseArgvals({'input_dim_0': np.array([1, 2, 3, 4])}),
+            1: DenseArgvals({'input_dim_0': np.array([2, 4])}),
+            2: DenseArgvals({'input_dim_0': np.array([0, 2, 3])}),
+        }
+        self.values = {
+            0: np.array([1, 2, 3, 4]),
+            1: np.array([5, 6]),
+            2: np.array([8, 9, 7]),
+        }
+        self.irregu_fd = IrregularFunctionalData(
+            IrregularArgvals(self.argvals), IrregularValues(self.values)
+        )
 
     def test_argvals_stand(self):
         is_equal = [np.allclose(self.irregu_fd.argvals_stand['input_dim_0'][0],
@@ -251,9 +236,6 @@ class TestIrregularFunctionalData1D(unittest.TestCase):
 
     def test_range_obs(self):
         self.assertEqual(self.irregu_fd.range_obs, (1, 9))
-
-    def test_range_dim(self):
-        self.assertEqual(self.irregu_fd.range_dim, {'input_dim_0': (0, 4)})
 
     def test_shape(self):
         self.assertEqual(self.irregu_fd.shape, {'input_dim_0': 5})
@@ -286,16 +268,28 @@ class TestIrregularFunctionalData2D(unittest.TestCase):
     """Test class for the class IrregularFunctionalData in two dimension."""
 
     def setUp(self):
-        argvals = {'input_dim_0': {0: np.array([1, 2, 3, 4]),
-                                   1: np.array([2, 4]),
-                                   2: np.array([4, 5, 6])},
-                   'input_dim_1': {0: np.array([5, 6, 7]),
-                                   1: np.array([1, 2, 3]),
-                                   2: np.array([8, 9])}}
-        values = {0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
-                  1: np.array([[1, 2, 3], [1, 2, 3]]),
-                  2: np.array([[8, 9], [8, 9], [8, 9]])}
-        self.irregu_fd = IrregularFunctionalData(argvals, values)
+        argvals = {
+            0: DenseArgvals({
+                'input_dim_0': np.array([1, 2, 3, 4]),
+                'input_dim_1': np.array([5, 6, 7])
+            }),
+            1: DenseArgvals({
+                'input_dim_0': np.array([2, 4]),
+                'input_dim_1': np.array([1, 2, 3])
+            }),
+            2: DenseArgvals({
+                'input_dim_0': np.array([4, 5, 6]),
+                'input_dim_1': np.array([8, 9])
+            })
+        }
+        values = {
+            0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
+            1: np.array([[1, 2, 3], [1, 2, 3]]),
+            2: np.array([[8, 9], [8, 9], [8, 9]])
+        }
+        self.irregu_fd = IrregularFunctionalData(
+            IrregularArgvals(argvals), IrregularValues(values)
+        )
 
     def test_argvals_stand(self):
         is_equal = [np.allclose(self.irregu_fd.argvals_stand['input_dim_0'][0],
@@ -320,10 +314,6 @@ class TestIrregularFunctionalData2D(unittest.TestCase):
 
     def test_range_obs(self):
         self.assertEqual(self.irregu_fd.range_obs, (1, 9))
-
-    def test_range_dim(self):
-        self.assertEqual(self.irregu_fd.range_dim, {'input_dim_0': (1, 6),
-                                                    'input_dim_1': (1, 9)})
 
     def test_shape(self):
         self.assertEqual(self.irregu_fd.shape, {'input_dim_0': 6,

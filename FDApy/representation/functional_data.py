@@ -296,11 +296,6 @@ class FunctionalData(ABC):
 
     @property
     @abstractmethod
-    def range_dim(self) -> Dict[str, Tuple[int, int]]:
-        """Range of the `argvals` for each of the dimension."""
-
-    @property
-    @abstractmethod
     def shape(self) -> Dict[str, int]:
         """Shape of the data for each dimension."""
 
@@ -553,22 +548,6 @@ class DenseFunctionalData(FunctionalData):
 
         """
         return np.min(self.values), np.max(self.values)
-
-    @property
-    def range_dim(self) -> Dict[str, Tuple[int, int]]:
-        """Get the range of the `argvals` for each of the dimension.
-
-        Returns
-        -------
-        Dict[str, Tuple[int, int]]
-            Dictionary containing the range of the argvals for each of the
-            input dimension.
-
-        """
-        return {
-            idx: (min(argval), max(argval))
-            for idx, argval in self.argvals.items()
-        }
 
     @property
     def shape(self) -> Dict[str, int]:
@@ -1099,36 +1078,39 @@ class IrregularFunctionalData(FunctionalData):
     --------
     For 1-dimensional irregular data:
 
-    >>> argvals = {
-    ...     'input_dim_0': {
-    ...         0: np.array([0, 1, 2, 3, 4]),
-    ...         1: np.array([0, 2, 4]),
-    ...         2: np.array([2, 4])
-    ...     }
-    ... }
-    >>> values = {
+    >>> argvals = IrregularArgvals({
+    ...     0: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4])}),
+    ...     1: DenseArgvals({'input_dim_0': np.array([0, 2, 4])}),
+    ...     2: DenseArgvals({'input_dim_0': np.array([2, 4])})
+    ... })
+    >>> values = IrregularValues({
     ...     0: np.array([1, 2, 3, 4, 5]),
     ...     1: np.array([2, 5, 6]),
     ...     2: np.array([4, 7])
-    ... }
+    ... })
     >>> IrregularFunctionalData(argvals, values)
 
     For 2-dimensional irregular data:
 
-    >>> argvals = {
-    ...     'input_dim_0': {
-    ...         0: np.array([1, 2, 3, 4]),
-    ...         1: np.array([2, 4])
-    ...     },
-    ...     'input_dim_1': {
-    ...         0: np.array([5, 6, 7]),
-    ...         1: np.array([1, 2, 3])
-    ...     }
-    ... }
-    >>> values = {
+    >>> argvals = IrregularArgvals({
+    ...     0: DenseArgvals({
+    ...         'input_dim_0': np.array([1, 2, 3, 4]),
+    ...         'input_dim_1': np.array([5, 6, 7])
+    ...     }),
+    ...     1: DenseArgvals({
+    ...         'input_dim_0': np.array([2, 4]),
+    ...         'input_dim_1': np.array([1, 2, 3])
+    ...     }),
+    ...     2: DenseArgvals({
+    ...         'input_dim_0': np.array([4, 5, 6]),
+    ...         'input_dim_1': np.array([8, 9])
+    ...     })
+    ... })
+    >>> values = IrregularValues({
     ...     0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
-    ...     1: np.array([[1, 2, 3], [1, 2, 3]])
-    ... }
+    ...     1: np.array([[1, 2, 3], [1, 2, 3]]),
+    ...     2: np.array([[8, 9], [8, 9], [8, 9]])
+    ... })
     >>> IrregularFunctionalData(argvals, values)
 
     """
@@ -1209,20 +1191,12 @@ class IrregularFunctionalData(FunctionalData):
         new_argvals: IrregularArgvals
     ) -> None:
         """Setter for argvals."""
-        # IrregularFunctionalData._check_argvals_length(new_argvals)
+        if not isinstance(new_argvals, IrregularArgvals):
+            raise TypeError('new_argvals must be a IrregularArgvals object.')
+        if hasattr(self, 'values'):
+            self._values.compatible_with(new_argvals)
         self._argvals = new_argvals
-        # points = self.gather_points()
-
-        # argvals_stand: IrregularArgvals = {}
-        # for dim, obss in new_argvals.items():
-        #     max_x, min_x = np.max(points[dim]), np.min(points[dim])
-
-        #     argvals_stand[dim] = {}
-        #     for obs, point in obss.items():
-        #         argvals_stand[dim][obs] = _normalization(
-        #             point, max_x, min_x
-        #         )
-        # self.argvals_stand = argvals_stand
+        self._argvals_stand = self._argvals.normalization()
 
     @FunctionalData.values.setter
     def values(
@@ -1230,8 +1204,10 @@ class IrregularFunctionalData(FunctionalData):
         new_values: IrregularValues
     ) -> None:
         """Setter for values."""
-        # if hasattr(self, 'argvals'):
-        #     self._check_argvals_values(self.argvals, new_values)
+        if not isinstance(new_values, IrregularValues):
+            raise TypeError('new_values must be a IrregularValues object.')
+        if hasattr(self, 'argvals'):
+            self._argvals.compatible_with(new_values)
         self._values = new_values
 
     @property
@@ -1263,28 +1239,6 @@ class IrregularFunctionalData(FunctionalData):
         """
         ranges = [(np.min(obs), np.max(obs)) for obs in self.values.values()]
         return min(min(ranges)), max(max(ranges))
-
-    @property
-    def range_dim(self) -> Dict[str, Tuple[int, int]]:
-        """Get the range of the `argvals` for each of the dimension.
-
-        Returns
-        -------
-        Dict[str, Tuple[int, int]]
-            Dictionary containing the range of the argvals for each of the
-            input dimension.
-
-        """
-        ranges = {
-            idx: list(argval.values())
-            for idx, argval in self.argvals.items()
-        }
-        return {
-            idx: (
-                cast(int, min(map(min, dim))),
-                cast(int, max(map(max, dim)))
-            ) for idx, dim in ranges.items()
-        }
 
     @property
     def shape(self) -> Dict[str, int]:
@@ -1668,19 +1622,6 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         """
         return [fdata.n_points for fdata in self.data]
-
-    @property
-    def range_points(self) -> List[Dict[str, Tuple[int, int]]]:
-        """Get the range of the `argvals` for each of the dimension.
-
-        Returns
-        -------
-        List[Dict[str, Tuple[int, int]]]
-            List of dictionary containing the range of the argvals for each of
-            the input dimension for each function.
-
-        """
-        return [fdata.range_dim for fdata in self.data]
 
     @property
     def shape(self) -> List[Dict[str, int]]:

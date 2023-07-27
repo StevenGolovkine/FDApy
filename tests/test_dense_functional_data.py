@@ -14,8 +14,8 @@ from FDApy.representation.functional_data import (
     DenseFunctionalData,
     IrregularFunctionalData
 )
-from FDApy.representation.argvals import DenseArgvals
-from FDApy.representation.values import DenseValues
+from FDApy.representation.argvals import DenseArgvals, IrregularArgvals
+from FDApy.representation.values import DenseValues, IrregularValues
 
 
 class TestDenseFunctionalData(unittest.TestCase):
@@ -24,8 +24,11 @@ class TestDenseFunctionalData(unittest.TestCase):
         self.values = DenseValues(np.array([[1, 2, 3, 4, 5],[6, 7, 8, 9, 10],[11, 12, 13, 14, 15]]))
         self.func_data = DenseFunctionalData(self.argvals, self.values)
 
-        argvals = {'input_dim_0': {0: np.array([1, 2, 3, 4]),1: np.array([2, 4])}}
-        values = {0: np.array([1, 6, 9, 4]),1: np.array([2, 3])}
+        argvals = IrregularArgvals({
+            0: DenseArgvals({'input_dim_0': np.array([1, 2, 3, 4])}),
+            1: DenseArgvals({'input_dim_0': np.array([2, 4])})
+        })
+        values = IrregularValues({0: np.array([1, 6, 9, 4]), 1: np.array([2, 3])})
         self.irreg_data = IrregularFunctionalData(argvals, values)
 
     def test_repr(self):
@@ -70,11 +73,6 @@ class TestDenseFunctionalData(unittest.TestCase):
         expected_result = {"input_dim_0": 5}
         result = self.func_data.n_points
         self.assertDictEqual(result, expected_result)
-
-    def test_range_dim(self):
-        expected_range = {"input_dim_0": (1, 5)}
-        result = self.func_data.range_dim
-        self.assertDictEqual(result, expected_range)
 
     def test_shape(self):
         expected_output = {'input_dim_0': 5}
@@ -191,9 +189,6 @@ class TestDenseFunctionalData2D(unittest.TestCase):
 
     def test_range_obs(self):
         self.assertEqual(self.dense_fd.range_obs, (1, 7))
-
-    def test_range_dim(self):
-        self.assertEqual(self.dense_fd.range_dim, {'input_dim_0': (1, 4), 'input_dim_1': (5, 7)})
 
     def test_shape(self):
         self.assertEqual(self.dense_fd.shape, {'input_dim_0': 4, 'input_dim_1': 3})

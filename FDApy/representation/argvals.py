@@ -81,6 +81,11 @@ class Argvals(UserDict):
     def n_dimension(self):
         """Get the number of dimension of the data."""
 
+    @property
+    @abstractmethod
+    def min_max(self):
+        """Get the minimum and maximum sampling points for each dimension."""
+
     @abstractmethod
     def normalization(self):
         """Normalize the Argvals."""
@@ -206,6 +211,13 @@ class DenseArgvals(Argvals):
         """Get the number of dimension of the data."""
         return len(self)
 
+    @property
+    def min_max(self) -> Dict(int, Tuple[float, float]):
+        """Get the minimum and maximum sampling points for each dimension."""
+        return {
+            idx: (min(argval), max(argval)) for idx, argval in self.items()
+        }
+
     def normalization(self) -> DenseArgvals:
         r"""Normalize the DenseArgvals.
 
@@ -220,12 +232,10 @@ class DenseArgvals(Argvals):
             Normalized argvals.
 
         """
-        return DenseArgvals(
-            {
-                dim: (points - min(points)) / (max(points) - min(points))
-                for dim, points in self.items()
-            }
-        )
+        return DenseArgvals({
+            dim: (points - min(points)) / (max(points) - min(points))
+            for dim, points in self.items()
+        })
 
 
 ###############################################################################
@@ -324,6 +334,11 @@ class IrregularArgvals(Argvals):
         """Get the number of dimension of the data."""
         return len(self[0])
 
+    @property
+    def min_max(self) -> Dict(int, Tuple[float, float]):
+        """Get the minimum and maximum sampling points for each dimension."""
+        return self.to_dense().min_max
+
     def normalization(self) -> IrregularArgvals:
         r"""Normalize the IrregularArgvals.
 
@@ -338,9 +353,16 @@ class IrregularArgvals(Argvals):
             Normalized argvals.
 
         """
-        return IrregularArgvals(
-            {obs: argvals.normalization() for obs, argvals in self.items()}
-        )
+        min_max = self.min_max
+
+        stand_dict = {}
+        for out_key, inner_dict in self.items():
+            for in_key, value in inner_dict.items():
+                min_x, max_x = min_max[in_key]
+                if out_key not in stand_dict:
+                    stand_dict[out_key] = DenseArgvals({})
+                stand_dict[out_key][in_key] = (value - min_x) / (max_x - min_x)
+        return IrregularArgvals(stand_dict)
 
     def switch(self) -> Dict[str, Dict[int, npt.NDArray[np.float64]]]:
         """Switch the dictionary.

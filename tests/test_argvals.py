@@ -70,6 +70,14 @@ class TestDenseArgvals(unittest.TestCase):
 
         np.testing.assert_equal(argvals1.n_dimension, 2)
 
+    def test_n_min_max(self):
+        argvals1 = DenseArgvals()
+        argvals1['key1'] = np.array([1, 2, 3])
+        argvals1['key2'] = np.array([4, 5, 6])
+
+        expected = {'key1': (1, 3), 'key2': (4, 6)}
+        np.testing.assert_equal(argvals1.min_max, expected)
+
     def test_compatible_with(self):
         argvals1 = DenseArgvals()
         argvals1['key1'] = np.array([1, 2, 3])
@@ -193,6 +201,20 @@ class TestIrregularArgvals(unittest.TestCase):
         argvals_irr = IrregularArgvals({0: argvals_1, 1: argvals_2})
 
         np.testing.assert_equal(argvals_irr.n_dimension, 2)
+
+    def test_min_max(self):
+        argvals_1 = DenseArgvals({
+            'input_dim_0': np.array([1, 2]),
+            'input_dim_1': np.array([5, 8, 9])
+        })
+        argvals_2 = DenseArgvals({
+            'input_dim_0': np.array([6, 8]),
+            'input_dim_1': np.array([4, 7])
+        })
+        argvals_irr = IrregularArgvals({0: argvals_1, 1: argvals_2})
+
+        expected = {'input_dim_0': (1, 8), 'input_dim_1': (4, 9)}
+        np.testing.assert_equal(argvals_irr.min_max, expected)
 
     def test_compatible_with(self):
         argvals_1 = DenseArgvals({
