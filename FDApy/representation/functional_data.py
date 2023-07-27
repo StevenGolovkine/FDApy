@@ -1211,18 +1211,18 @@ class IrregularFunctionalData(FunctionalData):
         """Setter for argvals."""
         # IrregularFunctionalData._check_argvals_length(new_argvals)
         self._argvals = new_argvals
-        points = self.gather_points()
+        # points = self.gather_points()
 
-        argvals_stand: IrregularArgvals = {}
-        for dim, obss in new_argvals.items():
-            max_x, min_x = np.max(points[dim]), np.min(points[dim])
+        # argvals_stand: IrregularArgvals = {}
+        # for dim, obss in new_argvals.items():
+        #     max_x, min_x = np.max(points[dim]), np.min(points[dim])
 
-            argvals_stand[dim] = {}
-            for obs, point in obss.items():
-                argvals_stand[dim][obs] = _normalization(
-                    point, max_x, min_x
-                )
-        self.argvals_stand = argvals_stand
+        #     argvals_stand[dim] = {}
+        #     for obs, point in obss.items():
+        #         argvals_stand[dim][obs] = _normalization(
+        #             point, max_x, min_x
+        #         )
+        # self.argvals_stand = argvals_stand
 
     @FunctionalData.values.setter
     def values(

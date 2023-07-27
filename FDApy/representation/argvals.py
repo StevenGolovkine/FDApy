@@ -76,6 +76,11 @@ class Argvals(UserDict):
     def n_points(self):
         """Get the number of sampling points of each dimension."""
 
+    @property
+    @abstractmethod
+    def n_dimension(self):
+        """Get the number of dimension of the data."""
+
     @abstractmethod
     def normalization(self):
         """Normalize the Argvals."""
@@ -196,6 +201,11 @@ class DenseArgvals(Argvals):
         """Get the number of sampling points of each dimension."""
         return tuple(dim.shape[0] for dim in self.values())
 
+    @property
+    def n_dimension(self) -> int:
+        """Get the number of dimension of the data."""
+        return len(self)
+
     def normalization(self) -> DenseArgvals:
         r"""Normalize the DenseArgvals.
 
@@ -308,6 +318,11 @@ class IrregularArgvals(Argvals):
     def n_points(self) -> Dict[int, Tuple[int, ...]]:
         """Get the number of sampling points of each dimension."""
         return {obs: argvals.n_points for obs, argvals in self.items()}
+
+    @property
+    def n_dimension(self) -> int:
+        """Get the number of dimension of the data."""
+        return len(self[0])
 
     def normalization(self) -> IrregularArgvals:
         r"""Normalize the IrregularArgvals.
