@@ -208,3 +208,41 @@ class TestIrregularArgvals(unittest.TestCase):
             }
         )
         np.testing.assert_allclose(argvals.normalization(), expected_output)
+
+
+class TestSwitchMethod(unittest.TestCase):
+    def setUp(self):
+        self.argvals_1 = DenseArgvals({
+            'input_dim_0': np.array([1, 2, 3]),
+            'input_dim_1': np.array([4, 5, 6])
+        })
+
+        self.argvals_2 = DenseArgvals({
+            'input_dim_0': np.array([2, 4, 6]),
+            'input_dim_1': np.array([1, 3, 5])
+        })
+
+        self.argvals = IrregularArgvals({0: self.argvals_1, 1: self.argvals_2})
+
+    def test_switch(self):
+        switched_dict = self.argvals.switch()
+        expected_result = {
+            'input_dim_0': {0: np.array([1, 2, 3]), 1: np.array([2, 4, 6])},
+            'input_dim_1': {0: np.array([4, 5, 6]), 1: np.array([1, 3, 5])}
+        }
+        print(switched_dict)
+        np.testing.assert_equal(switched_dict, expected_result)
+
+    def test_switch_empty_argvals(self):
+        empty_argvals = IrregularArgvals()
+        switched_dict = empty_argvals.switch()
+        np.testing.assert_equal(switched_dict, {})
+
+    def test_switch_single_element_argvals(self):
+        argvals_single = IrregularArgvals({0: self.argvals_1})
+        switched_dict = argvals_single.switch()
+        expected_result = {
+            'input_dim_0': {0: np.array([1, 2, 3])},
+            'input_dim_1': {0: np.array([4, 5, 6])}
+        }
+        np.testing.assert_equal(switched_dict, expected_result)

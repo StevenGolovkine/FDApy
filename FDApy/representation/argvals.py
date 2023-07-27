@@ -328,7 +328,41 @@ class IrregularArgvals(Argvals):
         )
 
     def switch(self) -> dict[str, dict[int, npt.NDArray[np.float64]]]:
-        """Switch the dictionary."""
+        """Switch the dictionary.
+
+        This function switches nested dictionaries. It convert an
+        IrregularArgvals object (with signature
+        `dict[int, dict[str, npt.NDArray[np.float64]]]`) into a dictionary with
+        signature `dict[str, dict[int, npt.NDArray[np.float64]]]`.
+
+        Returns
+        -------
+        dict[str, dict[int, npt.NDArray[np.float64]]]
+            The switched dictionnary.
+
+        Examples
+        --------
+        >>> argvals_1 = DenseArgvals(
+        ...     {
+        ...         'input_dim_0': np.array([1, 2, 3]),
+        ...         'input_dim_1': np.array([4, 5, 6])
+        ...     }
+        ... )
+        >>> argvals_2 = DenseArgvals(
+        ...     {
+        ...         'input_dim_0': np.array([2, 4, 6]),
+        ...         'input_dim_1': np.array([1, 3, 5])
+        ...     }
+        ... )
+        >>> argvals = IrregularArgvals({0: argvals_1, 1: argvals_2})
+
+        >>> argvals.switch()
+        {
+            'input_dim_0': {0: array([1, 2, 3]), 1: array([2, 4, 6])},
+            'input_dim_1': {0: array([4, 5, 6]), 1: array([1, 3, 5])}
+        }
+
+        """
         switched_dict = {}
         for outer_key, inner_dict in self.items():
             for inner_key, value in inner_dict.items():
