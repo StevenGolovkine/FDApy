@@ -55,11 +55,6 @@ class MultivariateFunctionalDataTest(unittest.TestCase):
         actual_n_dimension = self.multivariate_data.n_dimension
         self.assertEqual(actual_n_dimension, expected_n_dimension)
 
-    def test_range_obs(self):
-        expected_range_obs = [(1, 15), (1, 15)]
-        actual_range_obs = self.multivariate_data.range_obs
-        self.assertEqual(actual_range_obs, expected_range_obs)
-
     def test_n_points(self):
         expected_n_points = [{'input_dim_0': 5}, {'input_dim_0': 5}]
         actual_n_points = self.multivariate_data.n_points

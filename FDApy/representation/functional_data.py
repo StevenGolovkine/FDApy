@@ -291,11 +291,6 @@ class FunctionalData(ABC):
 
     @property
     @abstractmethod
-    def range_obs(self) -> Tuple[float, float]:
-        """Get the range of the observations of the object."""
-
-    @property
-    @abstractmethod
     def shape(self) -> Dict[str, int]:
         """Shape of the data for each dimension."""
 
@@ -535,19 +530,6 @@ class DenseFunctionalData(FunctionalData):
 
         """
         return {idx: len(points) for idx, points in self.argvals.items()}
-
-    @property
-    def range_obs(self) -> Tuple[float, float]:
-        """Get the range of the observations of the object.
-
-        Returns
-        -------
-        Tuple[float, float]
-            Tuple containing the mimimum and maximum values taken by all the
-            observations for the object.
-
-        """
-        return np.min(self.values), np.max(self.values)
 
     @property
     def shape(self) -> Dict[str, int]:
@@ -1172,7 +1154,7 @@ class IrregularFunctionalData(FunctionalData):
             values = {obs: self.values.get(obs) for obs in range(*indices)}
         else:
             argvals = {index: self.argvals[index]}
-            values = {index: self.values[index]}
+            values = {index: values[index]}
         return IrregularFunctionalData(
             IrregularArgvals(argvals),
             IrregularValues(values)
@@ -1222,20 +1204,6 @@ class IrregularFunctionalData(FunctionalData):
         for idx, points in self.argvals.items():
             n_points[idx] = np.mean([len(p) for p in points.values()])
         return n_points
-
-    @property
-    def range_obs(self) -> Tuple[float, float]:
-        """Get the range of the observations of the object.
-
-        Returns
-        -------
-        Tuple[float, float]
-            Tuple containing the mimimum and maximum values taken by all the
-            observations for the object.
-
-        """
-        ranges = [(np.min(obs), np.max(obs)) for obs in self.values.values()]
-        return min(min(ranges)), max(max(ranges))
 
     @property
     def shape(self) -> Dict[str, int]:
@@ -1593,19 +1561,6 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         """
         return [fdata.n_dimension for fdata in self.data]
-
-    @property
-    def range_obs(self) -> List[Tuple[float, float]]:
-        """Get the range of the observations of the object.
-
-        Returns
-        -------
-        List[Tuple[float, float]]
-            List of tuples containing the mimimum and maximum values taken by
-            all the observations for the object for each function.
-
-        """
-        return [fdata.range_obs for fdata in self.data]
 
     @property
     def n_points(self) -> List[Dict[str, int]]:

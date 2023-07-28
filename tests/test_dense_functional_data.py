@@ -64,11 +64,6 @@ class TestDenseFunctionalData(unittest.TestCase):
         self.func_data.values = new_values
         np.testing.assert_array_equal(self.func_data.values, new_values)
 
-    def test_range_obs(self):
-        expected_result = (1, 15)
-        result = self.func_data.range_obs
-        self.assertEqual(result, expected_result)
-
     def test_n_points(self):
         expected_result = {"input_dim_0": 5}
         result = self.func_data.n_points
@@ -186,9 +181,6 @@ class TestDenseFunctionalData2D(unittest.TestCase):
 
     def test_n_dimension(self):
         self.assertEqual(self.dense_fd.n_dimension, 2)
-
-    def test_range_obs(self):
-        self.assertEqual(self.dense_fd.range_obs, (1, 7))
 
     def test_shape(self):
         self.assertEqual(self.dense_fd.shape, {'input_dim_0': 4, 'input_dim_1': 3})

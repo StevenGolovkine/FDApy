@@ -40,32 +40,17 @@ class TestIrregularFunctionalData(unittest.TestCase):
         self.assertIsInstance(fdata, IrregularFunctionalData)
         self.assertEqual(fdata.n_obs, 2)
         self.assertEqual(fdata.n_dimension, 1)
-        np.testing.assert_equal(
-            fdata.argvals[1]['input_dim_0'],
-            self.argvals[1]['input_dim_0']
-        )
-        np.testing.assert_equal(
-            fdata.argvals[2]['input_dim_0'],
-            self.argvals[2]['input_dim_0']
-        )
-        np.testing.assert_equal(
-            fdata.values[1],
-            self.values[1]
-        )
+        np.testing.assert_equal(fdata.argvals[1]['input_dim_0'], self.argvals[1]['input_dim_0'])
+        np.testing.assert_equal(fdata.argvals[2]['input_dim_0'], self.argvals[2]['input_dim_0'])
+        np.testing.assert_equal(fdata.values[1], self.values[1])
 
     def test_get_item_index(self):
         fdata = self.fdata[1]
         self.assertIsInstance(fdata, IrregularFunctionalData)
         self.assertEqual(fdata.n_obs, 1)
         self.assertEqual(fdata.n_dimension, 1)
-        np.testing.assert_equal(
-            fdata.argvals[1]['input_dim_0'],
-            self.argvals[1]['input_dim_0']
-        )
-        np.testing.assert_equal(
-            fdata.values[1],
-            self.values[1]
-        )
+        np.testing.assert_equal(fdata.argvals[1]['input_dim_0'], self.argvals[1]['input_dim_0'])
+        np.testing.assert_equal(fdata.values[1], self.values[1])
 
     def test_argvals_getter(self):
         argvals = self.fdata.argvals
@@ -99,10 +84,6 @@ class TestIrregularFunctionalData(unittest.TestCase):
         })
         self.fdata.values = new_values
         np.testing.assert_array_equal(self.fdata.values, new_values)
-
-    def test_range_obs(self):
-        expected_range = (1, 7)
-        self.assertEqual(self.fdata.range_obs, expected_range)
 
     def test_n_points(self):
         expected_n_points = {'input_dim_0': 10 / 3}
@@ -234,9 +215,6 @@ class TestIrregularFunctionalData1D(unittest.TestCase):
     def test_n_dimension(self):
         self.assertEqual(self.irregu_fd.n_dimension, 1)
 
-    def test_range_obs(self):
-        self.assertEqual(self.irregu_fd.range_obs, (1, 9))
-
     def test_shape(self):
         self.assertEqual(self.irregu_fd.shape, {'input_dim_0': 5})
 
@@ -311,9 +289,6 @@ class TestIrregularFunctionalData2D(unittest.TestCase):
 
     def test_n_dimension(self):
         self.assertEqual(self.irregu_fd.n_dimension, 2)
-
-    def test_range_obs(self):
-        self.assertEqual(self.irregu_fd.range_obs, (1, 9))
 
     def test_shape(self):
         self.assertEqual(self.irregu_fd.shape, {'input_dim_0': 6,
