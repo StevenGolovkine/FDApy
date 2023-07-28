@@ -122,40 +122,29 @@ class TestIrregularFunctionalData(unittest.TestCase):
             IrregularFunctionalData._is_compatible(self.fdata, self.dense_data)
 
     def test_non_compatible_nobs(self):
-        argvals = {
-            'input_dim_0': {
-                0: np.array([0, 1, 2, 3, 4]),
-                1: np.array([0, 2, 4]),
-            }
-        }
-        values = {
+        argvals = IrregularArgvals({
+            0: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4])}),
+            1: DenseArgvals({'input_dim_0': np.array([0, 2, 4])}),
+        })
+        values = IrregularValues({
             0: np.array([1, 2, 3, 4, 5]),
             1: np.array([2, 5, 6]),
-        }
+        })
         func_data = IrregularFunctionalData(argvals, values)
         with self.assertRaises(ValueError):
             IrregularFunctionalData._is_compatible(self.fdata, func_data)
 
     def test_non_compatible_ndim(self):
-        argvals = {
-            'input_dim_0': {
-                0: np.array([0, 1, 2, 3, 4]),
-                1: np.array([0, 2, 4]),
-                2: np.array([2, 4]),
-            },
-            'input_dim_1': {
-                0: np.array([5, 6, 7]),
-                1: np.array([1, 2, 3]),
-                2: np.array([1, 2])
-            }
-        }
-        values = {
-            0: np.array([
-                [1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4], [1, 2, 4]
-            ]),
+        argvals = IrregularArgvals({
+            0: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4]), 'input_dim_1': np.array([5, 6, 7])}),
+            1: DenseArgvals({'input_dim_0': np.array([0, 2, 4]), 'input_dim_1': np.array([1, 2, 3])}),
+            2: DenseArgvals({'input_dim_0': np.array([2, 4]), 'input_dim_1': np.array([1, 2])})
+        })
+        values = IrregularValues({
+            0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4], [1, 2, 4]]),
             1: np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]]),
             2: np.array([[1, 2], [3, 4]])
-        }
+        })
         func_data = IrregularFunctionalData(argvals, values)
         with self.assertRaises(ValueError):
             IrregularFunctionalData._is_compatible(self.fdata, func_data)
