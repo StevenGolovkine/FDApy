@@ -289,11 +289,6 @@ class FunctionalData(ABC):
     def n_points(self) -> Dict[str, int]:
         """Get the mean number of sampling points."""
 
-    @property
-    @abstractmethod
-    def shape(self) -> Dict[str, int]:
-        """Shape of the data for each dimension."""
-
     ###########################################################################
 
     ###########################################################################
@@ -530,24 +525,6 @@ class DenseFunctionalData(FunctionalData):
 
         """
         return {idx: len(points) for idx, points in self.argvals.items()}
-
-    @property
-    def shape(self) -> Dict[str, int]:
-        r"""Get the shape of the data for each dimension.
-
-        Returns
-        -------
-        Dict[str, int]
-            Dictionary containing the number of points for each of the
-            dimension. It corresponds to :math:`m_j` for
-            :math:`0 \leq j \leq p`.
-
-        Notes
-        -----
-        For DenseFunctionalData, this function is equivalent to n_points().
-
-        """
-        return self.n_points
 
     ###########################################################################
 
@@ -1204,22 +1181,6 @@ class IrregularFunctionalData(FunctionalData):
         for idx, points in self.argvals.items():
             n_points[idx] = np.mean([len(p) for p in points.values()])
         return n_points
-
-    @property
-    def shape(self) -> Dict[str, int]:
-        r"""Get the shape of the data for each dimension.
-
-        Returns
-        -------
-        Dict[str, int]
-            Dictionary containing the number of points for each of the
-            dimension. It corresponds to :math:`m_j` for
-            :math:`0 \leq j \leq p`.
-
-        """
-        return {
-            idx: len(dim) for idx, dim in self.gather_points().items()
-        }
 
     ###########################################################################
 

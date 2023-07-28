@@ -60,11 +60,6 @@ class MultivariateFunctionalDataTest(unittest.TestCase):
         actual_n_points = self.multivariate_data.n_points
         self.assertEqual(actual_n_points, expected_n_points)
 
-    def test_shape(self):
-        expected_shape = [{'input_dim_0': 5}, {'input_dim_0': 5}]
-        actual_shape = self.multivariate_data.shape
-        self.assertEqual(actual_shape, expected_shape)
-
     def test_remove(self):
         with self.assertRaises(NotImplementedError):
             self.multivariate_data.remove(self.fdata1)

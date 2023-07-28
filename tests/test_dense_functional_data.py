@@ -69,11 +69,6 @@ class TestDenseFunctionalData(unittest.TestCase):
         result = self.func_data.n_points
         self.assertDictEqual(result, expected_result)
 
-    def test_shape(self):
-        expected_output = {'input_dim_0': 5}
-        result = self.func_data.shape
-        self.assertDictEqual(result, expected_output)
-
     def test_is_compatible(self):
         DenseFunctionalData._is_compatible(self.func_data, self.func_data)
         self.assertTrue(True)
@@ -181,9 +176,6 @@ class TestDenseFunctionalData2D(unittest.TestCase):
 
     def test_n_dimension(self):
         self.assertEqual(self.dense_fd.n_dimension, 2)
-
-    def test_shape(self):
-        self.assertEqual(self.dense_fd.shape, {'input_dim_0': 4, 'input_dim_1': 3})
 
     def test_subset(self):
         new_dense_fd = self.dense_fd[2]

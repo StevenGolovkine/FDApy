@@ -89,10 +89,6 @@ class TestIrregularFunctionalData(unittest.TestCase):
         expected_n_points = {'input_dim_0': 10 / 3}
         self.assertDictEqual(self.fdata.n_points, expected_n_points)
 
-    def test_shape(self):
-        expected_shape = {'input_dim_0': 5}
-        self.assertDictEqual(self.fdata.shape, expected_shape)
-
     def test_gather_points(self):
         expected_points = {'input_dim_0': np.arange(5)}
         np.testing.assert_array_equal(
@@ -164,23 +160,6 @@ class TestIrregularFunctionalData(unittest.TestCase):
         with self.assertRaises(ValueError):
             IrregularFunctionalData._is_compatible(self.fdata, func_data)
 
-    # def test_non_compatible_argvals_equality(self):
-    #     argvals = {
-    #         'input_dim_0': {
-    #             0: np.array([0, 1, 2, 3, 5]),
-    #             1: np.array([0, 2, 4]),
-    #             2: np.array([2, 4]),
-    #         }
-    #     }
-    #     values = {
-    #         0: np.array([1, 2, 3, 4, 5]),
-    #         1: np.array([2, 5, 6]),
-    #         2: np.array([4, 7]),
-    #     }
-    #     func_data = IrregularFunctionalData(argvals, values)
-    #     with self.assertRaises(ValueError):
-    #         IrregularFunctionalData._is_compatible(self.fdata, func_data)
-
 
 class TestIrregularFunctionalData1D(unittest.TestCase):
     """Test class for the class IrregularFunctionalData in one dimension."""
@@ -214,9 +193,6 @@ class TestIrregularFunctionalData1D(unittest.TestCase):
 
     def test_n_dimension(self):
         self.assertEqual(self.irregu_fd.n_dimension, 1)
-
-    def test_shape(self):
-        self.assertEqual(self.irregu_fd.shape, {'input_dim_0': 5})
 
     def test_subset(self):
         new_irregu_fd = self.irregu_fd[2]
@@ -289,10 +265,6 @@ class TestIrregularFunctionalData2D(unittest.TestCase):
 
     def test_n_dimension(self):
         self.assertEqual(self.irregu_fd.n_dimension, 2)
-
-    def test_shape(self):
-        self.assertEqual(self.irregu_fd.shape, {'input_dim_0': 6,
-                                                'input_dim_1': 8})
 
     def test_subset(self):
         new_irregu_fd = self.irregu_fd[2]
