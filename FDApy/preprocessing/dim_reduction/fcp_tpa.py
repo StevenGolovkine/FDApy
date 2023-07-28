@@ -757,7 +757,7 @@ class FCPTPA():
         """
         if method == 'NumInt':
             if self.normalize:
-                n_points = np.prod(list(data.n_points.values()))
+                n_points = np.prod(data.n_points)
             else:
                 n_points = 1
             return np.einsum(

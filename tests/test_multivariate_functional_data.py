@@ -56,7 +56,7 @@ class MultivariateFunctionalDataTest(unittest.TestCase):
         self.assertEqual(actual_n_dimension, expected_n_dimension)
 
     def test_n_points(self):
-        expected_n_points = [{'input_dim_0': 5}, {'input_dim_0': 5}]
+        expected_n_points = [(5, ), (5, )]
         actual_n_points = self.multivariate_data.n_points
         self.assertEqual(actual_n_points, expected_n_points)
 

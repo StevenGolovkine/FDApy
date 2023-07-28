@@ -93,7 +93,7 @@ class TestSparsifyUnivariateData(unittest.TestCase):
 
         actual_percentage = (
             sparse_data.argvals.n_points[0][0] / 
-            self.data.n_points['input_dim_0']
+            self.data.n_points[0]
         )
         self.assertGreaterEqual(actual_percentage, expected_min_perc)
         self.assertLessEqual(actual_percentage, expected_max_perc)

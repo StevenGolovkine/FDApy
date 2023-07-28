@@ -19,7 +19,7 @@ from collections import UserList
 from collections.abc import Iterator
 from typing import (
     Callable, cast, Dict, Iterable, Optional, List,
-    Tuple, Type
+    Tuple, Type, Union
 )
 
 from .argvals import Argvals, DenseArgvals, IrregularArgvals
@@ -29,7 +29,7 @@ from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..misc.utils import _cartesian_product
 from ..misc.utils import _inner_product, _inner_product_2d
 from ..misc.utils import _integrate, _integrate_2d, _integration_weights
-from ..misc.utils import _normalization, _outer
+from ..misc.utils import _outer
 
 
 ###############################################################################
@@ -285,9 +285,16 @@ class FunctionalData(ABC):
         return self.argvals.n_dimension
 
     @property
-    @abstractmethod
-    def n_points(self) -> Dict[str, int]:
-        """Get the mean number of sampling points."""
+    def n_points(self) -> Union[Tuple[int, ...], Dict[int, Tuple[int, ...]]]:
+        """Get the number of sampling points.
+        
+        Returns
+        -------
+        Union[Tuple[int, ...], Dict[int, Tuple[int, ...]]]
+            Number of sampling points.
+
+        """
+        return self.argvals.n_points
 
     ###########################################################################
 
@@ -508,23 +515,6 @@ class DenseFunctionalData(FunctionalData):
         if hasattr(self, 'argvals'):
             self._argvals.compatible_with(new_values)
         self._values = new_values
-
-    @property
-    def n_points(self) -> Dict[str, int]:
-        """Get the mean number of sampling points.
-
-        Returns
-        -------
-        Dict[str, int]
-            A dictionary with the same shape than argvals with the number of
-            sampling points along each axis.
-
-        Notes
-        -----
-        For DenseFunctionalData, this function is equivalent to shape().
-
-        """
-        return {idx: len(points) for idx, points in self.argvals.items()}
 
     ###########################################################################
 
@@ -1166,22 +1156,6 @@ class IrregularFunctionalData(FunctionalData):
             self._argvals.compatible_with(new_values)
         self._values = new_values
 
-    @property
-    def n_points(self) -> Dict[str, int]:
-        """Get the mean number of sampling points.
-
-        Returns
-        -------
-        Dict[str, int]
-            A dictionary with the same shape than argvals with the number of
-            sampling points along each axis.
-
-        """
-        n_points = {}
-        for idx, points in self.argvals.items():
-            n_points[idx] = np.mean([len(p) for p in points.values()])
-        return n_points
-
     ###########################################################################
 
     ###########################################################################
@@ -1535,20 +1509,6 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         """
         return [fdata.n_points for fdata in self.data]
-
-    @property
-    def shape(self) -> List[Dict[str, int]]:
-        r"""Get the shape of the data for each dimension.
-
-        Returns
-        -------
-        List[Dict[str, int]]
-            List of dictionary containing the number of points for each of the
-            dimension for each function. It corresponds to :math:`m_j` for
-            :math:`0 \leq j \leq p`.
-
-        """
-        return [fdata.shape for fdata in self.data]
 
     ###########################################################################
 

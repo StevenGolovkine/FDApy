@@ -54,7 +54,7 @@ def _add_noise_univariate_data(
 
     """
     # Get parameter of the data
-    shape_simu = data.n_obs, *tuple(data.n_points.values())
+    shape_simu = data.n_obs, *data.n_points
 
     noisy_data = rnorm(0, 1, shape_simu)
     std_noise = np.sqrt(noise_variance)
@@ -105,7 +105,7 @@ def _sparsify_univariate_data(
 
     """
     # Get parameters of the data
-    n_obs, n_points = data.n_obs, data.n_points['input_dim_0']
+    n_obs, n_points = data.n_obs, *data.n_points
     points = np.arange(n_points)
 
     perc = runif(

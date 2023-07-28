@@ -315,8 +315,8 @@ class FCPTPATest(unittest.TestCase):
         self.data = kl.data
 
         n_points = self.data.n_points
-        mat_v = np.diff(np.identity(n_points['input_dim_0']))
-        mat_w = np.diff(np.identity(n_points['input_dim_1']))
+        mat_v = np.diff(np.identity(n_points[0]))
+        mat_w = np.diff(np.identity(n_points[1]))
         self.penalty_matrices={
             'v': np.dot(mat_v, mat_v.T),
             'w': np.dot(mat_w, mat_w.T)
@@ -382,8 +382,8 @@ class TestFit(unittest.TestCase):
         self.data = kl.data
 
         n_points = self.data.n_points
-        mat_v = np.diff(np.identity(n_points['input_dim_0']))
-        mat_w = np.diff(np.identity(n_points['input_dim_1']))
+        mat_v = np.diff(np.identity(n_points[0]))
+        mat_w = np.diff(np.identity(n_points[1]))
         self.penalty_matrices={
             'v': np.dot(mat_v, mat_v.T),
             'w': np.dot(mat_w, mat_w.T)
@@ -432,8 +432,8 @@ class TestFitNorm(unittest.TestCase):
         self.data = kl.data
 
         n_points = self.data.n_points
-        mat_v = np.diff(np.identity(n_points['input_dim_0']))
-        mat_w = np.diff(np.identity(n_points['input_dim_1']))
+        mat_v = np.diff(np.identity(n_points[0]))
+        mat_w = np.diff(np.identity(n_points[1]))
         self.penalty_matrices={
             'v': np.dot(mat_v, mat_v.T),
             'w': np.dot(mat_w, mat_w.T)
@@ -470,8 +470,8 @@ class TestTransform(unittest.TestCase):
         self.data = kl.data
 
         n_points = self.data.n_points
-        mat_v = np.diff(np.identity(n_points['input_dim_0']))
-        mat_w = np.diff(np.identity(n_points['input_dim_1']))
+        mat_v = np.diff(np.identity(n_points[0]))
+        mat_w = np.diff(np.identity(n_points[1]))
 
         self.fcptpa = FCPTPA(n_components=5)
         self.fcptpa.fit(
@@ -494,8 +494,8 @@ class TestTransform(unittest.TestCase):
         # We only test the shape of the output because the optimization step
         # can lead to different solution
         n_points = self.data.n_points
-        mat_v = np.diff(np.identity(n_points['input_dim_0']))
-        mat_w = np.diff(np.identity(n_points['input_dim_1']))
+        mat_v = np.diff(np.identity(n_points[0]))
+        mat_w = np.diff(np.identity(n_points[1]))
 
         fcptpa = FCPTPA(n_components=5, normalize=True)
         fcptpa.fit(
@@ -536,8 +536,8 @@ class TestInverseTransform(unittest.TestCase):
         self.data = kl.data
 
         n_points = self.data.n_points
-        mat_v = np.diff(np.identity(n_points['input_dim_0']))
-        mat_w = np.diff(np.identity(n_points['input_dim_1']))
+        mat_v = np.diff(np.identity(n_points[0]))
+        mat_w = np.diff(np.identity(n_points[1]))
 
         self.fcptpa = FCPTPA(n_components=5)
         self.fcptpa.fit(

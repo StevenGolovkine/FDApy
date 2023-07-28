@@ -65,9 +65,9 @@ class TestDenseFunctionalData(unittest.TestCase):
         np.testing.assert_array_equal(self.func_data.values, new_values)
 
     def test_n_points(self):
-        expected_result = {"input_dim_0": 5}
+        expected_result = (5,)
         result = self.func_data.n_points
-        self.assertDictEqual(result, expected_result)
+        np.testing.assert_equal(result, expected_result)
 
     def test_is_compatible(self):
         DenseFunctionalData._is_compatible(self.func_data, self.func_data)

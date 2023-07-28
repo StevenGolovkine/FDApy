@@ -86,7 +86,7 @@ class TestIrregularFunctionalData(unittest.TestCase):
         np.testing.assert_array_equal(self.fdata.values, new_values)
 
     def test_n_points(self):
-        expected_n_points = {'input_dim_0': 10 / 3}
+        expected_n_points = {0: (5,), 1: (3, ), 2: (2, )}
         self.assertDictEqual(self.fdata.n_points, expected_n_points)
 
     def test_gather_points(self):
