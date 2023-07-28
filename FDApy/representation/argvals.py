@@ -332,7 +332,7 @@ class IrregularArgvals(Argvals):
     @property
     def n_dimension(self) -> int:
         """Get the number of dimension of the data."""
-        return len(self[0])
+        return len(next(iter(self.values())))
 
     @property
     def min_max(self) -> Dict(int, Tuple[float, float]):

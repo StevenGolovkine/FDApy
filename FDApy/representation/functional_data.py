@@ -1166,20 +1166,17 @@ class IrregularFunctionalData(FunctionalData):
             The selected observation(s) as IrregularFunctionalData object.
 
         """
-        argvals: IrregularArgvals = {}
         if isinstance(index, slice):
             indices = index.indices(self.n_obs)
-            for idx, dim in self.argvals.items():
-                argvals[idx] = {i: dim.get(i) for i in range(*indices)}
-            values = {i: self.values.get(i) for i in range(*indices)}
+            argvals = {obs: self.argvals.get(obs) for obs in range(*indices)}
+            values = {obs: self.values.get(obs) for obs in range(*indices)}
         else:
-            argvals = {
-                idx: {
-                    index: cast(npt.NDArray[np.float64], points.get(index))
-                } for idx, points in self.argvals.items()
-            }
-            values = {index: self.values.get(index)}
-        return IrregularFunctionalData(argvals, values)
+            argvals = {index: self.argvals[index]}
+            values = {index: self.values[index]}
+        return IrregularFunctionalData(
+            IrregularArgvals(argvals),
+            IrregularValues(values)
+        )
 
     ###########################################################################
 
