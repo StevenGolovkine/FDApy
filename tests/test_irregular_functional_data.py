@@ -89,13 +89,6 @@ class TestIrregularFunctionalData(unittest.TestCase):
         expected_n_points = {0: (5,), 1: (3, ), 2: (2, )}
         self.assertDictEqual(self.fdata.n_points, expected_n_points)
 
-    def test_gather_points(self):
-        expected_points = {'input_dim_0': np.arange(5)}
-        np.testing.assert_array_equal(
-            self.fdata.gather_points()['input_dim_0'],
-            expected_points['input_dim_0']
-        )
-
     def test_as_dense(self):
         dense_fdata = self.fdata.as_dense()
         expected_argvals = {'input_dim_0': np.arange(5)}
@@ -169,12 +162,20 @@ class TestIrregularFunctionalData1D(unittest.TestCase):
         )
 
     def test_argvals_stand(self):
-        is_equal = [np.allclose(self.irregu_fd.argvals_stand['input_dim_0'][0],
-                                np.array([0.25, 0.5, 0.75, 1.])),
-                    np.allclose(self.irregu_fd.argvals_stand['input_dim_0'][1],
-                                np.array([0.5, 1.])),
-                    np.allclose(self.irregu_fd.argvals_stand['input_dim_0'][2],
-                                np.array([0., 0.5, 0.75]))]
+        is_equal = [
+            np.allclose(
+                self.irregu_fd.argvals_stand[0]['input_dim_0'],
+                np.array([0.25, 0.5, 0.75, 1.])
+            ),
+            np.allclose(
+                self.irregu_fd.argvals_stand[1]['input_dim_0'],
+                np.array([0.5, 1.])
+            ),
+            np.allclose(
+                self.irregu_fd.argvals_stand[2]['input_dim_0'],
+                np.array([0., 0.5, 0.75])
+            )
+        ]
         self.assertTrue(np.all(is_equal))
 
     def test_n_obs(self):
@@ -235,18 +236,32 @@ class TestIrregularFunctionalData2D(unittest.TestCase):
         )
 
     def test_argvals_stand(self):
-        is_equal = [np.allclose(self.irregu_fd.argvals_stand['input_dim_0'][0],
-                                np.array([0., 0.2, 0.4, 0.6])),
-                    np.allclose(self.irregu_fd.argvals_stand['input_dim_0'][1],
-                                np.array([0.2, 0.6])),
-                    np.allclose(self.irregu_fd.argvals_stand['input_dim_0'][2],
-                                np.array([0.6, 0.8, 1.])),
-                    np.allclose(self.irregu_fd.argvals_stand['input_dim_1'][0],
-                                np.array([0.5, 0.625, 0.75])),
-                    np.allclose(self.irregu_fd.argvals_stand['input_dim_1'][1],
-                                np.array([0., 0.125, 0.25])),
-                    np.allclose(self.irregu_fd.argvals_stand['input_dim_1'][2],
-                                np.array([0.875, 1.]))]
+        is_equal = [
+            np.allclose(
+                self.irregu_fd.argvals_stand[0]['input_dim_0'],
+                np.array([0., 0.2, 0.4, 0.6])
+            ),
+            np.allclose(
+                self.irregu_fd.argvals_stand[1]['input_dim_0'],
+                np.array([0.2, 0.6])
+            ),
+            np.allclose(
+                self.irregu_fd.argvals_stand[2]['input_dim_0'],
+                np.array([0.6, 0.8, 1.])
+            ),
+            np.allclose(
+                self.irregu_fd.argvals_stand[0]['input_dim_1'],
+                np.array([0.5, 0.625, 0.75])
+            ),
+            np.allclose(
+                self.irregu_fd.argvals_stand[1]['input_dim_1'],
+                np.array([0., 0.125, 0.25])
+            ),
+            np.allclose(
+                self.irregu_fd.argvals_stand[2]['input_dim_1'],
+                np.array([0.875, 1.])
+            )
+        ]
         self.assertTrue(np.all(is_equal))
 
     def test_n_obs(self):

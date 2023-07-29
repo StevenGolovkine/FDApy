@@ -287,7 +287,7 @@ class FunctionalData(ABC):
     @property
     def n_points(self) -> Union[Tuple[int, ...], Dict[int, Tuple[int, ...]]]:
         """Get the number of sampling points.
-        
+
         Returns
         -------
         Union[Tuple[int, ...], Dict[int, Tuple[int, ...]]]
@@ -1121,7 +1121,7 @@ class IrregularFunctionalData(FunctionalData):
             values = {obs: self.values.get(obs) for obs in range(*indices)}
         else:
             argvals = {index: self.argvals[index]}
-            values = {index: values[index]}
+            values = {index: self.values[index]}
         return IrregularFunctionalData(
             IrregularArgvals(argvals),
             IrregularValues(values)
@@ -1192,21 +1192,6 @@ class IrregularFunctionalData(FunctionalData):
         """
         raise NotImplementedError()
 
-    def gather_points(self) -> DenseArgvals:
-        """Gather all the `argvals` for each of the dimensions separetely.
-
-        Returns
-        -------
-        DenseArgvals
-            Dictionary containing all the unique observations points for each
-            of the input dimension.
-
-        """
-        return {
-            idx: np.unique(np.hstack(list(dim.values())))
-            for idx, dim in self.argvals.items()
-        }
-
     def as_dense(self) -> DenseFunctionalData:
         """Convert `self` from Irregular to Dense functional data.
 
@@ -1228,9 +1213,9 @@ class IrregularFunctionalData(FunctionalData):
         TODO: Consider removing this
 
         """
-        new_argvals = self.gather_points()
+        new_argvals = self.argvals.to_dense()
         new_values = np.full(
-            (self.n_obs,) + tuple(self.shape.values()), np.nan
+            (self.n_obs,) + new_argvals.n_points, np.nan
         )
 
         # Create the index definition domain for each of the observation
@@ -1240,7 +1225,7 @@ class IrregularFunctionalData(FunctionalData):
             for dim in new_argvals.keys():
                 _, idx, _ = np.intersect1d(
                     new_argvals[dim],
-                    self.argvals[dim][obs],
+                    self.argvals[obs][dim],
                     return_indices=True
                 )
                 index_obs_dim.append(idx)
@@ -1248,7 +1233,7 @@ class IrregularFunctionalData(FunctionalData):
 
         # Create mask arrays
         mask_obs = {
-            obs: np.full(tuple(self.shape.values()), False)
+            obs: np.full(new_argvals.n_points, False)
             for obs in self.values.keys()
         }
         for obs in self.values.keys():
@@ -1258,7 +1243,9 @@ class IrregularFunctionalData(FunctionalData):
         for obs in self.values.keys():
             new_values[obs][mask_obs[obs]] = self.values[obs].flatten()
 
-        return DenseFunctionalData(new_argvals, new_values)
+        return DenseFunctionalData(
+            DenseArgvals(new_argvals), DenseValues(new_values)
+        )
 
     def mean(
         self,
@@ -1372,7 +1359,7 @@ class IrregularFunctionalData(FunctionalData):
 
         """
         if points is None:
-            points = self.gather_points()
+            points = self.argvals.to_dense()
 
         points_mat = _cartesian_product(*points.values())
 
