@@ -12,8 +12,8 @@ import pandas as pd
 
 from typing import Union
 
-from ..representation.argvals import Argvals, DenseArgvals, IrregularArgvals
-from ..representation.values import Values, DenseValues, IrregularValues
+from ..representation.argvals import DenseArgvals, IrregularArgvals
+from ..representation.values import DenseValues, IrregularValues
 from ..representation.functional_data import (
     DenseFunctionalData,
     IrregularFunctionalData

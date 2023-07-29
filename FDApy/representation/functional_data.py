@@ -1077,14 +1077,33 @@ class IrregularFunctionalData(FunctionalData):
         fdata2: IrregularFunctionalData,
         func: Callable
     ) -> IrregularFunctionalData:
-        """Perform computation defined by `func`."""
-        if IrregularFunctionalData._is_compatible(fdata1, fdata2):
-            new_values = {}
-            for (idx, obs1), (_, obs2) in zip(
-                fdata1.values.items(), fdata2.values.items()
-            ):
-                new_values[idx] = func(obs1, obs2)
-        return IrregularFunctionalData(fdata1.argvals, new_values)
+        """Perform computation defined by `func` if they are compatible.
+
+        Parameters
+        ----------
+        fdata1: IrregularFunctionalData
+            First functional data to consider.
+        fdata2: IrregularFunctionalData
+            Second functional data to consider.
+        func: Callable
+            The function to apply to combine `fdata1` and `fdata2`.
+
+        Returns
+        -------
+        IrregularFunctionalData
+            The resulting functional data.
+
+        """
+        IrregularFunctionalData._is_compatible(fdata1, fdata2)
+
+        new_values = {}
+        for (idx, obs1), (_, obs2) in zip(
+            fdata1.values.items(), fdata2.values.items()
+        ):
+            new_values[idx] = func(obs1, obs2)
+        return IrregularFunctionalData(
+            fdata1.argvals, IrregularValues(new_values)
+        )
 
     ###########################################################################
 
