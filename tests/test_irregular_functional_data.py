@@ -305,3 +305,67 @@ class TestIrregularFunctionalData2D(unittest.TestCase):
                                           [N, N, N, N, N, N, 8., 9.]]]),
                                equal_nan=True)
         self.assertTrue(is_equal)
+
+
+class TestPerformComputation(unittest.TestCase):
+    def setUp(self):
+        self.argvals = {
+            0: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4])}),
+            1: DenseArgvals({'input_dim_0': np.array([0, 2, 4])}),
+            2: DenseArgvals({'input_dim_0': np.array([2, 4])})
+        }
+        self.values1 = {
+            0: np.array([1, 2, 3, 4, 5]),
+            1: np.array([2, 5, 6]),
+            2: np.array([4, 7])
+        }
+        self.func_data1 = IrregularFunctionalData(IrregularArgvals(self.argvals), IrregularValues(self.values1))
+
+        self.values2 = {
+            0: np.array([5, 4, 3, 2, 1]),
+            1: np.array([5, 3, 1]),
+            2: np.array([5, 3])
+        }
+        self.func_data2 = IrregularFunctionalData(IrregularArgvals(self.argvals), IrregularValues(self.values2))
+
+    def test_addition(self):
+        result = self.func_data1 + self.func_data2
+
+        expected_values = IrregularValues({0: np.array([6, 6, 6, 6, 6]), 1: np.array([7, 8, 7]), 2: np.array([ 9, 10])})
+        np.testing.assert_equal(result.argvals, IrregularArgvals(self.argvals))
+        np.testing.assert_array_equal(result.values, expected_values)
+
+    def test_substraction(self):
+        result = self.func_data1 - self.func_data2
+
+        expected_values = IrregularValues({0: np.array([-4, -2,  0,  2,  4]), 1: np.array([-3,  2,  5]), 2: np.array([-1,  4])})
+        self.assertEqual(result.argvals, IrregularArgvals(self.argvals))
+        np.testing.assert_array_equal(result.values, expected_values)
+
+    def test_multiplication(self):
+        result = self.func_data1 * self.func_data2
+
+        expected_values = IrregularValues({0: np.array([5, 8, 9, 8, 5]), 1: np.array([10, 15,  6]), 2: np.array([20, 21])})
+        self.assertEqual(result.argvals, IrregularArgvals(self.argvals))
+        np.testing.assert_array_equal(result.values, expected_values)
+
+    def test_right_multiplication(self):
+        result = FunctionalData.__rmul__(self.func_data1, self.func_data2)
+
+        expected_values = IrregularValues({0: np.array([5, 8, 9, 8, 5]), 1: np.array([10, 15,  6]), 2: np.array([20, 21])})
+        self.assertEqual(result.argvals, IrregularArgvals(self.argvals))
+        np.testing.assert_array_equal(result.values, expected_values)
+
+    def test_true_divide(self):
+        result = self.func_data1 / self.func_data2
+
+        expected_values = IrregularValues({0: np.array([0.2, 0.5, 1. , 2. , 5. ]), 1: np.array([0.4, 1.66666667, 6.]), 2: np.array([0.8, 2.33333333])})
+        self.assertEqual(result.argvals, IrregularArgvals(self.argvals))
+        np.testing.assert_array_almost_equal(result.values, expected_values)
+
+    def test_floor_divide(self):
+        result = self.func_data1 // self.func_data2
+
+        expected_values = IrregularValues({0: np.array([0, 0, 1, 2, 5]), 1: np.array([0, 1, 6]), 2: np.array([0, 2])})
+        self.assertEqual(result.argvals, IrregularArgvals(self.argvals))
+        np.testing.assert_array_almost_equal(result.values, expected_values)
