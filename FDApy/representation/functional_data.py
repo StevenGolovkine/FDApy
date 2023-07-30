@@ -1096,11 +1096,11 @@ class IrregularFunctionalData(FunctionalData):
         """
         IrregularFunctionalData._is_compatible(fdata1, fdata2)
 
-        new_values = {}
-        for (idx, obs1), (_, obs2) in zip(
-            fdata1.values.items(), fdata2.values.items()
-        ):
-            new_values[idx] = func(obs1, obs2)
+        new_values = {
+            idx: func(obs1, obs2)
+            for (idx, obs1), (_, obs2)
+            in zip(fdata1.values.items(), fdata1.values.items())
+        }
         return IrregularFunctionalData(
             fdata1.argvals, IrregularValues(new_values)
         )
