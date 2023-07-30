@@ -72,6 +72,9 @@ class TestIrregularFunctionalData(unittest.TestCase):
         })
         np.testing.assert_equal(self.fdata.argvals_stand, expected_argvals_stand)
 
+        with self.assertRaises(TypeError):
+            self.fdata.argvals = 0
+
     def test_values_property(self):
         values = self.fdata.values
         np.testing.assert_array_equal(values, self.values)
@@ -84,6 +87,9 @@ class TestIrregularFunctionalData(unittest.TestCase):
         })
         self.fdata.values = new_values
         np.testing.assert_array_equal(self.fdata.values, new_values)
+
+        with self.assertRaises(TypeError):
+            self.fdata.values = 0
 
     def test_n_points(self):
         expected_n_points = {0: (5,), 1: (3, ), 2: (2, )}

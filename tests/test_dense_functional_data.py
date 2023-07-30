@@ -52,8 +52,11 @@ class TestDenseFunctionalData(unittest.TestCase):
         self.func_data.argvals = new_argvals
         self.assertEqual(self.func_data._argvals, DenseArgvals(new_argvals))
 
-        expected_argvals_stand = {"x": np.linspace(0, 1, 5),}
+        expected_argvals_stand = {"x": np.linspace(0, 1, 5)}
         np.testing.assert_array_almost_equal(self.func_data._argvals_stand['x'], expected_argvals_stand['x'])
+
+        with self.assertRaises(TypeError):
+            self.func_data.argvals = 0
 
     def test_values_property(self):
         dense_values = self.func_data.values
@@ -63,6 +66,9 @@ class TestDenseFunctionalData(unittest.TestCase):
         new_values = DenseValues(np.array([[11, 12, 13, 14, 15]]))
         self.func_data.values = new_values
         np.testing.assert_array_equal(self.func_data.values, new_values)
+
+        with self.assertRaises(TypeError):
+            self.func_data.values = 0
 
     def test_n_points(self):
         expected_result = (5,)
