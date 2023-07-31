@@ -11,6 +11,7 @@ from __future__ import annotations
 import itertools
 import numpy as np
 import numpy.typing as npt
+import pandas as pd
 import pygam
 import warnings
 
@@ -301,6 +302,10 @@ class FunctionalData(ABC):
     ###########################################################################
     # Abstract methods
     @abstractmethod
+    def to_long(self) -> pd.DataFrame:
+        """Convert the data to long format."""
+
+    @abstractmethod
     def norm(
         self,
         squared: bool = False,
@@ -520,6 +525,22 @@ class DenseFunctionalData(FunctionalData):
 
     ###########################################################################
     # Methods
+    def to_long(self) -> pd.DataFrame:
+        """Convert the data to long format.
+
+        Returns
+        -------
+        pd.DataFrame
+            The data in a long format.
+
+        """
+        sampling_points = list(itertools.product(*self.argvals.values()))
+        temp = pd.DataFrame(self.n_obs * sampling_points)
+        temp.columns = list(self.argvals.keys())
+        temp['id'] = np.repeat(np.arange(self.n_obs), np.prod(self.n_points))
+        temp['values'] = self.values.flatten()
+        return temp
+
     def norm(
         self,
         squared: bool = False,
@@ -1179,6 +1200,17 @@ class IrregularFunctionalData(FunctionalData):
 
     ###########################################################################
     # Methods
+    def to_long(self) -> pd.DataFrame:
+        """Convert the data to long format.
+
+        Returns
+        -------
+        pd.DataFrame
+            The data in a long format.
+
+        """
+        raise NotImplementedError()
+
     def norm(
         self,
         squared: bool = False,
