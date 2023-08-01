@@ -1209,7 +1209,18 @@ class IrregularFunctionalData(FunctionalData):
             The data in a long format.
 
         """
-        raise NotImplementedError()
+        temp_list = []
+        for idx, obs in enumerate(self):
+            cur_argvals = obs.argvals[idx]
+            cur_values = obs.values[idx]
+            sampling_points = list(itertools.product(*cur_argvals.values()))
+
+            temp = pd.DataFrame(sampling_points)
+            temp.columns = list(cur_argvals.keys())
+            temp['id'] = idx
+            temp['values'] = cur_values.flatten()
+            temp_list.append(temp)
+        return pd.concat(temp_list, ignore_index=True)
 
     def norm(
         self,

@@ -2,6 +2,7 @@
 # -*-coding:utf8 -*
 
 import numpy as np
+import pandas as pd
 import unittest
 
 from FDApy.representation.argvals import DenseArgvals, IrregularArgvals
@@ -148,6 +149,18 @@ class TestIrregularFunctionalData(unittest.TestCase):
         with self.assertRaises(ValueError):
             IrregularFunctionalData._is_compatible(self.fdata, func_data)
 
+    def test_to_long(self):
+        result = self.fdata.to_long()
+
+        expected_dim = np.array([0, 1, 2, 3, 4, 0, 2, 4, 2, 4])
+        expected_id = np.array([0, 0, 0, 0, 0, 1, 1, 1, 2, 2])
+        expected_values = DenseValues(np.array([1, 2, 3, 4, 5, 2, 5, 6, 4, 7]))
+
+        self.assertTrue(isinstance(result, pd.DataFrame))
+        np.testing.assert_array_equal(result['input_dim_0'].values, expected_dim)
+        np.testing.assert_array_equal(result['id'].values, expected_id)
+        np.testing.assert_array_equal(result['values'].values, expected_values)
+
 
 class TestIrregularFunctionalData1D(unittest.TestCase):
     """Test class for the class IrregularFunctionalData in one dimension."""
@@ -292,6 +305,20 @@ class TestIrregularFunctionalData2D(unittest.TestCase):
     def test_is_compatible(self):
         IrregularFunctionalData._is_compatible(self.irregu_fd, self.irregu_fd)
         self.assertTrue(True)
+
+    def test_to_long(self):
+        result = self.irregu_fd.to_long()
+
+        expected_dim_0 = np.array([1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 2, 2, 2, 4, 4, 4, 4, 4, 5, 5, 6, 6])
+        expected_dim_1 = np.array([5, 6, 7, 5, 6, 7, 5, 6, 7, 5, 6, 7, 1, 2, 3, 1, 2, 3, 8, 9, 8, 9, 8, 9])
+        expected_id = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2])
+        expected_values = np.array([1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 1, 2, 3, 8, 9, 8, 9, 8, 9])
+
+        self.assertTrue(isinstance(result, pd.DataFrame))
+        np.testing.assert_array_equal(result['input_dim_0'].values, expected_dim_0)
+        np.testing.assert_array_equal(result['input_dim_1'].values, expected_dim_1)
+        np.testing.assert_array_equal(result['id'].values, expected_id)
+        np.testing.assert_array_equal(result['values'].values, expected_values)
 
     def test_mean(self):
         N = np.nan

@@ -7,6 +7,7 @@ Written with the help of ChatGPT.
 
 """
 import numpy as np
+import pandas as pd
 import unittest
 
 from FDApy.representation.functional_data import (
@@ -104,6 +105,18 @@ class TestDenseFunctionalData(unittest.TestCase):
         with self.assertRaises(ValueError):
             DenseFunctionalData._is_compatible(self.func_data, func_data)
 
+    def test_to_long(self):
+        result = self.func_data.to_long()
+
+        expected_dim = np.array([1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5])
+        expected_id = np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2])
+        expected_values = DenseValues(np.array([ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15]))
+
+        self.assertTrue(isinstance(result, pd.DataFrame))
+        np.testing.assert_array_equal(result['input_dim_0'].values, expected_dim)
+        np.testing.assert_array_equal(result['id'].values, expected_id)
+        np.testing.assert_array_equal(result['values'].values, expected_values)
+
     def test_inner_product(self):
         result = self.func_data.inner_product()
         expected = np.array([[42., 102., 162.],[102., 262., 422.],[162., 422., 682.]])
@@ -169,7 +182,7 @@ class TestDenseFunctionalData2D(unittest.TestCase):
     def setUp(self):
         argvals = DenseArgvals({'input_dim_0': np.array([1, 2, 3, 4]), 'input_dim_1': np.array([5, 6, 7])})
 
-        values = DenseValues(np.array([[[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]], [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]], [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]], [[3, 4, 6], [3, 4, 5], [3, 4, 5], [3, 4, 5]], [[3, 4, 7], [3, 4, 5], [3, 4, 5], [3, 4, 5]]]))
+        values = DenseValues(np.array([[[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]], [[5, 6, 7], [5, 6, 7], [5, 6, 7], [5, 6, 7]], [[3, 4, 5], [3, 4, 5], [3, 4, 5], [3, 4, 5]]]))
         self.dense_fd = DenseFunctionalData(argvals, values)
 
     def test_argvals_stand(self):
@@ -178,7 +191,7 @@ class TestDenseFunctionalData2D(unittest.TestCase):
         self.assertTrue(is_equal_dim0 and is_equal_dim1)
 
     def test_n_obs(self):
-        self.assertEqual(self.dense_fd.n_obs, 5)
+        self.assertEqual(self.dense_fd.n_obs, 3)
 
     def test_n_dimension(self):
         self.assertEqual(self.dense_fd.n_dimension, 2)
@@ -187,15 +200,29 @@ class TestDenseFunctionalData2D(unittest.TestCase):
         new_dense_fd = self.dense_fd[2]
         self.assertIsInstance(new_dense_fd, DenseFunctionalData)
         self.assertEqual(new_dense_fd.n_obs, 1)
-        new_dense_fd = self.dense_fd[1:4]
+        new_dense_fd = self.dense_fd[1:3]
         self.assertIsInstance(new_dense_fd, DenseFunctionalData)
-        self.assertEqual(new_dense_fd.n_obs, 3)
+        self.assertEqual(new_dense_fd.n_obs, 2)
 
     def test_is_compatible(self):
         DenseFunctionalData._is_compatible(self.dense_fd, self.dense_fd)
         self.assertTrue(True)
 
+    def test_to_long(self):
+        result = self.dense_fd.to_long()
+
+        expected_dim_0 = np.array([1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4])
+        expected_dim_1 = np.array([5, 6, 7, 5, 6, 7, 5, 6, 7, 5, 6, 7, 5, 6, 7, 5, 6, 7, 5, 6, 7, 5, 6, 7, 5, 6, 7, 5, 6, 7, 5, 6, 7, 5, 6, 7])
+        expected_id = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
+        expected_values = DenseValues(np.array([1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 5, 6, 7, 5, 6, 7, 5, 6, 7, 5, 6, 7, 3, 4, 5, 3, 4, 5, 3, 4, 5, 3, 4, 5]))
+
+        self.assertTrue(isinstance(result, pd.DataFrame))
+        np.testing.assert_array_equal(result['input_dim_0'].values, expected_dim_0)
+        np.testing.assert_array_equal(result['input_dim_1'].values, expected_dim_1)
+        np.testing.assert_array_equal(result['id'].values, expected_id)
+        np.testing.assert_array_equal(result['values'].values, expected_values)
+
     def test_mean(self):
         mean_fd = self.dense_fd.mean()
-        is_equal = np.allclose(mean_fd.values, np.array([[[3., 4., 5.6], [3., 4., 5.], [3., 4., 5.], [3., 4., 5.]]]))
+        is_equal = np.allclose(mean_fd.values, np.array([[[3., 4., 5.],[3., 4., 5.],[3., 4., 5.],[3., 4., 5.]]]))
         self.assertTrue(is_equal)
