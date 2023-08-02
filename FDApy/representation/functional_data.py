@@ -528,10 +528,44 @@ class DenseFunctionalData(FunctionalData):
     def to_long(self) -> pd.DataFrame:
         """Convert the data to long format.
 
+        This function transform a DenseFunctionalData object into pandas
+        DataFrame. It uses the long format to represent the DenseFunctionalData
+        object as a dataframe. This is a helper function as it might be easier
+        for some computation, e.g., smoothing of the mean and covariance
+        functions to have a long format.
+
         Returns
         -------
         pd.DataFrame
             The data in a long format.
+
+        Examples
+        --------
+        >>> argvals = DenseArgvals({'input_dim_0': np.array([1, 2, 3, 4, 5])})
+        >>> values = DenseValues(np.array([
+        ...     [1, 2, 3, 4, 5],
+        ...     [6, 7, 8, 9, 10],
+        ...     [11, 12, 13, 14, 15]
+        ... ]))
+        >>> fdata = DenseFunctionalData(argvals, values)
+
+        >>> fdata.to_long()
+            input_dim_0  id  values
+        0             1   0       1
+        1             2   0       2
+        2             3   0       3
+        3             4   0       4
+        4             5   0       5
+        5             1   1       6
+        6             2   1       7
+        7             3   1       8
+        8             4   1       9
+        9             5   1      10
+        10            1   2      11
+        11            2   2      12
+        12            3   2      13
+        13            4   2      14
+        14            5   2      15
 
         """
         sampling_points = list(itertools.product(*self.argvals.values()))
@@ -1203,10 +1237,43 @@ class IrregularFunctionalData(FunctionalData):
     def to_long(self) -> pd.DataFrame:
         """Convert the data to long format.
 
+        This function transform a IrregularFunctionalData object into pandas
+        DataFrame. It uses the long format to represent the
+        IrregularFunctionalData object as a dataframe. This is a helper
+        function as it might be easier for some computation, e.g., smoothing of
+        the mean and covariance functions to have a long format.
+
         Returns
         -------
         pd.DataFrame
             The data in a long format.
+
+        Examples
+        --------
+        >>> argvals = IrregularArgvals({
+        ...     0: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4])}),
+        ...     1: DenseArgvals({'input_dim_0': np.array([0, 2, 4])}),
+        ...     2: DenseArgvals({'input_dim_0': np.array([2, 4])})
+        ... })
+        >>> values = IrregularValues({
+        ...     0: np.array([1, 2, 3, 4, 5]),
+        ...     1: np.array([2, 5, 6]),
+        ...     2: np.array([4, 7])
+        ... })
+        >>> fdata = IrregularFunctionalData(argvals, values)
+
+        >>> fdata.to_long()
+           input_dim_0  id  values
+        0            0   0       1
+        1            1   0       2
+        2            2   0       3
+        3            3   0       4
+        4            4   0       5
+        5            0   1       2
+        6            2   1       5
+        7            4   1       6
+        8            2   2       4
+        9            4   2       7
 
         """
         temp_list = []
