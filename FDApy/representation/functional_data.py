@@ -306,6 +306,16 @@ class FunctionalData(ABC):
         """Convert the data to long format."""
 
     @abstractmethod
+    def smooth(
+        self,
+        points: Optional[DenseArgvals] = None,
+        kernel_name: Optional[str] = "epanechnikov",
+        bandwidth: Optional[float] = None,
+        degree: Optional[int] = 1
+    ) -> Type[FunctionalData]:
+        """Smooth the data."""
+
+    @abstractmethod
     def norm(
         self,
         squared: bool = False,
@@ -343,16 +353,6 @@ class FunctionalData(ABC):
         **kernel_args
     ) -> npt.NDArray[np.float64]:
         """Compute an estimate of the inner product matrix."""
-
-    @abstractmethod
-    def smooth(
-        self,
-        points: Optional[DenseArgvals] = None,
-        kernel_name: Optional[str] = "epanechnikov",
-        bandwidth: Optional[float] = None,
-        degree: Optional[int] = 1
-    ) -> Type[FunctionalData]:
-        """Smooth the data."""
 
     ###########################################################################
 
@@ -574,6 +574,74 @@ class DenseFunctionalData(FunctionalData):
         temp['id'] = np.repeat(np.arange(self.n_obs), np.prod(self.n_points))
         temp['values'] = self.values.flatten()
         return temp
+
+    def smooth(
+        self,
+        points: Optional[DenseArgvals] = None,
+        kernel_name: str = "epanechnikov",
+        bandwidth: Optional[float] = None,
+        degree: int = 1
+    ) -> DenseFunctionalData:
+        """Smooth the data.
+
+        This function smooths each curves individually. Based on [1]_, it fits
+        a local smoother to the data (the argument ``degree`` controls the
+        degree of the local fits).
+
+        Parameters
+        ----------
+        points: Optional[DenseArgvals], default=None
+            Points at which the curves are estimated. The default is None,
+            meaning we use the argvals as estimation points.
+        kernel_name: str, default="epanechnikov"
+            Kernel name used as weight (`gaussian`, `epanechnikov`, `tricube`,
+            `bisquare`).
+        bandwidth: float, default=None
+            Strictly positive. Control the size of the associated neighborhood.
+            If ``bandwidth == None``, it is assumed that the curves are twice
+            differentiable and the bandwidth is set to :math:`n^{-1/5}` [2]_
+            where :math:`n` is the number of sampling points per curve. Be
+            careful that it will not work if the curves are not sampled on
+            :math:`[0, 1]`.
+        degree: int, default=1
+            Degree of the local polynomial to fit. If ``degree=0``, we fit
+            the local constant estimator (equivalent to the Nadaraya-Watson
+            estimator). If ``degree=1``, we fit the local linear estimator.
+            If ``degree=2``, we fit the local quadratic estimator.
+
+        Returns
+        -------
+        DenseFunctionalData
+            Smoothed data.
+
+        References
+        ----------
+        .. [1] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
+            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
+        .. [2] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
+            Springer Series in Statistics.
+
+        """
+        if points is None:
+            points = self.argvals
+        if bandwidth is None:
+            bandwidth = np.product(self.n_points)**(-1 / 5)
+
+        argvals_mat = _cartesian_product(*self.argvals.values())
+        points_mat = _cartesian_product(*points.values())
+
+        lp = LocalPolynomial(
+            kernel_name=kernel_name, bandwidth=bandwidth, degree=degree
+        )
+
+        smooth = np.zeros((self.n_obs, *self.n_points))
+        for idx, obs in enumerate(self):
+            smooth[idx, :] = lp.predict(
+                y=obs.values.flatten(),
+                x=argvals_mat,
+                x_new=points_mat
+            ).reshape(smooth.shape[1:])
+        return DenseFunctionalData(points, DenseValues(smooth))
 
     def norm(
         self,
@@ -910,72 +978,6 @@ class DenseFunctionalData(FunctionalData):
         inner_mat = inner_mat + inner_mat.T
         np.fill_diagonal(inner_mat, np.diag(inner_mat) / 2)
         return inner_mat
-
-    def smooth(
-        self,
-        points: Optional[DenseArgvals] = None,
-        kernel_name: str = "epanechnikov",
-        bandwidth: Optional[float] = None,
-        degree: int = 1
-    ) -> DenseFunctionalData:
-        """Smooth the data.
-
-        This function smooths each curves individually. Based on [1]_, it fits
-        a local smoother to the data (the argument ``degree`` controls the
-        degree of the local fits).
-
-        Parameters
-        ----------
-        points: Optional[DenseArgvals], default=None
-            Points at which the curves are estimated. The default is None,
-            meaning we use the argvals as estimation points.
-        kernel_name: str, default="epanechnikov"
-            Kernel name used as weight (`gaussian`, `epanechnikov`, `tricube`,
-            `bisquare`).
-        bandwidth: float, default=None
-            Strictly positive. Control the size of the associated neighborhood.
-            If ``bandwidth == None``, it is assumed that the curves are twice
-            differentiable and the bandwidth is set to :math:`n^{-1/5}` where
-            :math:`n` is the number of sampling points per curve. Be careful
-            that it will not work if the curves are not sampled on
-            :math:`[0, 1]`.
-        degree: int, default=1
-            Degree of the local polynomial to fit. If ``degree=0``, we fit
-            the local constant estimator (equivalent to the Nadaraya-Watson
-            estimator). If ``degree=1``, we fit the local linear estimator.
-            If ``degree=2``, we fit the local quadratic estimator.
-
-        Returns
-        -------
-        DenseFunctionalData
-            Smoothed data.
-
-        References
-        ----------
-        .. [1] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
-            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
-
-        """
-        if points is None:
-            points = self.argvals
-
-        argvals_mat = _cartesian_product(*self.argvals.values())
-        points_mat = _cartesian_product(*points.values())
-
-        lp = LocalPolynomial(
-            kernel_name=kernel_name, bandwidth=bandwidth, degree=degree
-        )
-
-        smooth = np.zeros(
-            (self.n_obs, *(len(value) for value in points.values()))
-        )
-        for idx, obs in enumerate(self):
-            smooth[idx, :] = lp.predict(
-                y=obs.values.flatten(),
-                x=argvals_mat,
-                x_new=points_mat
-            ).reshape(smooth.shape[1:])
-        return DenseFunctionalData(points, smooth)
 
     def concatenate(
         self,
