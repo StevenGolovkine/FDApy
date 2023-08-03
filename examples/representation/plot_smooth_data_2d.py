@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from FDApy.representation.functional_data import MultivariateFunctionalData
+from FDApy.representation.argvals import DenseArgvals
 from FDApy.simulation.karhunen import KarhunenLoeve
 from FDApy.visualization.plot import plot_multivariate
 
@@ -37,10 +38,10 @@ data = kl.data
 kl.add_noise(0.05)
 
 # Smooth the data
-points = {
-    'input_dim_0': np.linspace(0, 1, 101),
-    'input_dim_1': np.linspace(0, 1, 101)
-}
+points = DenseArgvals({
+    'input_dim_0': np.linspace(0, 1, 11),
+    'input_dim_1': np.linspace(0, 1, 11)
+})
 kernel_name = "epanechnikov"
 bandwidth = 0.2
 degree = 1

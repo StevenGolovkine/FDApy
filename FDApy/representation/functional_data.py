@@ -634,7 +634,7 @@ class DenseFunctionalData(FunctionalData):
             kernel_name=kernel_name, bandwidth=bandwidth, degree=degree
         )
 
-        smooth = np.zeros((self.n_obs, *self.n_points))
+        smooth = np.zeros((self.n_obs, *points.n_points))
         for idx, obs in enumerate(self):
             smooth[idx, :] = lp.predict(
                 y=obs.values.flatten(),

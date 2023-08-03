@@ -12,6 +12,8 @@ Examples of representation of univariate and dense functional data.
 import numpy as np
 
 from FDApy.representation.functional_data import DenseFunctionalData
+from FDApy.representation.argvals import DenseArgvals
+from FDApy.representation.values import DenseValues
 from FDApy.visualization.plot import plot
 
 ###############################################################################
@@ -43,8 +45,8 @@ X = np.array([
 ])
 
 fdata = DenseFunctionalData(
-    argvals={'input_dim_0': argvals},
-    values=X
+    argvals=DenseArgvals({'input_dim_0': argvals}),
+    values=DenseValues(X)
 )
 
 _ = plot(fdata)
@@ -62,8 +64,8 @@ X = np.array([
 ])
 
 fdata = DenseFunctionalData(
-    argvals={'input_dim_0': argvals, 'input_dim_1': argvals},
-    values=X
+    argvals=DenseArgvals({'input_dim_0': argvals, 'input_dim_1': argvals}),
+    values=DenseValues(X)
 )
 
 _ = plot(fdata)

@@ -24,7 +24,7 @@ FDApy: a Python package to analyze functional data
 		:alt: Coverage
 
 .. image:: https://app.codacy.com/project/badge/Grade/3d9062cffc304ad4bb7c76bf97cc965c
-		:target: https://www.codacy.com/gh/StevenGolovkine/FDApy/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=StevenGolovkine/FDApy&amp;utm_campaign=Badge_Grade
+		:target: https://app.codacy.com/gh/StevenGolovkine/FDApy/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade
 		:alt: Code Quality
 
 .. image:: https://readthedocs.org/projects/fdapy/badge/?version=latest

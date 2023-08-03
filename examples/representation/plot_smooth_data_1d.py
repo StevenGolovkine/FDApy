@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from FDApy.simulation.karhunen import KarhunenLoeve
+from FDApy.representation.argvals import DenseArgvals
 from FDApy.visualization.plot import plot
 
 # Set general parameters
@@ -33,7 +34,7 @@ kl.new(n_obs=n_obs)
 kl.add_noise(0.05)
 
 # Smooth the data
-points = {'input_dim_0': np.linspace(0, 1, 101)}
+points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 101)})
 kernel_name = "epanechnikov"
 bandwidth = 0.1
 degree = 1

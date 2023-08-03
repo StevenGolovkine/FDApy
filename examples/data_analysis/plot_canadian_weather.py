@@ -17,7 +17,7 @@ import numpy as np
 
 from FDApy.misc.loader import read_csv
 from FDApy.visualization.plot import plot
-
+from FDApy.representation.argvals import DenseArgvals
 
 # Load data
 temp_data = read_csv('../data/canadian_temperature_daily.csv', index_col=0)
@@ -27,7 +27,7 @@ _ = plot(temp_data)
 
 
 # Smooth the data
-points = {'input_dim_0': np.linspace(1, 365, 365)}
+points = DenseArgvals({'input_dim_0': np.linspace(1, 365, 365)})
 kernel_name = "epanechnikov"
 bandwidth = 30
 degree = 1
