@@ -12,6 +12,7 @@ from FDApy.representation.functional_data import (
     DenseFunctionalData,
     IrregularFunctionalData
 )
+from FDApy.simulation.karhunen import KarhunenLoeve
 
 
 class TestIrregularFunctionalData(unittest.TestCase):
@@ -396,3 +397,23 @@ class TestPerformComputation(unittest.TestCase):
         expected_values = IrregularValues({0: np.array([0, 0, 1, 2, 5]), 1: np.array([0, 1, 6]), 2: np.array([0, 2])})
         self.assertEqual(result.argvals, IrregularArgvals(self.argvals))
         np.testing.assert_array_almost_equal(result.values, expected_values)
+
+
+class TestSmoothIrregular(unittest.TestCase):
+    def setUp(self):
+        name = 'bsplines'
+        n_functions = 5
+
+        kl = KarhunenLoeve(
+            basis_name=name, n_functions=n_functions, random_state=42
+        )
+        kl.new(n_obs=1)
+        kl.add_noise_and_sparsify(0.05, 0.5)
+        self.fdata_1d = kl.sparse_data
+
+    def test_smooth_1d(self):
+        fdata_smooth = self.fdata_1d.smooth()
+        print(self.fdata_1d.values)
+
+        expected_values = DenseValues([[-0.19645506, -0.21794753, -0.23989429, -0.24048419,  -0.23790629, -0.23440484, -0.22994697, -0.22468187,  -0.21201513, -0.20394813, -0.1747512 , -0.12601596,  -0.09895502, -0.08492093, -0.04109609, -0.02596334,  -0.01082828,  0.00421961,  0.04567071,  0.05745157,   0.06811439,  0.11375887,  0.12281441,  0.13186628,   0.14994229,  0.16348497,  0.16780846,  0.17302711,   0.17348835,  0.17186662,  0.14886201,  0.13550609,   0.12792604,  0.10153141,  0.05514138, -0.12873871,  -0.18394248, -0.21406013, -0.24600976, -0.28000348,  -0.31583867, -0.35312089, -0.81082022, -0.95808598,  -1.21479802, -1.40218008]])
+        np.testing.assert_array_almost_equal(fdata_smooth.values, expected_values)

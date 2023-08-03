@@ -1291,6 +1291,68 @@ class IrregularFunctionalData(FunctionalData):
             temp_list.append(temp)
         return pd.concat(temp_list, ignore_index=True)
 
+    def smooth(
+        self,
+        points: Optional[DenseArgvals] = None,
+        kernel_name: str = "epanechnikov",
+        bandwidth: Optional[float] = None,
+        degree: int = 1
+    ) -> DenseFunctionalData:
+        """Smooth the data.
+
+        This function smooths each curves individually. Based on [1]_, it fits
+        a local smoother to the data (the argument ``degree`` controls the
+        degree of the local fits).
+
+        Parameters
+        ----------
+        points: Optional[DenseArgvals], default=None
+            Points at which the curves are estimated. The default is None,
+            meaning we use the argvals as estimation points.
+        kernel_name: str, default="epanechnikov"
+            Kernel name used as weight (`gaussian`, `epanechnikov`, `tricube`,
+            `bisquare`).
+        bandwidth: float, default=None
+            Strictly positive. Control the size of the associated neighborhood.
+            If ``bandwidth == None``, it is assumed that the curves are twice
+            differentiable and the bandwidth is set to :math:`n^{-1/5}` where
+            :math:`n` is the number of sampling points per curve. Be careful
+            that it will not work if the curves are not sampled on
+            :math:`[0, 1]`.
+        degree: int, default=1
+            Degree of the local polynomial to fit. If ``degree = 0``, we fit
+            the local constant estimator (equivalent to the Nadaraya-Watson
+            estimator). If ``degree = 1``, we fit the local linear estimator.
+            If ``degree = 2``, we fit the local quadratic estimator.
+
+        Returns
+        -------
+        DenseFunctionalData
+            A smoothed version of the data.
+
+        """
+        if points is None:
+            points = self.argvals.to_dense()
+        if bandwidth is None:
+            n_points = np.mean([obs for obs in self.n_points.values()])
+            bandwidth = n_points**(-1 / 5)
+
+        points_mat = _cartesian_product(*points.values())
+
+        lp = LocalPolynomial(
+            kernel_name=kernel_name, bandwidth=bandwidth, degree=degree
+        )
+
+        smooth = np.zeros((self.n_obs, *points.n_points))
+        for idx, obs in enumerate(self):
+            argvals_mat = _cartesian_product(*obs.argvals[idx].values())
+            smooth[idx, :] = lp.predict(
+                y=obs.values[idx],
+                x=argvals_mat,
+                x_new=points_mat
+            ).reshape(smooth.shape[1:])
+        return DenseFunctionalData(points, DenseValues(smooth))
+
     def norm(
         self,
         squared: bool = False,
@@ -1448,69 +1510,6 @@ class IrregularFunctionalData(FunctionalData):
 
         """
         raise NotImplementedError()
-
-    def smooth(
-        self,
-        points: Optional[DenseArgvals] = None,
-        kernel_name: str = "epanechnikov",
-        bandwidth: Optional[float] = None,
-        degree: int = 1
-    ) -> DenseFunctionalData:
-        """Smooth the data.
-
-        Notes
-        -----
-        Only, one dimensional IrregularFunctionalData can be smoothed.
-
-        Parameters
-        ----------
-        points: Optional[DenseArgvals], default=None
-            Points at which the curves are estimated. The default is None,
-            meaning we use the argvals as estimation points.
-        kernel_name: str, default="epanechnikov"
-            Kernel name used as weight (`gaussian`, `epanechnikov`, `tricube`,
-            `bisquare`).
-        bandwidth: float, default=None
-            Strictly positive. Control the size of the associated neighborhood.
-            If ``bandwidth == None``, it is assumed that the curves are twice
-            differentiable and the bandwidth is set to :math:`n^{-1/5}` where
-            :math:`n` is the number of sampling points per curve. Be careful
-            that it will not work if the curves are not sampled on
-            :math:`[0, 1]`.
-        degree: int, default=1
-            Degree of the local polynomial to fit. If ``degree = 0``, we fit
-            the local constant estimator (equivalent to the Nadaraya-Watson
-            estimator). If ``degree = 1``, we fit the local linear estimator.
-            If ``degree = 2``, we fit the local quadratic estimator.
-
-        Returns
-        -------
-        DenseFunctionalData
-            A smoothed version of the data.
-
-        """
-        if points is None:
-            points = self.argvals.to_dense()
-
-        points_mat = _cartesian_product(*points.values())
-
-        lp = LocalPolynomial(
-            kernel_name=kernel_name, bandwidth=bandwidth, degree=degree
-        )
-
-        smooth = np.zeros(
-            (self.n_obs, *(len(value) for value in points.values()))
-        )
-        for idx, obs in enumerate(self):
-            argvals_mat = _cartesian_product(
-                *obs.argvals['input_dim_0'].values()
-            )
-            smooth[idx, :] = lp.predict(
-                y=obs.values[idx].flatten(),
-                x=argvals_mat,
-                x_new=points_mat
-            ).reshape(smooth.shape[1:])
-        return DenseFunctionalData(points, smooth)
 
     ###########################################################################
 
