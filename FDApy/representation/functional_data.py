@@ -244,6 +244,8 @@ class FunctionalData(ABC):
         new_argvals_stand: Type[Argvals]
     ) -> None:
         """Setter for argvals_stand."""
+        if not isinstance(new_argvals_stand, Argvals):
+            raise TypeError('new_argvals_stand must be an Argvals object.')
         self._argvals_stand = new_argvals_stand
 
     @property
