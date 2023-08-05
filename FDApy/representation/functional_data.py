@@ -981,27 +981,6 @@ class DenseFunctionalData(FunctionalData):
         np.fill_diagonal(inner_mat, np.diag(inner_mat) / 2)
         return inner_mat
 
-    def concatenate(
-        self,
-        data: DenseFunctionalData
-    ) -> DenseFunctionalData:
-        """Concatenate two DenseFunctionalData.
-
-        Parameters
-        ----------
-        data: DenseFunctionalData
-            The data to concatenate with self.
-
-        Returns
-        -------
-        DenseFunctionalData
-            The concatenation of self and data.
-
-        TODO: Consider as a static method
-
-        """
-        return cast(DenseFunctionalData, _concatenate([self, data]))
-
     def normalize(
         self,
         use_argvals_stand: bool = False

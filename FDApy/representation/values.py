@@ -24,6 +24,11 @@ if TYPE_CHECKING:
 class Values(ABC):
     """Metaclass for the definition of values of functional data."""
 
+    @staticmethod
+    @abstractmethod
+    def concatenate(*values) -> Type[Values]:
+        """Concatenate Values objects."""
+
     @property
     @abstractmethod
     def n_obs(self) -> int:
@@ -66,6 +71,23 @@ class DenseValues(Values, np.ndarray):
     argument values in scientific computing.
 
     """
+
+    @staticmethod
+    def concatenate(*values) -> DenseValues:
+        """Concatenate DenseValues objects.
+
+        Parameters
+        ----------
+        *values:
+            The DenseValues objects to concatenate.
+
+        Returns
+        -------
+        DenseValues
+            The concatenated DenseValues.
+
+        """
+        return DenseValues(np.vstack([el for el in values]))
 
     def __new__(cls, input_array: npt.NDArray[np.float64]) -> None:
         """Create a new instance of DenseValues.
@@ -128,6 +150,28 @@ class IrregularValues(Values, UserDict):
     with argument values in scientific computing.
 
     """
+
+    @staticmethod
+    def concatenate(*values) -> IrregularValues:
+        """Concatenate IrregularValues objects.
+
+        Parameters
+        ----------
+        *values:
+            The IrregularValues objects to concatenate.
+
+        Returns
+        -------
+        IrregularValues
+            The concatenated IrregularValues.
+
+        """
+        new_values = {}
+        for el in values:
+            temp = len(new_values)
+            for key, values in el.items():
+                new_values[temp + key] = values
+        return IrregularValues(new_values)
 
     def __setitem__(self, key: int, value: npt.NDArray[np.float64]) -> None:
         """Set the value for a given key.

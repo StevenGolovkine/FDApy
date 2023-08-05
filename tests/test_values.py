@@ -35,6 +35,15 @@ class TestDenseValues(unittest.TestCase):
         with self.assertRaises(ValueError):
             values.compatible_with(argvals1)
 
+    def test_concatenate(self):
+        array = np.array([[1, 2, 3], [4, 5, 6]])
+        values = DenseValues(array)
+
+        new_values = DenseValues.concatenate(values, values)
+        expected_values = np.array([[1, 2, 3], [4, 5, 6], [1, 2, 3], [4, 5, 6]])
+        np.testing.assert_equal(new_values, DenseValues(expected_values))
+
+
 class TestIrregularValues(unittest.TestCase):
     def test_n_obs(self):
         values_dict = {0: np.array([1, 2, 3]), 1: np.array([4, 5, 6])}
@@ -79,3 +88,18 @@ class TestIrregularValues(unittest.TestCase):
         values = IrregularValues({0: np.random.randn(10, 10), 1: np.random.randn(5, 7)})
         with self.assertRaises(ValueError):
             values.compatible_with(argvals_irr)
+
+    def test_concatenate(self):
+        values_dict = {0: np.array([1, 2, 3]), 1: np.array([4, 5, 6])}
+        values = IrregularValues(values_dict)
+        
+        values_dict = {0: np.array([1, 2])}
+        values_2 = IrregularValues(values_dict)
+
+        new_values = IrregularValues.concatenate(values, values_2)
+        expected_values = IrregularValues({
+            0: np.array([1, 2, 3]),
+            1: np.array([4, 5, 6]),
+            2: np.array([1, 2])
+        })
+        np.testing.assert_allclose(new_values, expected_values)
