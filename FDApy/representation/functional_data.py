@@ -139,6 +139,30 @@ class FunctionalData(ABC):
     ) -> Type[FunctionalData]:
         """Perform computation."""
 
+    @staticmethod
+    @abstractmethod
+    def concatenate(
+        *fdata: Type[FunctionalData]
+    ) -> Type[FunctionalData]:
+        """Concatenate FunctionalData objects.
+
+        Parameters
+        ----------
+        *fdata: FunctionalData
+            Functional data to concatenate.
+
+        Raises
+        ------
+        ValueError
+            When all `fdata` do not have the same dimension.
+
+        TypeError
+            When all `fdata` do not have the same type.
+
+        """
+        FunctionalData._check_same_type(*fdata)
+        FunctionalData._check_same_ndim(*fdata)
+
     ###########################################################################
     # Magic methods
     def __init__(
@@ -459,6 +483,25 @@ class DenseFunctionalData(FunctionalData):
         DenseFunctionalData._is_compatible(fdata1, fdata2)
         new_values = func(fdata1.values, fdata2.values)
         return DenseFunctionalData(fdata1.argvals, new_values)
+
+    @staticmethod
+    def concatenate(
+        *fdata: DenseFunctionalData
+    ) -> DenseFunctionalData:
+        """Concatenate DenseFunctional objects.
+
+        Returns
+        -------
+        DenseFunctionalData
+            The concatenated object.
+
+        """
+        super(
+            DenseFunctionalData, DenseFunctionalData
+        ).concatenate(*fdata)
+        argvals = DenseArgvals.concatenate(*[el.argvals for el in fdata])
+        values = DenseValues.concatenate(*[el.values for el in fdata])
+        return DenseFunctionalData(argvals, values)
 
     ###########################################################################
 
@@ -1142,6 +1185,25 @@ class IrregularFunctionalData(FunctionalData):
         return IrregularFunctionalData(
             fdata1.argvals, IrregularValues(new_values)
         )
+
+    @staticmethod
+    def concatenate(
+        *fdata: IrregularFunctionalData
+    ) -> IrregularFunctionalData:
+        """Concatenate IrregularFunctionalData objects.
+
+        Returns
+        -------
+        IrregularFunctionalData
+            The concatenated objects.
+
+        """
+        super(
+            IrregularFunctionalData, IrregularFunctionalData
+        ).concatenate(*fdata)
+        argvals = IrregularArgvals.concatenate(*[el.argvals for el in fdata])
+        values = IrregularValues.concatenate(*[el.values for el in fdata])
+        return IrregularFunctionalData(argvals, values)
 
     ###########################################################################
 

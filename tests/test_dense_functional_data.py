@@ -115,6 +115,16 @@ class TestDenseFunctionalData(unittest.TestCase):
         with self.assertRaises(ValueError):
             DenseFunctionalData._is_compatible(self.func_data, func_data)
 
+    def test_concatenate(self):
+        fdata = DenseFunctionalData.concatenate(self.func_data, self.func_data)
+
+        expected_argvals = DenseArgvals({'input_dim_0': np.array([1, 2, 3, 4, 5])})
+        expected_values = DenseValues(np.array([[1, 2, 3, 4, 5],[6, 7, 8, 9, 10],[11, 12, 13, 14, 15], [1, 2, 3, 4, 5],[6, 7, 8, 9, 10],[11, 12, 13, 14, 15]]))
+        
+        self.assertIsInstance(fdata, DenseFunctionalData)
+        self.assertEqual(fdata.argvals, expected_argvals)
+        np.testing.assert_allclose(fdata.values, expected_values)
+
     def test_to_long(self):
         result = self.func_data.to_long()
 

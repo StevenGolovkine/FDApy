@@ -150,6 +150,30 @@ class TestIrregularFunctionalData(unittest.TestCase):
         with self.assertRaises(ValueError):
             IrregularFunctionalData._is_compatible(self.fdata, func_data)
 
+    def test_concatenate(self):
+        fdata = IrregularFunctionalData.concatenate(self.fdata, self.fdata)
+
+        expected_argvals = IrregularArgvals({
+            0: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4])}),
+            1: DenseArgvals({'input_dim_0': np.array([0, 2, 4])}),
+            2: DenseArgvals({'input_dim_0': np.array([2, 4])}),
+            3: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4])}),
+            4: DenseArgvals({'input_dim_0': np.array([0, 2, 4])}),
+            5: DenseArgvals({'input_dim_0': np.array([2, 4])}),
+        })
+        expected_values = IrregularValues({
+            0: np.array([1, 2, 3, 4, 5]),
+            1: np.array([2, 5, 6]),
+            2: np.array([4, 7]),
+            3: np.array([1, 2, 3, 4, 5]),
+            4: np.array([2, 5, 6]),
+            5: np.array([4, 7]),
+        })
+
+        self.assertIsInstance(fdata, IrregularFunctionalData)
+        np.testing.assert_allclose(fdata.argvals, expected_argvals)
+        np.testing.assert_allclose(fdata.values, expected_values)
+
     def test_to_long(self):
         result = self.fdata.to_long()
 
