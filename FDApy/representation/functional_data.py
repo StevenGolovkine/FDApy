@@ -1866,7 +1866,9 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             The concatenation of self and data.
 
         """
-        new = [_concatenate([d1, d2]) for d1, d2 in zip(self, data)]
+        new = [
+            FunctionalData.concatenate([d1, d2]) for d1, d2 in zip(self, data)
+        ]
         return MultivariateFunctionalData(new)
 
     def normalize(
@@ -1908,39 +1910,6 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
 ##############################################################################
 # Functional data manipulation
-
-def _concatenate(
-    data: List[DenseFunctionalData]
-) -> DenseFunctionalData:
-    """Concatenate multiple functional data.
-
-    Concateate multiple DenseFunctionalData into one. It works with higher
-    dimension for the input data.
-
-    Parameters
-    ----------
-    data: DenseFunctionalData
-        A list of DenseFunctionalData to concatenate.
-
-    Returns
-    -------
-    DenseFunctionalData
-        The concatenation of the input data.
-
-    Notes
-    -----
-    TODO :
-    * Add tests, in particular check that the data are compatible.
-
-    """
-    new_argvals = data[0].argvals
-    new_values = np.vstack([d.values for d in data])
-    return DenseFunctionalData(
-        DenseArgvals(new_argvals),
-        DenseValues(new_values)
-    )
-
-
 def _tensor_product(
     data1: DenseFunctionalData,
     data2: DenseFunctionalData
