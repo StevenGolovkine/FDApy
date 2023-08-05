@@ -24,6 +24,11 @@ if TYPE_CHECKING:
 class Argvals(UserDict):
     """Metaclass for the definition of argvals of functional data."""
 
+    @staticmethod
+    @abstractmethod
+    def concatenate(*argvals) -> Type[Argvals]:
+        """Concatenate Argvals objects."""
+
     @abstractmethod
     def __setitem__(self, key: Any, value: Any) -> None:
         """Set the value for a given key.
@@ -123,6 +128,34 @@ class DenseArgvals(Argvals):
     functionality for working with argument values in scientific computing.
 
     """
+
+    @staticmethod
+    def concatenate(*argvals) -> DenseArgvals:
+        """Concatenate DenseArgvals objects.
+
+        It does not make sense to concatenate DenseArgvals. This function
+        checks that all the DenseArgvals objects pass as arguments are the same
+        and return the first one. It raises an error if one is different.
+
+        Parameters
+        ----------
+        *argvals:
+            The DenseArgvals objects to concatenate.
+
+        Returns
+        -------
+        DenseArgvals
+            The first elements of the input list.
+
+        Raises
+        ------
+        ValueError
+            When all `argvals` are not equal.
+
+        """
+        if not all(el == argvals[0] for el in argvals):
+            raise ValueError("Argvals are not equals.")
+        return argvals[0]
 
     def __setitem__(self, key: str, value: npt.NDArray[np.float64]) -> None:
         """Set the value for a given key.
@@ -248,6 +281,32 @@ class IrregularArgvals(Argvals):
     functionality for working with argument values in scientific computing.
 
     """
+
+    @staticmethod
+    def concatenate(*argvals) -> IrregularArgvals:
+        """Concatenate IrregularArgvals objects.
+
+        It does not make sense to concatenate IrregularArgvals. This function
+        checks that all the IrregularArgvals objects pass as arguments are the
+        same and return the first one. It raises an error if one is different.
+
+        Parameters
+        ----------
+        *argvals:
+            The IrregularArgvals objects to concatenate.
+
+        Returns
+        -------
+        IrregularArgvals
+            The concatenated IrregularArgvals.
+
+        """
+        new_argvals = {}
+        for el in argvals:
+            temp = len(new_argvals)
+            for key, values in el.items():
+                new_argvals[temp + key] = values
+        return IrregularArgvals(new_argvals)
 
     def __setitem__(self, key: int, value: DenseArgvals) -> None:
         """Set the value for a given key.
