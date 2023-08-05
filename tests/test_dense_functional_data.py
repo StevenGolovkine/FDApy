@@ -66,6 +66,9 @@ class TestDenseFunctionalData(unittest.TestCase):
         self.func_data.argvals_stand = new_argvals
         self.assertEqual(self.func_data._argvals_stand, new_argvals)
 
+        with self.assertRaises(TypeError):
+            self.func_data.argvals_stand = 0
+
     def test_values_property(self):
         dense_values = self.func_data.values
         np.testing.assert_array_equal(dense_values, self.values)
