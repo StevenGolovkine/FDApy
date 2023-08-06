@@ -342,6 +342,15 @@ class FunctionalData(ABC):
         """Smooth the data."""
 
     @abstractmethod
+    def mean(
+        self,
+        points: Optional[DenseArgvals] = None,
+        smooth: bool = True,
+        **kwargs
+    ) -> DenseFunctionalData:
+        """Compute an estimate of the mean."""
+
+    @abstractmethod
     def norm(
         self,
         squared: bool = False,
@@ -354,14 +363,6 @@ class FunctionalData(ABC):
         paper.
 
         """
-
-    @abstractmethod
-    def mean(
-        self,
-        smooth: Optional[str] = None,
-        **kwargs
-    ) -> Type[FunctionalData]:
-        """Compute an estimate of the mean."""
 
     @abstractmethod
     def covariance(
@@ -688,6 +689,57 @@ class DenseFunctionalData(FunctionalData):
             ).reshape(smooth.shape[1:])
         return DenseFunctionalData(points, DenseValues(smooth))
 
+    def mean(
+        self,
+        points: Optional[DenseArgvals] = None,
+        smooth: bool = True,
+        **kwargs
+    ) -> DenseFunctionalData:
+        """Compute an estimate of the mean.
+
+        Parameters
+        ----------
+        points: Optional[DenseArgvals], default=None
+            The sampling points at which the mean is estimated. If `None`, the
+            DenseArgvals of the DenseFunctionalData is used. If `smooth` is
+            False, the DenseArgvals of the DenseFunctionalData is used.
+        smooth: bool, default=True
+            Should the mean be smoothed?
+
+        Keyword Args
+        ------------
+        kernel_name: str, default='epanechnikov'
+            Name of the kernel used for local polynomial smoothing.
+        degree: int, default=1
+            Degree used for local polynomial smoothing.
+        bandwidth: float, default=1
+            Bandwidth used for local polynomial smoothing.
+
+        Returns
+        -------
+        DenseFunctionalData
+            An estimate of the mean as a DenseFunctionalData object.
+
+        """
+        # Set parameters
+        if points is None:
+            points = self.argvals
+
+        mean_estim = self.values.mean(axis=0)
+        self._mean = DenseFunctionalData(self.argvals, mean_estim[np.newaxis])
+
+        if smooth:
+            self._mean = self._mean.smooth(
+                points=points,
+                kernel_name=kwargs.get('kernel_name', 'epanechnikov'),
+                bandwidth=kwargs.get(
+                    'bandwidth',
+                    np.product(self.n_points)**(-1 / 5)
+                ),
+                degree=kwargs.get('degree', 1)
+            )
+        return self._mean
+
     def norm(
         self,
         squared: bool = False,
@@ -750,51 +802,6 @@ class DenseFunctionalData(FunctionalData):
             return np.array(norm_fd)
         else:
             return np.power(norm_fd, 0.5)
-
-    def mean(
-        self,
-        smooth: Optional[str] = None,
-        **kwargs
-    ) -> DenseFunctionalData:
-        """Compute an estimate of the mean.
-
-        Parameters
-        ----------
-        smooth: Optional[str], default=None
-            Name of the smoothing method to use. Currently, not implemented.
-
-        Keyword Args
-        ------------
-        kernel_name: str, default='epanechnikov'
-            Name of the kernel used for local polynomial smoothing.
-        degree: int, default=1
-            Degree used for local polynomial smoothing.
-        bandwidth: float, default=1
-            Bandwidth used for local polynomial smoothing.
-        n_basis: int, default=10
-            Number of splines basis used for GAM smoothing.
-
-        Returns
-        -------
-        DenseFunctionalData
-            An estimate of the mean as a DenseFunctionalData object with the
-            same argvals as `self` and one observation.
-
-        """
-        mean_estim = self.values.mean(axis=0)
-
-        if smooth is not None:
-            if self.n_dimension > 1:
-                raise ValueError('Only one dimensional data can be smoothed.')
-            if smooth == 'LocalLinear':
-                data_smooth = self.smooth(
-                    points=None, kernel_name="epanechnikov",
-                    bandwidth=0.5, degree=1
-                )
-                mean_estim = data_smooth.values.mean(axis=0)
-            else:
-                raise NotImplementedError('Smoothing method not implemented.')
-        return DenseFunctionalData(self.argvals, mean_estim[np.newaxis])
 
     def covariance(
         self,
