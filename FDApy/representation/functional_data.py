@@ -19,7 +19,7 @@ from abc import ABC, abstractmethod
 from collections import UserList
 from collections.abc import Iterator
 from typing import (
-    Callable, cast, Dict, Iterable, Optional, List,
+    Callable, Dict, Iterable, Optional, List,
     Tuple, Type, Union
 )
 
@@ -1492,15 +1492,29 @@ class IrregularFunctionalData(FunctionalData):
 
     def mean(
         self,
-        smooth: Optional[str] = None,
+        points: Optional[DenseArgvals] = None,
+        smooth: bool = True,
         **kwargs
     ) -> DenseFunctionalData:
         """Compute an estimate of the mean.
 
         Parameters
         ----------
-        smooth: str, default=None
-            Name of the smoothing method. Currently, not implemented.
+        points: Optional[DenseArgvals], default=None
+            The sampling points at which the mean is estimated. If `None`, the
+            DenseArgvals of the DenseFunctionalData is used. If `smooth` is
+            False, the DenseArgvals of the DenseFunctionalData is used.
+        smooth: bool, default=True
+            Should the mean be smoothed?
+
+        Keyword Args
+        ------------
+        kernel_name: str, default='epanechnikov'
+            Name of the kernel used for local polynomial smoothing.
+        degree: int, default=1
+            Degree used for local polynomial smoothing.
+        bandwidth: float, default=1
+            Bandwidth used for local polynomial smoothing.
 
         Returns
         -------
