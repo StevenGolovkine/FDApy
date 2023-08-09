@@ -13,7 +13,6 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 import pygam
-import warnings
 
 from abc import ABC, abstractmethod
 from collections import UserList
@@ -1380,8 +1379,8 @@ class IrregularFunctionalData(FunctionalData):
             Strictly positive. Control the size of the associated neighborhood.
             If ``bandwidth == None``, it is assumed that the curves are twice
             differentiable and the bandwidth is set to :math:`n^{-1/5}` where
-            :math:`n` is the number of sampling points per curve [2]_. Be careful
-            that it will not work if the curves are not sampled on
+            :math:`n` is the number of sampling points per curve [2]_. Be
+            careful that it will not work if the curves are not sampled on
             :math:`[0, 1]`.
         degree: int, default=1
             Degree of the local polynomial to fit. If ``degree = 0``, we fit
@@ -1457,7 +1456,7 @@ class IrregularFunctionalData(FunctionalData):
         """
         if points is None:
             points = self.argvals.to_dense()
-        bandwidth=kwargs.get('bandwidth', None)
+        bandwidth = kwargs.get('bandwidth', None)
         if bandwidth is None:
             n_points = np.mean([obs for obs in self.n_points.values()])
             bandwidth = n_points**(-1 / 5)
@@ -1469,7 +1468,7 @@ class IrregularFunctionalData(FunctionalData):
 
         lp = LocalPolynomial(
             kernel_name=kwargs.get('kernel_name', 'epanechnikov'),
-            bandwidth=kwargs.get('bandwidth', 0.5),
+            bandwidth=bandwidth,
             degree=kwargs.get('degree', 1)
         )
         pred = lp.predict(y=y, x=x, x_new=points_mat).reshape(points.n_points)
