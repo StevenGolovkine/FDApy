@@ -223,19 +223,17 @@ def _simulate_brownian(
     rnorm: Callable, default=np.random.normal
         Function to use for normal random variables generation (used for
         reproducibility purpose).
-
-    Keyword Args
-    ------------
-    init_point: float, default=0.0 or 1.0
-        Start value of the Brownian motion. For geometric Brownian motion,
-        ``init_point`` should be stricly positive.
-    mu: float, default=0
-        Interest rate (or percentage drift).
-    sigma: float, default=1
-        Diffusion coefficient (or percentage volatility).
-    hurst: float, default=0.5
-        Hurst parameter. If ``hurst = 0.5``. the fractional Brownian motion is
-        equivalent to the standard Brownian motion.
+    **kwargs:
+        init_point: float, default=0.0 or 1.0
+            Start value of the Brownian motion. For geometric Brownian motion,
+            ``init_point`` should be stricly positive.
+        mu: float, default=0
+            Interest rate (or percentage drift).
+        sigma: float, default=1
+            Diffusion coefficient (or percentage volatility).
+        hurst: float, default=0.5
+            Hurst parameter. If ``hurst = 0.5``. the fractional Brownian motion
+            is equivalent to the standard Brownian motion.
 
     Returns
     -------
@@ -337,20 +335,19 @@ class Brownian(Simulation):
             Values at which Brownian motions are evaluated. If ``None``, the
             functions are evaluated on the interval :math:`[0, 1]` with
             :math:`21` regularly spaced sampled points.
-
-        Keyword Args
-        ------------
-        init_point: float
-            Start value of the Brownian motion. For geometric Brownian motion,
-            ``init_point`` should be stricly positive. Default value is 0 for
-            standard Brownian motion and 1 for geometric Brownian motion.
-        mu: float, default=0
-            Interest rate (or percentage drift).
-        sigma: float, default=1
-            Diffusion coefficient (or percentage volatility).
-        hurst: float, default=0.5
-            Hurst parameter. If ``hurst = 0.5``. the fractional Brownian motion
-            is equivalent to the standard Brownian motion.
+        **kwargs:
+            init_point: float
+                Start value of the Brownian motion. For geometric Brownian
+                motion, ``init_point`` should be stricly positive. Default
+                value is 0 for standard Brownian motion and 1 for geometric
+                Brownian motion.
+            mu: float, default=0
+                Interest rate (or percentage drift).
+            sigma: float, default=1
+                Diffusion coefficient (or percentage volatility).
+            hurst: float, default=0.5
+                Hurst parameter. If ``hurst = 0.5``. the fractional Brownian
+                motion is equivalent to the standard Brownian motion.
 
         """
         if self.random_state is None:

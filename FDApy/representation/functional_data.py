@@ -697,6 +697,12 @@ class DenseFunctionalData(FunctionalData):
     ) -> DenseFunctionalData:
         """Compute an estimate of the mean.
 
+        This function computes an estimate of the mean curve of a
+        DenseFunctionalData object. As the curves are sampled on a common grid,
+        we consider the sample mean, as defined in [1]_. The sampled mean is
+        rate optimal [2]_. We included some smoothing using Local Polynonial
+        Estimators.
+
         Parameters
         ----------
         points: Optional[DenseArgvals], default=None
@@ -705,20 +711,30 @@ class DenseFunctionalData(FunctionalData):
             False, the DenseArgvals of the DenseFunctionalData is used.
         smooth: bool, default=True
             Should the mean be smoothed?
-
-        Keyword Args
-        ------------
-        kernel_name: str, default='epanechnikov'
-            Name of the kernel used for local polynomial smoothing.
-        degree: int, default=1
-            Degree used for local polynomial smoothing.
-        bandwidth: float, default=1
-            Bandwidth used for local polynomial smoothing.
+        **kwargs:
+            kernel_name: str, default='epanechnikov'
+                Name of the kernel used for local polynomial smoothing.
+            degree: int, default=1
+                Degree used for local polynomial smoothing.
+            bandwidth: float
+                Bandwidth used for local polynomial smoothing. The default
+                bandwitdth is set to be the number of sampling points to the
+                power :math:`-1/5` [3]_.
 
         Returns
         -------
         DenseFunctionalData
             An estimate of the mean as a DenseFunctionalData object.
+
+        References
+        ----------
+        .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+            Analysis, Springer Science, Chapter 8.
+        .. [2] Cai, T.T., Yuan, M., (2011), Optimal estimation of the mean
+            function based on discretely sampled functional data: Phase
+            transition. The Annals of Statistics 39, 2330-2355.
+        .. [3] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
+            Springer Series in Statistics.
 
         """
         # Set parameters
@@ -823,17 +839,15 @@ class DenseFunctionalData(FunctionalData):
         DenseFunctionalData
             An estimate of the covariance as a two-dimensional
             DenseFunctionalData object with same argvals as `self`.
-
-        Keyword Args
-        ------------
-        kernel_name: str, default='epanechnikov'
-            Name of the kernel used for local polynomial smoothing.
-        degree: int, default=1
-            Degree used for local polynomial smoothing.
-        bandwidth: float, default=1
-            Bandwidth used for local polynomial smoothing.
-        n_basis: int, default=10
-            Number of splines basis used for GAM smoothing.
+        **kwargs:
+            kernel_name: str, default='epanechnikov'
+                Name of the kernel used for local polynomial smoothing.
+            degree: int, default=1
+                Degree used for local polynomial smoothing.
+            bandwidth: float, default=1
+                Bandwidth used for local polynomial smoothing.
+            n_basis: int, default=10
+                Number of splines basis used for GAM smoothing.
 
         References
         ----------
@@ -1366,7 +1380,7 @@ class IrregularFunctionalData(FunctionalData):
             Strictly positive. Control the size of the associated neighborhood.
             If ``bandwidth == None``, it is assumed that the curves are twice
             differentiable and the bandwidth is set to :math:`n^{-1/5}` where
-            :math:`n` is the number of sampling points per curve. Be careful
+            :math:`n` is the number of sampling points per curve [2]_. Be careful
             that it will not work if the curves are not sampled on
             :math:`[0, 1]`.
         degree: int, default=1
@@ -1379,6 +1393,13 @@ class IrregularFunctionalData(FunctionalData):
         -------
         DenseFunctionalData
             A smoothed version of the data.
+
+        References
+        ----------
+        .. [1] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
+            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
+        .. [2] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
+            Springer Series in Statistics.
 
         """
         if points is None:
@@ -1402,6 +1423,59 @@ class IrregularFunctionalData(FunctionalData):
                 x_new=points_mat
             ).reshape(smooth.shape[1:])
         return DenseFunctionalData(points, DenseValues(smooth))
+
+    def mean(
+        self,
+        points: Optional[DenseArgvals] = None,
+        smooth: bool = True,
+        **kwargs
+    ) -> DenseFunctionalData:
+        """Compute an estimate of the mean.
+
+        Parameters
+        ----------
+        points: Optional[DenseArgvals], default=None
+            The sampling points at which the mean is estimated. If `None`, the
+            DenseArgvals of the DenseFunctionalData is used. If `smooth` is
+            False, the DenseArgvals of the DenseFunctionalData is used.
+        smooth: bool, default=True
+            Not used in this context. The mean curve is always smoothed for
+            IrregularFunctionalData.
+        **kwargs:
+            kernel_name: str, default='epanechnikov'
+                Name of the kernel used for local polynomial smoothing.
+            degree: int, default=1
+                Degree used for local polynomial smoothing.
+            bandwidth: float, default=0.5
+                Bandwidth used for local polynomial smoothing.
+
+        Returns
+        -------
+        DenseFunctionalData
+            An estimate of the mean as a DenseFunctionalData object.
+
+        """
+        if points is None:
+            points = self.argvals.to_dense()
+        bandwidth=kwargs.get('bandwidth', None)
+        if bandwidth is None:
+            n_points = np.mean([obs for obs in self.n_points.values()])
+            bandwidth = n_points**(-1 / 5)
+
+        fdata_long = self.to_long()
+        x = fdata_long.drop(['id', 'values'], axis=1, inplace=False).values
+        y = fdata_long['values'].values
+        points_mat = _cartesian_product(*points.values())
+
+        lp = LocalPolynomial(
+            kernel_name=kwargs.get('kernel_name', 'epanechnikov'),
+            bandwidth=kwargs.get('bandwidth', 0.5),
+            degree=kwargs.get('degree', 1)
+        )
+        pred = lp.predict(y=y, x=x, x_new=points_mat).reshape(points.n_points)
+
+        self._mean = DenseFunctionalData(points, DenseValues(pred[np.newaxis]))
+        return self._mean
 
     def norm(
         self,
@@ -1489,49 +1563,6 @@ class IrregularFunctionalData(FunctionalData):
         return DenseFunctionalData(
             DenseArgvals(new_argvals), DenseValues(new_values)
         )
-
-    def mean(
-        self,
-        points: Optional[DenseArgvals] = None,
-        smooth: bool = True,
-        **kwargs
-    ) -> DenseFunctionalData:
-        """Compute an estimate of the mean.
-
-        Parameters
-        ----------
-        points: Optional[DenseArgvals], default=None
-            The sampling points at which the mean is estimated. If `None`, the
-            DenseArgvals of the DenseFunctionalData is used. If `smooth` is
-            False, the DenseArgvals of the DenseFunctionalData is used.
-        smooth: bool, default=True
-            Should the mean be smoothed?
-
-        Keyword Args
-        ------------
-        kernel_name: str, default='epanechnikov'
-            Name of the kernel used for local polynomial smoothing.
-        degree: int, default=1
-            Degree used for local polynomial smoothing.
-        bandwidth: float, default=1
-            Bandwidth used for local polynomial smoothing.
-
-        Returns
-        -------
-        DenseFunctionalData
-            An estimate of the mean as a DenseFunctionalData object with a
-            concatenation of the self.argvals as argvals and one observation.
-
-        TODO: Modify this function to incorporate smoothing.
-
-        """
-        dense_self = self.as_dense()
-
-        # Catch this warning as 2D data might have empty slice
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=RuntimeWarning)
-            mean_estim = np.nanmean(dense_self.values, axis=0, keepdims=True)
-        return DenseFunctionalData(dense_self.argvals, mean_estim)
 
     def covariance(
         self,

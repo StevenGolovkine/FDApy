@@ -623,16 +623,14 @@ class KarhunenLoeve(Simulation):
             Not used in this context. We will use the ``argvals`` from the
             :mod:`Basis` object as ``argvals`` of the simulation. Here to be
             compliant with the class :mod:`Simulation`.
-
-        Keyword Args
-        ------------
-        centers: npt.NDArray[np.float64], shape=(n_features, n_clusters)
-            The centers of the clusters to generate. The ``n_features``
-            correspond to the number of functions within the basis.
-        cluster_std: npt.NDArray[np.float64], shape=(n_features, n_clusters)
-            The standard deviation of the clusters to generate. The
-            ``n_features`` correspond to the number of functions within the
-            basis.
+        **kwargs:
+            centers: npt.NDArray[np.float64], shape=(n_features, n_clusters)
+                The centers of the clusters to generate. The ``n_features``
+                correspond to the number of functions within the basis.
+            cluster_std: npt.NDArray[np.float64],shape=(n_features, n_clusters)
+                The standard deviation of the clusters to generate. The
+                ``n_features`` correspond to the number of functions within the
+                basis.
 
         """
         if self.random_state is None:

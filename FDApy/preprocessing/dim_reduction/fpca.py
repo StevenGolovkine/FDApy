@@ -326,15 +326,13 @@ class UFPCA():
             inner product matrix of the data (can only be used if the
             eigencomponents have been estimated using the inner-product
             matrix.)
-
-        Keyword Args
-        ------------
-        tol: np.float64, default=1e-4
-            Tolerance parameter to prevent overflow to inverse a matrix, only
-            used if ``method == 'PACE'``.
-        integration_method: str, {'trapz', 'simpson'}, default='trapz'
-            Method used to perform numerical integration, only used if
-            ``method == 'NumInt'``.
+        **kwargs:
+            tol: np.float64, default=1e-4
+                Tolerance parameter to prevent overflow to inverse a matrix,
+                only used if ``method == 'PACE'``.
+            integration_method: str, {'trapz', 'simpson'}, default='trapz'
+                Method used to perform numerical integration, only used if
+                ``method == 'NumInt'``.
 
         Returns
         -------
@@ -852,12 +850,10 @@ class MFPCA():
             inner product matrix of the data (can only be used if the
             eigencomponents have been estimated using the inner-product
             matrix.)
-
-        Keyword Args
-        ------------
-        integration_method: np.str_, {'trapz', 'simpson'}, default='trapz'
-            Method used to perform numerical integration, only used if
-            ``method == 'NumInt'``.
+        **kwargs:
+            integration_method: np.str_, {'trapz', 'simpson'}, default='trapz'
+                Method used to perform numerical integration, only used if
+                ``method == 'NumInt'``.
 
         Returns
         -------

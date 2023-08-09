@@ -348,16 +348,15 @@ class TestIrregularFunctionalData2D(unittest.TestCase):
     def test_mean(self):
         N = np.nan
         mean_fd = self.irregu_fd.mean()
-        is_equal = np.allclose(mean_fd.values,
-                               np.array([[[N, N, N, 1., 2., 3., N, N],
-                                          [1., 2., 3., 4., 1., 2., N, N],
-                                          [N, N, N, 3., 4., 1., N, N],
-                                          [1., 2., 3., 2., 3., 4., 8., 9.],
-                                          [N, N, N, N, N, N, 8., 9.],
-                                          [N, N, N, N, N, N, 8., 9.]]]),
-                               equal_nan=True)
-        self.assertTrue(is_equal)
-
+        expected_mean = DenseValues(np.array([[
+            [0., 0., 0., 1., 2., 3., 0., 0.],
+            [1., 2., 3., 4., 1., 2., 0., 0.],
+            [0., 0., 0., 3., 4., 1., 0., 0.],
+            [1., 2., 3., 2., 3., 4., 8., 9.],
+            [0., 0., 0., 0., 0., 0., 8., 9.],
+            [0., 0., 0., 0., 0., 0., 8., 9.]
+        ]]))
+        np.testing.assert_allclose(mean_fd.values, expected_mean)
 
 class TestPerformComputation(unittest.TestCase):
     def setUp(self):

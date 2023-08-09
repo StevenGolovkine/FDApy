@@ -242,11 +242,9 @@ def _simulate_basis(
         Should we normalize the functions?
     add_intercept: bool, default=True
         Should the constant functions be into the basis?
-
-    Keyword Args
-    ------------
-    degree: int, default=3
-        Degree of the B-splines. The default gives cubic splines.
+    **kwargs
+        degree: int, default=3
+            Degree of the B-splines. The default gives cubic splines.
 
     Returns
     -------
@@ -316,11 +314,9 @@ def _simulate_basis_multivariate_weighted(
     runif: Optional[Callable], default=np.random.uniform
         Method used to generate uniform distribution. If `None`, all the
         weights are set to :math:`1`.
-
-    Keyword Args
-    ------------
-    degree: int, default=3
-        Degree of the B-splines. The default gives cubic splines.
+    **kwargs
+        degree: int, default=3
+            Degree of the B-splines. The default gives cubic splines.
 
     Returns
     -------
@@ -378,11 +374,9 @@ def _simulate_basis_multivariate_split(
         Should we normalize the functions?
     rchoice: Callable, default=np.random.choice
         Method used to generate binomial distribution.
-
-    Keyword Args
-    ------------
-    degree: int, default=3
-        Degree of the B-splines. The default gives cubic splines.
+    **kwargs
+        degree: int, default=3
+            Degree of the B-splines. The default gives cubic splines.
 
     Returns
     -------
@@ -442,15 +436,13 @@ def _simulate_basis_multivariate(
         Number of functions to compute.
     is_normalized: bool
         Should we normalize the functions?
-
-    Keyword Args
-    ------------
-    rchoice: Callable, default=np.random.choice
-        Method used to generate binomial distribution.
-    runif: Callable, default=np.random.uniform
-        Method used to generate uniform distribution.
-    degree: int, default=3
-        Degree of the B-splines. The default gives cubic splines.
+    **kwargs:
+        rchoice: Callable, default=np.random.choice
+            Method used to generate binomial distribution.
+        runif: Callable, default=np.random.uniform
+            Method used to generate uniform distribution.
+        degree: int, default=3
+            Degree of the B-splines. The default gives cubic splines.
 
     Returns
     -------
@@ -532,11 +524,9 @@ class Basis(DenseFunctionalData):
         Should we normalize the basis function?
     add_intercept: bool, default=True
         Should the constant functions be into the basis?
-
-    Keyword Args
-    ------------
-    degree: int, default=3
-        Degree of the B-splines. The default gives cubic splines.
+    **kwargs
+        degree: int, default=3
+            Degree of the B-splines. The default gives cubic splines.
 
     """
 
@@ -643,15 +633,13 @@ class MultivariateBasis(MultivariateFunctionalData):
         dimension is :math:`(m_j,)` for :math:`0 \leq j \leq p`.
     is_normalized: bool, default=False
         Should we normalize the basis function?
-
-    Keyword Args
-    ------------
-    rchoice: Callable, default=np.random.choice
-        Method used to generate binomial distribution.
-    runif: Callable, default=np.random.uniform
-        Method used to generate uniform distribution.
-    degree: int, default=3
-        Degree of the B-splines. The default gives cubic splines.
+    **kwargs:
+        rchoice: Callable, default=np.random.choice
+            Method used to generate binomial distribution.
+        runif: Callable, default=np.random.uniform
+            Method used to generate uniform distribution.
+        degree: int, default=3
+            Degree of the B-splines. The default gives cubic splines.
 
     """
 
