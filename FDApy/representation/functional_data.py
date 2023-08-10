@@ -1431,6 +1431,10 @@ class IrregularFunctionalData(FunctionalData):
     ) -> DenseFunctionalData:
         """Compute an estimate of the mean.
 
+        This function computes an estimate of the mean curve of a
+        IrregularFunctionalData object. The curves are not sampled on a common
+        grid. We implement the methodology from [1]_.
+
         Parameters
         ----------
         points: Optional[DenseArgvals], default=None
@@ -1445,13 +1449,23 @@ class IrregularFunctionalData(FunctionalData):
                 Name of the kernel used for local polynomial smoothing.
             degree: int, default=1
                 Degree used for local polynomial smoothing.
-            bandwidth: float, default=0.5
-                Bandwidth used for local polynomial smoothing.
+            bandwidth: float
+                Bandwidth used for local polynomial smoothing. The default
+                bandwitdth is set to be the number of sampling points to the
+                power :math:`-1/5` [2]_.
 
         Returns
         -------
         DenseFunctionalData
             An estimate of the mean as a DenseFunctionalData object.
+
+        References
+        ----------
+        .. [1] Cai, T.T., Yuan, M., (2011), Optimal estimation of the mean
+            function based on discretely sampled functional data: Phase
+            transition. The Annals of Statistics 39, 2330-2355.
+        .. [2] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
+            Springer Series in Statistics.
 
         """
         if points is None:
