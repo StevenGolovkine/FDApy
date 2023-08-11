@@ -382,7 +382,7 @@ def _shift(
 
 def _integrate(
     y: npt.NDArray[np.float64],
-    x: npt.NDArray[np.float64],
+    *args: npt.NDArray[np.float64],
     method: str = 'simpson'
 ) -> float:
     r"""Compute an estimate of the integral of 1-dimensional curve.
@@ -413,59 +413,24 @@ def _integrate(
     >>> _integrate(Y, X)
     21.0
 
-    """
-    if method == 'simpson':
-        return scipy.integrate.simps(x=x, y=y)  # type: ignore
-    elif method == 'trapz':
-        return np.trapz(x=x, y=y)
-    else:
-        raise ValueError(f'{method} not implemented!')
-
-
-def _integrate_2d(
-    z: npt.NDArray[np.float64],
-    x: npt.NDArray[np.float64],
-    y: npt.NDArray[np.float64],
-    method: str = 'simpson'
-) -> float:
-    r"""Compute an estimate of the integral of 2- dimensional surface.
-
-    This function computes an estimation of the integral of :math:`z(x, y)`
-    over the domain :math:`x \times y`.
-
-    Parameters
-    ----------
-    z: npt.NDArray[np.float64], shape=(n_features_1, n_features_2,)
-        Domain for the integration, it has to be ordered.
-    x: npt.NDArray[np.float64], shape=(n_features_1,)
-        First domain for the integration, it has to be ordered.
-    y: npt.NDArray[np.float64], shape=(n_features_2,)
-        Second domain for the integration, it has to be ordered.
-    method: str, {'simpson', 'trapz'}, default = 'simpson'
-        The method used to integrated.
-
-    Returns
-    -------
-    float
-        Estimation of the integration of :math:`z(x, y)`.
-
-    Example
-    -------
     >>> X = np.array([1, 2, 4])
     >>> Y = np.array([1, 2])
     >>> Z = np.array([[1, 2], [4, 5], [7, 8]])
-    >>> _integrate_2d(Z, X, Y)
+    >>> _integrate(Z, X, Y)
     15.75
 
     """
     if method == 'simpson':
-        temp = scipy.integrate.simps(x=x, y=z, axis=0)
-        return scipy.integrate.simps(x=y, y=temp)  # type: ignore
+        integrate = scipy.integrate.simps
     elif method == 'trapz':
-        temp = np.trapz(x=x, y=z, axis=0)
-        return np.trapz(x=y, y=temp)
+        integrate = np.trapz
     else:
         raise ValueError(f'{method} not implemented!')
+
+    temp = integrate(x=args[0], y=y, axis=0)
+    for dimension in args[1:]:
+        temp = integrate(x=dimension, y=temp, axis=0)
+    return temp
 
 
 def _inner_product(

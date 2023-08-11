@@ -28,7 +28,7 @@ from .values import Values, DenseValues, IrregularValues
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..misc.utils import _cartesian_product
 from ..misc.utils import _inner_product, _inner_product_2d
-from ..misc.utils import _integrate, _integrate_2d, _integration_weights
+from ..misc.utils import _integrate, _integration_weights
 from ..misc.utils import _outer
 
 
@@ -910,7 +910,7 @@ class DenseFunctionalData(FunctionalData):
                 x = self.argvals['input_dim_0']
             params = {'x': x}
         elif self.n_dimension == 2:
-            int_func = _integrate_2d
+            int_func = _integrate
             if use_argvals_stand:
                 x = self.argvals_stand['input_dim_0']
                 y = self.argvals_stand['input_dim_1']
@@ -927,7 +927,11 @@ class DenseFunctionalData(FunctionalData):
         sq_values = np.power(self.values, 2)
         norm_fd = self.n_obs * [None]
         for idx in np.arange(self.n_obs):
-            norm_fd[idx] = int_func(sq_values[idx], method=method, **params)
+            norm_fd[idx] = int_func(
+                sq_values[idx],
+                *params.values(),
+                method=method
+            )
 
         if squared:
             return np.array(norm_fd)
@@ -1081,7 +1085,7 @@ class DenseFunctionalData(FunctionalData):
                 x = self.argvals['input_dim_0']
             params = {'x': x}
         elif self.n_dimension == 2:
-            int_func = _integrate_2d
+            int_func = _integrate
             if use_argvals_stand:
                 x = self.argvals_stand['input_dim_0']
                 y = self.argvals_stand['input_dim_1']
@@ -1097,7 +1101,7 @@ class DenseFunctionalData(FunctionalData):
                 'The data dimension is not correct.'
             )
         variance = np.var(self.values, axis=0)
-        weights = int_func(variance, **params)
+        weights = int_func(variance, *params.values())
         new_values = self.values / weights
         return DenseFunctionalData(self.argvals, new_values), weights
 
