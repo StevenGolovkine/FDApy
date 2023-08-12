@@ -449,14 +449,14 @@ class UFPCA():
             raise ValueError("The dimension of the data have to be 1 or 2.")
 
         projection = _integrate(
-            x=data.argvals['input_dim_0'],
-            y=[traj * self.eigenfunctions.values for traj in data.values],
+            [traj * self.eigenfunctions.values for traj in data.values],
+            data.argvals['input_dim_0'],
             method=method
         )
         if data.n_dimension == 2:
             return _integrate(
-                x=data.argvals['input_dim_1'],
-                y=projection,
+                projection,
+                data.argvals['input_dim_1'],
                 method=method
             )
         else:
@@ -941,16 +941,16 @@ class MFPCA():
         scores_uni = [None] * len(self.eigenfunctions)
         for idx, (dat_uni, eigen) in enumerate(zip(data, self.eigenfunctions)):
             projection = _integrate(
-                x=dat_uni.argvals['input_dim_0'],
-                y=[traj * eigen.values for traj in dat_uni.values],
+                [traj * eigen.values for traj in dat_uni.values],
+                dat_uni.argvals['input_dim_0'],
                 method=method
             )
             if eigen.n_dimension == 1:
                 scores_uni[idx] = projection
             elif eigen.n_dimension == 2:
                 scores_uni[idx] = _integrate(
-                    x=dat_uni.argvals['input_dim_1'],
-                    y=projection,
+                    projection,
+                    dat_uni.argvals['input_dim_1'],
                     method=method
                 )
             else:
