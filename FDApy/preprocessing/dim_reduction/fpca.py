@@ -444,6 +444,8 @@ class UFPCA():
             An array representing the projection of the data onto the basis of
             functions defined by the eigenfunctions.
 
+        TODO: Change _integrate
+
         """
         if data.n_dimension > 2:
             raise ValueError("The dimension of the data have to be 1 or 2.")
@@ -936,6 +938,8 @@ class MFPCA():
         npt.NDArray[np.float64], shape=(n_obs, n_components)
             An array representing the projection of the data onto the basis of
             functions defined by the eigenfunctions.
+
+        TODO: Change _integrate
 
         """
         scores_uni = [None] * len(self.eigenfunctions)
