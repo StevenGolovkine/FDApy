@@ -468,6 +468,9 @@ def _inner_product(
     >>> _inner_product(np.array([1, 2, 3]), np.array([4, 5, 6]))
     10.5
 
+    TODO: Generalize this function for higher dimensional data. Look at
+    _integrate.
+
     """
     if x.shape != y.shape:
         raise ValueError("Arguments x and y do not have the same shape.")
@@ -521,6 +524,8 @@ def _inner_product_2d(
     ...     np.array([[4, 5, 6], [1, 2, 3], [4, 5, 6]])
     ... )
     10.5
+
+    TODO: Remove.
 
     """
     if x.shape != y.shape:
