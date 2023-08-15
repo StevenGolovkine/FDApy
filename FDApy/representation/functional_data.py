@@ -839,6 +839,8 @@ class DenseFunctionalData(FunctionalData):
             ]
         )
 
+        TODO: Generalize for any dimension.
+
         """
         # Get parameters
         n_obs = self.n_obs
@@ -882,8 +884,8 @@ class DenseFunctionalData(FunctionalData):
         For each observation in the data, it computes its norm defined as
 
         .. math::
-            || f || = \left(\int_{\mathcal{T}} f(t)^2dt\right)^{1\2},
-            t \in \mathcal{T},
+            \lvert\lvert f \rvert\rvert = \left(\int_{\mathcal{T}}
+            f(t)^2dt\right)^{1\2}, t \in \mathcal{T},
 
         Parameters
         ----------
