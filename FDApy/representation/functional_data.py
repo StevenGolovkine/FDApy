@@ -954,12 +954,6 @@ class DenseFunctionalData(FunctionalData):
             Name of the smoothing method to use. Currently, not implemented.
         mean: Optional[DenseFunctionalData], default=None
             An estimate of the mean of self. If None, an estimate is computed.
-
-        Returns
-        -------
-        DenseFunctionalData
-            An estimate of the covariance as a two-dimensional
-            DenseFunctionalData object with same argvals as `self`.
         **kwargs:
             kernel_name: str, default='epanechnikov'
                 Name of the kernel used for local polynomial smoothing.
@@ -970,14 +964,20 @@ class DenseFunctionalData(FunctionalData):
             n_basis: int, default=10
                 Number of splines basis used for GAM smoothing.
 
+        Returns
+        -------
+        DenseFunctionalData
+            An estimate of the covariance as a two-dimensional
+            DenseFunctionalData object with same argvals as `self`.
+
         References
         ----------
-        * Yao, Müller and Wang (2005), Functional Data Analysis for Sparse
-        Longitudinal Data,
-        Journal of the American Statistical Association, Vol. 100, No. 470
-        * Staniswalis, J. G., and Lee, J. J. (1998), “Nonparametric Regression
-        Analysis of Longitudinal Data,” Journal of the American Statistical
-        Association, 93, 1403-1418.
+        .. [1] Yao, Müller and Wang (2005), Functional Data Analysis for
+            Sparse Longitudinal Data, Journal of the American Statistical
+            Association, Vol. 100, No. 470.
+        .. [2] Staniswalis, J. G., and Lee, J. J. (1998), Nonparametric
+        Regression Analysis of Longitudinal Data, Journal of the American
+        Statistical Association, 93, 1403-1418.
 
         TODO: Split into multiple functions. Modify LocalLinear part.
 
