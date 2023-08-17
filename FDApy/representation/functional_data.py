@@ -972,12 +972,12 @@ class DenseFunctionalData(FunctionalData):
 
         References
         ----------
-        .. [1] Yao, Müller and Wang (2005), Functional Data Analysis for
-            Sparse Longitudinal Data, Journal of the American Statistical
-            Association, Vol. 100, No. 470.
-        .. [2] Staniswalis, J. G., and Lee, J. J. (1998), Nonparametric
-        Regression Analysis of Longitudinal Data, Journal of the American
-        Statistical Association, 93, 1403-1418.
+        .. [1] Yao, Müller and Wang (2005), Functional Data Analysis for Sparse
+            Longitudinal Data. Journal of the American Statistical Association,
+            100, pp. 577--590.
+        .. [2] Staniswalis and Lee (1998), Nonparametric Regression Analysis of
+            Longitudinal Data, Journal of the American Statistical Association,
+            93, pp. 1403--1418.
 
         TODO: Split into multiple functions. Modify LocalLinear part.
 
@@ -1074,9 +1074,10 @@ class DenseFunctionalData(FunctionalData):
 
         References
         ----------
-        Happ and Greven, Multivariate Functional Principal Component Analysis
-        for Data Observed on Different (Dimensional Domains), Journal of the
-        American Statistical Association.
+        .. [1] Happ and Greven (2018), Multivariate Functional Principal
+            Component Analysis for Data Observed on Different (Dimensional)
+            Domains. Journal of the American Statistical Association, 113,
+            pp. 649--659.
 
         """
         if self.n_dimension == 1:
