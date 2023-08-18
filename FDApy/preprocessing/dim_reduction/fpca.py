@@ -68,6 +68,11 @@ class UFPCA():
         Principal axes in feature space, representing the directions of
         maximum variance in the data.
 
+    References
+    ----------
+    .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+            Analysis, Springer Science, Chapter 8.
+
     """
 
     def __init__(
@@ -342,9 +347,9 @@ class UFPCA():
 
         References
         ----------
-        .. [1] Yao, Müller and Wang (2005), Functional Data Analysis for
-            Sparse Longitudinal Data, Journal of the American Statistical
-            Association, Vol. 100, No. 470.
+        .. [1] Yao, Müller and Wang (2005), Functional Data Analysis for Sparse
+            Longitudinal Data. Journal of the American Statistical Association,
+            100, pp. 577--590.
 
         """
         # Get the keyword arguments
@@ -410,9 +415,9 @@ class UFPCA():
 
         References
         ----------
-        .. [1] Yao, Müller and Wang (2005), Functional Data Analysis for
-            Sparse Longitudinal Data, Journal of the American Statistical
-            Association, Vol. 100, No. 470.
+        .. [1] Yao, Müller and Wang (2005), Functional Data Analysis for Sparse
+            Longitudinal Data. Journal of the American Statistical Association,
+            100, pp. 577--590.
 
         """
         if not hasattr(data, 'var_noise'):
@@ -557,6 +562,13 @@ class MFPCA():
         Principal axes in feature space, representing the directions of
         maximum variances in the data as a MultivariateFunctionalData.
 
+    References
+    ----------
+    .. [1] Happ and Greven (2018), Multivariate Functional Principal
+            Component Analysis for Data Observed on Different (Dimensional)
+            Domains. Journal of the American Statistical Association, 113,
+            pp. 649--659.
+
     """
 
     def __init__(
@@ -641,10 +653,10 @@ class MFPCA():
 
         References
         ----------
-        .. [1] Happ C. & Greven S. (2018) Multivariate Functional Principal
+        .. [1] Happ and Greven (2018), Multivariate Functional Principal
             Component Analysis for Data Observed on Different (Dimensional)
-            Domains, Journal of the American Statistical Association, 113:522,
-            649-659, DOI: 10.1080/01621459.2016.1273115
+            Domains. Journal of the American Statistical Association, 113,
+            pp. 649--659.
 
         """
         # Checkers
@@ -873,10 +885,10 @@ class MFPCA():
 
         References
         ----------
-        .. [1] Happ C. & Greven S. (2018) Multivariate Functional Principal
+        .. [1] Happ and Greven (2018), Multivariate Functional Principal
             Component Analysis for Data Observed on Different (Dimensional)
-            Domains, Journal of the American Statistical Association, 113:522,
-            649-659, DOI: 10.1080/01621459.2016.1273115
+            Domains. Journal of the American Statistical Association, 113,
+            pp. 649--659.
 
         """
         # Get the keyword arguments
