@@ -27,7 +27,7 @@ from .values import Values, DenseValues, IrregularValues
 
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..misc.utils import _cartesian_product
-from ..misc.utils import _inner_product, _inner_product_2d
+from ..misc.utils import _inner_product
 from ..misc.utils import _integrate, _integration_weights
 from ..misc.utils import _outer
 
@@ -847,15 +847,12 @@ class DenseFunctionalData(FunctionalData):
         if self.n_dimension == 1:
             inner_func = _inner_product
             axis = self.argvals['input_dim_0']
-            params = {'axis': axis}
+            params = [axis]
         elif self.n_dimension == 2:
-            inner_func = _inner_product_2d
+            inner_func = _inner_product
             primary_axis = self.argvals['input_dim_0']
             secondary_axis = self.argvals['input_dim_1']
-            params = {
-                'primary_axis': primary_axis,
-                'secondary_axis': secondary_axis
-            }
+            params = [primary_axis, secondary_axis]
         else:
             raise ValueError(
                 'The data dimension is not correct.'
@@ -867,7 +864,7 @@ class DenseFunctionalData(FunctionalData):
                 inner_mat[i, j] = inner_func(
                     self.values[i],
                     self.values[j],
-                    **params
+                    *params
                 )
         inner_mat = inner_mat + inner_mat.T
         np.fill_diagonal(inner_mat, np.diag(inner_mat) / 2)

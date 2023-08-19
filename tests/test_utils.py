@@ -20,7 +20,6 @@ from FDApy.misc.utils import (
     _get_dict_dimension,
     _get_obs_shape,
     _inner_product,
-    _inner_product_2d,
     _integrate,
     _integration_weights,
     _outer,
@@ -334,29 +333,18 @@ class TestInnerProduct(unittest.TestCase):
         y = np.array([4, 5, 6])
         expected_output = 10.5
         self.assertAlmostEqual(expected_output, _inner_product(x, y))
-
-
-class TestInnerProduct2D(unittest.TestCase):
+    
     def test_inner_product_2d(self):
-        x = np.array([[1, 2, 3], [4, 5, 6], [1, 2, 3]])
-        y = np.array([[4, 5, 6], [1, 2, 3], [4, 5, 6]])
-        primary_axis = np.linspace(0, 1, x.shape[0])
-        secondary_axis = np.linspace(0, 1, x.shape[1])
-        expected_result = 10.5
-        result = _inner_product_2d(x, y, primary_axis, secondary_axis)
-        self.assertAlmostEqual(result, expected_result, delta=1e-5)
+        X = np.array([[1, 2], [4, 5], [7, 8]])
+        Y = np.array([[4, 5], [7, 8], [1, 2]])
+        expected_output = 43.25
+        self.assertAlmostEqual(expected_output, _inner_product(X, Y))
 
-    def test_inner_product_2d_unequal_shapes(self):
-        x = np.array([[1, 2, 3], [4, 5, 6], [1, 2, 3]])
-        y = np.array([[4, 5, 6], [1, 2, 3]])
-        with self.assertRaises(ValueError):
-            _inner_product_2d(x, y)
-
-    def test_inner_product_2d_no_t(self):
-        x = np.array([[1, 2, 3], [4, 5, 6], [1, 2, 3]])
-        y = np.array([[4, 5, 6], [1, 2, 3], [4, 5, 6]])
-        expected_output = 10.5
-        self.assertAlmostEqual(expected_output, _inner_product_2d(x, y))
+    def test_inner_product_3d(self):
+        X = np.array([[[1, 2], [4, 5]], [[7, 8], [3, 4]], [[1, 2], [4, 5]]])
+        Y = np.array([[[7, 8], [3, 4]], [[1, 2], [4, 5]], [[4, 5], [1, 2]]])
+        expected_output = 24.125
+        self.assertAlmostEqual(expected_output, _inner_product(X, Y))
 
 
 class TestOuterFunction(unittest.TestCase):
