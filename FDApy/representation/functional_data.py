@@ -757,8 +757,8 @@ class DenseFunctionalData(FunctionalData):
 
     def inner_product(
         self,
-        kernel: str = 'identity',
-        **kwargs
+        method: str = 'trapz',
+        kernel: str = 'identity'
     ) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
 
@@ -773,6 +773,8 @@ class DenseFunctionalData(FunctionalData):
 
         Parameters
         ----------
+        method: str, {'simpson', 'trapz'}, default = 'trapz'
+            The method used to integrated.
         kernel: str, default=None
             The name of the kernel to used.
 
@@ -839,32 +841,19 @@ class DenseFunctionalData(FunctionalData):
             ]
         )
 
-        TODO: Generalize for any dimension.
-
         """
         # Get parameters
         n_obs = self.n_obs
-        if self.n_dimension == 1:
-            inner_func = _inner_product
-            axis = self.argvals['input_dim_0']
-            params = [axis]
-        elif self.n_dimension == 2:
-            inner_func = _inner_product
-            primary_axis = self.argvals['input_dim_0']
-            secondary_axis = self.argvals['input_dim_1']
-            params = [primary_axis, secondary_axis]
-        else:
-            raise ValueError(
-                'The data dimension is not correct.'
-            )
+        axis = [argvals for argvals in self.argvals.values()]
 
         inner_mat = np.zeros((n_obs, n_obs))
         for (i, j) in itertools.product(np.arange(n_obs), repeat=2):
             if i <= j:
-                inner_mat[i, j] = inner_func(
+                inner_mat[i, j] = _inner_product(
                     self.values[i],
                     self.values[j],
-                    *params
+                    *axis,
+                    method=method
                 )
         inner_mat = inner_mat + inner_mat.T
         np.fill_diagonal(inner_mat, np.diag(inner_mat) / 2)
