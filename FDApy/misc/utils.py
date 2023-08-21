@@ -458,7 +458,7 @@ def _inner_product(
     axis: Optional[npt.NDArray[np.float64]], default=None
         Domain of integration. If ``axis`` is ``None``, the domain is set to be
         a regular grid on :math:`[0, 1]` with ``len(x)`` number of points.
-    method: str, {'simpson', 'trapz'}, default = 'simpson'
+    method: str, {'simpson', 'trapz'}, default = 'trapz'
         The method used to integrated.
 
     Returns

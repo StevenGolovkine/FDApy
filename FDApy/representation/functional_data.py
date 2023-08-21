@@ -352,8 +352,7 @@ class FunctionalData(ABC):
     @abstractmethod
     def inner_product(
         self,
-        kernel: str = 'identity',
-        **kwargs
+        method: str = 'trapz'
     ) -> npt.NDArray[np.float64]:
         """Compute an estimate of the inner product matrix."""
 
@@ -757,8 +756,7 @@ class DenseFunctionalData(FunctionalData):
 
     def inner_product(
         self,
-        method: str = 'trapz',
-        kernel: str = 'identity'
+        method: str = 'trapz'
     ) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
 
@@ -775,8 +773,6 @@ class DenseFunctionalData(FunctionalData):
         ----------
         method: str, {'simpson', 'trapz'}, default = 'trapz'
             The method used to integrated.
-        kernel: str, default=None
-            The name of the kernel to used.
 
         Returns
         -------
@@ -1485,8 +1481,7 @@ class IrregularFunctionalData(FunctionalData):
 
     def inner_product(
         self,
-        kernel: str = 'identity',
-        **kwargs
+        method: str = 'trapz'
     ) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
 
@@ -1498,6 +1493,16 @@ class IrregularFunctionalData(FunctionalData):
             t \in \mathcal{T},
 
         where :math:`\mathcal{T}` is a one- or multi-dimensional domain.
+
+        Parameters
+        ----------
+        method: str, {'simpson', 'trapz'}, default = 'trapz'
+            The method used to integrated.
+
+        Returns
+        -------
+        npt.NDArray[np.float64], shape=(n_obs, n_obs)
+            Inner product matrix of the data.
 
         Raises
         ------
