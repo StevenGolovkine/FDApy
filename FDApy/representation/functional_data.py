@@ -872,49 +872,32 @@ class DenseFunctionalData(FunctionalData):
         Parameters
         ----------
         squared: bool, default=False
-            If `True`, the function calculates the squared norm, otherwise the
-            result is not squared.
-        method: str, default='trapz'
-            Integration method to be used.
+            If `True`, the function calculates the squared norm, otherwise it
+            returns the norm.
+        method: str, {'simpson', 'trapz'}, default = 'trapz'
+            The method used to integrated.
         use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
 
-
         Returns
         -------
-        npt.NDArray[np.float64]
+        npt.NDArray[np.float64], shape=(n_obs,)
             The norm of each observations.
 
         """
-        if self.n_dimension == 1:
-            int_func = _integrate
-            if use_argvals_stand:
-                x = self.argvals_stand['input_dim_0']
-            else:
-                x = self.argvals['input_dim_0']
-            params = {'x': x}
-        elif self.n_dimension == 2:
-            int_func = _integrate
-            if use_argvals_stand:
-                x = self.argvals_stand['input_dim_0']
-                y = self.argvals_stand['input_dim_1']
-            else:
-                x = self.argvals['input_dim_0']
-                y = self.argvals['input_dim_1']
-            params = {
-                'x': x,
-                'y': y
-            }
+        # Get parameters
+        n_obs = self.n_obs
+        if use_argvals_stand:
+            axis = [argvals for argvals in self.argvals_stand.values()]
         else:
-            raise ValueError('The data dimension is not correct.')
+            axis = [argvals for argvals in self.argvals.values()]
 
         sq_values = np.power(self.values, 2)
-        norm_fd = self.n_obs * [None]
-        for idx in np.arange(self.n_obs):
-            norm_fd[idx] = int_func(
-                sq_values[idx],
-                *params.values(),
-                method=method
+
+        norm_fd = np.zeros(n_obs)
+        for idx in np.arange(n_obs):
+            norm_fd[idx] = _integrate(
+                sq_values[idx], *axis, method=method
             )
 
         if squared:
