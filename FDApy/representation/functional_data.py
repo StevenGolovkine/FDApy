@@ -767,7 +767,7 @@ class DenseFunctionalData(FunctionalData):
             \langle x, y \rangle = \int_{\mathcal{T}} x(t)y(t)dt,
             t \in \mathcal{T},
 
-        where :math:`\mathcal{T}` is a one- or multi-dimensional domain.
+        where :math:`\mathcal{T}` is a one- or multi-dimensional domain [1]_.
 
         Parameters
         ----------
@@ -778,6 +778,11 @@ class DenseFunctionalData(FunctionalData):
         -------
         npt.NDArray[np.float64], shape=(n_obs, n_obs)
             Inner product matrix of the data.
+
+        References
+        ----------
+        .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+            Analysis, Springer Science, Chapter 2.
 
         Examples
         --------
@@ -863,7 +868,7 @@ class DenseFunctionalData(FunctionalData):
     ) -> npt.NDArray[np.float64]:
         r"""Norm of each observation of the data.
 
-        For each observation in the data, it computes its norm defined as
+        For each observation in the data, it computes its norm [1]_ defined as
 
         .. math::
             \lvert\lvert f \rvert\rvert = \left(\int_{\mathcal{T}}
@@ -883,6 +888,11 @@ class DenseFunctionalData(FunctionalData):
         -------
         npt.NDArray[np.float64], shape=(n_obs,)
             The norm of each observations.
+
+        References
+        ----------
+        .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+            Analysis, Springer Science, Chapter 2.
 
         """
         # Get parameters

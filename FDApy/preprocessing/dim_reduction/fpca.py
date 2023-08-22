@@ -71,7 +71,7 @@ class UFPCA():
     References
     ----------
     .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
-            Analysis, Springer Science, Chapter 8.
+        Analysis, Springer Science, Chapter 8.
 
     """
 
@@ -565,9 +565,9 @@ class MFPCA():
     References
     ----------
     .. [1] Happ and Greven (2018), Multivariate Functional Principal
-            Component Analysis for Data Observed on Different (Dimensional)
-            Domains. Journal of the American Statistical Association, 113,
-            pp. 649--659.
+        Component Analysis for Data Observed on Different (Dimensional)
+        Domains. Journal of the American Statistical Association, 113,
+        pp. 649--659.
 
     """
 
