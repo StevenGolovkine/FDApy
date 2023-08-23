@@ -665,6 +665,18 @@ class DenseFunctionalData(FunctionalData):
         .. [2] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
             Springer Series in Statistics.
 
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines',
+        ...     n_functions=5,
+        ...     random_state=42
+        ... )
+        >>> kl.new(n_obs=1)
+        >>> kl.add_noise(0.05)
+        >>> kl.noisy_data.smooth()
+        Functional data object with 1 observations on a 1-dimensional support.
+
         """
         if points is None:
             points = self.argvals
@@ -733,6 +745,18 @@ class DenseFunctionalData(FunctionalData):
             transition. The Annals of Statistics 39, 2330-2355.
         .. [3] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
             Springer Series in Statistics.
+
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines',
+        ...     n_functions=5,
+        ...     random_state=42
+        ... )
+        >>> kl.new(n_obs=100)
+        >>> kl.add_noise(0.01)
+        >>> kl.noisy_data.mean(smooth=True)
+        Functional data object with 1 observations on a 1-dimensional support.
 
         """
         # Set parameters
@@ -893,6 +917,20 @@ class DenseFunctionalData(FunctionalData):
         ----------
         .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
             Analysis, Springer Science, Chapter 2.
+
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines',
+        ...     n_functions=5,
+        ...     random_state=42
+        ... )
+        >>> kl.new(n_obs=10)
+        >>> kl.data.norm()
+        array([
+            0.53253351, 0.42212112, 0.6709846 , 0.26672898, 0.27440755,
+            0.37906252, 0.65277413, 0.53998411, 0.2872874 , 0.4934973
+        ])
 
         """
         # Get parameters
