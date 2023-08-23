@@ -371,6 +371,13 @@ class FunctionalData(ABC):
         """
 
     @abstractmethod
+    def normalize(
+        self,
+        use_argvals_stand: bool = False
+    ) -> Tuple[FunctionalData, float]:
+        """Normalize the data."""
+
+    @abstractmethod
     def covariance(
         self,
         mean: Optional[Type[FunctionalData]] = None,
@@ -953,6 +960,64 @@ class DenseFunctionalData(FunctionalData):
         else:
             return np.power(norm_fd, 0.5)
 
+    def normalize(
+        self,
+        use_argvals_stand: bool = False
+    ) -> Tuple[DenseFunctionalData, float]:
+        r"""Normalize the data.
+
+        The normalization is performed by divising each functional datum by
+        :math:`w_j = \int_{T} Var(X(t))dt`.
+
+        Parameters
+        ----------
+        use_argvals_stand: bool, default=False
+            Use standardized argvals to compute the normalization of the data.
+
+        Returns
+        -------
+        Tuple[DenseFunctionalData, float]
+            The normalized data.
+
+        TODO: Add other normalization schames and Add the possibility to
+        normalize multidemsional data
+
+        References
+        ----------
+        .. [1] Happ and Greven (2018), Multivariate Functional Principal
+            Component Analysis for Data Observed on Different (Dimensional)
+            Domains. Journal of the American Statistical Association, 113,
+            pp. 649--659.
+
+        """
+        if self.n_dimension == 1:
+            int_func = _integrate
+            if use_argvals_stand:
+                x = self.argvals_stand['input_dim_0']
+            else:
+                x = self.argvals['input_dim_0']
+            params = {'x': x}
+        elif self.n_dimension == 2:
+            int_func = _integrate
+            if use_argvals_stand:
+                x = self.argvals_stand['input_dim_0']
+                y = self.argvals_stand['input_dim_1']
+            else:
+                x = self.argvals['input_dim_0']
+                y = self.argvals['input_dim_1']
+            params = {
+                'x': x,
+                'y': y
+            }
+        else:
+            raise ValueError(
+                'The data dimension is not correct.'
+            )
+        variance = np.var(self.values, axis=0)
+        weights = int_func(variance, *params.values())
+        new_values = self.values / weights
+        return DenseFunctionalData(self.argvals, new_values), weights
+
     def covariance(
         self,
         mean: Optional[DenseFunctionalData] = None,
@@ -1062,65 +1127,6 @@ class DenseFunctionalData(FunctionalData):
             DenseArgvals(new_argvals),
             DenseValues(cov[np.newaxis])
         )
-
-    def normalize(
-        self,
-        use_argvals_stand: bool = False
-    ) -> Tuple[DenseFunctionalData, float]:
-        r"""Normalize the data.
-
-        The normalization is performed by divising each functional datum by
-        :math:`w_j = \int_{T} Var(X(t))dt`.
-
-        Parameters
-        ----------
-        use_argvals_stand: bool, default=False
-            Use standardized argvals to compute the normalization of the data.
-
-        Returns
-        -------
-        Tuple[DenseFunctionalData, float]
-            The normalized data.
-
-        TODO: Add other normalization schames and Add the possibility to
-        normalize multidemsional data
-
-        References
-        ----------
-        .. [1] Happ and Greven (2018), Multivariate Functional Principal
-            Component Analysis for Data Observed on Different (Dimensional)
-            Domains. Journal of the American Statistical Association, 113,
-            pp. 649--659.
-
-        """
-        if self.n_dimension == 1:
-            int_func = _integrate
-            if use_argvals_stand:
-                x = self.argvals_stand['input_dim_0']
-            else:
-                x = self.argvals['input_dim_0']
-            params = {'x': x}
-        elif self.n_dimension == 2:
-            int_func = _integrate
-            if use_argvals_stand:
-                x = self.argvals_stand['input_dim_0']
-                y = self.argvals_stand['input_dim_1']
-            else:
-                x = self.argvals['input_dim_0']
-                y = self.argvals['input_dim_1']
-            params = {
-                'x': x,
-                'y': y
-            }
-        else:
-            raise ValueError(
-                'The data dimension is not correct.'
-            )
-        variance = np.var(self.values, axis=0)
-        weights = int_func(variance, *params.values())
-        new_values = self.values / weights
-        return DenseFunctionalData(self.argvals, new_values), weights
-
     ###########################################################################
 
 
@@ -1566,6 +1572,36 @@ class IrregularFunctionalData(FunctionalData):
             Integration method to be used.
         use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
+
+        Raises
+        ------
+        NotImplementedError
+            Currently not implemented.
+
+        """
+        raise NotImplementedError()
+
+    def normalize(
+        self,
+        use_argvals_stand: bool = False
+    ) -> Tuple[FunctionalData, float]:
+        r"""Normalize the data.
+
+        The normalization is performed by divising each functional datum by
+        :math:`w_j = \int_{T} Var(X(t))dt`.
+
+        Parameters
+        ----------
+        use_argvals_stand: bool, default=False
+            Use standardized argvals to compute the normalization of the data.
+
+        Returns
+        -------
+        Tuple[DenseFunctionalData, float]
+            The normalized data.
+
+        TODO: Add other normalization schames and Add the possibility to
+        normalize multidemsional data
 
         Raises
         ------
