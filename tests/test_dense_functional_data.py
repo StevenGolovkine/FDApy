@@ -362,3 +362,38 @@ class TestNormDense(unittest.TestCase):
         expected_results = np.array([0.1565889 , 0.1789413 , 0.23471474, 0.11862412, 0.10131662, 0.11671813, 0.17352746, 0.12817132, 0.10216184, 0.15292851])
 
         np.testing.assert_almost_equal(results, expected_results)
+
+class TestNormalizeDense(unittest.TestCase):
+    def setUp(self) -> None:
+        name = 'bsplines'
+        n_functions = 5
+
+        kl = KarhunenLoeve(
+            basis_name=name, n_functions=n_functions, random_state=42
+        )
+        kl.new(n_obs=10)
+        self.fdata_1d = kl.data
+
+        kl = KarhunenLoeve(
+            basis_name=name, dimension='2D', n_functions=n_functions, argvals=np.linspace(0, 1, 11), random_state=42
+        )
+        kl.new(n_obs=10)
+        self.fdata_2d = kl.data
+
+    def test_normalize_1d(self):
+        results = self.fdata_1d.normalize()
+        expected_results = 0.21227413
+
+        np.testing.assert_almost_equal(results[1], expected_results)
+
+    def test_normalize_1d_stand(self):
+        results = self.fdata_1d.normalize(use_argvals_stand=True)
+        expected_results = 0.21227413
+
+        np.testing.assert_almost_equal(results[1], expected_results)
+
+    def test_norm_2d(self):
+        results = self.fdata_2d.normalize()
+        expected_results = 0.02128688
+
+        np.testing.assert_almost_equal(results[1], expected_results)

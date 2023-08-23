@@ -962,6 +962,7 @@ class DenseFunctionalData(FunctionalData):
 
     def normalize(
         self,
+        method: str = 'trapz',
         use_argvals_stand: bool = False
     ) -> Tuple[DenseFunctionalData, float]:
         r"""Normalize the data.
@@ -971,16 +972,15 @@ class DenseFunctionalData(FunctionalData):
 
         Parameters
         ----------
+        method: str, {'simpson', 'trapz'}, default = 'trapz'
+            The method used to integrated.
         use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
 
         Returns
         -------
         Tuple[DenseFunctionalData, float]
-            The normalized data.
-
-        TODO: Add other normalization schames and Add the possibility to
-        normalize multidemsional data
+            The normalized data and its weight.
 
         References
         ----------
@@ -989,32 +989,25 @@ class DenseFunctionalData(FunctionalData):
             Domains. Journal of the American Statistical Association, 113,
             pp. 649--659.
 
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines',
+        ...     n_functions=5,
+        ...     random_state=42
+        ... )
+        >>> kl.new(n_obs=10)
+        >>> kl.data.normalize()
+        (Functional data object with 10 observations on a 1-dimensional
+        support., DenseValues(0.21227413))
+
         """
-        if self.n_dimension == 1:
-            int_func = _integrate
-            if use_argvals_stand:
-                x = self.argvals_stand['input_dim_0']
-            else:
-                x = self.argvals['input_dim_0']
-            params = {'x': x}
-        elif self.n_dimension == 2:
-            int_func = _integrate
-            if use_argvals_stand:
-                x = self.argvals_stand['input_dim_0']
-                y = self.argvals_stand['input_dim_1']
-            else:
-                x = self.argvals['input_dim_0']
-                y = self.argvals['input_dim_1']
-            params = {
-                'x': x,
-                'y': y
-            }
+        if use_argvals_stand:
+            axis = [argvals for argvals in self.argvals_stand.values()]
         else:
-            raise ValueError(
-                'The data dimension is not correct.'
-            )
+            axis = [argvals for argvals in self.argvals.values()]
         variance = np.var(self.values, axis=0)
-        weights = int_func(variance, *params.values())
+        weights = _integrate(variance, *axis, method=method)
         new_values = self.values / weights
         return DenseFunctionalData(self.argvals, new_values), weights
 
