@@ -1013,113 +1013,126 @@ class DenseFunctionalData(FunctionalData):
 
     def covariance(
         self,
+        points: Optional[DenseArgvals] = None,
         mean: Optional[DenseFunctionalData] = None,
-        smooth: Optional[str] = None,
+        smooth: bool = True,
         **kwargs
     ) -> DenseFunctionalData:
-        """Compute an estimate of the covariance.
+        r"""Compute an estimate of the covariance function.
+
+        This function computes an estimate of the covariance surface of a
+        DenseFunctionalData object. As the curves are sampled on a common grid,
+        we consider the sample covariance [1]_.
 
         Parameters
         ----------
-        smooth: Optional[str], default=None
-            Name of the smoothing method to use. Currently, not implemented.
+        points: Optional[DenseArgvals], default=None
+            The sampling points at which the covariance is estimated. If
+            `None`, the DenseArgvals of the DenseFunctionalData is used. If
+            `smooth` is False, the DenseArgvals of the DenseFunctionalData is
+            used.
         mean: Optional[DenseFunctionalData], default=None
             An estimate of the mean of self. If None, an estimate is computed.
+        smooth: bool, default=True
+            Should the mean be smoothed?
         **kwargs:
             kernel_name: str, default='epanechnikov'
                 Name of the kernel used for local polynomial smoothing.
             degree: int, default=1
                 Degree used for local polynomial smoothing.
-            bandwidth: float, default=1
-                Bandwidth used for local polynomial smoothing.
-            n_basis: int, default=10
-                Number of splines basis used for GAM smoothing.
+            bandwidth: float
+                Bandwidth used for local polynomial smoothing. The default
+                bandwitdth is set to be the number of sampling points to the
+                power :math:`-1/5` [3]_.
 
         Returns
         -------
         DenseFunctionalData
             An estimate of the covariance as a two-dimensional
-            DenseFunctionalData object with same argvals as `self`.
+            DenseFunctionalData object.
 
         References
         ----------
-        .. [1] Yao, Müller and Wang (2005), Functional Data Analysis for Sparse
-            Longitudinal Data. Journal of the American Statistical Association,
-            100, pp. 577--590.
-        .. [2] Staniswalis and Lee (1998), Nonparametric Regression Analysis of
+        .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+            Analysis, Springer Science, Chapter 8.
+        .. [2] Yao, F., Müller, H.-G., Wang, J.-L. (2005). Functional Data
+            Analysis for Sparse Longitudinal Data. Journal of the American
+            Statistical Association 100, pp. 577--590.
+        .. [3] Staniswalis and Lee (1998), Nonparametric Regression Analysis of
             Longitudinal Data, Journal of the American Statistical Association,
             93, pp. 1403--1418.
-
-        TODO: Split into multiple functions. Modify LocalLinear part.
+        .. [4] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
+            Springer Series in Statistics.
 
         """
         if self.n_dimension > 1:
             raise ValueError(
-                'Only one dimensional functional data are supported'
+                'Only one dimensional functional data are supported.'
             )
 
-        argvals = self.argvals['input_dim_0']
-
+        if points is None:
+            points = self.argvals
+            points_cov = DenseArgvals({
+                'input_dim_0': self.argvals['input_dim_0'],
+                'input_dim_1': self.argvals['input_dim_0'],
+            })
+        else:
+            points_cov = DenseArgvals({
+                'input_dim_0': points['input_dim_0'],
+                'input_dim_1': points['input_dim_1'],
+            })
         if mean is None:
-            mean = self.mean(smooth)
+            mean = self.mean(smooth=smooth, **kwargs)
+
         data = self.values - mean.values
-
         cov = np.dot(data.T, data) / (self.n_obs - 1)
-        cov_diag = np.copy(np.diag(cov))
+        diag_cov = np.diag(cov).copy()
 
-        if smooth is not None:
-            # Remove covariance diagonale because of measurement errors.
+        if smooth:
+            # Remove covariance diagonal because of measurement errors.
             np.fill_diagonal(cov, np.nan)
-            cov = cov[~np.isnan(cov)]
 
-            # Define train vector
-            train_ = np.vstack((
-                np.repeat(argvals, repeats=len(argvals)),
-                np.tile(argvals, reps=len(argvals)))
+            cov_temp = DenseFunctionalData(points_cov, cov[np.newaxis])
+            fdata_long = cov_temp.to_long()
+            fdata_long = fdata_long.dropna()
+
+            x = fdata_long.drop(['id', 'values'], axis=1, inplace=False).values
+            y = fdata_long['values'].values
+            points_mat = _cartesian_product(*points_cov.values())
+
+            lp = LocalPolynomial(
+                kernel_name=kwargs.get('kernel_name', 'epanechnikov'),
+                bandwidth=kwargs.get(
+                    'bandwidth',
+                    np.product(cov_temp.n_points)**(-1 / 5)
+                ),
+                degree=kwargs.get('degree', 2)
             )
-
-            train = train_[:, train_[0, :] != train_[1, :]]
-
-            if smooth == 'LocalLinear':
-                data_smooth = self.smooth(
-                    points=None, kernel_name="epanechnikov",
-                    bandwidth=0.5, degree=1
-                )
-                data = data_smooth.values - mean.values
-                cov = np.dot(data.T, data) / (self.n_obs - 1)
-            elif smooth == 'GAM':
-                n_basis = kwargs.get('n_basis', 10)
-
-                cov = pygam.LinearGAM(pygam.te(0, 1, n_splines=n_basis)).\
-                    fit(np.transpose(train), cov).\
-                    predict(np.transpose(train_)).\
-                    reshape((len(argvals), len(argvals)))
-            else:
-                raise NotImplementedError('Smoothing method not implemented.')
+            cov = lp.predict(y=y, x=x, x_new=points_mat)
+            cov = cov.reshape(points_cov.n_points)
 
         # Ensure the covariance is symmetric.
         cov = (cov + cov.T) / 2
 
-        # Smoothing the diagonal of the covariance (Yao, Müller and Wang, 2005)
-        lp = LocalPolynomial(
-            kernel_name=kwargs.get('kernel_name', 'gaussian'),
-            bandwidth=kwargs.get('bandwidth', 1),
-            degree=kwargs.get('degree', 1)
-        )
-        var_hat = lp.predict(argvals, cov_diag, argvals)
-        # Estimate noise variance (Staniswalis and Lee, 1998)
-        ll = argvals[len(argvals) - 1] - argvals[0]
-        lower = np.sum(~(argvals >= (argvals[0] + 0.25 * ll)))
-        upper = np.sum((argvals <= (argvals[len(argvals) - 1] - 0.25 * ll)))
-        weights = _integration_weights(argvals[lower:upper], method='trapz')
-        nume = np.dot(weights, (var_hat - cov_diag)[lower:upper])
-        self.var_noise = np.maximum(nume / argvals[upper] - argvals[lower], 0)
+        # Estimate noise variance ([2], [3])
+        # lp = LocalPolynomial(
+        #     kernel_name=kwargs.get('kernel_name', 'gaussian'),
+        #     bandwidth=kwargs.get('bandwidth', 1),
+        #     degree=kwargs.get('degree', 1)
+        # )
+        # var_hat = lp.predict(argvals, diag_cov, argvals)
+        # ll = argvals[len(argvals) - 1] - argvals[0]
+        # lower = np.sum(~(argvals >= (argvals[0] + 0.25 * ll)))
+        # upper = np.sum((argvals <= (argvals[len(argvals) - 1] - 0.25 * ll)))
+        # weights = _integration_weights(argvals[lower:upper], method='trapz')
+        # nume = np.dot(weights, (var_hat - np.diag(cov))[lower:upper])
+        # self.var_noise =
+        # np.maximum(nume / (argvals[upper] - argvals[lower]), 0)
 
-        new_argvals = {'input_dim_0': argvals, 'input_dim_1': argvals}
-        return DenseFunctionalData(
-            DenseArgvals(new_argvals),
-            DenseValues(cov[np.newaxis])
+        self._covariance = DenseFunctionalData(
+            points_cov, DenseValues(cov[np.newaxis])
         )
+        return self._covariance
     ###########################################################################
 
 
