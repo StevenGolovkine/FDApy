@@ -1079,7 +1079,7 @@ class DenseFunctionalData(FunctionalData):
         else:
             points_cov = DenseArgvals({
                 'input_dim_0': points['input_dim_0'],
-                'input_dim_1': points['input_dim_1'],
+                'input_dim_1': points['input_dim_0'],
             })
         if mean is None:
             mean = self.mean(smooth=smooth, **kwargs)
