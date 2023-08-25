@@ -1072,15 +1072,14 @@ class DenseFunctionalData(FunctionalData):
 
         if points is None:
             points = self.argvals
-            points_cov = DenseArgvals({
-                'input_dim_0': self.argvals['input_dim_0'],
-                'input_dim_1': self.argvals['input_dim_0'],
-            })
-        else:
-            points_cov = DenseArgvals({
-                'input_dim_0': points['input_dim_0'],
-                'input_dim_1': points['input_dim_0'],
-            })
+        argvals_cov = DenseArgvals({
+            'input_dim_0': self.argvals['input_dim_0'],
+            'input_dim_1': self.argvals['input_dim_0'],
+        })
+        points_cov = DenseArgvals({
+            'input_dim_0': points['input_dim_0'],
+            'input_dim_1': points['input_dim_0'],
+        })
         if mean is None:
             mean = self.mean(smooth=smooth, **kwargs)
 
@@ -1092,7 +1091,7 @@ class DenseFunctionalData(FunctionalData):
             # Remove covariance diagonal because of measurement errors.
             np.fill_diagonal(cov, np.nan)
 
-            cov_temp = DenseFunctionalData(points_cov, cov[np.newaxis])
+            cov_temp = DenseFunctionalData(argvals_cov, cov[np.newaxis])
             fdata_long = cov_temp.to_long()
             fdata_long = fdata_long.dropna()
 
