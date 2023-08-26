@@ -6,7 +6,6 @@ numpy
 numpydoc
 pandas
 pillow
-pygam
 scikit-learn
 scipy
 Sphinx

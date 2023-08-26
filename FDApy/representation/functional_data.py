@@ -12,7 +12,6 @@ import itertools
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-import pygam
 
 from abc import ABC, abstractmethod
 from collections import UserList
