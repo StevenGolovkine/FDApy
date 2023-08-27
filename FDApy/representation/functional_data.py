@@ -1084,7 +1084,7 @@ class DenseFunctionalData(FunctionalData):
 
         data = self.values - mean.values
         cov = np.dot(data.T, data) / (self.n_obs - 1)
-        diag_cov = np.diag(cov).copy()
+        raw_diag_cov = np.diag(cov).copy()
 
         if smooth:
             # Remove covariance diagonal because of measurement errors.
@@ -1113,11 +1113,11 @@ class DenseFunctionalData(FunctionalData):
         cov = (cov + cov.T) / 2
 
         # Estimate noise variance ([2], [3])
-        # lp = LocalPolynomial(
-        #     kernel_name=kwargs.get('kernel_name', 'gaussian'),
-        #     bandwidth=kwargs.get('bandwidth', 1),
-        #     degree=kwargs.get('degree', 1)
-        # )
+        lp = LocalPolynomial(
+            kernel_name='epanechnikov',
+            bandwidth=raw_diag_cov.n_points**(- 1 / 5),
+            degree=1
+        )
         # var_hat = lp.predict(argvals, diag_cov, argvals)
         # ll = argvals[len(argvals) - 1] - argvals[0]
         # lower = np.sum(~(argvals >= (argvals[0] + 0.25 * ll)))
