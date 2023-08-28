@@ -1115,10 +1115,15 @@ class DenseFunctionalData(FunctionalData):
         # Estimate noise variance ([2], [3])
         lp = LocalPolynomial(
             kernel_name='epanechnikov',
-            bandwidth=raw_diag_cov.n_points**(- 1 / 5),
+            bandwidth=len(raw_diag_cov)**(- 1 / 5),
             degree=1
         )
-        # var_hat = lp.predict(argvals, diag_cov, argvals)
+        var_hat = lp.predict(
+            y=raw_diag_cov,
+            x=_cartesian_product(*self.argvals.values()),
+            x_new=_cartesian_product(*points.values())
+        )
+
         # ll = argvals[len(argvals) - 1] - argvals[0]
         # lower = np.sum(~(argvals >= (argvals[0] + 0.25 * ll)))
         # upper = np.sum((argvals <= (argvals[len(argvals) - 1] - 0.25 * ll)))
