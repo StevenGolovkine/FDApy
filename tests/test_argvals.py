@@ -78,6 +78,15 @@ class TestDenseArgvals(unittest.TestCase):
         expected = {'key1': (1, 3), 'key2': (4, 6)}
         np.testing.assert_equal(argvals1.min_max, expected)
 
+    def test_range(self):
+        argvals1 = DenseArgvals()
+        argvals1['key1'] = np.array([1, 2, 3])
+        argvals1['key2'] = np.array([4, 5, 6])
+
+        expected = {'key1': 2.0, 'key2': 2.0}
+        np.testing.assert_equal(argvals1.range(), expected)
+
+
     def test_compatible_with(self):
         argvals1 = DenseArgvals()
         argvals1['key1'] = np.array([1, 2, 3])
