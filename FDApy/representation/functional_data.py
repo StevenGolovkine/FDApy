@@ -1124,6 +1124,7 @@ class DenseFunctionalData(FunctionalData):
             x_new=_cartesian_product(*points.values())
         )
 
+        ll = points.range()
         # ll = argvals[len(argvals) - 1] - argvals[0]
         # lower = np.sum(~(argvals >= (argvals[0] + 0.25 * ll)))
         # upper = np.sum((argvals <= (argvals[len(argvals) - 1] - 0.25 * ll)))
