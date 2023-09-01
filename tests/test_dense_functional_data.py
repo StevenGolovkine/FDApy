@@ -363,6 +363,7 @@ class TestNormDense(unittest.TestCase):
 
         np.testing.assert_almost_equal(results, expected_results)
 
+
 class TestNormalizeDense(unittest.TestCase):
     def setUp(self) -> None:
         name = 'bsplines'
@@ -397,3 +398,46 @@ class TestNormalizeDense(unittest.TestCase):
         expected_results = 0.02128688
 
         np.testing.assert_almost_equal(results[1], expected_results)
+
+
+class TestCovarianceDense(unittest.TestCase):
+    def setUp(self) -> None:
+        name = 'bsplines'
+        n_functions = 5
+
+        kl = KarhunenLoeve(
+            basis_name=name, n_functions=n_functions, argvals=np.linspace(0, 1, 11), random_state=42
+        )
+        kl.new(n_obs=100)
+        kl.add_noise(0.01)
+        self.fdata = kl.noisy_data
+
+    def test_default(self):
+        self.fdata.covariance()
+        results = self.fdata._covariance
+        expected_results = DenseValues(np.array([[[ 0.65131383,  0.42540917,  0.23474046,  0.08956508,   -0.02393091, -0.07852248, -0.09937122, -0.1140295 ,   -0.12715368, -0.14651419, -0.17284398],  [ 0.42540917,  0.36558448,  0.29831524,  0.22541171,    0.15235873,  0.0932614 ,  0.04929342,  0.01935932,   -0.00406499, -0.02490258, -0.04308851],  [ 0.23474046,  0.29831524,  0.32455262,  0.30968861,    0.26915847,  0.21990992,  0.16569595,  0.11997717,    0.08822403,  0.05841301,  0.03269999],  [ 0.08956508,  0.22541171,  0.30968861,  0.35448262,    0.34337712,  0.30502616,  0.25874022,  0.20686353,    0.16164431,  0.11931445,  0.0705793 ],  [-0.02393091,  0.15235873,  0.26915847,  0.34337712,    0.36350632,  0.35411815,  0.32830583,  0.28849332,    0.23147628,  0.16123668,  0.07676748],  [-0.07852248,  0.0932614 ,  0.21990992,  0.30502616,    0.35411815,  0.38087224,  0.38448825,  0.36470753,    0.30911065,  0.2131568 ,  0.07881052],  [-0.09937122,  0.04929342,  0.16569595,  0.25874022,    0.32830583,  0.38448825,  0.42538777,  0.43384707,    0.38081103,  0.27932027,  0.11254169],  [-0.1140295 ,  0.01935932,  0.11997717,  0.20686353,    0.28849332,  0.36470753,  0.43384707,  0.47378336,    0.44259647,  0.35753509,  0.20873423],  [-0.12715368, -0.00406499,  0.08822403,  0.16164431,    0.23147628,  0.30911065,  0.38081103,  0.44259647,    0.4658788 ,  0.42779463,  0.32931256],  [-0.14651419, -0.02490258,  0.05841301,  0.11931445,    0.16123668,  0.2131568 ,  0.27932027,  0.35753509,    0.42779463,  0.47529177,  0.48316044],  [-0.17284398, -0.04308851,  0.03269999,  0.0705793 ,    0.07676748,  0.07881052,  0.11254169,  0.20873423,    0.32931256,  0.48316044,  0.65060466]]]))
+        expected_noise = 0.07383871598487848
+
+        np.testing.assert_almost_equal(results.values, expected_results)
+        np.testing.assert_almost_equal(self.fdata._noise_variance, expected_noise)
+
+    def test_points(self):
+        points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 6)})
+        self.fdata.covariance(points=points)
+
+        results = self.fdata._covariance
+        expected_results = DenseValues(np.array([[[ 0.65131383,  0.23474046, -0.02393091, -0.09937122,   -0.12715368, -0.17284398],  [ 0.23474046,  0.32455262,  0.26915847,  0.16569595,    0.08822403,  0.03269999],  [-0.02393091,  0.26915847,  0.36350632,  0.32830583,    0.23147628,  0.07676748],  [-0.09937122,  0.16569595,  0.32830583,  0.42538777,    0.38081103,  0.11254169],  [-0.12715368,  0.08822403,  0.23147628,  0.38081103,    0.4658788 ,  0.32931256],  [-0.17284398,  0.03269999,  0.07676748,  0.11254169,    0.32931256,  0.65060466]]]))
+        expected_noise = 0.035029758855601834
+
+        np.testing.assert_almost_equal(results.values, expected_results)
+        np.testing.assert_almost_equal(self.fdata._noise_variance, expected_noise)
+
+    def test_data2d(self):
+        kl = KarhunenLoeve(
+            basis_name='bsplines', dimension='2D', n_functions=5, argvals=np.linspace(0, 1, 11), random_state=42
+        )
+        kl.new(n_obs=10)
+        fdata_2d = kl.data
+
+        with self.assertRaises(ValueError):
+            fdata_2d.covariance()

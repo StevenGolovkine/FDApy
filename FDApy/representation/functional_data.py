@@ -27,7 +27,7 @@ from .values import Values, DenseValues, IrregularValues
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..misc.utils import _cartesian_product
 from ..misc.utils import _inner_product
-from ..misc.utils import _integrate, _integration_weights
+from ..misc.utils import _integrate
 from ..misc.utils import _outer
 
 
@@ -1062,6 +1062,18 @@ class DenseFunctionalData(FunctionalData):
             93, pp. 1403--1418.
         .. [4] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
             Springer Series in Statistics.
+
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines',
+        ...     n_functions=5,
+        ...     random_state=42
+        ... )
+        >>> kl.new(n_obs=100)
+        >>> kl.add_noise(0.01)
+        >>> kl.noisy_data.covariance(smooth=True)
+        Functional data object with 1 observations on a 2-dimensional support.
 
         """
         if self.n_dimension > 1:
