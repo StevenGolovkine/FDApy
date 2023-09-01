@@ -251,9 +251,27 @@ class DenseArgvals(Argvals):
             idx: (min(argval), max(argval)) for idx, argval in self.items()
         }
 
-    def range(self) -> Dict[str, float]:
-        """Get the range of sampling points for each dimension."""
-        return {idx: max - min for idx, (min, max) in self.min_max.items()}
+    def range(
+        self,
+        percentage: float = 1.0
+    ) -> Dict[str, float]:
+        """Get the range of sampling points for each dimension.
+
+        Parameters
+        ----------
+        percentage: float, default=1.0
+            Specify a percentage of the range to retrieve.
+
+        Returns
+        -------
+        Dict[str, float]
+            A percentage of the range of the sampling points in each dimension.
+
+        """
+        return {
+            idx: percentage * (max - min)
+            for idx, (min, max) in self.min_max.items()
+        }
 
     def normalization(self) -> DenseArgvals:
         r"""Normalize the DenseArgvals.

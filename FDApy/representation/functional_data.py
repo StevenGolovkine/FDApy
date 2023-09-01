@@ -1123,15 +1123,18 @@ class DenseFunctionalData(FunctionalData):
             x=_cartesian_product(*self.argvals.values()),
             x_new=_cartesian_product(*points.values())
         )
+        lower = [int(np.round(0.25 * el)) for el in points.n_points]
+        upper = [int(np.round(0.75 * el)) for el in points.n_points]
+        bounds = slice(*tuple(lower + upper))
+        temp = _integrate(
+            (var_hat - np.diag(cov))[bounds],
+            points['input_dim_0'][bounds],
+            method='trapz'
+        )
 
-        ll = points.range()
-        # lower = np.sum(~(argvals >= (argvals[0] + 0.25 * ll)))
-        # upper = np.sum((argvals <= (argvals[len(argvals) - 1] - 0.25 * ll)))
-        # weights = _integration_weights(argvals[lower:upper], method='trapz')
-        # nume = np.dot(weights, (var_hat - np.diag(cov))[lower:upper])
-        # self.var_noise =
-        # np.maximum(nume / (argvals[upper] - argvals[lower]), 0)
-
+        self._noise_variance = np.maximum(
+            2 * temp / points.range()['input_dim_0'], 0
+        )
         self._covariance = DenseFunctionalData(
             points_cov, DenseValues(cov[np.newaxis])
         )
