@@ -394,10 +394,10 @@ def _integrate(
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64], shape=(n_features,)
-        Domain for the integration, it has to be ordered.
     y: npt.NDArray[np.float64], shape=(n_features,)
         Observations
+    *args: npt.NDArray[np.float64], shape=(n_features,)
+        Domain for the integration, it has to be ordered.
     method: str, {'simpson', 'trapz'}, default = 'simpson'
         The method used to integrated.
 
