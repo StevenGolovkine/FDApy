@@ -455,19 +455,14 @@ class UFPCA():
         if data.n_dimension > 2:
             raise ValueError("The dimension of the data have to be 1 or 2.")
 
-        projection = _integrate(
-            [traj * self.eigenfunctions.values for traj in data.values],
-            data.argvals['input_dim_0'],
-            method=method
-        )
-        if data.n_dimension == 2:
-            return _integrate(
-                projection,
-                data.argvals['input_dim_1'],
-                method=method
-            )
-        else:
-            return projection
+        axis = [argvals for argvals in data.argvals.values()]
+        temp = [traj * self.eigenfunctions.values for traj in data.values]
+
+        scores = np.zeros((data.n_obs, self.n_components))
+        for idx, curves in enumerate(temp):
+            for idx_eigen, curve in enumerate(curves):
+                scores[idx, idx_eigen] = _integrate(curve, *axis)
+        return scores
 
     def inverse_transform(
         self,
