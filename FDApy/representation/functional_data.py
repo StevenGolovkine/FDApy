@@ -1571,7 +1571,15 @@ class IrregularFunctionalData(FunctionalData):
             Currently not implemented.
 
         """
-        raise NotImplementedError()
+        dense_argvals = self.argvals.to_dense()
+        n_points = np.mean([i for i in self.argvals.n_points.values()])
+        data_smooth = self.smooth(
+            points=dense_argvals,
+            kernel_name="epanechnikov",
+            bandwidth=1 / n_points,
+            degree=0
+        )
+        return data_smooth.inner_product()
 
     def norm(
         self,
