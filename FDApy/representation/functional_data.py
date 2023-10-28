@@ -1571,6 +1571,9 @@ class IrregularFunctionalData(FunctionalData):
             Currently not implemented.
 
         """
+        # Use utils._shift for the indicator function
+        # Use np.searchsorted to compute the indicator function
+        # Compute the step function
         dense_argvals = self.argvals.to_dense()
         n_points = np.mean([i for i in self.argvals.n_points.values()])
         data_smooth = self.smooth(
