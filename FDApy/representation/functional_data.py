@@ -1451,6 +1451,24 @@ class IrregularFunctionalData(FunctionalData):
         .. [2] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
             Springer Series in Statistics.
 
+        Examples
+        --------
+        For one-dimensional functional data:
+
+        >>> argvals = IrregularArgvals({
+        ...     0: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4])}),
+        ...     1: DenseArgvals({'input_dim_0': np.array([0, 2, 4])}),
+        ...     2: DenseArgvals({'input_dim_0': np.array([2, 4])})
+        ... })
+        >>> values = IrregularValues({
+        ...     0: np.array([1, 2, 3, 4, 5]),
+        ...     1: np.array([2, 5, 6]),
+        ...     2: np.array([4, 7])
+        ... })
+        >>> fdata = IrregularFunctionalData(argvals, values)
+        >>> fdata.smooth()
+        Functional data object with 3 observations on a 1-dimensional support.
+
         """
         if points is None:
             points = self.argvals.to_dense()
@@ -1517,6 +1535,24 @@ class IrregularFunctionalData(FunctionalData):
             transition. The Annals of Statistics 39, 2330-2355.
         .. [2] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
             Springer Series in Statistics.
+
+        Examples
+        --------
+        For one-dimensional functional data:
+
+        >>> argvals = IrregularArgvals({
+        ...     0: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4])}),
+        ...     1: DenseArgvals({'input_dim_0': np.array([0, 2, 4])}),
+        ...     2: DenseArgvals({'input_dim_0': np.array([2, 4])})
+        ... })
+        >>> values = IrregularValues({
+        ...     0: np.array([1, 2, 3, 4, 5]),
+        ...     1: np.array([2, 5, 6]),
+        ...     2: np.array([4, 7])
+        ... })
+        >>> fdata = IrregularFunctionalData(argvals, values)
+        >>> fdata.mean()
+        Functional data object with 1 observations on a 1-dimensional support.
 
         """
         if points is None:
