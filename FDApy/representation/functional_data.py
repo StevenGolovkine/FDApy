@@ -29,6 +29,7 @@ from ..misc.utils import _cartesian_product
 from ..misc.utils import _inner_product
 from ..misc.utils import _integrate
 from ..misc.utils import _outer
+from ..misc.utils import _shift
 
 
 ###############################################################################
@@ -1568,21 +1569,57 @@ class IrregularFunctionalData(FunctionalData):
         Raises
         ------
         NotImplementedError
-            Currently not implemented.
+            Not implement for higher-dimensional data.
+
+        References
+        ----------
+        .. [1] Benko, M., Härdle, W., Kneip, A., (2009), Common functional
+            principal components. The Annals of Statistics 37, 1-34.
+
+        Examples
+        --------
+        For one-dimensional functional data:
+
+        >>> argvals = IrregularArgvals({
+        ...     0: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4])}),
+        ...     1: DenseArgvals({'input_dim_0': np.array([0, 2, 4])}),
+        ...     2: DenseArgvals({'input_dim_0': np.array([2, 4])})
+        ... })
+        >>> values = IrregularValues({
+        ...     0: np.array([1, 2, 3, 4, 5]),
+        ...     1: np.array([2, 5, 6]),
+        ...     2: np.array([4, 7])
+        ... })
+        >>> fdata = IrregularFunctionalData(argvals, values)
+        >>> fdata.inner_product()
+        array(
+            [
+                [42. , 55. , 55.5],
+                [55. , 74. , 73. ],
+                [55.5, 73. , 80.5]
+            ]
+        )
 
         """
-        # Use utils._shift for the indicator function
-        # Use np.searchsorted to compute the indicator function
-        # Compute the step function
-        dense_argvals = self.argvals.to_dense()
-        n_points = np.mean([i for i in self.argvals.n_points.values()])
-        data_smooth = self.smooth(
-            points=dense_argvals,
-            kernel_name="epanechnikov",
-            bandwidth=1 / n_points,
-            degree=0
+        if self.n_dimension > 1:
+            raise NotImplementedError(
+                "Only implemented for one-dimensional irregular ",
+                "functional data."
+            )
+
+        dense_argvals = self.argvals.to_dense()['input_dim_0']
+        new_values = np.zeros((self.n_obs, len(dense_argvals)))
+        for idx, obs in enumerate(self):
+            tt = obs.argvals[idx]['input_dim_0']
+            intervals = (tt + _shift(tt, -1)) / 2
+            indices = np.searchsorted(intervals, dense_argvals)
+            new_values[idx, :] = obs.values[idx][indices]
+
+        data_smooth = DenseFunctionalData(
+            DenseArgvals({'input_dim_0': dense_argvals}),
+            DenseValues(new_values)
         )
-        return data_smooth.inner_product()
+        return data_smooth.inner_product(method=method)
 
     def norm(
         self,
