@@ -1665,21 +1665,31 @@ class IrregularFunctionalData(FunctionalData):
     ) -> npt.NDArray[np.float64]:
         r"""Norm of each observation of the data.
 
-        For each observation in the data, it computes its norm defined as
+        For each observation in the data, it computes its norm [1]_ defined as
 
         .. math::
-            || f || = \left(\int_{\mathcal{T}} f(t)^2dt\right)^{1\2},
-            t \in \mathcal{T},
+            \lvert\lvert f \rvert\rvert = \left(\int_{\mathcal{T}}
+            f(t)^2dt\right)^{1\2}, t \in \mathcal{T},
 
         Parameters
         ----------
         squared: bool, default=False
             If `True`, the function calculates the squared norm, otherwise the
             result is not squared.
-        method: str, default='trapz'
-            Integration method to be used.
+        method: str, {'simpson', 'trapz'}, default = 'trapz'
+            The method used to integrated.
         use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
+
+        Returns
+        -------
+        npt.NDArray[np.float64], shape=(n_obs,)
+            The norm of each observations.
+
+        References
+        ----------
+        .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+            Analysis, Springer Science, Chapter 2.
 
         Raises
         ------
