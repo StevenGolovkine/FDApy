@@ -97,23 +97,6 @@ class TestIrregularFunctionalData(unittest.TestCase):
         expected_n_points = {0: (5,), 1: (3, ), 2: (2, )}
         self.assertDictEqual(self.fdata.n_points, expected_n_points)
 
-    def test_as_dense(self):
-        dense_fdata = self.fdata.as_dense()
-        expected_argvals = {'input_dim_0': np.arange(5)}
-        expected_values = np.array([
-            [1, 2, 3, 4, 5],
-            [2, np.nan, 5, np.nan, 6],
-            [np.nan, np.nan, 4, np.nan, 7]
-        ])
-        np.testing.assert_array_equal(
-            dense_fdata.argvals['input_dim_0'],
-            expected_argvals['input_dim_0']
-        )
-        np.testing.assert_array_equal(
-            dense_fdata.values,
-            expected_values
-        )
-
     def test_is_compatible(self):
         IrregularFunctionalData._is_compatible(self.fdata, self.fdata)
         self.assertTrue(True)
@@ -236,11 +219,6 @@ class TestIrregularFunctionalData1D(unittest.TestCase):
         self.assertIsInstance(new_irregu_fd, IrregularFunctionalData)
         self.assertEqual(new_irregu_fd.n_obs, 2)
 
-    def test_as_dense(self):
-        dense_fd = self.irregu_fd.as_dense()
-        self.assertIsInstance(dense_fd, DenseFunctionalData)
-        self.assertEqual(dense_fd.n_obs, 3)
-
     def test_is_compatible(self):
         IrregularFunctionalData._is_compatible(self.irregu_fd, self.irregu_fd)
         self.assertTrue(True)
@@ -321,11 +299,6 @@ class TestIrregularFunctionalData2D(unittest.TestCase):
         new_irregu_fd = self.irregu_fd[:2]
         self.assertIsInstance(new_irregu_fd, IrregularFunctionalData)
         self.assertEqual(new_irregu_fd.n_obs, 2)
-
-    def test_as_dense(self):
-        dense_fd = self.irregu_fd.as_dense()
-        self.assertIsInstance(dense_fd, DenseFunctionalData)
-        self.assertEqual(dense_fd.n_obs, 3)
 
     def test_is_compatible(self):
         IrregularFunctionalData._is_compatible(self.irregu_fd, self.irregu_fd)

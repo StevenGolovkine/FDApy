@@ -1768,61 +1768,6 @@ class IrregularFunctionalData(FunctionalData):
             new_values[idx] = obs.values[idx] / weights
         return IrregularFunctionalData(self.argvals, new_values), weights
 
-    def as_dense(self) -> DenseFunctionalData:
-        """Convert `self` from Irregular to Dense functional data.
-
-        Coerce an IrregularFunctionalData object into a DenseFunctionalData
-        object.
-
-        Note
-        ----
-        We coerce an IrregularFunctionalData object into a DenseFunctionalData
-        object by gathering all the sampling points from the different
-        dimension into one, and set the value to `np.nan` for the not observed
-        points.
-
-        Returns
-        -------
-        DenseFunctionalData
-            An object of the class DenseFunctionalData
-
-        TODO: Consider removing this
-
-        """
-        new_argvals = self.argvals.to_dense()
-        new_values = np.full(
-            (self.n_obs,) + new_argvals.n_points, np.nan
-        )
-
-        # Create the index definition domain for each of the observation
-        index_obs = {}
-        for obs in self.values.keys():
-            index_obs_dim = []
-            for dim in new_argvals.keys():
-                _, idx, _ = np.intersect1d(
-                    new_argvals[dim],
-                    self.argvals[obs][dim],
-                    return_indices=True
-                )
-                index_obs_dim.append(idx)
-            index_obs[obs] = index_obs_dim
-
-        # Create mask arrays
-        mask_obs = {
-            obs: np.full(new_argvals.n_points, False)
-            for obs in self.values.keys()
-        }
-        for obs in self.values.keys():
-            mask_obs[obs][tuple(np.meshgrid(*index_obs[obs]))] = True
-
-        # Assign values
-        for obs in self.values.keys():
-            new_values[obs][mask_obs[obs]] = self.values[obs].flatten()
-
-        return DenseFunctionalData(
-            DenseArgvals(new_argvals), DenseValues(new_values)
-        )
-
     def covariance(
         self,
         mean: Optional[IrregularFunctionalData] = None,
