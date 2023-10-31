@@ -1691,13 +1691,37 @@ class IrregularFunctionalData(FunctionalData):
         .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
             Analysis, Springer Science, Chapter 2.
 
-        Raises
-        ------
-        NotImplementedError
-            Currently not implemented.
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines',
+        ...     n_functions=5,
+        ...     random_state=42
+        ... )
+        >>> kl.new(n_obs=10)
+        >>> kl.sparsify(percentage=0.5, epsilon=0.05)
+        >>> kl.sparse_data.norm()
+        array([
+            0.53419879, 0.40750272, 0.67092435, 0.26762124, 0.27425138,
+            0.37419987, 0.65775515, 0.54579643, 0.25830787, 0.49324345
+        ])
 
         """
-        raise NotImplementedError()
+        norm_fd = np.zeros(self.n_obs)
+        for idx, obs in enumerate(self):
+            if use_argvals_stand:
+                axis = [argvals for argvals in obs.argvals_stand[idx].values()]
+            else:
+                axis = [argvals for argvals in obs.argvals[idx].values()]
+            sq_values = np.power(obs.values[idx], 2)
+            norm_fd[idx] = _integrate(
+                sq_values, *axis, method=method
+            )
+
+        if squared:
+            return np.array(norm_fd)
+        else:
+            return np.power(norm_fd, 0.5)
 
     def normalize(
         self,

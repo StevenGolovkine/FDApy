@@ -483,3 +483,54 @@ class TestInnerProductIrregular(unittest.TestCase):
 
         with self.assertRaises(NotImplementedError):
             data.inner_product()
+
+
+class TestNormIrregular(unittest.TestCase):
+    def setUp(self):
+        name = 'bsplines'
+        n_functions = 5
+        kl = KarhunenLoeve(
+            basis_name=name, n_functions=n_functions, random_state=42
+        )
+        kl.new(n_obs=10)
+        kl.sparsify(percentage=0.8, epsilon=0.05)
+        self.data = kl.sparse_data
+
+    def test_norm(self):
+        res = self.data.norm()
+        expected_res = np.array([0.53301318, 0.42249943, 0.67097958, 0.24237486, 0.27450066, 0.37765895, 0.65230671, 0.54117675, 0.28729627, 0.4933732 ])
+        np.testing.assert_array_almost_equal(res, expected_res)
+
+        res = self.data.norm(squared=True)
+        expected_res = np.array([0.28410305, 0.17850577, 0.4502136 , 0.05874557, 0.07535061, 0.14262628, 0.42550404, 0.29287227, 0.08253915, 0.24341712])
+        np.testing.assert_array_almost_equal(res, expected_res)
+
+        res = self.data.norm(use_argvals_stand=True)
+        expected_res = np.array([0.53301318, 0.42249943, 0.67097958, 0.24483558, 0.27450066, 0.37956153, 0.65559291, 0.54117675, 0.28729627, 0.4933732 ])
+        np.testing.assert_array_almost_equal(res, expected_res)
+
+    def test_inner_product_2d(self):
+        argvals = IrregularArgvals({
+            0: DenseArgvals({
+                'input_dim_0': np.array([1, 2, 3, 4]),
+                'input_dim_1': np.array([5, 6, 7])
+            }),
+            1: DenseArgvals({
+                'input_dim_0': np.array([2, 4]),
+                'input_dim_1': np.array([1, 2, 3])
+            }),
+            2: DenseArgvals({
+                'input_dim_0': np.array([4, 5, 6]),
+                'input_dim_1': np.array([8, 9])
+            })
+        })
+        values = IrregularValues({
+            0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
+            1: np.array([[1, 2, 3], [1, 2, 3]]),
+            2: np.array([[8, 9], [8, 9], [8, 9]])
+        })
+        data = IrregularFunctionalData(argvals, values)
+
+        res = data.norm()
+        expected_res = np.array([ 6.78232998,  4.24264069, 12.04159458])
+        np.testing.assert_array_almost_equal(res, expected_res)
