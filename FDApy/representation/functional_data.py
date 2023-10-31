@@ -373,6 +373,7 @@ class FunctionalData(ABC):
     @abstractmethod
     def normalize(
         self,
+        method: str = 'trapz',
         use_argvals_stand: bool = False
     ) -> Tuple[FunctionalData, float]:
         """Normalize the data."""
@@ -1725,6 +1726,7 @@ class IrregularFunctionalData(FunctionalData):
 
     def normalize(
         self,
+        method: str = 'trapz',
         use_argvals_stand: bool = False
     ) -> Tuple[FunctionalData, float]:
         r"""Normalize the data.
@@ -1734,24 +1736,37 @@ class IrregularFunctionalData(FunctionalData):
 
         Parameters
         ----------
+        method: str, {'simpson', 'trapz'}, default = 'trapz'
+            The method used to integrated.
         use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
 
         Returns
         -------
-        Tuple[DenseFunctionalData, float]
-            The normalized data.
+        Tuple[IrregularFunctionalData, float]
+            The normalized data and its weight.
 
-        TODO: Add other normalization schames and Add the possibility to
-        normalize multidemsional data
-
-        Raises
-        ------
-        NotImplementedError
-            Currently not implemented.
+        References
+        ----------
+        .. [1] Happ and Greven (2018), Multivariate Functional Principal
+            Component Analysis for Data Observed on Different (Dimensional)
+            Domains. Journal of the American Statistical Association, 113,
+            pp. 649--659.
 
         """
-        raise NotImplementedError()
+        data_smooth = self.smooth()
+        if use_argvals_stand:
+            axis = [argvals for argvals in data_smooth.argvals_stand.values()]
+        else:
+            axis = [argvals for argvals in data_smooth.argvals.values()]
+
+        variance = np.var(data_smooth.values, axis=0)
+        weights = _integrate(variance, *axis, method=method)
+
+        new_values = IrregularValues()
+        for idx, obs in enumerate(self):
+            new_values[idx] = obs.values[idx] / weights
+        return IrregularFunctionalData(self.argvals, new_values), weights
 
     def as_dense(self) -> DenseFunctionalData:
         """Convert `self` from Irregular to Dense functional data.
