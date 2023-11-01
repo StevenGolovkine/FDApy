@@ -1367,6 +1367,8 @@ class IrregularFunctionalData(FunctionalData):
 
         Examples
         --------
+        For one-dimensional functional data:
+
         >>> argvals = IrregularArgvals({
         ...     0: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4])}),
         ...     1: DenseArgvals({'input_dim_0': np.array([0, 2, 4])}),
@@ -1378,7 +1380,6 @@ class IrregularFunctionalData(FunctionalData):
         ...     2: np.array([4, 7])
         ... })
         >>> fdata = IrregularFunctionalData(argvals, values)
-
         >>> fdata.to_long()
            input_dim_0  id  values
         0            0   0       1
@@ -1487,7 +1488,7 @@ class IrregularFunctionalData(FunctionalData):
         for idx, obs in enumerate(self):
             argvals_mat = _cartesian_product(*obs.argvals[idx].values())
             smooth[idx, :] = lp.predict(
-                y=obs.values[idx],
+                y=obs.values[idx].flatten(),
                 x=argvals_mat,
                 x_new=points_mat
             ).reshape(smooth.shape[1:])
