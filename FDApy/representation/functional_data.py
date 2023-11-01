@@ -374,7 +374,8 @@ class FunctionalData(ABC):
     def normalize(
         self,
         method: str = 'trapz',
-        use_argvals_stand: bool = False
+        use_argvals_stand: bool = False,
+        **kwargs
     ) -> Tuple[FunctionalData, float]:
         """Normalize the data."""
 
@@ -964,7 +965,8 @@ class DenseFunctionalData(FunctionalData):
     def normalize(
         self,
         method: str = 'trapz',
-        use_argvals_stand: bool = False
+        use_argvals_stand: bool = False,
+        **kwargs
     ) -> Tuple[DenseFunctionalData, float]:
         r"""Normalize the data.
 
@@ -977,6 +979,8 @@ class DenseFunctionalData(FunctionalData):
             The method used to integrated.
         use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
+        **kwargs:
+            Not used here.
 
         Returns
         -------
@@ -1728,7 +1732,8 @@ class IrregularFunctionalData(FunctionalData):
     def normalize(
         self,
         method: str = 'trapz',
-        use_argvals_stand: bool = False
+        use_argvals_stand: bool = False,
+        **kwargs
     ) -> Tuple[FunctionalData, float]:
         r"""Normalize the data.
 
@@ -1741,6 +1746,8 @@ class IrregularFunctionalData(FunctionalData):
             The method used to integrated.
         use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
+        **kwargs:
+            Keyword parameters for the smoothing of the observations.
 
         Returns
         -------
@@ -1754,8 +1761,21 @@ class IrregularFunctionalData(FunctionalData):
             Domains. Journal of the American Statistical Association, 113,
             pp. 649--659.
 
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines',
+        ...     n_functions=5,
+        ...     random_state=42
+        ... )
+        >>> kl.new(n_obs=10)
+        >>> kl.sparsify(percentage=0.5, epsilon=0.05)
+        >>> kl.sparse_data.normalize()
+        (Functional data object with 10 observations on a 1-dimensional
+        support., DenseValues(0.16802008))
+
         """
-        data_smooth = self.smooth()
+        data_smooth = self.smooth(**kwargs)
         if use_argvals_stand:
             axis = [argvals for argvals in data_smooth.argvals_stand.values()]
         else:

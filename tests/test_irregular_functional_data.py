@@ -331,6 +331,7 @@ class TestIrregularFunctionalData2D(unittest.TestCase):
         ]]))
         np.testing.assert_allclose(mean_fd.values, expected_mean)
 
+
 class TestPerformComputation(unittest.TestCase):
     def setUp(self):
         self.argvals = {
@@ -508,7 +509,7 @@ class TestNormIrregular(unittest.TestCase):
         expected_res = np.array([0.53301318, 0.42249943, 0.67097958, 0.24483558, 0.27450066, 0.37956153, 0.65559291, 0.54117675, 0.28729627, 0.4933732 ])
         np.testing.assert_array_almost_equal(res, expected_res)
 
-    def test_inner_product_2d(self):
+    def test_norm_2d(self):
         argvals = IrregularArgvals({
             0: DenseArgvals({
                 'input_dim_0': np.array([1, 2, 3, 4]),
@@ -533,3 +534,53 @@ class TestNormIrregular(unittest.TestCase):
         res = data.norm()
         expected_res = np.array([ 6.78232998,  4.24264069, 12.04159458])
         np.testing.assert_array_almost_equal(res, expected_res)
+
+
+class TestNormalizeIrregular(unittest.TestCase):
+    def setUp(self):
+        name = 'bsplines'
+        n_functions = 5
+        kl = KarhunenLoeve(
+            basis_name=name, n_functions=n_functions, random_state=42
+        )
+        kl.new(n_obs=10)
+        kl.sparsify(percentage=0.5, epsilon=0.05)
+        self.data = kl.sparse_data
+
+    def test_norm(self):
+        res, weight = self.data.normalize()
+        expected_weight = 0.16802008
+        np.testing.assert_array_almost_equal(weight, expected_weight)
+        self.assertIsInstance(res, IrregularFunctionalData)
+
+        res, weight = self.data.normalize(use_argvals_stand=True)
+        expected_weight = 0.16802008
+        np.testing.assert_array_almost_equal(weight, expected_weight)
+        self.assertIsInstance(res, IrregularFunctionalData)
+
+    def test_norm_2d(self):
+        argvals = IrregularArgvals({
+            0: DenseArgvals({
+                'input_dim_0': np.array([1, 2, 3, 4]),
+                'input_dim_1': np.array([5, 6, 7])
+            }),
+            1: DenseArgvals({
+                'input_dim_0': np.array([2, 4]),
+                'input_dim_1': np.array([1, 2, 3])
+            }),
+            2: DenseArgvals({
+                'input_dim_0': np.array([4, 5, 6]),
+                'input_dim_1': np.array([8, 9])
+            })
+        })
+        values = IrregularValues({
+            0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
+            1: np.array([[1, 2, 3], [1, 2, 3]]),
+            2: np.array([[8, 9], [8, 9], [8, 9]])
+        })
+        data = IrregularFunctionalData(argvals, values)
+
+        res, weight = data.normalize()
+        expected_weight = 87.77777778
+        np.testing.assert_array_almost_equal(weight, expected_weight)
+        self.assertIsInstance(res, IrregularFunctionalData)
