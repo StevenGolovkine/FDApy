@@ -1791,21 +1791,137 @@ class IrregularFunctionalData(FunctionalData):
 
     def covariance(
         self,
-        mean: Optional[IrregularFunctionalData] = None,
-        smooth: Optional[str] = None,
+        points: Optional[DenseArgvals] = None,
+        mean: Optional[DenseFunctionalData] = None,
+        smooth: bool = True,
         **kwargs
     ) -> IrregularFunctionalData:
-        """Compute an estimate of the covariance.
+        """Compute an estimate of the covariance function.
+
+        This function computes an estimate of the covariance surface of a
+        IrregularFunctionalData object. As the curves are not sampled on a
+        common grid, we consider the method in [1]_.
+
+        Parameters
+        ----------
+        points: Optional[DenseArgvals], default=None
+            The sampling points at which the covariance is estimated. If
+            `None`, the concatenation of the IrregularArgvals of the
+            IrregularFunctionalData is used.
+        mean: Optional[DenseFunctionalData], default=None
+            An estimate of the mean of self. If None, an estimate is computed.
+        smooth: bool, default=True
+            Not used here. Smoothing is always performed for
+            IrregularFunctionalData.
+        **kwargs:
+            kernel_name: str, default='epanechnikov'
+                Name of the kernel used for local polynomial smoothing.
+            degree: int, default=1
+                Degree used for local polynomial smoothing.
+            bandwidth: float
+                Bandwidth used for local polynomial smoothing. The default
+                bandwitdth is set to be the number of sampling points to the
+                power :math:`-1/5` [3]_.
+
+        Returns
+        -------
+        DenseFunctionalData
+            An estimate of the covariance as a two-dimensional
+            DenseFunctionalData object.
+
+        References
+        ----------
+        .. [1] Yao, F., Müller, H.-G., Wang, J.-L. (2005). Functional Data
+            Analysis for Sparse Longitudinal Data. Journal of the American
+            Statistical Association 100, pp. 577--590.
+        .. [2] Staniswalis and Lee (1998), Nonparametric Regression Analysis of
+            Longitudinal Data, Journal of the American Statistical Association,
+            93, pp. 1403--1418.
+        .. [3] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
+            Springer Series in Statistics.
 
         Raises
         ------
         NotImplementedError
-            Currently not implemented.
+            Not implement for higher-dimensional data.
 
-        TODO: Implement this function.
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines',
+        ...     n_functions=5,
+        ...     random_state=42
+        ... )
+        >>> kl.new(n_obs=10)
 
         """
-        raise NotImplementedError()
+        if self.n_dimension > 1:
+            raise NotImplementedError(
+                "Only implemented for one-dimensional irregular ",
+                "functional data."
+            )
+        if points is None:
+            points = self.argvals.to_dense()
+        argvals_cov = DenseArgvals({
+            'input_dim_0': self.argvals.to_dense()['input_dim_0'],
+            'input_dim_1': self.argvals.to_dense()['input_dim_0'],
+        })
+        points_cov = DenseArgvals({
+            'input_dim_0': points['input_dim_0'],
+            'input_dim_1': points['input_dim_0'],
+        })
+
+        n_points = points.n_points
+
+        # Compute the covariance
+        cov_sum = np.zeros(np.power(n_points, 2))
+        cov_count = np.zeros(np.power(n_points, 2))
+        for idx, obs in enumerate(self):
+            obs_points = np.isin(
+                points['input_dim_0'], obs.argvals[idx]['input_dim_0']
+            )
+            mask = np.outer(obs_points, obs_points).flatten()
+            cov = np.outer(obs.values[idx], obs.values[idx]).flatten()
+
+            cov_count[mask] += 1
+            cov_sum[mask] += cov
+
+        cov_mean = np.where(cov_count == 0, np.nan, cov_sum / cov_count)
+        cov = cov_mean.reshape(2 * n_points)
+
+        # Smooth the covariance
+        np.fill_diagonal(cov, np.nan)
+
+        cov_temp = DenseFunctionalData(
+            argvals_cov, DenseValues(cov[np.newaxis])
+        )
+        fdata_long = cov_temp.to_long()
+        fdata_long = fdata_long.dropna()
+
+        x = fdata_long.drop(['id', 'values'], axis=1, inplace=False).values
+        y = fdata_long['values'].values
+        points_mat = _cartesian_product(*points_cov.values())
+
+        lp = LocalPolynomial(
+            kernel_name=kwargs.get('kernel_name', 'epanechnikov'),
+            bandwidth=kwargs.get(
+                'bandwidth',
+                np.product(cov_temp.n_points)**(-1 / 5)
+            ),
+            degree=kwargs.get('degree', 2)
+        )
+        cov = lp.predict(y=y, x=x, x_new=points_mat)
+        cov = cov.reshape(points_cov.n_points)
+
+        # Ensure the covariance is symmetric.
+        cov = (cov + cov.T) / 2
+
+        # Estimate noise variance ([2], [3])
+
+        self._covariance = DenseFunctionalData(
+            points_cov, DenseValues(cov[np.newaxis])
+        )
+        return self._covariance
 
     ###########################################################################
 
