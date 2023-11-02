@@ -1870,6 +1870,11 @@ class IrregularFunctionalData(FunctionalData):
             'input_dim_0': points['input_dim_0'],
             'input_dim_1': points['input_dim_0'],
         })
+        if mean is None:
+            mean = self.mean(smooth=smooth, **kwargs)
+
+        # Center the data
+        # ...
 
         n_points = points.n_points
 
@@ -1890,6 +1895,7 @@ class IrregularFunctionalData(FunctionalData):
         cov = cov_mean.reshape(2 * n_points)
 
         # Smooth the covariance
+        raw_diag_cov = np.diag(cov).copy()
         np.fill_diagonal(cov, np.nan)
 
         cov_temp = DenseFunctionalData(
@@ -1917,7 +1923,28 @@ class IrregularFunctionalData(FunctionalData):
         cov = (cov + cov.T) / 2
 
         # Estimate noise variance ([2], [3])
+        lp = LocalPolynomial(
+            kernel_name='epanechnikov',
+            bandwidth=len(raw_diag_cov)**(- 1 / 5),
+            degree=1
+        )
+        var_hat = lp.predict(
+            y=raw_diag_cov,
+            x=_cartesian_product(*self.argvals.to_dense().values()),
+            x_new=_cartesian_product(*points.values())
+        )
+        lower = [int(np.round(0.25 * el)) for el in points.n_points]
+        upper = [int(np.round(0.75 * el)) for el in points.n_points]
+        bounds = slice(*tuple(lower + upper))
+        temp = _integrate(
+            (var_hat - np.diag(cov))[bounds],
+            points['input_dim_0'][bounds],
+            method='trapz'
+        )
 
+        self._noise_variance = np.maximum(
+            2 * temp / points.range()['input_dim_0'], 0
+        )
         self._covariance = DenseFunctionalData(
             points_cov, DenseValues(cov[np.newaxis])
         )
