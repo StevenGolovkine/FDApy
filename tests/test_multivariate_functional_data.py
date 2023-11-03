@@ -34,6 +34,16 @@ class MultivariateFunctionalDataTest(unittest.TestCase):
         self.assertEqual(len(self.multivariate_data), 2)
         self.assertIsInstance(self.multivariate_data.data[0], DenseFunctionalData)
         self.assertIsInstance(self.multivariate_data.data[1], DenseFunctionalData)
+        
+        values = np.array([
+            [1, 2, 3, 4, 5],
+            [1, 2, 3, 4, 5],
+            [6, 7, 8, 9, 10],
+            [11, 12, 13, 14, 15]
+        ])
+        fdata = DenseFunctionalData(DenseArgvals(self.argvals), DenseValues(values))
+        with self.assertRaises(ValueError):
+            MultivariateFunctionalData([self.fdata1, fdata])
 
     def test_repr(self):
         expected_repr = f"Multivariate functional data object with 2 functions of 3 observations."

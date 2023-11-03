@@ -1969,14 +1969,13 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     Be careful that we will not check if all the elements have the same type.
     It is possible to create MultivariateFunctionalData containing both
     Dense and Iregular functional data. However, only this two types are
-    allowed to be in the list.
+    allowed to be in the list. The number of observations has to be the same
+    for each element of the list.
 
     Parameters
     ----------
     data: List[Type[FunctionalData]]
         The list containing the elements of the MultivariateFunctionalData.
-
-    TODO: Loop through MultivariateFunctionalData and through components.
 
     """
 
@@ -1987,6 +1986,11 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         initlist: List[Type[FunctionalData]]
     ) -> None:
         """Initialize MultivariateFunctionalData object."""
+        if len(set(data.n_obs for data in initlist)) > 1:
+            raise ValueError(
+                "The number of observations has to be the same for each "
+                "element of the list. "
+            )
         self.data = initlist
 
     def __repr__(self) -> str:
