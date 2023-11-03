@@ -95,8 +95,9 @@ class MultivariateFunctionalDataTest(unittest.TestCase):
         np.testing.assert_equal(self.multivariate_data.data[1], self.fdata3)
 
     def test_remove(self):
-        with self.assertRaises(NotImplementedError):
-            self.multivariate_data.remove(self.fdata1)
+        self.multivariate_data.remove(self.fdata1)
+        np.testing.assert_equal(self.multivariate_data.n_functional, 1)
+        np.testing.assert_equal(self.multivariate_data.data[0], self.fdata2)
 
     def test_pop(self):
         popped_data = self.multivariate_data.pop(0)

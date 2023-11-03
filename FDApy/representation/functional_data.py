@@ -2122,7 +2122,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     def remove(self, item: Type[FunctionalData]) -> None:
         """Remove the first item from `self` where value is `item`."""
-        raise NotImplementedError
+        super().remove(item)
 
     def pop(self, i: int = -1) -> Type[FunctionalData]:
         """Remove the item at the given position in the list, and return it."""
