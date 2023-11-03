@@ -1871,10 +1871,9 @@ class IrregularFunctionalData(FunctionalData):
             'input_dim_1': points['input_dim_0'],
         })
         if mean is None:
-            mean = self.mean(smooth=smooth, **kwargs)
-
-        # Center the data
-        # ...
+            mean = self.mean(
+                points=self.argvals.to_dense(), smooth=smooth, **kwargs
+            )
 
         n_points = points.n_points
 
@@ -1885,14 +1884,16 @@ class IrregularFunctionalData(FunctionalData):
             obs_points = np.isin(
                 points['input_dim_0'], obs.argvals[idx]['input_dim_0']
             )
+            mean_obs = mean.values[0][obs_points]
+            obs_centered = obs.values[idx] - mean_obs
             mask = np.outer(obs_points, obs_points).flatten()
-            cov = np.outer(obs.values[idx], obs.values[idx]).flatten()
+            cov = np.outer(obs_centered, obs_centered).flatten()
 
             cov_count[mask] += 1
             cov_sum[mask] += cov
 
-        cov_mean = np.where(cov_count == 0, np.nan, cov_sum / cov_count)
-        cov = cov_mean.reshape(2 * n_points)
+        cov = np.where(cov_count == 0, np.nan, cov_sum / cov_count)
+        cov = cov.reshape(2 * n_points)
 
         # Smooth the covariance
         raw_diag_cov = np.diag(cov).copy()
