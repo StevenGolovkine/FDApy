@@ -101,9 +101,14 @@ class MultivariateFunctionalDataTest(unittest.TestCase):
 
     def test_pop(self):
         popped_data = self.multivariate_data.pop(0)
-        self.assertEqual(len(self.multivariate_data), 1)
-        self.assertEqual(popped_data, self.fdata1)
+        np.testing.assert_equal(self.multivariate_data.n_functional, 1)
+        np.testing.assert_equal(popped_data, self.fdata1)
 
     def test_clear(self):
         self.multivariate_data.clear()
-        self.assertEqual(len(self.multivariate_data), 0)
+        np.testing.assert_equal(self.multivariate_data.n_functional, 0)
+
+    def test_reverse(self):
+        self.multivariate_data.reverse()
+        np.testing.assert_equal(self.multivariate_data.data[0], self.fdata2)
+        np.testing.assert_equal(self.multivariate_data.data[1], self.fdata1)
