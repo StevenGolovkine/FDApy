@@ -50,6 +50,12 @@ class MultivariateFunctionalDataTest(unittest.TestCase):
         actual_repr = repr(self.multivariate_data)
         self.assertEqual(actual_repr, expected_repr)
 
+    def test_getitem(self):
+        fdata = self.multivariate_data[0]
+
+        np.testing.assert_array_equal(fdata.data[0].values, self.fdata1[0].values)
+        np.testing.assert_array_equal(fdata.data[1].values, self.fdata2[0].values)
+
     def test_n_obs(self):
         expected_n_obs = 3
         actual_n_obs = self.multivariate_data.n_obs

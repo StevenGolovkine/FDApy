@@ -1974,8 +1974,32 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     Parameters
     ----------
-    data: List[Type[FunctionalData]]
+    initlist: List[Type[FunctionalData]]
         The list containing the elements of the MultivariateFunctionalData.
+
+    Examples
+    --------
+    >>> argvals = DenseArgvals({'input_dim_0': np.array([1, 2, 3, 4, 5])})
+    >>> values = DenseValues(np.array([
+    ...     [1, 2, 3, 4, 5],
+    ...     [6, 7, 8, 9, 10],
+    ...     [11, 12, 13, 14, 15]
+    ... ]))
+    >>> fdata_dense = DenseFunctionalData(argvals, values)
+
+    >>> argvals = IrregularArgvals({
+    ...     0: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4])}),
+    ...     1: DenseArgvals({'input_dim_0': np.array([0, 2, 4])}),
+    ...     2: DenseArgvals({'input_dim_0': np.array([2, 4])})
+    ... })
+    >>> values = IrregularValues({
+    ...     0: np.array([1, 2, 3, 4, 5]),
+    ...     1: np.array([2, 5, 6]),
+    ...     2: np.array([4, 7])
+    ... })
+    >>> fdata_irregular = IrregularFunctionalData(argvals, values)
+
+    >>> MultivariateFunctionalData([fdata_dense, fdata_irregular])
 
     """
 
@@ -2049,7 +2073,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     @property
     def n_dimension(self) -> List[int]:
-        """Get the dimension of the functional data.
+        """Get the number of input dimension of the functional data.
 
         Returns
         -------
@@ -2066,9 +2090,9 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Returns
         -------
-        List[Dict[str, int]]
-            A list of dictionary with the same shape than argvals with the
-            number of sampling points along each axis for each function.
+        List[Union[Tuple[int, ...], Dict[int, Tuple[int, ...]]]]
+            A list containing the number of sampling points along each axis
+            for each function.
 
         """
         return [fdata.n_points for fdata in self.data]
