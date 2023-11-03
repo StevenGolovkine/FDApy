@@ -2118,8 +2118,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     def insert(self, i: int, item: Type[FunctionalData]) -> None:
         """Insert an item `item` at a given position `i`."""
-        FunctionalData._check_same_nobs(*self, item)
-        self.data.insert(i, item)
+        super().insert(i, item)
 
     def remove(self, item: Type[FunctionalData]) -> None:
         """Remove the first item from `self` where value is `item`."""

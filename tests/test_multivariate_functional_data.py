@@ -89,6 +89,11 @@ class MultivariateFunctionalDataTest(unittest.TestCase):
         self.multivariate_data.extend([self.fdata1, self.fdata3])
         np.testing.assert_equal(self.multivariate_data.n_functional, 4)
 
+    def test_insert(self):
+        self.multivariate_data.insert(1, self.fdata3)
+        np.testing.assert_equal(self.multivariate_data.n_functional, 3)
+        np.testing.assert_equal(self.multivariate_data.data[1], self.fdata3)
+
     def test_remove(self):
         with self.assertRaises(NotImplementedError):
             self.multivariate_data.remove(self.fdata1)
