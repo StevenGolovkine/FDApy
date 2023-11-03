@@ -2010,11 +2010,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         initlist: List[Type[FunctionalData]]
     ) -> None:
         """Initialize MultivariateFunctionalData object."""
-        if len(set(data.n_obs for data in initlist)) > 1:
-            raise ValueError(
-                "The number of observations has to be the same for each "
-                "element of the list. "
-            )
+        FunctionalData._check_same_nobs(*initlist)
         self.data = initlist
 
     def __repr__(self) -> str:
@@ -2113,7 +2109,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         if len(self.data) == 0:
             self.data = [item]
         else:
-            FunctionalData._check_same_nobs(*self, item)
+            FunctionalData._check_same_nobs(*self.data, item)
             self.data.append(item)
 
     def extend(self, other: Iterable[Type[FunctionalData]]) -> None:
@@ -2140,10 +2136,6 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     def reverse(self) -> None:
         """Reserve the elements of the list in place."""
         super().reverse()
-
-    def copy(self) -> MultivariateFunctionalData:
-        """Return a shallow copy of the list."""
-        return super().copy()
 
     ###########################################################################
     # Methods

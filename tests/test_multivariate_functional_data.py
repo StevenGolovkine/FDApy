@@ -76,6 +76,15 @@ class MultivariateFunctionalDataTest(unittest.TestCase):
         actual_n_points = self.multivariate_data.n_points
         self.assertEqual(actual_n_points, expected_n_points)
 
+    def test_append(self):
+        res = MultivariateFunctionalData([])
+
+        res.append(self.fdata1)
+        np.testing.assert_equal(len(res.data), 1)
+
+        res.append(self.fdata2)
+        np.testing.assert_equal(len(res.data), 2)
+
     def test_remove(self):
         with self.assertRaises(NotImplementedError):
             self.multivariate_data.remove(self.fdata1)
