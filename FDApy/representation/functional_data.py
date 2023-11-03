@@ -28,7 +28,6 @@ from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..misc.utils import _cartesian_product
 from ..misc.utils import _inner_product
 from ..misc.utils import _integrate
-from ..misc.utils import _outer
 from ..misc.utils import _shift
 
 
@@ -1852,7 +1851,10 @@ class IrregularFunctionalData(FunctionalData):
         ...     n_functions=5,
         ...     random_state=42
         ... )
-        >>> kl.new(n_obs=10)
+        >>> kl.new(n_obs=100)
+        >>> kl.sparsify(percentage=0.5, epsilon=0.05)
+        >>> kl.sparse_data.covariance()
+        Functional data object with 1 observations on a 2-dimensional support.
 
         """
         if self.n_dimension > 1:
