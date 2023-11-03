@@ -584,3 +584,49 @@ class TestNormalizeIrregular(unittest.TestCase):
         expected_weight = 87.77777778
         np.testing.assert_array_almost_equal(weight, expected_weight)
         self.assertIsInstance(res, IrregularFunctionalData)
+
+
+class TestCovariance(unittest.TestCase):
+    def setUp(self):
+        name = 'bsplines'
+        n_functions = 5
+        kl = KarhunenLoeve(
+            basis_name=name, n_functions=n_functions, random_state=42
+        )
+        kl.new(n_obs=100)
+        kl.sparsify(percentage=0.5, epsilon=0.05)
+        self.data = kl.sparse_data
+
+    def test_covariance_1d(self):
+        self.data.covariance()
+
+        expected_cov = np.array([ 0.46908558,  0.50183053,  0.5227941 ,  0.5317089 ,  0.53108778,  0.52308042,  0.51025201,  0.49428858,  0.47512707,  0.45338596,  0.42970782,  0.40409963,  0.37765384,  0.35024334,  0.32264314,  0.29495295,  0.26924584,  0.24584519,  0.22389991,  0.20381207,  0.18438351,  0.16545152,  0.14695299,  0.12976112,  0.11266059,  0.09546621,  0.07847628,  0.06203113,  0.04666676,  0.03296685,  0.01992275,  0.00812633, -0.00229425, -0.01128007, -0.01902733, -0.02595731, -0.03237438, -0.03827309, -0.04269715, -0.04620535, -0.04824466, -0.04981964, -0.05130755, -0.05341201, -0.05576454, -0.05852535, -0.06218736, -0.06689593, -0.07249118, -0.0780311 , -0.08371261, -0.09024318, -0.09768551, -0.10506797, -0.11219186, -0.11874241, -0.12425184, -0.12830129, -0.13093742, -0.13200077, -0.13131211, -0.12936798, -0.12622501, -0.1224811 , -0.11863617, -0.1144184 , -0.11010575, -0.10659236, -0.10365305, -0.10159059, -0.10027381, -0.09938413, -0.09966974, -0.10093416, -0.10343208, -0.10724144, -0.11178521, -0.11717679, -0.12263712, -0.12748813, -0.13053691, -0.13181844, -0.13283854, -0.13410203, -0.1346029 , -0.13512733, -0.13518738, -0.13504468, -0.13471035, -0.13345488, -0.13100382, -0.12697329, -0.1209482 , -0.11392364, -0.10663811, -0.09812225, -0.08841827, -0.07647037, -0.06213727, -0.04324978, -0.01771456])
+        np.testing.assert_array_almost_equal(self.data._covariance.values[0, 1], expected_cov)
+
+        expected_noise = 0.02312407511881056
+        np.testing.assert_almost_equal(self.data._noise_variance, expected_noise)
+
+    def test_covariance_2d(self):
+        argvals = IrregularArgvals({
+            0: DenseArgvals({
+                'input_dim_0': np.array([1, 2, 3, 4]),
+                'input_dim_1': np.array([5, 6, 7])
+            }),
+            1: DenseArgvals({
+                'input_dim_0': np.array([2, 4]),
+                'input_dim_1': np.array([1, 2, 3])
+            }),
+            2: DenseArgvals({
+                'input_dim_0': np.array([4, 5, 6]),
+                'input_dim_1': np.array([8, 9])
+            })
+        })
+        values = IrregularValues({
+            0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
+            1: np.array([[1, 2, 3], [1, 2, 3]]),
+            2: np.array([[8, 9], [8, 9], [8, 9]])
+        })
+        data = IrregularFunctionalData(argvals, values)
+
+        with self.assertRaises(NotImplementedError):
+            data.covariance()
