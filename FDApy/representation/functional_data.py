@@ -2004,6 +2004,31 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     """
 
     ###########################################################################
+    # Static methods
+    @staticmethod
+    def concatenate(
+        data: MultivariateFunctionalData
+    ) -> MultivariateFunctionalData:
+        """Concatenate MultivariateFunctionalData objects.
+
+        Parameters
+        ----------
+        data: MultivariateFunctionalData
+            The data to concatenate with self.
+
+        Returns
+        -------
+        MultivariateFunctionalData
+            The concatenation of self and data.
+
+        """
+        new = [
+            FunctionalData.concatenate([d1, d2]) for d1, d2 in zip(data)
+        ]
+        return MultivariateFunctionalData(new)
+    ###########################################################################
+
+    ###########################################################################
     # Magic methods
     def __init__(
         self,
@@ -2135,9 +2160,20 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     def reverse(self) -> None:
         """Reserve the elements of the list in place."""
         super().reverse()
+    ###########################################################################
 
     ###########################################################################
     # Methods
+    def to_long(self) -> List[pd.DataFrame]:
+        """Convert the data to long format."""
+        return [fdata.to_long() for fdata in self.data]
+
+    def smooth(self):
+        """Smooth the data."""
+        return MultivariateFunctionalData([
+            fdata.smooth() for fdata in self.data
+        ])
+
     def mean(
         self,
         smooth: Optional[str] = None,
@@ -2161,37 +2197,6 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         return MultivariateFunctionalData(
             [fdata.mean(smooth, **kwargs) for fdata in self.data]
         )
-
-    def covariance(
-        self,
-        mean: Optional[MultivariateFunctionalData] = None,
-        smooth: Optional[str] = None,
-        **kwargs
-    ) -> MultivariateFunctionalData:
-        """Compute an estimate of the covariance.
-
-        Parameters
-        ----------
-        mean: Optional[MultivariateFunctionalData], default=None
-            An estimate of the mean of self. If None, an estimate is computed.
-        smooth: Optional[str], default=None
-            Name of the smoothing method to use. Currently, not implemented.
-
-        Returns
-        -------
-        MultivariateFunctionalData
-            An estimate of the covariance as a two-dimensional
-            MultivariateFunctionalData object with same argvals as `self`.
-
-        """
-        if mean is not None:
-            return MultivariateFunctionalData(
-                [i.covariance(m, smooth, **kwargs) for i, m in zip(self, mean)]
-            )
-        else:
-            return MultivariateFunctionalData(
-                [i.covariance(None, smooth, **kwargs) for i in self]
-            )
 
     def inner_product(self) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
@@ -2267,27 +2272,9 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             )
         return np.sum([data.inner_product() for data in self.data], axis=0)
 
-    def concatenate(
-        self,
-        data: MultivariateFunctionalData
-    ) -> MultivariateFunctionalData:
-        """Concatenate two MultivariateFunctionalData.
-
-        Parameters
-        ----------
-        data: MultivariateFunctionalData
-            The data to concatenate with self.
-
-        Returns
-        -------
-        MultivariateFunctionalData
-            The concatenation of self and data.
-
-        """
-        new = [
-            FunctionalData.concatenate([d1, d2]) for d1, d2 in zip(self, data)
-        ]
-        return MultivariateFunctionalData(new)
+    def norm(self):
+        """Norm of each observation of the data."""
+        raise NotImplementedError
 
     def normalize(
         self,
@@ -2322,5 +2309,36 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         data_norm = [data for data, _ in normalization]
         weights = np.array([weight for _, weight in normalization])
         return MultivariateFunctionalData(data_norm), weights
+
+    def covariance(
+        self,
+        mean: Optional[MultivariateFunctionalData] = None,
+        smooth: Optional[str] = None,
+        **kwargs
+    ) -> MultivariateFunctionalData:
+        """Compute an estimate of the covariance.
+
+        Parameters
+        ----------
+        mean: Optional[MultivariateFunctionalData], default=None
+            An estimate of the mean of self. If None, an estimate is computed.
+        smooth: Optional[str], default=None
+            Name of the smoothing method to use. Currently, not implemented.
+
+        Returns
+        -------
+        MultivariateFunctionalData
+            An estimate of the covariance as a two-dimensional
+            MultivariateFunctionalData object with same argvals as `self`.
+
+        """
+        if mean is not None:
+            return MultivariateFunctionalData(
+                [i.covariance(m, smooth, **kwargs) for i, m in zip(self, mean)]
+            )
+        else:
+            return MultivariateFunctionalData(
+                [i.covariance(None, smooth, **kwargs) for i in self]
+            )
 
     ###########################################################################
