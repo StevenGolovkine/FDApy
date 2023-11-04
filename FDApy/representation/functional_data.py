@@ -28,7 +28,146 @@ from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
 from ..misc.utils import _cartesian_product
 from ..misc.utils import _inner_product
 from ..misc.utils import _integrate
+from ..misc.utils import _outer
 from ..misc.utils import _shift
+
+
+###############################################################################
+# Utilities function
+def _tensor_product(
+    data1: DenseFunctionalData,
+    data2: DenseFunctionalData
+) -> DenseFunctionalData:
+    """Compute the tensor product between functional data.
+
+    Compute the tensor product between all the observation of data1 with all
+    the observation of data2.
+
+    Parameters
+    ----------
+    data1: DenseFunctionalData
+        First functional data.
+    data2: DenseFunctionalData
+        Second functional data.
+
+    Returns
+    -------
+    DenseFunctionalData
+        The tensor product between data1 and data2. It contains data1.n_obs *
+        data2.n_obs observations.
+
+    """
+    arg = {
+        'input_dim_0': data1.argvals['input_dim_0'],
+        'input_dim_1': data2.argvals['input_dim_0']
+    }
+    val = [_outer(i, j) for i in data1.values for j in data2.values]
+    return DenseFunctionalData(DenseArgvals(arg), DenseValues(np.array(val)))
+
+
+def _smooth_covariance(
+    covariance_matrix: npt.NDArray[np.float64],
+    argvals: DenseArgvals,
+    points: DenseArgvals,
+    **kwargs
+):
+    """Smooth the covariance.
+
+    Parameters
+    ----------
+    covariance_matrix: npt.NDArray[np.float64]
+        The samnpled covariance.
+    argvals: DenseArgvals
+        The sampling points at which the raw covariance is estimated.
+    points: DenseArgvals
+        The sampling points at which the smoothed covariance will be estimated.
+    **kwargs:
+        kernel_name: str, default='epanechnikov'
+            Name of the kernel used for local polynomial smoothing.
+        degree: int, default=1
+            Degree used for local polynomial smoothing.
+        bandwidth: float
+            Bandwidth used for local polynomial smoothing.
+
+    Returns
+    -------
+    npt.NDArray
+        The smooth covariance.
+
+    """
+    # Remove covariance diagnonal because of measurements errors.
+    np.fill_diagonal(covariance_matrix, np.nan)
+
+    covariance_fd = DenseFunctionalData(
+        argvals, DenseValues(covariance_matrix[np.newaxis])
+    )
+    fdata_long = covariance_fd.to_long()
+    fdata_long = fdata_long.dropna()
+
+    x = fdata_long.drop(['id', 'values'], axis=1, inplace=False).values
+    y = fdata_long['values'].values
+    points_mat = _cartesian_product(*points.values())
+
+    lp = LocalPolynomial(
+        kernel_name=kwargs.get('kernel_name', 'epanechnikov'),
+        bandwidth=kwargs.get(
+            'bandwidth',
+            np.product(covariance_fd.n_points)**(-1 / 5)
+        ),
+        degree=kwargs.get('degree', 2)
+    )
+    covariance = lp.predict(y=y, x=x, x_new=points_mat)
+    covariance = covariance.reshape(points.n_points)
+    return covariance
+
+
+def _estimate_noise_variance(
+    raw_diagonal: npt.NDArray[np.float64],
+    smooth_diagonal: npt.NDArray[np.float64],
+    argvals: DenseArgvals,
+    points: DenseArgvals
+):
+    """Estimate the noise variance.
+
+    Parameters
+    ----------
+    raw_diagonal: npt.NDArray[np.float64]
+        The raw covariance diagonal.
+    smooth_diagonal: npt.NDArray[np.float64]
+        The smooth covariance diagonal.
+    argvals: DenseArgvals
+        The sampling points at which the raw covariance is estimated.
+    points: DenseArgvals
+        The sampling points at which the smoothed covariance will be estimated.
+
+    Returns
+    -------
+    np.float64
+        An estimation of the variance of the noise.
+
+    """
+    lp = LocalPolynomial(
+        kernel_name='epanechnikov',
+        bandwidth=len(raw_diagonal)**(- 1 / 5),
+        degree=1
+    )
+    var_hat = lp.predict(
+        y=raw_diagonal,
+        x=_cartesian_product(*argvals.values()),
+        x_new=_cartesian_product(*points.values())
+    )
+    lower = [int(np.round(0.25 * el)) for el in points.n_points]
+    upper = [int(np.round(0.75 * el)) for el in points.n_points]
+    bounds = slice(*tuple(lower + upper))
+    temp = _integrate(
+        (var_hat - smooth_diagonal)[bounds],
+        points['input_dim_0'][bounds],
+        method='trapz'
+    )
+
+    return np.maximum(
+        2 * temp / points.range()['input_dim_0'], 0
+    )
 
 
 ###############################################################################
@@ -1104,54 +1243,16 @@ class DenseFunctionalData(FunctionalData):
         raw_diag_cov = np.diag(cov).copy()
 
         if smooth:
-            # Remove covariance diagonal because of measurement errors.
-            np.fill_diagonal(cov, np.nan)
-
-            cov_temp = DenseFunctionalData(argvals_cov, cov[np.newaxis])
-            fdata_long = cov_temp.to_long()
-            fdata_long = fdata_long.dropna()
-
-            x = fdata_long.drop(['id', 'values'], axis=1, inplace=False).values
-            y = fdata_long['values'].values
-            points_mat = _cartesian_product(*points_cov.values())
-
-            lp = LocalPolynomial(
-                kernel_name=kwargs.get('kernel_name', 'epanechnikov'),
-                bandwidth=kwargs.get(
-                    'bandwidth',
-                    np.product(cov_temp.n_points)**(-1 / 5)
-                ),
-                degree=kwargs.get('degree', 2)
-            )
-            cov = lp.predict(y=y, x=x, x_new=points_mat)
-            cov = cov.reshape(points_cov.n_points)
+            cov = _smooth_covariance(cov, argvals_cov, points_cov)
 
         # Ensure the covariance is symmetric.
         cov = (cov + cov.T) / 2
 
         # Estimate noise variance ([2], [3])
-        lp = LocalPolynomial(
-            kernel_name='epanechnikov',
-            bandwidth=len(raw_diag_cov)**(- 1 / 5),
-            degree=1
-        )
-        var_hat = lp.predict(
-            y=raw_diag_cov,
-            x=_cartesian_product(*self.argvals.values()),
-            x_new=_cartesian_product(*points.values())
-        )
-        lower = [int(np.round(0.25 * el)) for el in points.n_points]
-        upper = [int(np.round(0.75 * el)) for el in points.n_points]
-        bounds = slice(*tuple(lower + upper))
-        temp = _integrate(
-            (var_hat - np.diag(cov))[bounds],
-            points['input_dim_0'][bounds],
-            method='trapz'
+        self._noise_variance = _estimate_noise_variance(
+            raw_diag_cov, np.diag(cov), self.argvals, points
         )
 
-        self._noise_variance = np.maximum(
-            2 * temp / points.range()['input_dim_0'], 0
-        )
         self._covariance = DenseFunctionalData(
             points_cov, DenseValues(cov[np.newaxis])
         )
@@ -1896,58 +1997,19 @@ class IrregularFunctionalData(FunctionalData):
 
         cov = np.where(cov_count == 0, np.nan, cov_sum / cov_count)
         cov = cov.reshape(2 * n_points)
+        raw_diag_cov = np.diag(cov).copy()
 
         # Smooth the covariance
-        raw_diag_cov = np.diag(cov).copy()
-        np.fill_diagonal(cov, np.nan)
-
-        cov_temp = DenseFunctionalData(
-            argvals_cov, DenseValues(cov[np.newaxis])
-        )
-        fdata_long = cov_temp.to_long()
-        fdata_long = fdata_long.dropna()
-
-        x = fdata_long.drop(['id', 'values'], axis=1, inplace=False).values
-        y = fdata_long['values'].values
-        points_mat = _cartesian_product(*points_cov.values())
-
-        lp = LocalPolynomial(
-            kernel_name=kwargs.get('kernel_name', 'epanechnikov'),
-            bandwidth=kwargs.get(
-                'bandwidth',
-                np.product(cov_temp.n_points)**(-1 / 5)
-            ),
-            degree=kwargs.get('degree', 2)
-        )
-        cov = lp.predict(y=y, x=x, x_new=points_mat)
-        cov = cov.reshape(points_cov.n_points)
+        cov = _smooth_covariance(cov, argvals_cov, points_cov)
 
         # Ensure the covariance is symmetric.
         cov = (cov + cov.T) / 2
 
         # Estimate noise variance ([2], [3])
-        lp = LocalPolynomial(
-            kernel_name='epanechnikov',
-            bandwidth=len(raw_diag_cov)**(- 1 / 5),
-            degree=1
-        )
-        var_hat = lp.predict(
-            y=raw_diag_cov,
-            x=_cartesian_product(*self.argvals.to_dense().values()),
-            x_new=_cartesian_product(*points.values())
-        )
-        lower = [int(np.round(0.25 * el)) for el in points.n_points]
-        upper = [int(np.round(0.75 * el)) for el in points.n_points]
-        bounds = slice(*tuple(lower + upper))
-        temp = _integrate(
-            (var_hat - np.diag(cov))[bounds],
-            points['input_dim_0'][bounds],
-            method='trapz'
+        self._noise_variance = _estimate_noise_variance(
+            raw_diag_cov, np.diag(cov), self.argvals.to_dense(), points
         )
 
-        self._noise_variance = np.maximum(
-            2 * temp / points.range()['input_dim_0'], 0
-        )
         self._covariance = DenseFunctionalData(
             points_cov, DenseValues(cov[np.newaxis])
         )

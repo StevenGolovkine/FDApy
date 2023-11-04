@@ -13,7 +13,7 @@ import scipy
 from typing import Callable, Optional, List, Union
 
 from .functional_data import DenseFunctionalData, MultivariateFunctionalData
-from ._utils import _tensor_product
+from .functional_data import _tensor_product
 
 from .argvals import DenseArgvals
 from .values import DenseValues
