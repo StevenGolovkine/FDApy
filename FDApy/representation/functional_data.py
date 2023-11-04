@@ -2227,11 +2227,62 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     ###########################################################################
     # Methods
     def to_long(self) -> List[pd.DataFrame]:
-        """Convert the data to long format."""
+        """Convert the data to long format.
+
+        This function transform a MultivariateFunctionalData object into a list
+        of pandas DataFrame. It uses the long format to represent each element
+        of the MultivariateFunctionalData object as a dataframe. This is a
+        helper function as it might be easier for some computation.
+
+        Returns
+        -------
+        List[pd.DataFrame]
+            The data in a long format.
+
+        """
         return [fdata.to_long() for fdata in self.data]
 
-    def smooth(self):
-        """Smooth the data."""
+    def smooth(
+        self,
+        points: Optional[List[DenseArgvals]] = None,
+        kernel_name: Optional[List[str]] = None,
+        bandwidth: Optional[List[float]] = None,
+        degree: Optional[List[int]] = None
+    ):
+        """Smooth the data.
+
+        This function smooths each curves individually. It fits a local
+        smoother to the data (the argument ``degree`` controls the degree of
+        the local fits). All the paraneters have to be passed as a list of the
+        same length of the MultivariateFunctionalData.
+
+        Parameters
+        ----------
+        points: Optional[List[DenseArgvals]], default=None
+            Points at which the curves are estimated. The default is None,
+            meaning we use the argvals as estimation points.
+        kernel_name: Optional[List[str]], default="epanechnikov"
+            Kernel name used as weight (`gaussian`, `epanechnikov`, `tricube`,
+            `bisquare`).
+        bandwidth: Optional[List[float]], default=None
+            Strictly positive. Control the size of the associated neighborhood.
+            If ``bandwidth == None``, it is assumed that the curves are twice
+            differentiable and the bandwidth is set to :math:`n^{-1/5}` [2]_
+            where :math:`n` is the number of sampling points per curve. Be
+            careful that it will not work if the curves are not sampled on
+            :math:`[0, 1]`.
+        degree: Optional[List[int]], default=1
+            Degree of the local polynomial to fit. If ``degree=0``, we fit
+            the local constant estimator (equivalent to the Nadaraya-Watson
+            estimator). If ``degree=1``, we fit the local linear estimator.
+            If ``degree=2``, we fit the local quadratic estimator.
+
+        Returns
+        -------
+        MultivariateFunctionalData
+            Smoothed data.
+
+        """
         return MultivariateFunctionalData([
             fdata.smooth() for fdata in self.data
         ])
@@ -2242,6 +2293,9 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         **kwargs
     ) -> MultivariateFunctionalData:
         """Compute an estimate of the mean.
+
+        This function computes an estimate of the mean curve of a
+        MultivariateFunctionalData object.
 
         Parameters
         ----------
@@ -2269,7 +2323,9 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         .. math::
             \langle\langle x, y \rangle\rangle =
             \sum_{p = 1}^P \int_{\mathcal{T}_k} x^{(p)}(t)y^{(p)}(t)dt,
-            t \in \mathcal{T}.
+            t \in \mathcal{T},
+
+        where :math:`\mathcal{T}` is a one- or multi-dimensional domain.
 
         Returns
         -------
@@ -2334,13 +2390,43 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             )
         return np.sum([data.inner_product() for data in self.data], axis=0)
 
-    def norm(self):
-        """Norm of each observation of the data."""
-        raise NotImplementedError
+    def norm(
+        self,
+        squared: bool = False,
+        method: str = 'trapz',
+        use_argvals_stand: bool = False
+    ):
+        r"""Norm of each observation of the data.
+
+        For each observation in the data, it computes its norm [1]_ defined as
+
+        .. math::
+            \lvert\lvert\lvert f \rvert\rvert\rvert = \left(\sum_{p = 1}^P
+            \int_{\mathcal{T}}\{f(t)_p\}^2dt\right)^{1\2}, t \in \mathcal{T},
+
+        Parameters
+        ----------
+        squared: bool, default=False
+            If `True`, the function calculates the squared norm, otherwise it
+            returns the norm.
+        method: str, {'simpson', 'trapz'}, default = 'trapz'
+            The method used to integrated.
+        use_argvals_stand: bool, default=False
+            Use standardized argvals to compute the normalization of the data.
+
+        Returns
+        -------
+        npt.NDArray[np.float64], shape=(n_obs,)
+            The norm of each observations.
+
+        """
+        raise np.sum([fdata.norm() for fdata in self.data])
 
     def normalize(
         self,
-        use_argvals_stand: bool = False
+        method: str = 'trapz',
+        use_argvals_stand: bool = False,
+        **kwargs
     ) -> Tuple[MultivariateFunctionalData, npt.NDArray[np.float64]]:
         r"""Normalize the data.
 
@@ -2349,8 +2435,12 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Parameters
         ----------
+        method: str, {'simpson', 'trapz'}, default = 'trapz'
+            The method used to integrated.
         use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
+        **kwargs:
+            Not used here.
 
         Returns
         -------
@@ -2359,9 +2449,10 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         References
         ----------
-        Happ and Greven, Multivariate Functional Principal Component Analysis
-        for Data Observed on Different (Dimensional Domains), Journal of the
-        American Statistical Association.
+        .. [1] Happ and Greven (2018), Multivariate Functional Principal
+            Component Analysis for Data Observed on Different (Dimensional)
+            Domains. Journal of the American Statistical Association, 113,
+            pp. 649--659.
 
         """
         normalization = [
@@ -2374,18 +2465,36 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     def covariance(
         self,
-        mean: Optional[MultivariateFunctionalData] = None,
-        smooth: Optional[str] = None,
+        points: Optional[DenseArgvals] = None,
+        mean: Optional[DenseFunctionalData] = None,
+        smooth: bool = True,
         **kwargs
     ) -> MultivariateFunctionalData:
         """Compute an estimate of the covariance.
 
+        This function computes an estimate of the covariance surface of a
+        MultivariateFunctionalData object.
+
         Parameters
         ----------
-        mean: Optional[MultivariateFunctionalData], default=None
+        points: Optional[DenseArgvals], default=None
+            The sampling points at which the covariance is estimated. If
+            `None`, the DenseArgvals of the DenseFunctionalData is used. If
+            `smooth` is False, the DenseArgvals of the DenseFunctionalData is
+            used.
+        mean: Optional[DenseFunctionalData], default=None
             An estimate of the mean of self. If None, an estimate is computed.
-        smooth: Optional[str], default=None
-            Name of the smoothing method to use. Currently, not implemented.
+        smooth: bool, default=True
+            Should the mean be smoothed?
+        **kwargs:
+            kernel_name: str, default='epanechnikov'
+                Name of the kernel used for local polynomial smoothing.
+            degree: int, default=1
+                Degree used for local polynomial smoothing.
+            bandwidth: float
+                Bandwidth used for local polynomial smoothing. The default
+                bandwitdth is set to be the number of sampling points to the
+                power :math:`-1/5`.
 
         Returns
         -------
