@@ -2283,8 +2283,19 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             Smoothed data.
 
         """
+        if points is None:
+            points = self.n_functional * [None]
+        if kernel_name is None:
+            kernel_name = self.n_functional * ["epanechnikov"]
+        if bandwidth is None:
+            bandwidth = self.n_functional * [None]
+        if degree is None:
+            degree = self.n_functional * [1]
         return MultivariateFunctionalData([
-            fdata.smooth() for fdata in self.data
+            fdata.smooth(pp, kernel, bb, dd)
+            for (fdata, pp, kernel, bb, dd) in zip(
+                self.data, points, kernel_name, bandwidth, degree
+            )
         ])
 
     def mean(
@@ -2310,9 +2321,9 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             observation.
 
         """
-        return MultivariateFunctionalData(
-            [fdata.mean(smooth, **kwargs) for fdata in self.data]
-        )
+        return MultivariateFunctionalData([
+            fdata.mean(smooth, **kwargs) for fdata in self.data
+        ])
 
     def inner_product(self) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
