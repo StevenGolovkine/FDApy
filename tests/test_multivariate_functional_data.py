@@ -196,7 +196,7 @@ class TestMeanhMultivariateFunctionalData(unittest.TestCase):
     def test_error_length_list(self):
         points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 11)})
         with self.assertRaises(ValueError):
-            self.fdata.smooth(points=[points, points, points])
+            self.fdata.mean(points=[points, points, points])
 
 
 class TestInnerProductMultivariateFunctionalData(unittest.TestCase):
