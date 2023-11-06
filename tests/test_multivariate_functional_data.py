@@ -219,7 +219,7 @@ class TestInnerProductMultivariateFunctionalData(unittest.TestCase):
         np.testing.assert_array_almost_equal(res, expected_res)
 
 
-class TestInnerProductMultivariateFunctionalData(unittest.TestCase):
+class TestNormMultivariateFunctionalData(unittest.TestCase):
     def setUp(self) -> None:
         name = 'bsplines'
         n_functions = 5
