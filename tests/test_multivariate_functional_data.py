@@ -6,6 +6,7 @@ Written with the help of ChatGPT.
 
 """
 import numpy as np
+import pandas as pd
 import unittest
 
 from FDApy.representation.argvals import DenseArgvals, IrregularArgvals
@@ -112,3 +113,9 @@ class MultivariateFunctionalDataTest(unittest.TestCase):
         self.multivariate_data.reverse()
         np.testing.assert_equal(self.multivariate_data.data[0], self.fdata2)
         np.testing.assert_equal(self.multivariate_data.data[1], self.fdata1)
+    
+    def test_to_long(self):
+        fdata_long = self.multivariate_data.to_long()
+        np.testing.assert_array_equal(len(fdata_long), 2)
+        self.assertIsInstance(fdata_long[0], pd.DataFrame)
+        self.assertIsInstance(fdata_long[1], pd.DataFrame)

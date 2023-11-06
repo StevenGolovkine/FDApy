@@ -2239,6 +2239,58 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         List[pd.DataFrame]
             The data in a long format.
 
+        Examples
+        --------
+        >>> argvals = DenseArgvals({'input_dim_0': np.array([1, 2, 3, 4, 5])})
+        >>> values = DenseValues(np.array([
+        ...     [1, 2, 3, 4, 5],
+        ...     [6, 7, 8, 9, 10],
+        ...     [11, 12, 13, 14, 15]
+        ... ]))
+        >>> fdata_dense = DenseFunctionalData(argvals, values)
+
+        >>> argvals = IrregularArgvals({
+        ...     0: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4])}),
+        ...     1: DenseArgvals({'input_dim_0': np.array([0, 2, 4])}),
+        ...     2: DenseArgvals({'input_dim_0': np.array([2, 4])})
+        ... })
+        >>> values = IrregularValues({
+        ...     0: np.array([1, 2, 3, 4, 5]),
+        ...     1: np.array([2, 5, 6]),
+        ...     2: np.array([4, 7])
+        ... })
+        >>> fdata_irregular = IrregularFunctionalData(argvals, values)
+        >>> fdata = MultivariateFunctionalData([fdata_dense, fdata_irregular])
+
+        >>> fdata.to_long()
+        [    input_dim_0  id  values
+        0             1   0       1
+        1             2   0       2
+        2             3   0       3
+        3             4   0       4
+        4             5   0       5
+        5             1   1       6
+        6             2   1       7
+        7             3   1       8
+        8             4   1       9
+        9             5   1      10
+        10            1   2      11
+        11            2   2      12
+        12            3   2      13
+        13            4   2      14
+        14            5   2      15,
+           input_dim_0  id  values
+        0            0   0       5
+        1            1   0       4
+        2            2   0       3
+        3            3   0       2
+        4            4   0       1
+        5            0   1       5
+        6            2   1       3
+        7            4   1       1
+        8            2   2       5
+        9            4   2       3]
+
         """
         return [fdata.to_long() for fdata in self.data]
 
