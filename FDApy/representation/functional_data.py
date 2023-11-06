@@ -2587,8 +2587,8 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         """
         normalization = [
-            data_uni.normalize(use_argvals_stand=use_argvals_stand)
-            for data_uni in self
+            fdata.normalize(method=method, use_argvals_stand=use_argvals_stand)
+            for fdata in self.data
         ]
         data_norm = [data for data, _ in normalization]
         weights = np.array([weight for _, weight in normalization])
@@ -2635,12 +2635,14 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         """
         if mean is not None:
-            return MultivariateFunctionalData(
-                [i.covariance(m, smooth, **kwargs) for i, m in zip(self, mean)]
-            )
+            return MultivariateFunctionalData([
+                fdata.covariance(m, smooth, **kwargs)
+                for fdata, m in zip(self.data, mean)
+            ])
         else:
-            return MultivariateFunctionalData(
-                [i.covariance(None, smooth, **kwargs) for i in self]
-            )
+            return MultivariateFunctionalData([
+                fdata.covariance(None, smooth, **kwargs)
+                for fdata in self.data
+            ])
 
     ###########################################################################
