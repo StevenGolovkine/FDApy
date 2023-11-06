@@ -2571,7 +2571,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
         **kwargs:
-            Not used here.
+            Keyword parameters for the smoothing of the observations.
 
         Returns
         -------
@@ -2587,8 +2587,9 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         """
         normalization = [
-            fdata.normalize(method=method, use_argvals_stand=use_argvals_stand)
-            for fdata in self.data
+            fdata.normalize(
+                method=method, use_argvals_stand=use_argvals_stand, **kwargs
+            ) for fdata in self.data
         ]
         data_norm = [data for data, _ in normalization]
         weights = np.array([weight for _, weight in normalization])
