@@ -2499,19 +2499,19 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         )
 
         """
-        return np.sum(
-            [data.inner_product(method=method) for data in self.data], axis=0
-        )
+        return np.sum([
+            data.inner_product(method=method) for data in self.data
+        ], axis=0)
 
     def norm(
         self,
         squared: bool = False,
         method: str = 'trapz',
         use_argvals_stand: bool = False
-    ):
+    ) -> npt.NDArray[np.float64]:
         r"""Norm of each observation of the data.
 
-        For each observation in the data, it computes its norm [1]_ defined as
+        For each observation in the data, it computes its norm defined as
 
         .. math::
             \lvert\lvert\lvert f \rvert\rvert\rvert = \left(\sum_{p = 1}^P
@@ -2532,8 +2532,26 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         npt.NDArray[np.float64], shape=(n_obs,)
             The norm of each observations.
 
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name=name, n_functions=n_functions, random_state=42
+        ... )
+        >>> kl.new(n_obs=4)
+        >>> kl.add_noise_and_sparsify(0.05, 0.5)
+
+        >>> fdata_1 = kl.data
+        >>> fdata_2 = kl.sparse_data
+        >>> fdata = MultivariateFunctionalData([fdata_1, fdata_2])
+        >>> fdata.norm()
+        array([1.05384959, 0.84700578, 1.37439764, 0.59235447])
+
         """
-        raise np.sum([fdata.norm() for fdata in self.data])
+        norm_uni = np.array([
+            fdata.norm(squared, method, use_argvals_stand)
+            for fdata in self.data
+        ])
+        return np.sum(norm_uni, axis=0)
 
     def normalize(
         self,

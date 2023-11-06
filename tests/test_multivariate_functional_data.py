@@ -217,3 +217,23 @@ class TestInnerProductMultivariateFunctionalData(unittest.TestCase):
         res = self.fdata.inner_product()
         expected_res = np.array([[ 0.58532546,  0.19442368, -0.04038602,  0.01705178],[ 0.19442368,  0.38395264, -0.45055398,  0.10919059],[-0.04038602, -0.45055398,  0.96833672, -0.07948717],[ 0.01705178,  0.10919059, -0.07948717,  0.18026045]])
         np.testing.assert_array_almost_equal(res, expected_res)
+
+
+class TestInnerProductMultivariateFunctionalData(unittest.TestCase):
+    def setUp(self) -> None:
+        name = 'bsplines'
+        n_functions = 5
+        kl = KarhunenLoeve(
+            basis_name=name, n_functions=n_functions, random_state=42
+        )
+        kl.new(n_obs=4)
+        kl.add_noise_and_sparsify(0.05, 0.5)
+
+        fdata_1 = kl.data
+        fdata_2 = kl.sparse_data
+        self.fdata = MultivariateFunctionalData([fdata_1, fdata_2])
+
+    def test_norm(self):
+        res = self.fdata.norm()
+        expected_res = np.array([1.05384959, 0.84700578, 1.37439764, 0.59235447])
+        np.testing.assert_array_almost_equal(res, expected_res)
