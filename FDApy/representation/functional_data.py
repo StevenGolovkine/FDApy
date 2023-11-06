@@ -2334,6 +2334,34 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         MultivariateFunctionalData
             Smoothed data.
 
+        References
+        ----------
+        .. [1] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
+            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
+        .. [2] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
+            Springer Series in Statistics.
+
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines', n_functions=5, random_state=42
+        ... )
+        >>> kl.new(n_obs=50)
+        >>> kl.add_noise_and_sparsify(0.05, 0.5)
+
+        >>> fdata_1 = kl.data
+        >>> fdata_2 = kl.noisy_data
+        >>> fdata = MultivariateFunctionalData([fdata_1, fdata_2])
+
+        >>> points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 11)})
+        >>> fdata_smooth = fdata.smooth(
+        ...     points=[points, points],
+        ...     kernel_name=['epanechnikov', 'epanechnikov'],
+        ...     bandwidth=[0.05, 0.1],
+        ...     degree=[1, 2]
+        ... )
+        Multivariate functional data object with 2 functions of 50 observations
+
         """
         if points is None:
             points = self.n_functional * [None]
@@ -2343,6 +2371,25 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             bandwidth = self.n_functional * [None]
         if degree is None:
             degree = self.n_functional * [1]
+
+        if (
+            not isinstance(points, list) or
+            not isinstance(kernel_name, list) or
+            not isinstance(bandwidth, list) or
+            not isinstance(degree, list)
+        ):
+            raise TypeError('Each parameter has to be a list.')
+        if (
+                len(points) != self.n_functional or
+                len(kernel_name) != self.n_functional or
+                len(bandwidth) != self.n_functional or
+                len(degree) != self.n_functional
+        ):
+            raise ValueError(
+                'Each parameter has to be a list of length '
+                f'{self.n_functional}.'
+            )
+
         return MultivariateFunctionalData([
             fdata.smooth(pp, kernel, bb, dd)
             for (fdata, pp, kernel, bb, dd) in zip(
