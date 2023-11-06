@@ -2585,6 +2585,21 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             Domains. Journal of the American Statistical Association, 113,
             pp. 649--659.
 
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name=name, n_functions=n_functions, random_state=42
+        ... )
+        >>> kl.new(n_obs=4)
+        >>> kl.add_noise_and_sparsify(0.05, 0.5)
+
+        >>> fdata_1 = kl.data
+        >>> fdata_2 = kl.sparse_data
+        >>> fdata = MultivariateFunctionalData([fdata_1, fdata_2])
+        >>> fdata.normalize()
+        (Multivariate functional data object with 2 functions of 4
+        observations., array([0.20365764, 0.19388443]))
+
         """
         normalization = [
             fdata.normalize(
@@ -2597,8 +2612,8 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     def covariance(
         self,
-        points: Optional[DenseArgvals] = None,
-        mean: Optional[DenseFunctionalData] = None,
+        points: Optional[List[DenseArgvals]] = None,
+        mean: Optional[MultivariateFunctionalData] = None,
         smooth: bool = True,
         **kwargs
     ) -> MultivariateFunctionalData:
@@ -2609,12 +2624,10 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Parameters
         ----------
-        points: Optional[DenseArgvals], default=None
-            The sampling points at which the covariance is estimated. If
-            `None`, the DenseArgvals of the DenseFunctionalData is used. If
-            `smooth` is False, the DenseArgvals of the DenseFunctionalData is
-            used.
-        mean: Optional[DenseFunctionalData], default=None
+        points: Optional[List[DenseArgvals]], default=None
+            Points at which the mean is estimated. The default is None,
+            meaning we use the argvals as estimation points.
+        mean: Optional[MultivariateFunctionalData], default=None
             An estimate of the mean of self. If None, an estimate is computed.
         smooth: bool, default=True
             Should the mean be smoothed?
@@ -2635,15 +2648,23 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             MultivariateFunctionalData object with same argvals as `self`.
 
         """
+        if points is None:
+            points = self.n_functional * [None]
+        if not isinstance(points, list):
+            raise TypeError('`points` has to be a list.')
+        if len(points) != self.n_functional:
+            raise ValueError(
+                f'`points` has to be a list of length {self.n_functional}.'
+            )
         if mean is not None:
             return MultivariateFunctionalData([
-                fdata.covariance(m, smooth, **kwargs)
-                for fdata, m in zip(self.data, mean)
+                fdata.covariance(pp, mm, smooth, **kwargs)
+                for (fdata, pp, mm) in zip(self.data, points, mean.data)
             ])
         else:
             return MultivariateFunctionalData([
-                fdata.covariance(None, smooth, **kwargs)
-                for fdata in self.data
+                fdata.covariance(pp, None, smooth, **kwargs)
+                for fdata, pp in zip(self.data, points)
             ])
 
     ###########################################################################
