@@ -2399,7 +2399,8 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     def mean(
         self,
-        smooth: Optional[str] = None,
+        points: Optional[List[DenseArgvals]] = None,
+        smooth: bool = True,
         **kwargs
     ) -> MultivariateFunctionalData:
         """Compute an estimate of the mean.
@@ -2409,19 +2410,45 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Parameters
         ----------
-        smooth: Optional[str], default=None
-            Name of the smoothing method. Currently, not implemented.
+        points: Optional[List[DenseArgvals]], default=None
+            Points at which the mean is estimated. The default is None,
+            meaning we use the argvals as estimation points.
+        smooth: bool, default=True
+            Should the mean be smoothed?
+        **kwargs:
+            kernel_name: str, default='epanechnikov'
+                Name of the kernel used for local polynomial smoothing.
+            degree: int, default=1
+                Degree used for local polynomial smoothing.
+            bandwidth: float
+                Bandwidth used for local polynomial smoothing. The default
+                bandwitdth is set to be the number of sampling points to the
+                power :math:`-1/5`.s
 
         Returns
         -------
         MultivariateFunctionalData
-            An estimate of the mean as a MultivariateFunctionalData object
-            with a concatenation of the self.argvals as argvals and one
-            observation.
+            An estimate of the mean as a MultivariateFunctionalData object.
+
+        References
+        ----------
+        .. [1] Happ and Greven (2018), Multivariate Functional Principal
+            Component Analysis for Data Observed on Different (Dimensional)
+            Domains. Journal of the American Statistical Association, 113,
+            pp. 649--659.
 
         """
+        if points is None:
+            points = self.n_functional * [None]
+        if not isinstance(points, list):
+            raise TypeError('`points` has to be a list.')
+        if len(points) != self.n_functional:
+            raise ValueError(
+                f'`points` has to be a list of length {self.n_functional}.'
+            )
         return MultivariateFunctionalData([
-            fdata.mean(smooth, **kwargs) for fdata in self.data
+            fdata.mean(points=pp, smooth=smooth, **kwargs)
+            for (fdata, pp) in zip(self.data, points)
         ])
 
     def inner_product(self) -> npt.NDArray[np.float64]:

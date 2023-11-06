@@ -138,13 +138,7 @@ class TestSmoothMultivariateFunctionalData(unittest.TestCase):
         self.fdata = MultivariateFunctionalData([fdata_1, fdata_2])
 
     def test_smooth(self):
-        points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 11)})
-        fdata_smooth = self.fdata.smooth(
-            points=[points, points],
-            kernel_name=['epanechnikov', 'epanechnikov'],
-            bandwidth=[0.05, 0.05],
-            degree=[1, 1]
-        )
+        fdata_smooth = self.fdata.smooth()
 
         self.assertIsInstance(fdata_smooth, MultivariateFunctionalData)
         self.assertIsInstance(fdata_smooth.data[0], DenseFunctionalData)
@@ -154,7 +148,7 @@ class TestSmoothMultivariateFunctionalData(unittest.TestCase):
     def test_error_list(self):
         points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 11)})
         with self.assertRaises(TypeError):
-            fdata_smooth = self.fdata.smooth(
+            self.fdata.smooth(
                 points=points,
                 kernel_name=['epanechnikov', 'epanechnikov'],
                 bandwidth=[0.05, 0.05],
@@ -164,9 +158,42 @@ class TestSmoothMultivariateFunctionalData(unittest.TestCase):
     def test_error_length_list(self):
         points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 11)})
         with self.assertRaises(ValueError):
-            fdata_smooth = self.fdata.smooth(
+            self.fdata.smooth(
                 points=[points, points, points],
                 kernel_name=['epanechnikov', 'epanechnikov'],
                 bandwidth=[0.05, 0.05],
                 degree=[1, 1]
             )
+
+
+class TestMeanhMultivariateFunctionalData(unittest.TestCase):
+    def setUp(self):
+        name = 'bsplines'
+        n_functions = 5
+        kl = KarhunenLoeve(
+            basis_name=name, n_functions=n_functions, random_state=42
+        )
+        kl.new(n_obs=50)
+        kl.add_noise_and_sparsify(0.05, 0.5)
+        
+        fdata_1 = kl.data
+        fdata_2 = kl.noisy_data
+        self.fdata = MultivariateFunctionalData([fdata_1, fdata_2])
+
+    def test_mean(self):
+        fdata_smooth = self.fdata.mean()
+
+        self.assertIsInstance(fdata_smooth, MultivariateFunctionalData)
+        self.assertIsInstance(fdata_smooth.data[0], DenseFunctionalData)
+        self.assertIsInstance(fdata_smooth.data[1], DenseFunctionalData)
+        np.testing.assert_equal(fdata_smooth.n_functional, 2)
+
+    def test_error_list(self):
+        points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 11)})
+        with self.assertRaises(TypeError):
+            self.fdata.mean(points=points)
+
+    def test_error_length_list(self):
+        points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 11)})
+        with self.assertRaises(ValueError):
+            self.fdata.smooth(points=[points, points, points])
