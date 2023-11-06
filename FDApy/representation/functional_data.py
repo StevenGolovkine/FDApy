@@ -2451,7 +2451,10 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             for (fdata, pp) in zip(self.data, points)
         ])
 
-    def inner_product(self) -> npt.NDArray[np.float64]:
+    def inner_product(
+        self,
+        method: str = 'trapz'
+    ) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
 
         The inner product matrix is a ``n_obs`` by ``n_obs`` matrix where each
@@ -2464,6 +2467,11 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         where :math:`\mathcal{T}` is a one- or multi-dimensional domain.
 
+        Parameters
+        ----------
+        method: str, {'simpson', 'trapz'}, default = 'trapz'
+            The method used to integrated.
+
         Returns
         -------
         npt.NDArray[np.float64], shape=(n_obs, n_obs)
@@ -2471,61 +2479,29 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Examples
         --------
-        >>> argvals = {'input_dim_0': np.array([0., 0.25, 0.5 , 0.75])}
-        >>> values = np.array(
-        ...     [
-        ...         [ 2.48466259, -3.38397716, -1.2367073 , -1.85052901],
-        ...         [ 1.44853118,  0.67716255,  1.79711043,  4.76950236],
-        ...         [-5.13173463,  0.35830122,  0.56648942, -0.20965252]
-        ...     ]
+        >>> kl = KarhunenLoeve(
+        ...     basis_name=name, n_functions=n_functions, random_state=42
         ... )
-        >>> data_1D = DenseFunctionalData(argvals, values)
+        >>> kl.new(n_obs=4)
+        >>> kl.add_noise_and_sparsify(0.05, 0.5)
 
-        >>> argvals = {
-        ...     'input_dim_0': np.array([0.  , 0.25, 0.5 , 0.75]),
-        ...     'input_dim_1': np.array([0.  , 0.25, 0.5 , 0.75])
-        ... }
-        >>> values = np.array(
-        ...     [
-        ...         [
-        ...             [6.30864764, -18.37912204, 6.15515232, 29.8027036],
-        ...             [-6.076622, -15.48586803, -11.39997792, 8.40599319],
-        ...             [-20.4094798, -1.3872093, -0.59922597, -6.42013363],
-        ...             [5.78626375, -1.83874696, -0.87225549, 2.75000303]
-        ...         ],
-        ...         [
-        ...             [-4.83576968, 18.85512513, -18.73086523, 15.1511348],
-        ...             [-24.41254888, 12.37333951, 28.85176939, 16.41806885],
-        ...             [-10.02681278, 14.76500118, 1.83114017, -2.78985647],
-        ...             [4.29268032, 8.1781319, 30.10132687, -0.72828334]
-        ...         ],
-        ...         [
-        ...             [-5.85921132, 1.85573561, -5.11291405, -12.89441767],
-        ...             [-4.79384081, -0.93863074, 18.81909033, 4.55041973],
-        ...             [-13.27810529, 28.08961819, -13.79482673, 35.25677906],
-        ...             [9.10058173, -16.43979436, -11.88561292, -5.86481318]
-        ...         ]
-        ...     ]
-        ... )
-        >>> data_2D = DenseFunctionalData(argvals, values)
-        >>> data = MultivariateFunctionalData([data_1D, data_2D])
-        >>> data.inner_product()
+        >>> fdata_1 = kl.data
+        >>> fdata_2 = kl.sparse_data
+        >>> fdata = MultivariateFunctionalData([fdata_1, fdata_2])
+        >>> fdata.inner_product()
         array(
             [
-                [ 72.37627198, -28.54691325, -19.7335636 ],
-                [-28.54691325, 166.61824532,  50.66329182],
-                [-19.7335636 ,  50.66329182, 151.2780517 ]
+                [ 0.58532546,  0.19442368, -0.04038602,  0.01705178],
+                [ 0.19442368,  0.38395264, -0.45055398,  0.10919059],
+                [-0.04038602, -0.45055398,  0.96833672, -0.07948717],
+                [ 0.01705178,  0.10919059, -0.07948717,  0.18026045]
             ]
         )
 
         """
-        if not all(
-            [isinstance(data, DenseFunctionalData) for data in self.data]
-        ):
-            raise TypeError(
-                "All the univariate data must be DenseFunctionalData"
-            )
-        return np.sum([data.inner_product() for data in self.data], axis=0)
+        return np.sum(
+            [data.inner_product(method=method) for data in self.data], axis=0
+        )
 
     def norm(
         self,
