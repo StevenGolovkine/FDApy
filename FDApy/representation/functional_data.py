@@ -2070,7 +2070,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     # Static methods
     @staticmethod
     def concatenate(
-        data: MultivariateFunctionalData
+        *fdata: MultivariateFunctionalData
     ) -> MultivariateFunctionalData:
         """Concatenate MultivariateFunctionalData objects.
 
@@ -2084,10 +2084,27 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         MultivariateFunctionalData
             The concatenation of self and data.
 
+        Raises
+        ------
+        ValueError
+            When all `fdata` do not have the same number of elements.
+
         """
-        new = [
-            FunctionalData.concatenate([d1, d2]) for d1, d2 in zip(data)
-        ]
+        if len(set(data.n_functional for data in fdata)) > 1:
+            raise ValueError(
+                "The MultivariateFunctionalData must have the same number "
+                "of elements."
+            )
+
+        n_functional = fdata[0].n_functional
+
+        new = n_functional * [None]
+        for idx in np.arange(n_functional):
+            data_uni = [el.data[idx] for el in fdata]
+            if isinstance(data_uni[0], DenseFunctionalData):
+                new[idx] = DenseFunctionalData.concatenate(*data_uni)
+            else:
+                new[idx] = IrregularFunctionalData.concatenate(*data_uni)
         return MultivariateFunctionalData(new)
     ###########################################################################
 
@@ -2438,6 +2455,22 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             Domains. Journal of the American Statistical Association, 113,
             pp. 649--659.
 
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines', n_functions=5, random_state=42
+        ... )
+        >>> kl.new(n_obs=50)
+        >>> kl.add_noise_and_sparsify(0.05, 0.5)
+
+        >>> fdata_1 = kl.data
+        >>> fdata_2 = kl.noisy_data
+        >>> fdata = MultivariateFunctionalData([fdata_1, fdata_2])
+
+        >>> points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 11)})
+        >>> fdata.mean(points=points)
+        Multivariate functional data object with 2 functions of 1 observations.
+
         """
         if points is None:
             points = self.n_functional * [None]
@@ -2651,6 +2684,22 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         MultivariateFunctionalData
             An estimate of the covariance as a two-dimensional
             MultivariateFunctionalData object with same argvals as `self`.
+
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines', n_functions=5, random_state=42
+        ... )
+        >>> kl.new(n_obs=50)
+        >>> kl.add_noise_and_sparsify(0.05, 0.5)
+
+        >>> fdata_1 = kl.data
+        >>> fdata_2 = kl.noisy_data
+        >>> fdata = MultivariateFunctionalData([fdata_1, fdata_2])
+
+        >>> points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 11)})
+        >>> fdata.covariance(points=[points, points])
+        Multivariate functional data object with 2 functions of 1 observations.
 
         """
         if points is None:

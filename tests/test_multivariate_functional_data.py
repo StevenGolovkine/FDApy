@@ -13,6 +13,7 @@ from FDApy.representation.argvals import DenseArgvals, IrregularArgvals
 from FDApy.representation.values import DenseValues, IrregularValues
 from FDApy.representation.functional_data import (
     DenseFunctionalData,
+    IrregularFunctionalData,
     MultivariateFunctionalData
 )
 
@@ -332,3 +333,33 @@ class TestCovarianceMultivariateFunctionalData(unittest.TestCase):
 
         expected_noise = [0.007162139187388261, 0.04058380216259712]
         np.testing.assert_almost_equal(self.fdata._noise_variance, expected_noise)
+
+
+class TestConcatenateMultivariateFunctionalData(unittest.TestCase):
+    def setUp(self):
+        name = 'bsplines'
+        n_functions = 5
+        kl = KarhunenLoeve(
+            basis_name=name, n_functions=n_functions, random_state=42
+        )
+        kl.new(n_obs=50)
+        kl.add_noise_and_sparsify(0.05, 0.5)
+
+        self.fdata_1 = kl.data
+        self.fdata_2 = kl.sparse_data
+        self.fdata = MultivariateFunctionalData([self.fdata_1, self.fdata_2])
+
+    def test_concatenate(self):
+        res = MultivariateFunctionalData.concatenate(self.fdata, self.fdata)
+
+        self.assertIsInstance(res, MultivariateFunctionalData)
+        np.testing.assert_equal(res.n_functional, 2)
+        self.assertIsInstance(res.data[0], DenseFunctionalData)
+        self.assertIsInstance(res.data[1], IrregularFunctionalData)
+        np.testing.assert_equal(res.data[0].n_obs, 100)
+        np.testing.assert_equal(res.data[1].n_obs, 100)
+
+    def test_concatenate_error(self):
+        new = MultivariateFunctionalData([self.fdata_1, self.fdata_2, self.fdata_2])
+        with self.assertRaises(ValueError):
+            MultivariateFunctionalData.concatenate(self.fdata, new)
