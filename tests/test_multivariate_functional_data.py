@@ -265,3 +265,70 @@ class TestNormalizeMultivariateFunctionalData(unittest.TestCase):
         np.testing.assert_array_almost_equal(res.data[0].values, expected_values)
         expected_values = np.array([ 1.3584412 ,  2.20391159,  0.26684921, -0.37204357,  0.16429984, -1.94207116, -2.2046438 , -2.67303592, -1.12551113, -0.61670761, -1.21993587, -1.43580713, -1.7233163 , -1.616918  , -0.78573731, -1.44377352, -1.4159017 , -1.3747195 , -0.84180992,  1.36012511, -0.07931144,  0.66629818,  1.64239541,  1.9076571 ,  0.7593733 ,  0.79485713,  2.48112806,  0.33586305,  1.04240194,  2.53782715,  2.12152399,  2.28753089,  1.79492849,  3.60745374,  3.79473761,  2.83088629,  2.35500009,  2.63093076,  0.75359332,  0.71579549,  2.49641462, -0.67613604, -0.83308437, -2.35522448, -3.15461153, -6.33588495, -9.46246192])
         np.testing.assert_array_almost_equal(res.data[1].values[0], expected_values)
+
+
+class TestCovarianceMultivariateFunctionalData(unittest.TestCase):
+    def setUp(self) -> None:
+        name = 'bsplines'
+        n_functions = 5
+        kl = KarhunenLoeve(
+            basis_name=name, n_functions=n_functions, random_state=42
+        )
+        kl.new(n_obs=50)
+        kl.add_noise_and_sparsify(0.05, 0.5)
+
+        fdata_1 = kl.data
+        fdata_2 = kl.sparse_data
+        self.fdata = MultivariateFunctionalData([fdata_1, fdata_2])
+
+    def test_error_list_cov(self):
+        points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 11)})
+        with self.assertRaises(TypeError):
+            self.fdata.covariance(points=points)
+
+    def test_error_length_list_cov(self):
+        points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 11)})
+        with self.assertRaises(ValueError):
+            self.fdata.covariance(points=[points, points, points])
+
+    def test_covariance(self):
+        res = self.fdata.covariance()
+
+        np.testing.assert_equal(res.n_functional, 2)
+        
+        expected_values = np.array([ 0.8146913 ,  0.7789608 ,  0.74433846,  0.71075361,  0.67818039,  0.6465471 ,  0.61584503,  0.58600726,  0.55700994,  0.52881507,  0.50138164,  0.4746727 ,  0.4486541 ,  0.42328793,  0.39858788,  0.37463089,  0.35155076,  0.32929301,  0.30788264,  0.28733355,  0.26764898,  0.24881935,  0.23079943,  0.21352999,  0.1968747 ,  0.18089577,  0.16559189,  0.15094111,  0.1369215 ,  0.12351112,  0.11068803,  0.09843029,  0.08671596,  0.07552312,  0.06482981,  0.0546141 ,  0.04485404,  0.03552763,  0.02661277,  0.01808729,  0.00992909,  0.00211629, -0.00537261, -0.01255847, -0.01946133, -0.02610019, -0.03249283, -0.03865564, -0.04460345, -0.05034948, -0.05590522, -0.0612804 , -0.06648296, -0.0715191 , -0.07639331, -0.08110843, -0.08566582, -0.09006542, -0.09430599, -0.09838525, -0.10230008, -0.10604676, -0.10962118, -0.113019  , -0.11623584, -0.11926736, -0.12210932, -0.12475753, -0.12720781, -0.12945596, -0.13149777, -0.13332904, -0.13494554, -0.13634303, -0.13751728, -0.13846404, -0.13917905, -0.13965808, -0.13989689, -0.13989122, -0.13963683, -0.13912949, -0.13836494, -0.13733894, -0.13604725, -0.13448562, -0.13264473, -0.13050195, -0.12805051, -0.1252897 , -0.12222092, -0.11884494, -0.11516157, -0.11117097, -0.10687178, -0.10226353, -0.09734472, -0.09211527, -0.08657456, -0.08072226, -0.07455838])
+        np.testing.assert_array_almost_equal(self.fdata._covariance.data[0].values[0, 1], expected_values)
+        expected_values = np.array([ 0.67551209,  0.65898216,  0.63788501,  0.61545504,  0.59214777,  0.56676243,  0.54095263,  0.51518326,  0.4897508 ,  0.46371709,  0.43747584,  0.41126973,  0.38568114,  0.36150454,  0.33845052,  0.31673519,  0.29725393,  0.27886333,  0.26107741,  0.24471983,  0.22878441,  0.2137244 ,  0.19938948,  0.18504685,  0.1716612 ,  0.16010906,  0.14818651,  0.13617902,  0.12566595,  0.11684105,  0.10938577,  0.10341943,  0.09708493,  0.09018255,  0.08368202,  0.07791712,  0.07180823,  0.06656672,  0.06124219,  0.05695493,  0.0517702 ,  0.04385764,  0.03403131,  0.02168627,  0.00887071, -0.00493595, -0.01849001, -0.02965664, -0.03868791, -0.04630338, -0.05337526, -0.05918708, -0.06347488, -0.06494566, -0.06472078, -0.06317056, -0.06009893, -0.05631419, -0.05394607, -0.05208594, -0.05141937, -0.05232907, -0.0548614 , -0.05771064, -0.05953243, -0.06090091, -0.06159539, -0.06201053, -0.06233069, -0.06201926, -0.06172949, -0.0599613 , -0.05679114, -0.05590213, -0.05610143, -0.05679522, -0.05825516, -0.06048427, -0.06378544, -0.06688929, -0.07227662, -0.08005572, -0.08874732, -0.09819025, -0.10780798, -0.11566447, -0.11992509, -0.12140278, -0.1204426 , -0.11672691, -0.11153807, -0.10487894, -0.09824181, -0.09337766, -0.09035247, -0.08833946, -0.08593898, -0.08379118, -0.08364299, -0.08497096, -0.08996548])
+        np.testing.assert_array_almost_equal(self.fdata._covariance.data[1].values[0, 1], expected_values)
+
+        expected_noise = [0.010135268522470093, 0.0471033417347996]
+        np.testing.assert_almost_equal(self.fdata._noise_variance, expected_noise)
+
+    def test_covariance_points(self):
+        points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 11)})
+        res = self.fdata.covariance(points=[points, points])
+
+        np.testing.assert_equal(res.n_functional, 2)
+        
+        expected_values = np.array([ 0.50866992,  0.43660224,  0.35796599,  0.26783058, 0.17579733,  0.09078075,  0.02103428, -0.02764917, -0.05060112, -0.04310784, -0.0033911 ])
+        np.testing.assert_array_almost_equal(self.fdata._covariance.data[0].values[0, 1], expected_values)
+        expected_values = np.array([ 0.42165975,  0.40880349,  0.30861022,  0.21813467, 0.1490171 ,  0.01022111, -0.05204392, -0.09318233, -0.08530561, -0.08192973, -0.02739071])
+        np.testing.assert_array_almost_equal(self.fdata._covariance.data[1].values[0, 1], expected_values)
+
+        expected_noise = [0.007162139187388261, 0.04058380216259712]
+        np.testing.assert_almost_equal(self.fdata._noise_variance, expected_noise)
+
+    def test_covariance_mean(self):
+        points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 11)})
+        mean_curves = self.fdata.mean()
+        res = self.fdata.covariance(points=[points, points], mean=mean_curves)
+
+        np.testing.assert_equal(res.n_functional, 2)
+        
+        expected_values = np.array([ 0.50866992,  0.43660224,  0.35796599,  0.26783058, 0.17579733,  0.09078075,  0.02103428, -0.02764917, -0.05060112, -0.04310784, -0.0033911 ])
+        np.testing.assert_array_almost_equal(self.fdata._covariance.data[0].values[0, 1], expected_values)
+        expected_values = np.array([ 0.42165975,  0.40880349,  0.30861022,  0.21813467, 0.1490171 ,  0.01022111, -0.05204392, -0.09318233, -0.08530561, -0.08192973, -0.02739071])
+        np.testing.assert_array_almost_equal(self.fdata._covariance.data[1].values[0, 1], expected_values)
+
+        expected_noise = [0.007162139187388261, 0.04058380216259712]
+        np.testing.assert_almost_equal(self.fdata._noise_variance, expected_noise)

@@ -606,6 +606,16 @@ class TestCovariance(unittest.TestCase):
         expected_noise = 0.02312407511881056
         np.testing.assert_almost_equal(self.data._noise_variance, expected_noise)
 
+    def test_covariance_1d_points(self):
+        points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 11)})
+        self.data.covariance(points=points)
+
+        expected_cov = np.array([ 0.39309119,  0.46122988,  0.35416482,  0.23828871, 0.15613467,  0.09909948,  0.02960858,  0.03170356, -0.00601762, -0.04725067, -0.00100574])
+        np.testing.assert_array_almost_equal(self.data._covariance.values[0, 1], expected_cov)
+
+        expected_noise = 0.018519423095566027
+        np.testing.assert_almost_equal(self.data._noise_variance, expected_noise)
+
     def test_covariance_2d(self):
         argvals = IrregularArgvals({
             0: DenseArgvals({

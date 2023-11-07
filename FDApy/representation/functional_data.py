@@ -1978,14 +1978,15 @@ class IrregularFunctionalData(FunctionalData):
                 points=self.argvals.to_dense(), smooth=smooth, **kwargs
             )
 
-        n_points = points.n_points
+        n_points = self.argvals.to_dense().n_points
 
         # Compute the covariance
         cov_sum = np.zeros(np.power(n_points, 2))
         cov_count = np.zeros(np.power(n_points, 2))
         for idx, obs in enumerate(self):
             obs_points = np.isin(
-                points['input_dim_0'], obs.argvals[idx]['input_dim_0']
+                self.argvals.to_dense()['input_dim_0'],
+                obs.argvals[idx]['input_dim_0']
             )
             mean_obs = mean.values[0][obs_points]
             obs_centered = obs.values[idx] - mean_obs
@@ -2446,10 +2447,11 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             raise ValueError(
                 f'`points` has to be a list of length {self.n_functional}.'
             )
-        return MultivariateFunctionalData([
+        self._mean = MultivariateFunctionalData([
             fdata.mean(points=pp, smooth=smooth, **kwargs)
             for (fdata, pp) in zip(self.data, points)
         ])
+        return self._mean
 
     def inner_product(
         self,
@@ -2629,6 +2631,9 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             meaning we use the argvals as estimation points.
         mean: Optional[MultivariateFunctionalData], default=None
             An estimate of the mean of self. If None, an estimate is computed.
+            Make sure that the mean curves are estimated on `argvals` for
+            DenseFunctionalData and on `argvals.to_dense()` for
+            IrregularFunctionalData.
         smooth: bool, default=True
             Should the mean be smoothed?
         **kwargs:
@@ -2657,14 +2662,16 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
                 f'`points` has to be a list of length {self.n_functional}.'
             )
         if mean is not None:
-            return MultivariateFunctionalData([
+            self._covariance = MultivariateFunctionalData([
                 fdata.covariance(pp, mm, smooth, **kwargs)
                 for (fdata, pp, mm) in zip(self.data, points, mean.data)
             ])
         else:
-            return MultivariateFunctionalData([
+            self._covariance = MultivariateFunctionalData([
                 fdata.covariance(pp, None, smooth, **kwargs)
                 for fdata, pp in zip(self.data, points)
             ])
+        self._noise_variance = [fdata._noise_variance for fdata in self.data]
+        return self._covariance
 
     ###########################################################################
