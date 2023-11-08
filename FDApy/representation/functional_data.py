@@ -1820,8 +1820,56 @@ class IrregularFunctionalData(FunctionalData):
         smooth: bool = True,
         **kwargs
     ) -> IrregularFunctionalData:
-        """Center the data."""
-        raise NotImplementedError
+        """Center the data.
+
+        Parameters
+        ----------
+        smooth: bool, default=True
+            Should the mean be smoothed?
+        **kwargs:
+            kernel_name: str, default='epanechnikov'
+                Name of the kernel used for local polynomial smoothing.
+            degree: int, default=1
+                Degree used for local polynomial smoothing.
+            bandwidth: float
+                Bandwidth used for local polynomial smoothing. The default
+                bandwitdth is set to be the number of sampling points to the
+                power :math:`-1/5`.
+
+        Returns
+        -------
+        IrregularFunctionalData
+            The centered version of the data.
+
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines',
+        ...     n_functions=5,
+        ...     random_state=42
+        ... )
+        >>> kl.new(n_obs=10)
+        >>> kl.add_noise_and_sparsify(0.01, 0.95)
+        >>> kl.sparse_data.center(smooth=True)
+        Functional data object with 10 observations on a 1-dimensional support.
+
+        """
+        mean = self.mean(
+            points=self.argvals.to_dense(), smooth=smooth, **kwargs
+        )
+
+        obs_centered = {}
+        for idx, obs in enumerate(self):
+            obs_points = np.isin(
+                self.argvals.to_dense()['input_dim_0'],
+                obs.argvals[idx]['input_dim_0']
+            )
+            mean_obs = mean.values[0][obs_points]
+            obs_centered[idx] = obs.values[idx] - mean_obs
+        return IrregularFunctionalData(
+            self.argvals,
+            IrregularValues(obs_centered)
+        )
 
     def norm(
         self,

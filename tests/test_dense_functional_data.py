@@ -360,7 +360,6 @@ class TestCenterDense(unittest.TestCase):
         np.testing.assert_array_almost_equal(fdata_center.values[9], expected_values)
 
 
-
 class TestNormDense(unittest.TestCase):
     def setUp(self) -> None:
         name = 'bsplines'
