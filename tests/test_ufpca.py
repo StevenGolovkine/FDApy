@@ -49,15 +49,16 @@ class UFPCATest(unittest.TestCase):
         self.assertTrue(ufpc.normalize)
 
 
-# class TestFitCovariance(unittest.TestCase):
-#     def setUp(self):
-#         argvals = np.linspace(0, 1, 10)
-#         kl = KarhunenLoeve(
-#             basis_name='fourier', argvals=argvals, 
-#             n_functions=5, random_state=42
-#         )
-#         kl.new(n_obs=50)
-#         self.data = kl.data
+class TestFitCovariance(unittest.TestCase):
+    def setUp(self):
+        kl = KarhunenLoeve(
+            basis_name='bsplines', n_functions=5, random_state=42
+        )
+        kl.new(n_obs=100)
+        kl.sparsify(0.8, 0.05)
+
+        self.fdata_uni = kl.data
+        self.fdata_sparse = kl.sparse_data
 
 #     def test_fit_covariance(self):
 #         # Initialize a UFPCA object

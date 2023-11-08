@@ -188,7 +188,7 @@ class UFPCA():
 
     def fit(
         self,
-        data: DenseFunctionalData
+        data: FunctionalData
     ) -> None:
         """Estimate the eigencomponents of the data.
 
@@ -197,7 +197,7 @@ class UFPCA():
 
         Parameters
         ----------
-        data: DenseFunctionalData
+        data: FunctionalData
             Training data used to estimate the eigencomponents.
 
         References
@@ -206,10 +206,6 @@ class UFPCA():
             Analysis, Springer Science, Chapter 8.
 
         """
-        # Checkers
-        if not isinstance(data, DenseFunctionalData):
-            raise TypeError('UFPCA only support DenseFunctionalData object!')
-
         # Center the data
         data_mean = data.mean()
         data_new = DenseFunctionalData(

@@ -495,6 +495,14 @@ class FunctionalData(ABC):
         """Compute an estimate of the inner product matrix."""
 
     @abstractmethod
+    def center(
+        self,
+        smooth: bool = True,
+        **kwargs
+    ) -> FunctionalData:
+        """Center the data."""
+
+    @abstractmethod
     def norm(
         self,
         squared: bool = False,
@@ -1030,6 +1038,50 @@ class DenseFunctionalData(FunctionalData):
         inner_mat = inner_mat + inner_mat.T
         np.fill_diagonal(inner_mat, np.diag(inner_mat) / 2)
         return inner_mat
+
+    def center(
+        self,
+        smooth: bool = True,
+        **kwargs
+    ) -> DenseFunctionalData:
+        """Center the data.
+
+        Parameters
+        ----------
+        smooth: bool, default=True
+            Should the mean be smoothed?
+        **kwargs:
+            kernel_name: str, default='epanechnikov'
+                Name of the kernel used for local polynomial smoothing.
+            degree: int, default=1
+                Degree used for local polynomial smoothing.
+            bandwidth: float
+                Bandwidth used for local polynomial smoothing. The default
+                bandwitdth is set to be the number of sampling points to the
+                power :math:`-1/5`.
+
+        Returns
+        -------
+        DenseFunctionalData
+            The centered version of the data.
+
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines',
+        ...     n_functions=5,
+        ...     random_state=42
+        ... )
+        >>> kl.new(n_obs=10)
+        >>> kl.data.center(smooth=True)
+        Functional data object with 10 observations on a 1-dimensional support.
+
+        """
+        data_mean = self.mean(smooth=smooth, **kwargs)
+        return DenseFunctionalData(
+            DenseArgvals(self.argvals),
+            DenseValues(self.values - data_mean.values)
+        )
 
     def norm(
         self,
@@ -1762,6 +1814,14 @@ class IrregularFunctionalData(FunctionalData):
             DenseValues(new_values)
         )
         return data_smooth.inner_product(method=method)
+
+    def center(
+        self,
+        smooth: bool = True,
+        **kwargs
+    ) -> IrregularFunctionalData:
+        """Center the data."""
+        raise NotImplementedError
 
     def norm(
         self,
