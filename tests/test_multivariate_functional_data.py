@@ -220,6 +220,25 @@ class TestInnerProductMultivariateFunctionalData(unittest.TestCase):
         np.testing.assert_array_almost_equal(res, expected_res)
 
 
+class TestCenterMultivariateFunctionalData(unittest.TestCase):
+    def setUp(self):
+        name = 'bsplines'
+        n_functions = 5
+
+        kl = KarhunenLoeve(
+            basis_name=name, n_functions=n_functions, random_state=42
+        )
+        kl.new(n_obs=10)
+        kl.add_noise_and_sparsify(0.01, 0.95)
+        self.fdata = MultivariateFunctionalData([kl.noisy_data, kl.sparse_data])
+
+    def test_center_1d(self):
+        fdata_center = self.fdata.center()
+
+        self.assertIsInstance(fdata_center, MultivariateFunctionalData)
+        np.testing.assert_equal(fdata_center.n_functional, 2)
+
+
 class TestNormMultivariateFunctionalData(unittest.TestCase):
     def setUp(self) -> None:
         name = 'bsplines'

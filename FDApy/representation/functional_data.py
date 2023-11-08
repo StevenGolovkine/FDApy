@@ -2646,6 +2646,51 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             data.inner_product(method=method) for data in self.data
         ], axis=0)
 
+    def center(
+        self,
+        smooth: bool = True,
+        **kwargs
+    ) -> MultivariateFunctionalData:
+        """Center the data.
+
+        Parameters
+        ----------
+        smooth: bool, default=True
+            Should the mean be smoothed?
+        **kwargs:
+            kernel_name: str, default='epanechnikov'
+                Name of the kernel used for local polynomial smoothing.
+            degree: int, default=1
+                Degree used for local polynomial smoothing.
+            bandwidth: float
+                Bandwidth used for local polynomial smoothing. The default
+                bandwitdth is set to be the number of sampling points to the
+                power :math:`-1/5`.
+
+        Returns
+        -------
+        MultivariateFunctionalData
+            The centered version of the data.
+
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name=name, n_functions=n_functions, random_state=42
+        ... )
+        >>> kl.new(n_obs=10)
+        >>> kl.add_noise_and_sparsify(0.05, 0.5)
+
+        >>> fdata_1 = kl.data
+        >>> fdata_2 = kl.sparse_data
+        >>> fdata = MultivariateFunctionalData([fdata_1, fdata_2])
+        >>> fdata.center(smooth=True)
+        Functional data object with 10 observations on a 1-dimensional support.
+
+        """
+        return MultivariateFunctionalData([
+            fdata.center(smooth=smooth, **kwargs) for fdata in self.data
+        ])
+
     def norm(
         self,
         squared: bool = False,
