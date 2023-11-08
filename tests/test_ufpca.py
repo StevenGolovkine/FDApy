@@ -18,35 +18,35 @@ from FDApy.preprocessing.dim_reduction.fpca import (
 )
 
 
-# class UFPCATest(unittest.TestCase):
-#     def test_init(self):
-#         # Test default initialization
-#         ufpc = UFPCA()
-#         self.assertEqual(ufpc.method, 'covariance')
-#         self.assertIsNone(ufpc.n_components)
-#         self.assertFalse(ufpc.normalize)
-#         self.assertEqual(ufpc.weights, 1)
+class UFPCATest(unittest.TestCase):
+    def test_init(self):
+        # Test default initialization
+        fpca = UFPCA()
+        self.assertEqual(fpca.method, 'covariance')
+        self.assertIsNone(fpca.n_components)
+        self.assertFalse(fpca.normalize)
+        self.assertEqual(fpca.weights, 1)
 
-#         # Test custom initialization
-#         ufpc = UFPCA(method='inner-product', n_components=3, normalize=True)
-#         self.assertEqual(ufpc.method, 'inner-product')
-#         self.assertEqual(ufpc.n_components, 3)
-#         self.assertTrue(ufpc.normalize)
+        # Test custom initialization
+        fpca = UFPCA(method='inner-product', n_components=3, normalize=True)
+        self.assertEqual(fpca.method, 'inner-product')
+        self.assertEqual(fpca.n_components, 3)
+        self.assertTrue(fpca.normalize)
 
-#     def test_method(self):
-#         ufpc = UFPCA()
-#         ufpc.method = 'inner-product'
-#         self.assertEqual(ufpc.method, 'inner-product')
+    def test_method(self):
+        ufpc = UFPCA()
+        ufpc.method = 'inner-product'
+        self.assertEqual(ufpc.method, 'inner-product')
 
-#     def test_n_components(self):
-#         ufpc = UFPCA()
-#         ufpc.n_components = 4
-#         self.assertEqual(ufpc.n_components, 4)
+    def test_n_components(self):
+        ufpc = UFPCA()
+        ufpc.n_components = 4
+        self.assertEqual(ufpc.n_components, 4)
 
-#     def test_normalize(self):
-#         ufpc = UFPCA()
-#         ufpc.normalize = True
-#         self.assertTrue(ufpc.normalize)
+    def test_normalize(self):
+        ufpc = UFPCA()
+        ufpc.normalize = True
+        self.assertTrue(ufpc.normalize)
 
 
 # class TestFitCovariance(unittest.TestCase):
