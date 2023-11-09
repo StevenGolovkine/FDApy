@@ -229,27 +229,25 @@ class UFPCA():
             else:
                 points = data.argvals.to_dense()
 
-        # Center the data
-        data_centered = data.center(smooth=smooth, **kwargs)
-
         # Normalize the data
         if self.normalize:
-            data_centered, self.weights = data_centered.normalize(
+            data, self.weights = data.normalize(
                 use_argvals_stand=True
             )
 
+        self._mean = data.mean()
+
         # Estimate eigencomponents
-        # self._mean = data_mean
         if self.method == 'covariance':
-            if data_centered.n_dimension == 1:
-                self._fit_covariance(data_centered)
+            if data.n_dimension == 1:
+                self._fit_covariance(data, points=points, mean=self._mean)
             else:
                 raise ValueError((
                     "Estimation of the eigencomponents is not implemented "
-                    f"for {data_centered.n_dimension}-dimensional data."
+                    f"for {data.n_dimension}-dimensional data."
                 ))
         elif self.method == 'inner-product':
-            self._fit_inner_product(data_centered)
+            self._fit_inner_product(data)
         else:
             raise NotImplementedError(
                 f"{self.method} method not implemented."
@@ -333,7 +331,10 @@ class UFPCA():
 
     def _fit_inner_product(
         self,
-        data: DenseFunctionalData
+        data: FunctionalData,
+        points: DenseArgvals,
+        mean: Optional[FunctionalData] = None,
+        **kwargs
     ) -> None:
         """Univariate Functional PCA using inner-product matrix decomposition.
 
@@ -341,31 +342,61 @@ class UFPCA():
         ----------
         data: DenseFunctionalData
             Training data used to estimate the eigencomponents.
+        points: DenseArgvals
+            The sampling points at which the covariance and the eigenfunctions
+            will be estimated.
+        mean: None
+            Not used here.
+        **kwargs:
+            kernel_name: str, default='epanechnikov'
+                Name of the kernel used for local polynomial smoothing.
+            degree: int, default=1
+                Degree used for local polynomial smoothing.
+            bandwidth: float
+                Bandwidth used for local polynomial smoothing. The default
+                bandwitdth is set to be the number of sampling points to the
+                power :math:`-1/5`.
 
         """
+        data_center = data.center(smooth=True, **kwargs)
+
         # Compute inner product matrix and its eigendecomposition
         eigenvalues, eigenvectors = _compute_inner_product(
-            data,
+            data_center,
             self.n_components
         )
-        eigenfunctions = (
-            np.matmul(data.values.T, eigenvectors) / np.sqrt(eigenvalues)
-        )
 
+        if isinstance(data, DenseFunctionalData):
+            eigenfunctions = np.matmul(
+                data_center.values.T, eigenvectors
+            )
+        else:
+            eigenfunctions = np.matmul(
+                data_center._data_innpro.values.T, eigenvectors
+            )
+        eigenfunctions = eigenfunctions / np.sqrt(eigenvalues)
+
+        # Save the results
         self._eigenvectors = eigenvectors
         self._eigenvalues = eigenvalues / data.n_obs
         self._eigenfunctions = DenseFunctionalData(
             DenseArgvals(data.argvals), DenseValues(eigenfunctions.T)
         )
 
+        self._eigenfunctions = self._eigenfunctions.smooth(
+            points=points, **kwargs
+        )
+
         # Compute an estimation of the covariance
         if data.n_dimension == 1:
-            argvals = data.argvals['input_dim_0']
             covariance = _compute_covariance(
-                eigenvalues / data.n_obs, eigenfunctions.T
+                self._eigenvalues, self._eigenfunctions.values
             )
             self._covariance = DenseFunctionalData(
-                DenseArgvals({'input_dim_0': argvals, 'input_dim_1': argvals}),
+                DenseArgvals({
+                    'input_dim_0': points['input_dim_0'],
+                    'input_dim_1': points['input_dim_0']
+                }),
                 DenseValues(covariance[np.newaxis])
             )
         else:

@@ -1809,11 +1809,11 @@ class IrregularFunctionalData(FunctionalData):
             indices = np.searchsorted(intervals, dense_argvals)
             new_values[idx, :] = obs.values[idx][indices]
 
-        data_smooth = DenseFunctionalData(
+        self._data_inpro = DenseFunctionalData(
             DenseArgvals({'input_dim_0': dense_argvals}),
             DenseValues(new_values)
         )
-        return data_smooth.inner_product(method=method)
+        return self._data_inpro.inner_product(method=method)
 
     def center(
         self,
