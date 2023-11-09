@@ -188,7 +188,10 @@ class UFPCA():
 
     def fit(
         self,
-        data: FunctionalData
+        data: FunctionalData,
+        points: Optional[DenseArgvals] = None,
+        smooth: bool = True,
+        **kwargs
     ) -> None:
         """Estimate the eigencomponents of the data.
 
@@ -199,6 +202,20 @@ class UFPCA():
         ----------
         data: FunctionalData
             Training data used to estimate the eigencomponents.
+        points: DenseArgvals
+            The sampling points at which the covariance and the eigenfunctions
+            will be estimated.
+        smooth: bool, default=True
+            Should the mean and covariance be smoothed?
+        **kwargs:
+            kernel_name: str, default='epanechnikov'
+                Name of the kernel used for local polynomial smoothing.
+            degree: int, default=1
+                Degree used for local polynomial smoothing.
+            bandwidth: float
+                Bandwidth used for local polynomial smoothing. The default
+                bandwitdth is set to be the number of sampling points to the
+                power :math:`-1/5`.
 
         References
         ----------
@@ -206,29 +223,33 @@ class UFPCA():
             Analysis, Springer Science, Chapter 8.
 
         """
+        if points is None:
+            if isinstance(data, DenseFunctionalData):
+                points = data.argvals
+            else:
+                points = data.argvals.to_dense()
+
         # Center the data
-        data_mean = data.mean()
-        data_new = DenseFunctionalData(
-            DenseArgvals(data.argvals),
-            DenseValues(data.values - data_mean.values)
-        )
+        data_centered = data.center(smooth=smooth, **kwargs)
 
         # Normalize the data
         if self.normalize:
-            data_new, self.weights = data_new.normalize(use_argvals_stand=True)
+            data_centered, self.weights = data_centered.normalize(
+                use_argvals_stand=True
+            )
 
         # Estimate eigencomponents
-        self._mean = data_mean
+        # self._mean = data_mean
         if self.method == 'covariance':
-            if data_new.n_dimension == 1:
-                self._fit_covariance(data_new)
+            if data_centered.n_dimension == 1:
+                self._fit_covariance(data_centered)
             else:
                 raise ValueError((
                     "Estimation of the eigencomponents is not implemented "
-                    f"for {data_new.n_dimension}-dimensional data."
+                    f"for {data_centered.n_dimension}-dimensional data."
                 ))
         elif self.method == 'inner-product':
-            self._fit_inner_product(data_new)
+            self._fit_inner_product(data_centered)
         else:
             raise NotImplementedError(
                 f"{self.method} method not implemented."
@@ -236,17 +257,31 @@ class UFPCA():
 
     def _fit_covariance(
         self,
-        data: DenseFunctionalData,
-        covariance: Optional[DenseFunctionalData] = None
+        data: FunctionalData,
+        points: DenseArgvals,
+        mean: FunctionalData,
+        **kwargs
     ) -> None:
-        """Univariate Functional PCA.
+        """Univariate Functional PCA using the covariance operator.
 
         Parameters
         ----------
-        data: DenseFunctionalData
+        data: FunctionalData
             Training data.
-        covariance: Optional[DenseFunctionalData], default=None
-            An estimation of the covariance of the training data.
+        points: DenseArgvals
+            The sampling points at which the covariance and the eigenfunctions
+            will be estimated.
+        mean: FunctionalData
+            An estimate of the mean of the data.
+        **kwargs:
+            kernel_name: str, default='epanechnikov'
+                Name of the kernel used for local polynomial smoothing.
+            degree: int, default=1
+                Degree used for local polynomial smoothing.
+            bandwidth: float
+                Bandwidth used for local polynomial smoothing. The default
+                bandwitdth is set to be the number of sampling points to the
+                power :math:`-1/5`.
 
         References
         ----------
@@ -254,16 +289,16 @@ class UFPCA():
             Analysis, Springer Science, Chapter 8.
 
         """
-        smoothing_method = None
-
-        if covariance is None:
-            covariance = data.covariance(
-                mean=None,
-                smooth=smoothing_method
-            )
+        # Compute the covariance
+        covariance = data.covariance(
+            points=points,
+            mean=mean,
+            smooth=True,
+            **kwargs
+        )
 
         # Choose the W_j's and the S_j's (Ramsey and Silverman, 2005)
-        argvals = data.argvals['input_dim_0']
+        argvals = points['input_dim_0']
         weight = _integration_weights(argvals, method='trapz')
 
         # Compute the eigenvalues and eigenvectors of W^{1/2}VW^{1/2}
@@ -286,7 +321,7 @@ class UFPCA():
         # Save the results
         self._eigenvalues = eigenvalues
         self._eigenfunctions = DenseFunctionalData(
-            DenseArgvals(data.argvals), DenseValues(eigenfunctions)
+            DenseArgvals(points), DenseValues(eigenfunctions)
         )
 
         # Compute an estimation of the covariance
