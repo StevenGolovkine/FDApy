@@ -10,8 +10,6 @@ import numpy as np
 import numpy.typing as npt
 import scipy
 
-from numpy.linalg import eigh
-
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
 
@@ -669,8 +667,8 @@ def _eigh(
         matrix corresponds to the eigenvalue ``w[i]``.
 
     """
-    eigenvalues, eigenvectors = eigh(matrix, UPLO)
-    return eigenvalues[::-1], np.fliplr(eigenvectors)
+    eigenvalues, eigenvectors = np.linalg.eigh(matrix, UPLO)
+    return np.real(eigenvalues[::-1]), np.real(np.fliplr(eigenvectors))
 
 
 def _cartesian_product(
@@ -724,3 +722,41 @@ def _cartesian_product(
     meshgrids = np.meshgrid(*arrays, indexing='ij')
     stacked = np.column_stack([m.ravel() for m in meshgrids])
     return stacked
+
+
+def _compute_eigen(
+    data: npt.NDArray[np.float64],
+    n_components: Optional[Union[np.float64, np.int64]] = None
+) -> Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    """Compute the eigendecomposition of a matrix.
+
+    This function computes the eigendecomposition of a matrix and returns the
+    selected components based on an estimation of the number of components.
+
+    Parameters
+    ----------
+    data: npt.NDArray[np.float64]
+        The array to diagonalize. Depending on the context, it could the
+        covariance matrix or the inner-product matrix.
+    n_components: Optional[Union[np.float64, np.int64]], default=None
+        Number of components to keep. If `n_components` is `None`, all
+        components are kept, ``n_components == min(n_samples, n_features)``.
+        If `n_components` is an integer, `n_components` are kept. If
+        `0 < n_components < 1`, select the number of components such that the
+        amount of variance that needs to be explained is greater than the
+        percentage specified by `n_components`.
+
+    Returns
+    -------
+    Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]
+        A tuple containing the eigenvalues and the eigenvectors of the inner
+        product matrix.
+
+    """
+    # Diagonalization of the matrix
+    eigenvalues, eigenvectors = _eigh(data)
+
+    # Estimation of the number of components
+    eigenvalues[eigenvalues < 0] = 0
+    npc = _select_number_eigencomponents(eigenvalues, n_components)
+    return eigenvalues[:npc], eigenvectors[:, :npc]

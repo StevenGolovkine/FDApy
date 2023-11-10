@@ -21,61 +21,10 @@ from ...misc.utils import (
     _compute_covariance,
     _integrate,
     _integration_weights,
-    _select_number_eigencomponents
+    _select_number_eigencomponents,
+    _compute_eigen
 )
 from .fcp_tpa import FCPTPA
-
-
-###############################################################################
-# Utilities function
-
-def _compute_inner_product(
-    data: FunctionalData,
-    n_components: Optional[Union[np.float64, np.int64]] = None,
-    method: str = 'trapz'
-) -> Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
-    """Compute the inner-product matrix and its eigendecomposition.
-
-    Parameters
-    ----------
-    data: FunctionalData
-        Observed data, an instance of DenseFunctionalData,
-        IrregularFunctionalData or MultivariateFunctionalData.
-    n_components: Optional[Union[np.float64, np.int64]], default=None
-        Number of components to keep. If `n_components` is `None`, all
-        components are kept, ``n_components == min(n_samples, n_features)``.
-        If `n_components` is an integer, `n_components` are kept. If
-        `0 < n_components < 1`, select the number of components such that the
-        amount of variance that needs to be explained is greater than the
-        percentage specified by `n_components`.
-    method: str, {'simpson', 'trapz'}, default = 'trapz'
-            The method used to integrated.
-
-    Returns
-    -------
-    Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]
-        A tuple containing the eigenvalues and the eigenvectors of the inner
-        product matrix.
-
-    """
-    # Compute inner-product matrix
-    inner_mat = data.inner_product(method=method)
-
-    # Diagonalization of the inner-product matrix
-    eigenvalues, eigenvectors = np.linalg.eigh(inner_mat)
-
-    # Estimation of the number of components
-    eigenvalues = np.real(eigenvalues[::-1])
-    eigenvalues[eigenvalues < 0] = 0
-    npc = _select_number_eigencomponents(eigenvalues, n_components)
-
-    # Estimation of the eigenvalues
-    eigenvalues = eigenvalues[:npc]
-
-    # Estimation of the eigenfunctions
-    eigenvectors = np.real(np.fliplr(eigenvectors)[:, :npc])
-
-    return eigenvalues, eigenvectors
 
 
 #############################################################################
@@ -360,9 +309,10 @@ class UFPCA():
         """
         data_center = data.center(smooth=True, **kwargs)
 
+        inn_pro = data_center.inner_product()
         # Compute inner product matrix and its eigendecomposition
-        eigenvalues, eigenvectors = _compute_inner_product(
-            data_center,
+        eigenvalues, eigenvectors = _compute_eigen(
+            inn_pro,
             self.n_components
         )
 
@@ -906,9 +856,10 @@ class MFPCA():
             Training data used to estimate the eigencomponents.
 
         """
+        inn_pro = data.inner_product()
         # Compute inner product matrix and its eigendecomposition
-        eigenvalues, eigenvectors = _compute_inner_product(
-            data,
+        eigenvalues, eigenvectors = _compute_eigen(
+            inn_pro,
             self.n_components
         )
         eigenfunctions = [

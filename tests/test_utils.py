@@ -28,7 +28,8 @@ from FDApy.misc.utils import (
     _row_var,
     _shift,
     _standardization,
-    _select_number_eigencomponents
+    _select_number_eigencomponents,
+    _compute_eigen
 )
 
 
@@ -545,3 +546,15 @@ class TestCartesianProduct(unittest.TestCase):
             [1, 1, 2], [1, 1, 3], [1, 2, 2], [1, 2, 3]
         ])
         np.testing.assert_array_equal(result, expected)
+
+
+class TestComputeEigen(unittest.TestCase):
+    def test_computeeigen(self):
+        matrix = np.array([[26, 18], [18, 74]])
+        eig_val, eig_vec = _compute_eigen(matrix, 1)
+
+        expected_val = np.array([80.])
+        expected_vec = np.array([[0.31622777], [0.9486833 ]])
+
+        np.testing.assert_array_almost_equal(eig_val, expected_val)
+        np.testing.assert_array_almost_equal(np.abs(eig_vec), expected_vec)
