@@ -21,7 +21,6 @@ from ...misc.utils import (
     _compute_covariance,
     _integrate,
     _integration_weights,
-    _select_number_eigencomponents,
     _compute_eigen
 )
 from .fcp_tpa import FCPTPA
@@ -206,7 +205,6 @@ class UFPCA():
         self,
         data: FunctionalData,
         points: DenseArgvals,
-        mean: FunctionalData,
         **kwargs
     ) -> None:
         """Univariate Functional PCA using the covariance operator.
@@ -218,8 +216,6 @@ class UFPCA():
         points: DenseArgvals
             The sampling points at which the covariance and the eigenfunctions
             will be estimated.
-        mean: FunctionalData
-            An estimate of the mean of the data.
         **kwargs:
             kernel_name: str, default='epanechnikov'
                 Name of the kernel used for local polynomial smoothing.
@@ -239,7 +235,6 @@ class UFPCA():
         # Compute the covariance
         covariance = data.covariance(
             points=points,
-            mean=mean,
             smooth=True,
             **kwargs
         )
@@ -275,7 +270,6 @@ class UFPCA():
         self,
         data: FunctionalData,
         points: DenseArgvals,
-        mean: Optional[FunctionalData] = None,
         **kwargs
     ) -> None:
         """Univariate Functional PCA using inner-product matrix decomposition.
@@ -287,8 +281,6 @@ class UFPCA():
         points: DenseArgvals
             The sampling points at which the covariance and the eigenfunctions
             will be estimated.
-        mean: None
-            Not used here.
         **kwargs:
             kernel_name: str, default='epanechnikov'
                 Name of the kernel used for local polynomial smoothing.
@@ -300,33 +292,21 @@ class UFPCA():
                 power :math:`-1/5`.
 
         """
-        data_center = data.center(smooth=True, **kwargs)
-
-        inn_pro = data_center.inner_product()
         # Compute inner product matrix and its eigendecomposition
-        eigenvalues, eigenvectors = _compute_eigen(
-            inn_pro,
-            self.n_components
-        )
+        in_prod = data.inner_product()
+        eigenvalues, eigenvectors = _compute_eigen(in_prod, self.n_components)
 
-        if isinstance(data, DenseFunctionalData):
-            eigenfunctions = np.matmul(
-                data_center.values.T, eigenvectors
-            )
-        else:
-            eigenfunctions = np.matmul(
-                data_center._data_innpro.values.T, eigenvectors
-            )
+        # Compute the eigenfunctions
+        data_smooth = data.smooth(points)
+        eigenfunctions = np.matmul(data_smooth.values.T, eigenvectors)
         eigenfunctions = eigenfunctions / np.sqrt(eigenvalues)
 
         # Save the results
         self._eigenvectors = eigenvectors
-        self._eigenvalues = eigenvalues / data.n_obs
+        self._eigenvalues = eigenvalues / data_smooth.n_obs
         self._eigenfunctions = DenseFunctionalData(
-            DenseArgvals(data.argvals), DenseValues(eigenfunctions.T)
-        )
-
-        self._eigenfunctions = self._eigenfunctions.smooth(
+            DenseArgvals(data_smooth.argvals), DenseValues(eigenfunctions.T)
+        ).smooth(
             points=points, **kwargs
         )
 
