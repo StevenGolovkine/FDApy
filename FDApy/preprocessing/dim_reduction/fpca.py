@@ -179,32 +179,32 @@ class UFPCA():
 
         # Normalize the data
         if self.normalize:
-            data, self.weights = data.normalize(
-                use_argvals_stand=True
-            )
+            data, self.weights = data.normalize(use_argvals_stand=True)
 
-        self._mean = data.mean()
+        # Compute the mean
+        self._mean = data.mean(points=points)
 
-        # Estimate eigencomponents
         if self.method == 'covariance':
             if data.n_dimension == 1:
-                self._fit_covariance(data, points=points, mean=self._mean)
+                self._fit_covariance(data, points, smooth, **kwargs)
             else:
                 raise ValueError((
-                    "Estimation of the eigencomponents is not implemented "
-                    f"for {data.n_dimension}-dimensional data."
+                    "Estimation of the eigencomponents using the covariance "
+                    f"operator is not implemented for {data.n_dimension}"
+                    "-dimensional data."
                 ))
         elif self.method == 'inner-product':
-            self._fit_inner_product(data)
+            self._fit_inner_product(data, points, smooth, **kwargs)
         else:
             raise NotImplementedError(
-                f"{self.method} method not implemented."
+                f"The {self.method} method not implemented."
             )
 
     def _fit_covariance(
         self,
         data: FunctionalData,
         points: DenseArgvals,
+        smooth: bool = True,
         **kwargs
     ) -> None:
         """Univariate Functional PCA using the covariance operator.
@@ -216,6 +216,8 @@ class UFPCA():
         points: DenseArgvals
             The sampling points at which the covariance and the eigenfunctions
             will be estimated.
+        smooth: bool, default=True
+            Should the mean and covariance be smoothed?
         **kwargs:
             kernel_name: str, default='epanechnikov'
                 Name of the kernel used for local polynomial smoothing.
@@ -235,7 +237,7 @@ class UFPCA():
         # Compute the covariance
         covariance = data.covariance(
             points=points,
-            smooth=True,
+            smooth=smooth,
             **kwargs
         )
 
@@ -270,6 +272,7 @@ class UFPCA():
         self,
         data: FunctionalData,
         points: DenseArgvals,
+        smooth: bool = True,
         **kwargs
     ) -> None:
         """Univariate Functional PCA using inner-product matrix decomposition.
@@ -281,6 +284,8 @@ class UFPCA():
         points: DenseArgvals
             The sampling points at which the covariance and the eigenfunctions
             will be estimated.
+        smooth: bool, default=True
+            Should the mean and covariance be smoothed?
         **kwargs:
             kernel_name: str, default='epanechnikov'
                 Name of the kernel used for local polynomial smoothing.
@@ -293,7 +298,7 @@ class UFPCA():
 
         """
         # Compute inner product matrix and its eigendecomposition
-        in_prod = data.inner_product()
+        in_prod = data.inner_product(method='trapz', smooth=smooth, **kwargs)
         eigenvalues, eigenvectors = _compute_eigen(in_prod, self.n_components)
 
         # Compute the eigenfunctions
