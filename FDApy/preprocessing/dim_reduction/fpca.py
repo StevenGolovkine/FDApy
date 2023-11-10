@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import warnings
 
-from typing import Optional, List, Tuple, Union
+from typing import Optional, List, Union
 
 from ...representation.argvals import DenseArgvals
 from ...representation.values import DenseValues
@@ -253,22 +253,15 @@ class UFPCA():
         weight_invsqrt = np.diag(1 / np.sqrt(weight))
         var = np.dot(np.dot(weight_sqrt, covariance.values[0]), weight_sqrt)
 
-        eigenvalues, eigenvectors = np.linalg.eigh(var)
-        eigenvalues[eigenvalues < 0] = 0
-        eigenvalues = eigenvalues[::-1]
+        eigenvalues, eigenvectors = _compute_eigen(var, self.n_components)
 
-        npc = _select_number_eigencomponents(eigenvalues, self.n_components)
-
-        # Slice eigenvalues and compute eigenfunctions = W^{-1/2}U
-        eigenvalues = eigenvalues[:npc]
-        eigenfunctions = np.transpose(
-            np.dot(weight_invsqrt, np.fliplr(eigenvectors)[:, :npc])
-        )
+        # Compute eigenfunctions = W^{-1/2}U
+        eigenfunctions = np.transpose(np.dot(weight_invsqrt, eigenvectors))
 
         # Save the results
         self._eigenvalues = eigenvalues
         self._eigenfunctions = DenseFunctionalData(
-            DenseArgvals(points), DenseValues(eigenfunctions)
+            points, DenseValues(eigenfunctions)
         )
 
         # Compute an estimation of the covariance

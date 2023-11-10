@@ -200,26 +200,6 @@ class TestMeanhMultivariateFunctionalData(unittest.TestCase):
             self.fdata.mean(points=[points, points, points])
 
 
-class TestInnerProductMultivariateFunctionalData(unittest.TestCase):
-    def setUp(self) -> None:
-        name = 'bsplines'
-        n_functions = 5
-        kl = KarhunenLoeve(
-            basis_name=name, n_functions=n_functions, random_state=42
-        )
-        kl.new(n_obs=4)
-        kl.add_noise_and_sparsify(0.05, 0.5)
-
-        fdata_1 = kl.data
-        fdata_2 = kl.sparse_data
-        self.fdata = MultivariateFunctionalData([fdata_1, fdata_2])
-
-    def test_inner_prod(self):
-        res = self.fdata.inner_product()
-        expected_res = np.array([[ 0.58532546,  0.19442368, -0.04038602,  0.01705178],[ 0.19442368,  0.38395264, -0.45055398,  0.10919059],[-0.04038602, -0.45055398,  0.96833672, -0.07948717],[ 0.01705178,  0.10919059, -0.07948717,  0.18026045]])
-        np.testing.assert_array_almost_equal(res, expected_res)
-
-
 class TestCenterMultivariateFunctionalData(unittest.TestCase):
     def setUp(self):
         name = 'bsplines'
@@ -287,6 +267,26 @@ class TestNormalizeMultivariateFunctionalData(unittest.TestCase):
         np.testing.assert_array_almost_equal(res.data[1].values[0], expected_values)
 
 
+class TestInnerProductMultivariateFunctionalData(unittest.TestCase):
+    def setUp(self) -> None:
+        name = 'bsplines'
+        n_functions = 5
+        kl = KarhunenLoeve(
+            basis_name=name, n_functions=n_functions, random_state=42
+        )
+        kl.new(n_obs=4)
+        kl.add_noise_and_sparsify(0.05, 0.5)
+
+        fdata_1 = kl.data
+        fdata_2 = kl.sparse_data
+        self.fdata = MultivariateFunctionalData([fdata_1, fdata_2])
+
+    def test_inner_prod(self):
+        res = self.fdata.inner_product()
+        expected_res = np.array([[ 0.39261306,  0.06899153, -0.14614219, -0.0836462 ],[ 0.06899153,  0.32580074, -0.4890299 ,  0.07577286],[-0.14614219, -0.4890299 ,  0.94953678, -0.09322892],[-0.0836462 ,  0.07577286, -0.09322892,  0.17157688]])
+        np.testing.assert_array_almost_equal(res, expected_res)
+
+
 class TestCovarianceMultivariateFunctionalData(unittest.TestCase):
     def setUp(self) -> None:
         name = 'bsplines'
@@ -327,21 +327,6 @@ class TestCovarianceMultivariateFunctionalData(unittest.TestCase):
     def test_covariance_points(self):
         points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 11)})
         res = self.fdata.covariance(points=[points, points])
-
-        np.testing.assert_equal(res.n_functional, 2)
-        
-        expected_values = np.array([ 0.50866992,  0.43660224,  0.35796599,  0.26783058, 0.17579733,  0.09078075,  0.02103428, -0.02764917, -0.05060112, -0.04310784, -0.0033911 ])
-        np.testing.assert_array_almost_equal(self.fdata._covariance.data[0].values[0, 1], expected_values)
-        expected_values = np.array([ 0.42165975,  0.40880349,  0.30861022,  0.21813467, 0.1490171 ,  0.01022111, -0.05204392, -0.09318233, -0.08530561, -0.08192973, -0.02739071])
-        np.testing.assert_array_almost_equal(self.fdata._covariance.data[1].values[0, 1], expected_values)
-
-        expected_noise = [0.007162139187388261, 0.04058380216259712]
-        np.testing.assert_almost_equal(self.fdata._noise_variance, expected_noise)
-
-    def test_covariance_mean(self):
-        points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 11)})
-        mean_curves = self.fdata.mean()
-        res = self.fdata.covariance(points=[points, points], mean=mean_curves)
 
         np.testing.assert_equal(res.n_functional, 2)
         

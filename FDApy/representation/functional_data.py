@@ -488,13 +488,6 @@ class FunctionalData(ABC):
         """Compute an estimate of the mean."""
 
     @abstractmethod
-    def inner_product(
-        self,
-        method: str = 'trapz'
-    ) -> npt.NDArray[np.float64]:
-        """Compute an estimate of the inner product matrix."""
-
-    @abstractmethod
     def center(
         self,
         smooth: bool = True,
@@ -509,12 +502,7 @@ class FunctionalData(ABC):
         method: str = 'trapz',
         use_argvals_stand: bool = False
     ) -> npt.NDArray[np.float64]:
-        """Norm of each observation of the data.
-
-        TODO: Incorporate different type of norms. Especially, the one from the
-        paper.
-
-        """
+        """Norm of each observation of the data."""
 
     @abstractmethod
     def normalize(
@@ -526,9 +514,18 @@ class FunctionalData(ABC):
         """Normalize the data."""
 
     @abstractmethod
+    def inner_product(
+        self,
+        method: str = 'trapz',
+        smooth: bool = True,
+        **kwargs
+    ) -> npt.NDArray[np.float64]:
+        """Compute an estimate of the inner product matrix."""
+
+    @abstractmethod
     def covariance(
         self,
-        mean: Optional[Type[FunctionalData]] = None,
+        points: Optional[DenseArgvals] = None,
         smooth: Optional[str] = None,
         **kwargs
     ) -> Type[FunctionalData]:
@@ -933,112 +930,6 @@ class DenseFunctionalData(FunctionalData):
             )
         return self._mean
 
-    def inner_product(
-        self,
-        method: str = 'trapz'
-    ) -> npt.NDArray[np.float64]:
-        r"""Compute the inner product matrix of the data.
-
-        The inner product matrix is a ``n_obs`` by ``n_obs`` matrix where each
-        entry is defined as
-
-        .. math::
-            \langle x, y \rangle = \int_{\mathcal{T}} x(t)y(t)dt,
-            t \in \mathcal{T},
-
-        where :math:`\mathcal{T}` is a one- or multi-dimensional domain [1]_.
-
-        Parameters
-        ----------
-        method: str, {'simpson', 'trapz'}, default = 'trapz'
-            The method used to integrated.
-
-        Returns
-        -------
-        npt.NDArray[np.float64], shape=(n_obs, n_obs)
-            Inner product matrix of the data.
-
-        References
-        ----------
-        .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
-            Analysis, Springer Science, Chapter 2.
-
-        Examples
-        --------
-        For one-dimensional functional data:
-
-        >>> argvals = {'input_dim_0': np.array([0., 0.25, 0.5 , 0.75])}
-        >>> values = np.array(
-        ...     [
-        ...         [ 2.48466259, -3.38397716, -1.2367073 , -1.85052901],
-        ...         [ 1.44853118,  0.67716255,  1.79711043,  4.76950236],
-        ...         [-5.13173463,  0.35830122,  0.56648942, -0.20965252]
-        ...     ]
-        ... )
-        >>> data = DenseFunctionalData(argvals, values)
-        >>> data.inner_product()
-        array(
-            [
-                [ 4.44493731, -1.78187445, -2.02359881],
-                [-1.78187445,  4.02783817, -0.73900893],
-                [-2.02359881, -0.73900893,  3.40965432]
-            ]
-        )
-
-        For two-dimensional functional data:
-
-        >>> argvals = {
-        ...     'input_dim_0': np.array([0.  , 0.25, 0.5 , 0.75]),
-        ...     'input_dim_1': np.array([0.  , 0.25, 0.5 , 0.75])
-        ... }
-        >>> values = np.array([
-        ...     [
-        ...         [  6.30864764, -18.37912204,   6.15515232,  29.8027036 ],
-        ...         [ -6.076622  , -15.48586803, -11.39997792,   8.40599319],
-        ...         [-20.4094798 ,  -1.3872093 ,  -0.59922597,  -6.42013363],
-        ...         [  5.78626375,  -1.83874696,  -0.87225549,   2.75000303]
-        ...     ],
-        ...     [
-        ...         [ -4.83576968,  18.85512513, -18.73086523,  15.1511348 ],
-        ...         [-24.41254888,  12.37333951,  28.85176939,  16.41806885],
-        ...         [-10.02681278,  14.76500118,   1.83114017,  -2.78985647],
-        ...         [  4.29268032,   8.1781319 ,  30.10132687,  -0.72828334]
-        ...     ],
-        ...     [
-        ...         [ -5.85921132,   1.85573561,  -5.11291405, -12.89441767],
-        ...         [ -4.79384081,  -0.93863074,  18.81909033,   4.55041973],
-        ...         [-13.27810529,  28.08961819, -13.79482673,  35.25677906],
-        ...         [  9.10058173, -16.43979436, -11.88561292,  -5.86481318]
-        ...     ]
-        ... ])
-        >>> data = DenseFunctionalData(argvals, values)
-        >>> data.inner_product()
-        array(
-            [
-                [ 67.93133466, -26.76503879, -17.70996479],
-                [-26.76503879, 162.59040715,  51.40230074],
-                [-17.70996479,  51.40230074, 147.86839738]
-            ]
-        )
-
-        """
-        # Get parameters
-        n_obs = self.n_obs
-        axis = [argvals for argvals in self.argvals.values()]
-
-        inner_mat = np.zeros((n_obs, n_obs))
-        for (i, j) in itertools.product(np.arange(n_obs), repeat=2):
-            if i <= j:
-                inner_mat[i, j] = _inner_product(
-                    self.values[i],
-                    self.values[j],
-                    *axis,
-                    method=method
-                )
-        inner_mat = inner_mat + inner_mat.T
-        np.fill_diagonal(inner_mat, np.diag(inner_mat) / 2)
-        return inner_mat
-
     def center(
         self,
         smooth: bool = True,
@@ -1206,10 +1097,103 @@ class DenseFunctionalData(FunctionalData):
         new_values = self.values / weights
         return DenseFunctionalData(self.argvals, new_values), weights
 
+    def inner_product(
+        self,
+        method: str = 'trapz',
+        smooth: bool = True,
+        **kwargs
+    ) -> npt.NDArray[np.float64]:
+        r"""Compute the inner product matrix of the data.
+
+        The inner product matrix is a ``n_obs`` by ``n_obs`` matrix where each
+        entry is defined as
+
+        .. math::
+            \langle x, y \rangle = \int_{\mathcal{T}} x(t)y(t)dt,
+            t \in \mathcal{T},
+
+        where :math:`\mathcal{T}` is a one- or multi-dimensional domain [1]_.
+
+        Parameters
+        ----------
+        method: str, {'simpson', 'trapz'}, default = 'trapz'
+            The method used to integrated.
+        smooth: bool, default=True
+            Should the mean be smoothed?
+        **kwargs:
+            kernel_name: str, default='epanechnikov'
+                Name of the kernel used for local polynomial smoothing.
+            degree: int, default=1
+                Degree used for local polynomial smoothing.
+            bandwidth: float
+                Bandwidth used for local polynomial smoothing. The default
+                bandwitdth is set to be the number of sampling points to the
+                power :math:`-1/5`.
+
+
+        Returns
+        -------
+        npt.NDArray[np.float64], shape=(n_obs, n_obs)
+            Inner product matrix of the data.
+
+        References
+        ----------
+        .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+            Analysis, Springer Science, Chapter 2.
+
+        Examples
+        --------
+        For one-dimensional functional data:
+
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines', n_functions=5, random_state=42
+        ... )
+        >>> kl.new(n_obs=3)
+        >>> kl.data.inner_product()
+        array([
+            [ 0.16288536,  0.01958865, -0.10017322],
+            [ 0.01958865,  0.17701988, -0.2459348 ],
+            [-0.10017322, -0.2459348 ,  0.42008035]
+        ])
+
+        For two-dimensional functional data:
+
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines', dimension='2D', n_functions=5,
+        ...     random_state=42, argvals=np.linspace(0, 1, 11)
+        ... )
+        >>> kl.new(n_obs=3)
+        >>> kl.data.inner_product()
+        array([
+            [ 0.01669878,  0.00349892, -0.00817676],
+            [ 0.00349892,  0.03208174, -0.03777796],
+            [-0.00817676, -0.03777796,  0.05083159]
+        ])
+
+        """
+        # Center the data
+        data = self.center(smooth=smooth, **kwargs)
+
+        # Get parameters
+        n_obs = data.n_obs
+        axis = [argvals for argvals in data.argvals.values()]
+
+        inner_mat = np.zeros((n_obs, n_obs))
+        for (i, j) in itertools.product(np.arange(n_obs), repeat=2):
+            if i <= j:
+                inner_mat[i, j] = _inner_product(
+                    data.values[i],
+                    data.values[j],
+                    *axis,
+                    method=method
+                )
+        inner_mat = inner_mat + inner_mat.T
+        np.fill_diagonal(inner_mat, np.diag(inner_mat) / 2)
+        return inner_mat
+
     def covariance(
         self,
         points: Optional[DenseArgvals] = None,
-        mean: Optional[DenseFunctionalData] = None,
         smooth: bool = True,
         **kwargs
     ) -> DenseFunctionalData:
@@ -1225,9 +1209,7 @@ class DenseFunctionalData(FunctionalData):
             The sampling points at which the covariance is estimated. If
             `None`, the DenseArgvals of the DenseFunctionalData is used. If
             `smooth` is False, the DenseArgvals of the DenseFunctionalData is
-            used.
-        mean: Optional[DenseFunctionalData], default=None
-            An estimate of the mean of self. If None, an estimate is computed.
+            used.p
         smooth: bool, default=True
             Should the mean be smoothed?
         **kwargs:
@@ -1287,13 +1269,13 @@ class DenseFunctionalData(FunctionalData):
             'input_dim_0': points['input_dim_0'],
             'input_dim_1': points['input_dim_0'],
         })
-        if mean is None:
-            mean = self.mean(smooth=smooth, **kwargs)
 
-        data = self.values - mean.values
-        cov = np.dot(data.T, data) / (self.n_obs - 1)
+        # Center the data
+        data = self.center(smooth=smooth, **kwargs)
+
+        # Estimate the covariance
+        cov = np.dot(data.values.T, data.values) / (self.n_obs - 1)
         raw_diag_cov = np.diag(cov).copy()
-
         if smooth:
             cov = _smooth_covariance(cov, argvals_cov, points_cov)
 
@@ -1735,86 +1717,6 @@ class IrregularFunctionalData(FunctionalData):
         self._mean = DenseFunctionalData(points, DenseValues(pred[np.newaxis]))
         return self._mean
 
-    def inner_product(
-        self,
-        method: str = 'trapz'
-    ) -> npt.NDArray[np.float64]:
-        r"""Compute the inner product matrix of the data.
-
-        The inner product matrix is a ``n_obs`` by ``n_obs`` matrix where each
-        entry is defined as
-
-        .. math::
-            \langle x, y \rangle = \int_{\mathcal{T}} x(t)y(t)dt,
-            t \in \mathcal{T},
-
-        where :math:`\mathcal{T}` is a one- or multi-dimensional domain.
-
-        Parameters
-        ----------
-        method: str, {'simpson', 'trapz'}, default = 'trapz'
-            The method used to integrated.
-
-        Returns
-        -------
-        npt.NDArray[np.float64], shape=(n_obs, n_obs)
-            Inner product matrix of the data.
-
-        Raises
-        ------
-        NotImplementedError
-            Not implement for higher-dimensional data.
-
-        References
-        ----------
-        .. [1] Benko, M., Härdle, W., Kneip, A., (2009), Common functional
-            principal components. The Annals of Statistics 37, 1-34.
-
-        Examples
-        --------
-        For one-dimensional functional data:
-
-        >>> argvals = IrregularArgvals({
-        ...     0: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4])}),
-        ...     1: DenseArgvals({'input_dim_0': np.array([0, 2, 4])}),
-        ...     2: DenseArgvals({'input_dim_0': np.array([2, 4])})
-        ... })
-        >>> values = IrregularValues({
-        ...     0: np.array([1, 2, 3, 4, 5]),
-        ...     1: np.array([2, 5, 6]),
-        ...     2: np.array([4, 7])
-        ... })
-        >>> fdata = IrregularFunctionalData(argvals, values)
-        >>> fdata.inner_product()
-        array(
-            [
-                [42. , 55. , 55.5],
-                [55. , 74. , 73. ],
-                [55.5, 73. , 80.5]
-            ]
-        )
-
-        """
-        if self.n_dimension > 1:
-            raise NotImplementedError(
-                "Only implemented for one-dimensional irregular ",
-                "functional data."
-            )
-
-        dense_argvals = self.argvals.to_dense()['input_dim_0']
-        new_values = np.zeros((self.n_obs, len(dense_argvals)))
-        for idx, obs in enumerate(self):
-            tt = obs.argvals[idx]['input_dim_0']
-            intervals = (tt + _shift(tt, -1)) / 2
-            indices = np.searchsorted(intervals, dense_argvals)
-            new_values[idx, :] = obs.values[idx][indices]
-
-        self._data_inpro = DenseFunctionalData(
-            DenseArgvals({'input_dim_0': dense_argvals}),
-            DenseValues(new_values)
-        )
-        return self._data_inpro.inner_product(method=method)
-
     def center(
         self,
         smooth: bool = True,
@@ -1997,10 +1899,97 @@ class IrregularFunctionalData(FunctionalData):
             new_values[idx] = obs.values[idx] / weights
         return IrregularFunctionalData(self.argvals, new_values), weights
 
+    def inner_product(
+        self,
+        method: str = 'trapz',
+        smooth: bool = True,
+        **kwargs
+    ) -> npt.NDArray[np.float64]:
+        r"""Compute the inner product matrix of the data.
+
+        The inner product matrix is a ``n_obs`` by ``n_obs`` matrix where each
+        entry is defined as
+
+        .. math::
+            \langle x, y \rangle = \int_{\mathcal{T}} x(t)y(t)dt,
+            t \in \mathcal{T},
+
+        where :math:`\mathcal{T}` is a one- or multi-dimensional domain.
+
+        Parameters
+        ----------
+        method: str, {'simpson', 'trapz'}, default = 'trapz'
+            The method used to integrated.
+        smooth: bool, default=True
+            Should the mean be smoothed?
+        **kwargs:
+            kernel_name: str, default='epanechnikov'
+                Name of the kernel used for local polynomial smoothing.
+            degree: int, default=1
+                Degree used for local polynomial smoothing.
+            bandwidth: float
+                Bandwidth used for local polynomial smoothing. The default
+                bandwitdth is set to be the number of sampling points to the
+                power :math:`-1/5`.
+
+        Returns
+        -------
+        npt.NDArray[np.float64], shape=(n_obs, n_obs)
+            Inner product matrix of the data.
+
+        Raises
+        ------
+        NotImplementedError
+            Not implement for higher-dimensional data.
+
+        References
+        ----------
+        .. [1] Benko, M., Härdle, W., Kneip, A., (2009), Common functional
+            principal components. The Annals of Statistics 37, 1-34.
+
+        Examples
+        --------
+        For one-dimensional functional data:
+
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines', n_functions=5, random_state=5
+        ... )
+        >>> kl.new(n_obs=3)
+        >>> kl.sparsify(percentage=0.8, epsilon=0.05)
+        >>> kl.sparse_data.inner_product()
+        array([
+            [ 0.15749721,  0.01983093, -0.09607059],
+            [ 0.01983093,  0.17937531, -0.24773228],
+            [-0.09607059, -0.24773228,  0.41648575]
+        ])
+
+        """
+        if self.n_dimension > 1:
+            raise NotImplementedError(
+                "Only implemented for one-dimensional irregular ",
+                "functional data."
+            )
+
+        # Center the data
+        data = self.center(smooth=smooth, **kwargs)
+
+        dense_argvals = data.argvals.to_dense()['input_dim_0']
+        new_values = np.zeros((data.n_obs, len(dense_argvals)))
+        for idx, obs in enumerate(self):
+            tt = obs.argvals[idx]['input_dim_0']
+            intervals = (tt + _shift(tt, -1)) / 2
+            indices = np.searchsorted(intervals, dense_argvals)
+            new_values[idx, :] = obs.values[idx][indices]
+
+        self._data_inpro = DenseFunctionalData(
+            DenseArgvals({'input_dim_0': dense_argvals}),
+            DenseValues(new_values)
+        )
+        return self._data_inpro.inner_product(method=method)
+
     def covariance(
         self,
         points: Optional[DenseArgvals] = None,
-        mean: Optional[DenseFunctionalData] = None,
         smooth: bool = True,
         **kwargs
     ) -> IrregularFunctionalData:
@@ -2081,29 +2070,24 @@ class IrregularFunctionalData(FunctionalData):
             'input_dim_0': points['input_dim_0'],
             'input_dim_1': points['input_dim_0'],
         })
-        if mean is None:
-            mean = self.mean(
-                points=self.argvals.to_dense(), smooth=smooth, **kwargs
-            )
-
         n_points = self.argvals.to_dense().n_points
+
+        # Center the data
+        data = self.center(smooth=smooth, **kwargs)
 
         # Compute the covariance
         cov_sum = np.zeros(np.power(n_points, 2))
         cov_count = np.zeros(np.power(n_points, 2))
-        for idx, obs in enumerate(self):
+        for idx, obs in enumerate(data):
             obs_points = np.isin(
                 self.argvals.to_dense()['input_dim_0'],
                 obs.argvals[idx]['input_dim_0']
             )
-            mean_obs = mean.values[0][obs_points]
-            obs_centered = obs.values[idx] - mean_obs
             mask = np.outer(obs_points, obs_points).flatten()
-            cov = np.outer(obs_centered, obs_centered).flatten()
+            cov = np.outer(obs.values[idx], obs.values[idx]).flatten()
 
             cov_count[mask] += 1
             cov_sum[mask] += cov
-
         cov = np.where(cov_count == 0, np.nan, cov_sum / cov_count)
         cov = cov.reshape(2 * n_points)
         raw_diag_cov = np.diag(cov).copy()
@@ -2594,58 +2578,6 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         ])
         return self._mean
 
-    def inner_product(
-        self,
-        method: str = 'trapz'
-    ) -> npt.NDArray[np.float64]:
-        r"""Compute the inner product matrix of the data.
-
-        The inner product matrix is a ``n_obs`` by ``n_obs`` matrix where each
-        entry is defined as
-
-        .. math::
-            \langle\langle x, y \rangle\rangle =
-            \sum_{p = 1}^P \int_{\mathcal{T}_k} x^{(p)}(t)y^{(p)}(t)dt,
-            t \in \mathcal{T},
-
-        where :math:`\mathcal{T}` is a one- or multi-dimensional domain.
-
-        Parameters
-        ----------
-        method: str, {'simpson', 'trapz'}, default = 'trapz'
-            The method used to integrated.
-
-        Returns
-        -------
-        npt.NDArray[np.float64], shape=(n_obs, n_obs)
-            Inner product matrix of the data.
-
-        Examples
-        --------
-        >>> kl = KarhunenLoeve(
-        ...     basis_name=name, n_functions=n_functions, random_state=42
-        ... )
-        >>> kl.new(n_obs=4)
-        >>> kl.add_noise_and_sparsify(0.05, 0.5)
-
-        >>> fdata_1 = kl.data
-        >>> fdata_2 = kl.sparse_data
-        >>> fdata = MultivariateFunctionalData([fdata_1, fdata_2])
-        >>> fdata.inner_product()
-        array(
-            [
-                [ 0.58532546,  0.19442368, -0.04038602,  0.01705178],
-                [ 0.19442368,  0.38395264, -0.45055398,  0.10919059],
-                [-0.04038602, -0.45055398,  0.96833672, -0.07948717],
-                [ 0.01705178,  0.10919059, -0.07948717,  0.18026045]
-            ]
-        )
-
-        """
-        return np.sum([
-            data.inner_product(method=method) for data in self.data
-        ], axis=0)
-
     def center(
         self,
         smooth: bool = True,
@@ -2798,10 +2730,73 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         weights = np.array([weight for _, weight in normalization])
         return MultivariateFunctionalData(data_norm), weights
 
+    def inner_product(
+        self,
+        method: str = 'trapz',
+        smooth: bool = True,
+        **kwargs
+    ) -> npt.NDArray[np.float64]:
+        r"""Compute the inner product matrix of the data.
+
+        The inner product matrix is a ``n_obs`` by ``n_obs`` matrix where each
+        entry is defined as
+
+        .. math::
+            \langle\langle x, y \rangle\rangle =
+            \sum_{p = 1}^P \int_{\mathcal{T}_k} x^{(p)}(t)y^{(p)}(t)dt,
+            t \in \mathcal{T},
+
+        where :math:`\mathcal{T}` is a one- or multi-dimensional domain.
+
+        Parameters
+        ----------
+        method: str, {'simpson', 'trapz'}, default = 'trapz'
+            The method used to integrated.
+        smooth: bool, default=True
+            Should the mean be smoothed?
+        **kwargs:
+            kernel_name: str, default='epanechnikov'
+                Name of the kernel used for local polynomial smoothing.
+            degree: int, default=1
+                Degree used for local polynomial smoothing.
+            bandwidth: float
+                Bandwidth used for local polynomial smoothing. The default
+                bandwitdth is set to be the number of sampling points to the
+                power :math:`-1/5`.
+
+        Returns
+        -------
+        npt.NDArray[np.float64], shape=(n_obs, n_obs)
+            Inner product matrix of the data.
+
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name=name, n_functions=n_functions, random_state=42
+        ... )
+        >>> kl.new(n_obs=4)
+        >>> kl.add_noise_and_sparsify(0.05, 0.5)
+
+        >>> fdata_1 = kl.data
+        >>> fdata_2 = kl.sparse_data
+        >>> fdata = MultivariateFunctionalData([fdata_1, fdata_2])
+        >>> fdata.inner_product()
+        array([
+            [ 0.39261306,  0.06899153, -0.14614219, -0.0836462 ],
+            [ 0.06899153,  0.32580074, -0.4890299 ,  0.07577286],
+            [-0.14614219, -0.4890299 ,  0.94953678, -0.09322892],
+            [-0.0836462 ,  0.07577286, -0.09322892,  0.17157688]
+        ])
+
+        """
+        return np.sum([
+            data.inner_product(method=method, smooth=smooth, **kwargs)
+            for data in self.data
+        ], axis=0)
+
     def covariance(
         self,
         points: Optional[List[DenseArgvals]] = None,
-        mean: Optional[MultivariateFunctionalData] = None,
         smooth: bool = True,
         **kwargs
     ) -> MultivariateFunctionalData:
@@ -2815,11 +2810,6 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         points: Optional[List[DenseArgvals]], default=None
             Points at which the mean is estimated. The default is None,
             meaning we use the argvals as estimation points.
-        mean: Optional[MultivariateFunctionalData], default=None
-            An estimate of the mean of self. If None, an estimate is computed.
-            Make sure that the mean curves are estimated on `argvals` for
-            DenseFunctionalData and on `argvals.to_dense()` for
-            IrregularFunctionalData.
         smooth: bool, default=True
             Should the mean be smoothed?
         **kwargs:
@@ -2863,16 +2853,10 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             raise ValueError(
                 f'`points` has to be a list of length {self.n_functional}.'
             )
-        if mean is not None:
-            self._covariance = MultivariateFunctionalData([
-                fdata.covariance(pp, mm, smooth, **kwargs)
-                for (fdata, pp, mm) in zip(self.data, points, mean.data)
-            ])
-        else:
-            self._covariance = MultivariateFunctionalData([
-                fdata.covariance(pp, None, smooth, **kwargs)
-                for fdata, pp in zip(self.data, points)
-            ])
+        self._covariance = MultivariateFunctionalData([
+            fdata.covariance(pp, smooth, **kwargs)
+            for fdata, pp in zip(self.data, points)
+        ])
         self._noise_variance = [fdata._noise_variance for fdata in self.data]
         return self._covariance
 
