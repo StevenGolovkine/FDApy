@@ -256,6 +256,7 @@ class UFPCA():
         eigenfunctions = np.transpose(np.dot(weight_invsqrt, eigenvectors))
 
         # Save the results
+        self._noise_variance = data._noise_variance
         self._eigenvalues = eigenvalues
         self._eigenfunctions = DenseFunctionalData(
             points, DenseValues(eigenfunctions)
@@ -413,7 +414,6 @@ class UFPCA():
             DenseValues(data.values - self.mean.values)
         )
 
-        # TODO: Add checkers
         if self.normalize:
             values = data_new.values / self.weights
             data_new = DenseFunctionalData(
@@ -462,9 +462,10 @@ class UFPCA():
             100, pp. 577--590.
 
         """
-        if not hasattr(data, 'var_noise'):
-            data.var_noise = 0.0
-        noise = max(tol, data.var_noise)
+        print(self._noise_variance)
+        if not hasattr(self, '_noise_variance'):
+            self._noise_variance = 0.0
+        noise = max(tol, self._noise_variance)
         noise_mat = noise * np.eye(self.covariance.values[0].shape[0])
         sigma_inv = np.linalg.pinv(self.covariance.values[0] + noise_mat)
         return self.eigenvalues * np.linalg.multi_dot(

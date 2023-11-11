@@ -218,112 +218,6 @@ class TestFitInnerProduct(unittest.TestCase):
         np.testing.assert_array_almost_equal(np.abs(ufpca.eigenfunctions.values[:, 0]), np.abs(expected_eigenfunctions))
 
 
-# class TestFitInnerProduct(unittest.TestCase):
-#     def setUp(self):
-#         argvals = np.linspace(0, 1, 10)
-#         kl = KarhunenLoeve(
-#             basis_name='fourier', argvals=argvals, 
-#             n_functions=5, random_state=42
-#         )
-#         kl.new(n_obs=50)
-#         self.data = kl.data
-
-#     def test_fit_covariance(self):
-#         # Initialize a UFPCA object
-#         uf = UFPCA(n_components=2)
-
-#         # Compute UFPCA covariance
-#         uf._fit_inner_product(self.data)
-
-#         # Expected output
-#         expected_eigenvalues = np.array([1.23451254, 1.05652506])
-#         expected_eigenfunctions = np.array([[-0.78057529,  0.90183037,  2.06354079,  1.23567777, -0.06523557,  0.08696559,  0.94945447,  0.56796216, -0.74594942, -0.78057529],[-0.71805317,  0.21150077, -0.49982238, -1.57957827, -0.85686903,  0.96901378,  1.25263279, -0.3996304 , -1.51419005, -0.71805317]])
-
-#         # Test that eigenvalues and eigenfunctions are computed correctly
-#         np.testing.assert_array_almost_equal(
-#             uf.eigenvalues, expected_eigenvalues
-#         )
-#         np.testing.assert_array_almost_equal(
-#             np.abs(uf.eigenfunctions.values),
-#             np.abs(expected_eigenfunctions),
-#             decimal=5
-#         )
-
-#     def test_warnings_2d(self):
-#         kl = KarhunenLoeve(
-#             basis_name='fourier', n_functions=5, dimension='2D'
-#         )
-#         kl.new(n_obs=50)
-#         data = kl.data
-#         uf = UFPCA(n_components=2, method='inner-product')
-
-#         with self.assertWarns(UserWarning):
-#             uf.fit(data)
-
-
-# class TestFit(unittest.TestCase):
-#     def setUp(self):
-#         argvals = np.linspace(0, 1, 10)
-#         kl = KarhunenLoeve(
-#             basis_name='fourier', argvals=argvals, 
-#             n_functions=5, random_state=42
-#         )
-#         kl.new(n_obs=50)
-#         self.data = kl.data
-
-#     def test_raise_type_error(self):
-#         # Initialize a UFPCA object
-#         uf = UFPCA(n_components=2)
-
-#         with self.assertRaises(TypeError):
-#             uf.fit(data=np.array([1, 2, 3]))
-
-#     def test_raise_value_error(self):
-#         kl = KarhunenLoeve(
-#             basis_name='fourier', n_functions=5, dimension='2D'
-#         )
-#         kl.new(n_obs=50)
-#         data = kl.data
-
-#         # Initialize a UFPCA object
-#         uf = UFPCA(n_components=2, method='covariance')
-#         with self.assertRaises(ValueError):
-#             uf.fit(data)
-
-#     def test_raise_not_implemented_error(self):
-#         # Initialize a UFPCA object
-#         uf = UFPCA(n_components=2, method='error')
-
-#         with self.assertRaises(NotImplementedError):
-#             uf.fit(data=self.data)
-
-#     def test_fit_covariance(self):
-#         uf = UFPCA(n_components=2, method='covariance')
-#         uf.fit(self.data)
-
-#         expected_eigenvalues = np.array([1.24653269, 1.0329227 ])
-#         np.testing.assert_array_almost_equal(
-#             uf.eigenvalues, expected_eigenvalues
-#         )
-    
-#     def test_fit_inner_product(self):
-#         uf = UFPCA(n_components=2, method='inner-product')
-#         uf.fit(self.data)
-
-#         expected_eigenvalues = np.array([1.22160203, 1.01226424])
-#         np.testing.assert_array_almost_equal(
-#             uf.eigenvalues, expected_eigenvalues
-#         )
-
-#     # def test_fit_normalize(self):
-#     #     uf = UFPCA(n_components=2, normalize=True)
-#     #     uf.fit(self.data)
-
-#     #     expected_eigenvalues = np.array([0.06555129, 0.05431821])
-#     #     np.testing.assert_array_almost_equal(
-#     #         uf.eigenvalues, expected_eigenvalues
-#     #     )
-
 
 # class TestPace(unittest.TestCase):
 #     def setUp(self):
@@ -433,31 +327,31 @@ class TestFitInnerProduct(unittest.TestCase):
 #             uf._numerical_integration(data)
 
 
-# class TestTransform(unittest.TestCase):
-#     def setUp(self):
-#         warnings.simplefilter('ignore', category=UserWarning)
+class TestTransform(unittest.TestCase):
+    def setUp(self):
+        warnings.simplefilter('ignore', category=UserWarning)
 
-#         argvals = np.linspace(0, 1, 10)
-#         kl = KarhunenLoeve(
-#             basis_name='fourier', argvals=argvals, 
-#             n_functions=5, random_state=42
-#         )
-#         kl.new(n_obs=50)
-#         self.data = kl.data
+        argvals = np.linspace(0, 1, 10)
+        kl = KarhunenLoeve(
+            basis_name='fourier', argvals=argvals, 
+            n_functions=5, random_state=42
+        )
+        kl.new(n_obs=50)
+        self.data = kl.data
 
-#     def test_error_innpro(self):
-#         uf = UFPCA(n_components=2, method='covariance')
-#         uf.fit(self.data)
+    def test_error_innpro(self):
+        uf = UFPCA(n_components=2, method='covariance')
+        uf.fit(self.data)
 
-#         with self.assertRaises(ValueError):
-#             uf.transform(self.data, method='InnPro')
+        with self.assertRaises(ValueError):
+            uf.transform(self.data, method='InnPro')
 
-#     def test_error_unkown_method(self):
-#         uf = UFPCA(n_components=2, method='covariance')
-#         uf.fit(self.data)
+    def test_error_unkown_method(self):
+        uf = UFPCA(n_components=2, method='covariance')
+        uf.fit(self.data)
 
-#         with self.assertRaises(ValueError):
-#             uf.transform(self.data, method='error')
+        with self.assertRaises(ValueError):
+            uf.transform(self.data, method='error')
 
 #     def test_pace(self):
 #         self.data.covariance()
