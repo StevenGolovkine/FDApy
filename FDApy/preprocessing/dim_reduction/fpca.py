@@ -337,7 +337,7 @@ class UFPCA():
     def transform(
         self,
         data: DenseFunctionalData,
-        method: np.str_ = 'NumInt',
+        method: str = 'NumInt',
         **kwargs
     ) -> npt.NDArray[np.float64]:
         r"""Apply dimensionality reduction to the data.
@@ -366,7 +366,7 @@ class UFPCA():
         ----------
         data: DenseFunctionalData
             Data
-        method: np.str_, {'NumInt', 'PACE', 'InnPro'}, default='NumInt'
+        method: str, {'NumInt', 'PACE', 'InnPro'}, default='NumInt'
             Method used to estimate the scores. If ``method == 'NumInt'``,
             numerical integration method is performed. If
             ``method == 'PACE'``, the PACE algorithm [1]_ is used. If
@@ -375,7 +375,7 @@ class UFPCA():
             eigencomponents have been estimated using the inner-product
             matrix.)
         **kwargs:
-            tol: np.float64, default=1e-4
+            tol: float, default=1e-4
                 Tolerance parameter to prevent overflow to inverse a matrix,
                 only used if ``method == 'PACE'``.
             integration_method: str, {'trapz', 'simpson'}, default='trapz'
@@ -438,7 +438,7 @@ class UFPCA():
     def _pace(
         self,
         data: DenseFunctionalData,
-        tol: np.float64 = 1e-4
+        tol: float = 1e-4
     ) -> npt.NDArray[np.float64]:
         """Estimate scores using PACE algorithm.
 
@@ -446,7 +446,7 @@ class UFPCA():
         ----------
         data: DenseFunctionalData
             Data
-        tol: np.float64, default=1e-4
+        tol: float, default=1e-4
             Tolerance parameter to prevent overflow to inverse a matrix.
 
         Returns
@@ -475,7 +475,7 @@ class UFPCA():
     def _numerical_integration(
         self,
         data: DenseFunctionalData,
-        method: np.str_ = "trapz"
+        method: str = "trapz"
     ) -> npt.NDArray[np.float64]:
         """Estimate scores using numerical integration.
 
@@ -483,7 +483,7 @@ class UFPCA():
         ----------
         data: DenseFunctionalData
             Data
-        method: np.str_, {'trapz', 'simpson'}, default='trapz'
+        method: str, {'trapz', 'simpson'}, default='trapz'
             Method used to perform numerical integration.
 
         Returns
