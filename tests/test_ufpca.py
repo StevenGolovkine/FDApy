@@ -331,27 +331,28 @@ class TestTransform(unittest.TestCase):
     def setUp(self):
         warnings.simplefilter('ignore', category=UserWarning)
 
-        argvals = np.linspace(0, 1, 10)
         kl = KarhunenLoeve(
-            basis_name='fourier', argvals=argvals, 
-            n_functions=5, random_state=42
+            basis_name='bsplines', n_functions=5, random_state=42
         )
-        kl.new(n_obs=50)
-        self.data = kl.data
+        kl.new(n_obs=10)
+        kl.sparsify(0.8, 0.05)
+
+        self.fdata_uni = kl.data
+        self.fdata_sparse = kl.sparse_data
 
     def test_error_innpro(self):
         uf = UFPCA(n_components=2, method='covariance')
-        uf.fit(self.data)
+        uf.fit(self.fdata_uni)
 
         with self.assertRaises(ValueError):
-            uf.transform(self.data, method='InnPro')
+            uf.transform(self.fdata_uni, method='InnPro')
 
     def test_error_unkown_method(self):
         uf = UFPCA(n_components=2, method='covariance')
-        uf.fit(self.data)
+        uf.fit(self.fdata_uni)
 
         with self.assertRaises(ValueError):
-            uf.transform(self.data, method='error')
+            uf.transform(self.fdata_uni, method='error')
 
 #     def test_pace(self):
 #         self.data.covariance()
@@ -387,21 +388,21 @@ class TestTransform(unittest.TestCase):
 #             np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
 #         )
 
-#     def test_innpro(self):
-#         uf = UFPCA(n_components=2, method='inner-product')
-#         uf.fit(self.data)
+    # def test_innpro(self):
+    #     uf = UFPCA(n_components=2, method='inner-product')
+    #     uf.fit(self.data_uni)
 
-#         scores = uf.transform(self.data, method='InnPro')
-#         expected_scores = np.array([
-#             [-1.32124942, -1.7905831 ],
-#             [-0.54539202, -0.13829588],
-#             [-0.01131015,  0.53047647],
-#             [-0.39974495,  0.33857587],
-#             [-0.68649162, -0.05968698]
-#         ])
-#         np.testing.assert_array_almost_equal(
-#             np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
-#         )
+    #     scores = uf.transform(self.data, method='InnPro')
+    #     expected_scores = np.array([
+    #         [-1.32124942, -1.7905831 ],
+    #         [-0.54539202, -0.13829588],
+    #         [-0.01131015,  0.53047647],
+    #         [-0.39974495,  0.33857587],
+    #         [-0.68649162, -0.05968698]
+    #     ])
+    #     np.testing.assert_array_almost_equal(
+    #         np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
+    #     )
 
 #     # def test_normalize(self):
 #     #     uf = UFPCA(n_components=2, method='inner-product', normalize=True)

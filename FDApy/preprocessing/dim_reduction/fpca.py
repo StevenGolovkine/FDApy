@@ -421,12 +421,12 @@ class UFPCA():
                 DenseValues(values)
             )
 
-        if method == 'PACE':
-            return self._pace(data_new, parameters['tol'])
-        elif method == 'NumInt':
+        if method == 'NumInt':
             return self._numerical_integration(
                 data_new, parameters['integration_method']
             )
+        elif method == 'PACE':
+            return self._pace(data_new, parameters['tol'])
         elif method == 'InnPro':
             temp = np.sqrt(data_new.n_obs * self.eigenvalues)
             return temp * self._eigenvectors
