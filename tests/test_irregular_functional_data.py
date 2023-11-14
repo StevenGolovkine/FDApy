@@ -595,8 +595,20 @@ class TestNormalizeIrregular(unittest.TestCase):
         np.testing.assert_array_almost_equal(weight, expected_weight)
         self.assertIsInstance(res, IrregularFunctionalData)
 
+        expected_values = np.array([  1.34925412,   0.91617373,   0.14071864,  -0.20316446,  -1.06848631,  -1.51430328,  -2.11853405,  -2.21411555,  -2.28901497,  -2.37978433,  -2.37967761,  -2.34632262,  -1.96359079,  -1.84913242,  -1.7237965 ,  -1.58833723,  -1.44350881,  -1.29006543,  -0.96035057,  -0.78558748,  -0.60522621,  -0.42002096,  -0.03809529,   0.35415597,   1.145501  ,   1.34036331,   2.42650329,   2.88252993,   3.14073215,   3.35538523,   3.63039808,   3.66269642,   3.67893493,   3.67837469,   3.66027676,   3.62390221,   3.49336752,   3.28085914,   3.14201749,   2.98046562,   2.79546459,   2.09237726,   0.78181069,  -0.0466806 ,  -1.52255352,  -2.67051369,  -4.65329994,  -5.38674336,  -6.15767567,  -8.70279527,  -9.63107248, -10.60053323, -11.61191648])
+        np.testing.assert_array_almost_equal(res.values[0], expected_values)
+
+        expected_values = np.array([1.30156224, 1.93967563, 2.30010235, 2.75042508, 2.99460299, 3.10095416, 3.42978895, 3.48964417, 3.62128624, 3.69834513, 3.70241234, 3.70111615, 3.69481434, 3.64945326, 3.54059975, 3.50713383, 3.43520351, 3.35899389, 3.28136737, 3.24291726, 3.16853235, 3.13331314, 3.06861021, 2.99126152, 2.95689447, 2.93689824, 2.92848729, 2.9383331 , 2.9441859 , 2.95079335, 2.95783697, 2.97195886, 2.98400379, 2.99142401, 2.99260368, 2.99167175, 2.98830976, 2.98219924, 2.94419176, 2.79615135, 2.64249761, 2.50774165, 2.34415719, 2.14919646, 1.79235162, 1.65495512, 1.18296239, 1.0046355 , 0.81527983, 0.40220828])
+        np.testing.assert_array_almost_equal(res.values[9], expected_values)
+
         res, weight = self.data.normalize(use_argvals_stand=True)
         expected_weight = 0.16802008
+        np.testing.assert_array_almost_equal(weight, expected_weight)
+        self.assertIsInstance(res, IrregularFunctionalData)
+
+    def test_norm_with_given_weights(self):
+        res, weight = self.data.normalize(weights=1)
+        expected_weight = 1
         np.testing.assert_array_almost_equal(weight, expected_weight)
         self.assertIsInstance(res, IrregularFunctionalData)
 
@@ -624,6 +636,33 @@ class TestNormalizeIrregular(unittest.TestCase):
 
         res, weight = data.normalize()
         expected_weight = 87.77777778
+        np.testing.assert_array_almost_equal(weight, expected_weight)
+        self.assertIsInstance(res, IrregularFunctionalData)
+
+    def test_norm_2d_with_given_weights(self):
+        argvals = IrregularArgvals({
+            0: DenseArgvals({
+                'input_dim_0': np.array([1, 2, 3, 4]),
+                'input_dim_1': np.array([5, 6, 7])
+            }),
+            1: DenseArgvals({
+                'input_dim_0': np.array([2, 4]),
+                'input_dim_1': np.array([1, 2, 3])
+            }),
+            2: DenseArgvals({
+                'input_dim_0': np.array([4, 5, 6]),
+                'input_dim_1': np.array([8, 9])
+            })
+        })
+        values = IrregularValues({
+            0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
+            1: np.array([[1, 2, 3], [1, 2, 3]]),
+            2: np.array([[8, 9], [8, 9], [8, 9]])
+        })
+        data = IrregularFunctionalData(argvals, values)
+
+        res, weight = data.normalize(weights=1)
+        expected_weight = 1
         np.testing.assert_array_almost_equal(weight, expected_weight)
         self.assertIsInstance(res, IrregularFunctionalData)
 

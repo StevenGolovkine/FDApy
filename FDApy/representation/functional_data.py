@@ -1915,14 +1915,15 @@ class IrregularFunctionalData(FunctionalData):
         support., DenseValues(0.16802008))
 
         """
-        data_smooth = self.smooth(**kwargs)
-        if use_argvals_stand:
-            axis = [argvals for argvals in data_smooth.argvals_stand.values()]
-        else:
-            axis = [argvals for argvals in data_smooth.argvals.values()]
-
-        variance = np.var(data_smooth.values, axis=0)
-        weights = _integrate(variance, *axis, method=method)
+        if weights == 0.0:
+            data_smooth = self.smooth(**kwargs)
+            if use_argvals_stand:
+                argvals_stand = data_smooth.argvals_stand.values()
+                axis = [argvals for argvals in argvals_stand]
+            else:
+                axis = [argvals for argvals in data_smooth.argvals.values()]
+            variance = np.var(data_smooth.values, axis=0)
+            weights = _integrate(variance, *axis, method=method)
 
         new_values = IrregularValues()
         for idx, obs in enumerate(self):
