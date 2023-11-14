@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import warnings
 
-from typing import Optional, List, Union
+from typing import Dict, Optional, List, Union
 
 from ...representation.argvals import DenseArgvals
 from ...representation.values import DenseValues
@@ -27,6 +27,139 @@ from .fcp_tpa import FCPTPA
 
 
 #############################################################################
+# Utilities
+
+def _fit_covariance(
+    data: FunctionalData,
+    points: DenseArgvals,
+    n_components: Union[int, float] = 1,
+    smooth: bool = True,
+    **kwargs
+) -> Dict[str, object]:
+    """Univariate Functional PCA using the covariance operator.
+
+    Parameters
+    ----------
+    data: FunctionalData
+        Training data.
+    points: DenseArgvals
+        The sampling points at which the covariance and the eigenfunctions
+        will be estimated.
+    n_components: Union[int, float], default=1
+        Number of components to be estimated.
+    smooth: bool, default=True
+        Should the mean and covariance be smoothed?
+    **kwargs:
+        kernel_name: str, default='epanechnikov'
+            Name of the kernel used for local polynomial smoothing.
+        degree: int, default=1
+            Degree used for local polynomial smoothing.
+        bandwidth: float
+            Bandwidth used for local polynomial smoothing. The default
+            bandwitdth is set to be the number of sampling points to the
+            power :math:`-1/5`.
+
+    Returns
+    -------
+    Dict[str, object]
+        A dictionary with entries:
+            - "eigenvalues"
+            - "eigenfunctions"
+            - "noise_variance"
+
+
+    References
+    ----------
+    .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+        Analysis, Springer Science, Chapter 8.
+
+    """
+    # Compute the covariance
+    covariance = data.covariance(points=points, smooth=smooth, **kwargs)
+
+    # Choose the W_j's and the S_j's (Ramsey and Silverman, 2005)
+    argvals = points['input_dim_0']
+    weight = _integration_weights(argvals, method='trapz')
+
+    # Compute the eigenvalues and eigenvectors of W^{1/2}VW^{1/2}
+    weight_sqrt = np.diag(np.sqrt(weight))
+    weight_invsqrt = np.diag(1 / np.sqrt(weight))
+    var = np.linalg.multi_dot([weight_sqrt, covariance.values[0], weight_sqrt])
+    eigenvalues, eigenvectors = _compute_eigen(var, n_components)
+
+    # Compute eigenfunctions = W^{-1/2}U
+    eigenfunctions = np.transpose(np.dot(weight_invsqrt, eigenvectors))
+
+    # Save the results
+    results = dict()
+    results["noise_variance"] = data._noise_variance
+    results["eigenvalues"] = eigenvalues
+    results["eigenfunctions"] = DenseFunctionalData(
+        points, DenseValues(eigenfunctions)
+    )
+    return results
+
+
+def _fit_inner_product(
+    data: FunctionalData,
+    points: DenseArgvals,
+    n_components: Union[int, float] = 1,
+    smooth: bool = True,
+    **kwargs
+) -> Dict[str, object]:
+    """Univariate Functional PCA using inner-product matrix decomposition.
+
+    Parameters
+    ----------
+    data: DenseFunctionalData
+        Training data used to estimate the eigencomponents.
+    points: DenseArgvals
+        The sampling points at which the covariance and the eigenfunctions
+        will be estimated.
+    n_components: Union[int, float], default=1
+        Number of components to be estimated.
+    smooth: bool, default=True
+        Should the mean and covariance be smoothed?
+    **kwargs:
+        kernel_name: str, default='epanechnikov'
+            Name of the kernel used for local polynomial smoothing.
+        degree: int, default=1
+            Degree used for local polynomial smoothing.
+        bandwidth: float
+            Bandwidth used for local polynomial smoothing. The default
+            bandwitdth is set to be the number of sampling points to the
+            power :math:`-1/5`.
+
+    Returns
+    -------
+    Dict[str, object]
+        A dictionary with entries:
+            - "eigenvalues"
+            - "eigenfunctions"
+            - "noise_variance"
+            - "eigenvectors"
+
+    """
+    # Compute inner product matrix and its eigendecomposition
+    in_prod = data.inner_product(method='trapz', smooth=smooth, **kwargs)
+    eigenvalues, eigenvectors = _compute_eigen(in_prod, n_components)
+
+    # Compute the eigenfunctions
+    data_smooth = data.smooth(points)
+    eigenfunctions = np.matmul(data_smooth.values.T, eigenvectors)
+    eigenfunctions = eigenfunctions / np.sqrt(eigenvalues)
+
+    # Save the results
+    results = dict()
+    results['eigenvectors'] = eigenvectors
+    results['eigenvalues'] = eigenvalues / data_smooth.n_obs
+    results['eigenfunctions'] = DenseFunctionalData(
+        points, DenseValues(eigenfunctions.T)
+    )
+    return results
+
+
+#############################################################################
 # Class UFPCA
 
 class UFPCA():
@@ -39,20 +172,20 @@ class UFPCA():
 
     Parameters
     ----------
-    method: np.str_, {'covariance', 'inner-product'}, default='covariance'
+    method: str, {'covariance', 'inner-product'}, default='covariance'
         Method used to estimate the eigencomponents. If
         ``method == 'covariance'``, the estimation is based on an
         eigendecomposition of the covariance operator. If
         ``method == 'inner-product'``, the estimation is based on an
         eigendecomposition of the inner-product matrix.
-    n_components: Optional[Union[np.int64, np.float64]], default=None
+    n_components: Optional[Union[int, float]], default=None
         Number of components to keep. If `n_components` is `None`, all
         components are kept, ``n_components == min(n_samples, n_features)``.
         If `n_components` is an integer, `n_components` are kept. If
         `0 < n_components < 1`, select the number of components such that the
         amount of variance that needs to be explained is greater than the
         percentage specified by `n_components`.
-    normalize: np.bool_, default=False
+    normalize: bool, default=False
         Perform a normalization of the data.
 
     Attributes
@@ -77,9 +210,9 @@ class UFPCA():
 
     def __init__(
         self,
-        method: np.str_ = 'covariance',
-        n_components: Optional[Union[np.int64, np.float64]] = None,
-        normalize: np.bool_ = False
+        method: str = 'covariance',
+        n_components: Optional[Union[int, float]] = None,
+        normalize: bool = False
     ) -> None:
         """Initaliaze UFPCA object."""
         self.n_components = n_components
@@ -88,30 +221,30 @@ class UFPCA():
         self.weights = 1
 
     @property
-    def method(self) -> np.str_:
+    def method(self) -> str:
         """Getter for `method`."""
         return self._method
 
     @method.setter
-    def method(self, new_method: np.str_) -> None:
+    def method(self, new_method: str) -> None:
         self._method = new_method
 
     @property
-    def n_components(self) -> np.int64:
+    def n_components(self) -> int:
         """Getter for `n_components`."""
         return self._n_components
 
     @n_components.setter
-    def n_components(self, new_n_components: np.int64) -> None:
+    def n_components(self, new_n_components: int) -> None:
         self._n_components = new_n_components
 
     @property
-    def normalize(self) -> np.bool_:
+    def normalize(self) -> bool:
         """Getter for `normalize`."""
         return self._normalize
 
     @normalize.setter
-    def normalize(self, new_normalize: np.bool_) -> None:
+    def normalize(self, new_normalize: bool) -> None:
         self._normalize = new_normalize
 
     @property
@@ -177,16 +310,17 @@ class UFPCA():
             else:
                 points = data.argvals.to_dense()
 
+        # Compute the mean and center the data.
+        self._mean = data.mean(points=points, smooth=smooth, **kwargs)
+        data = data.center(mean=self._mean, smooth=smooth, **kwargs)
+
         # Normalize the data
         if self.normalize:
             data, self.weights = data.normalize(use_argvals_stand=True)
 
-        # Compute the mean
-        self._mean = data.mean(points=points)
-
         if self.method == 'covariance':
             if data.n_dimension == 1:
-                self._fit_covariance(data, points, smooth, **kwargs)
+                results = _fit_covariance(data, points, smooth, **kwargs)
             else:
                 raise ValueError((
                     "Estimation of the eigencomponents using the covariance "
@@ -194,127 +328,18 @@ class UFPCA():
                     "-dimensional data."
                 ))
         elif self.method == 'inner-product':
-            self._fit_inner_product(data, points, smooth, **kwargs)
+            results = _fit_inner_product(
+                data, points, self.n_components, smooth, **kwargs
+            )
         else:
             raise NotImplementedError(
                 f"The {self.method} method not implemented."
             )
 
-    def _fit_covariance(
-        self,
-        data: FunctionalData,
-        points: DenseArgvals,
-        smooth: bool = True,
-        **kwargs
-    ) -> None:
-        """Univariate Functional PCA using the covariance operator.
-
-        Parameters
-        ----------
-        data: FunctionalData
-            Training data.
-        points: DenseArgvals
-            The sampling points at which the covariance and the eigenfunctions
-            will be estimated.
-        smooth: bool, default=True
-            Should the mean and covariance be smoothed?
-        **kwargs:
-            kernel_name: str, default='epanechnikov'
-                Name of the kernel used for local polynomial smoothing.
-            degree: int, default=1
-                Degree used for local polynomial smoothing.
-            bandwidth: float
-                Bandwidth used for local polynomial smoothing. The default
-                bandwitdth is set to be the number of sampling points to the
-                power :math:`-1/5`.
-
-        References
-        ----------
-        .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
-            Analysis, Springer Science, Chapter 8.
-
-        """
-        # Compute the covariance
-        covariance = data.covariance(
-            points=points,
-            smooth=smooth,
-            **kwargs
-        )
-
-        # Choose the W_j's and the S_j's (Ramsey and Silverman, 2005)
-        argvals = points['input_dim_0']
-        weight = _integration_weights(argvals, method='trapz')
-
-        # Compute the eigenvalues and eigenvectors of W^{1/2}VW^{1/2}
-        weight_sqrt = np.diag(np.sqrt(weight))
-        weight_invsqrt = np.diag(1 / np.sqrt(weight))
-        var = np.dot(np.dot(weight_sqrt, covariance.values[0]), weight_sqrt)
-
-        eigenvalues, eigenvectors = _compute_eigen(var, self.n_components)
-
-        # Compute eigenfunctions = W^{-1/2}U
-        eigenfunctions = np.transpose(np.dot(weight_invsqrt, eigenvectors))
-
-        # Save the results
-        self._noise_variance = data._noise_variance
-        self._eigenvalues = eigenvalues
-        self._eigenfunctions = DenseFunctionalData(
-            points, DenseValues(eigenfunctions)
-        )
-
-        # Compute an estimation of the covariance
-        covariance = _compute_covariance(eigenvalues, eigenfunctions)
-        self._covariance = DenseFunctionalData(
-            DenseArgvals({'input_dim_0': argvals, 'input_dim_1': argvals}),
-            DenseValues(covariance[np.newaxis])
-        )
-
-    def _fit_inner_product(
-        self,
-        data: FunctionalData,
-        points: DenseArgvals,
-        smooth: bool = True,
-        **kwargs
-    ) -> None:
-        """Univariate Functional PCA using inner-product matrix decomposition.
-
-        Parameters
-        ----------
-        data: DenseFunctionalData
-            Training data used to estimate the eigencomponents.
-        points: DenseArgvals
-            The sampling points at which the covariance and the eigenfunctions
-            will be estimated.
-        smooth: bool, default=True
-            Should the mean and covariance be smoothed?
-        **kwargs:
-            kernel_name: str, default='epanechnikov'
-                Name of the kernel used for local polynomial smoothing.
-            degree: int, default=1
-                Degree used for local polynomial smoothing.
-            bandwidth: float
-                Bandwidth used for local polynomial smoothing. The default
-                bandwitdth is set to be the number of sampling points to the
-                power :math:`-1/5`.
-
-        """
-        # Compute inner product matrix and its eigendecomposition
-        in_prod = data.inner_product(method='trapz', smooth=smooth, **kwargs)
-        eigenvalues, eigenvectors = _compute_eigen(in_prod, self.n_components)
-
-        # Compute the eigenfunctions
-        data_smooth = data.smooth(points)
-        eigenfunctions = np.matmul(data_smooth.values.T, eigenvectors)
-        eigenfunctions = eigenfunctions / np.sqrt(eigenvalues)
-
-        # Save the results
-        self._eigenvectors = eigenvectors
-        self._eigenvalues = eigenvalues / data_smooth.n_obs
-        self._eigenfunctions = DenseFunctionalData(
-            DenseArgvals(data_smooth.argvals), DenseValues(eigenfunctions.T)
-        ).smooth(
-            points=points, **kwargs
-        )
+        self._noise_variance = results.get("noise_variance", 0.0)
+        self._eigenvalues = results.get("eigenvalues", None)
+        self._eigenfunctions = results.get("eigenfunctions", None)
+        self._eigenvectors = results.get("eigenvectors", None)
 
         # Compute an estimation of the covariance
         if data.n_dimension == 1:
@@ -333,6 +358,7 @@ class UFPCA():
                 "The estimation of the covariance is not performed for "
                 f"{data.n_dimension}-dimensional data."
             ), UserWarning)
+        self._training_data = data
 
     def transform(
         self,
