@@ -1769,17 +1769,24 @@ class IrregularFunctionalData(FunctionalData):
         Functional data object with 10 observations on a 1-dimensional support.
 
         """
-        mean = self.mean(
-            points=self.argvals.to_dense(), smooth=smooth, **kwargs
-        )
+        new_argvals = self.argvals.to_dense()
+        if mean is None:
+            data_mean = self.mean(
+                points=new_argvals, smooth=smooth, **kwargs
+            )
+        else:
+            data_mean = mean.smooth(
+                new_argvals,
+                bandwidth=1 / np.prod(new_argvals.n_points)
+            )
 
         obs_centered = {}
         for idx, obs in enumerate(self):
             obs_points = np.isin(
-                self.argvals.to_dense()['input_dim_0'],
+                new_argvals['input_dim_0'],
                 obs.argvals[idx]['input_dim_0']
             )
-            mean_obs = mean.values[0][obs_points]
+            mean_obs = data_mean.values[0][obs_points]
             obs_centered[idx] = obs.values[idx] - mean_obs
         return IrregularFunctionalData(
             self.argvals,
