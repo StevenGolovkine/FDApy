@@ -508,6 +508,7 @@ class FunctionalData(ABC):
     @abstractmethod
     def normalize(
         self,
+        weights: float = 0.0,
         method: str = 'trapz',
         use_argvals_stand: bool = False,
         **kwargs
@@ -1055,6 +1056,7 @@ class DenseFunctionalData(FunctionalData):
 
     def normalize(
         self,
+        weights: float = 0.0,
         method: str = 'trapz',
         use_argvals_stand: bool = False,
         **kwargs
@@ -1066,6 +1068,9 @@ class DenseFunctionalData(FunctionalData):
 
         Parameters
         ----------
+        weights: float, default=0.0
+            The weights used to normalize the data. If `weights = 0.0`, the
+            weights are estimated by integrating the variance function [1]_.
         method: str, {'simpson', 'trapz'}, default = 'trapz'
             The method used to integrated.
         use_argvals_stand: bool, default=False
@@ -1098,12 +1103,13 @@ class DenseFunctionalData(FunctionalData):
         support., DenseValues(0.21227413))
 
         """
-        if use_argvals_stand:
-            axis = [argvals for argvals in self.argvals_stand.values()]
-        else:
-            axis = [argvals for argvals in self.argvals.values()]
-        variance = np.var(self.values, axis=0)
-        weights = _integrate(variance, *axis, method=method)
+        if weights == 0.0:
+            if use_argvals_stand:
+                axis = [argvals for argvals in self.argvals_stand.values()]
+            else:
+                axis = [argvals for argvals in self.argvals.values()]
+            variance = np.var(self.values, axis=0)
+            weights = _integrate(variance, *axis, method=method)
         new_values = self.values / weights
         return DenseFunctionalData(self.argvals, new_values), weights
 
@@ -1861,6 +1867,7 @@ class IrregularFunctionalData(FunctionalData):
 
     def normalize(
         self,
+        weights: float = 0.0,
         method: str = 'trapz',
         use_argvals_stand: bool = False,
         **kwargs
@@ -1872,6 +1879,9 @@ class IrregularFunctionalData(FunctionalData):
 
         Parameters
         ----------
+        weights: float, default=0.0
+            The weights used to normalize the data. If `weights = 0.0`, the
+            weights are estimated by integrating the variance function [1]_.
         method: str, {'simpson', 'trapz'}, default = 'trapz'
             The method used to integrated.
         use_argvals_stand: bool, default=False
