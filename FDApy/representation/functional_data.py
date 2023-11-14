@@ -490,6 +490,7 @@ class FunctionalData(ABC):
     @abstractmethod
     def center(
         self,
+        mean: Optional[FunctionalData] = None,
         smooth: bool = True,
         **kwargs
     ) -> FunctionalData:
@@ -932,6 +933,7 @@ class DenseFunctionalData(FunctionalData):
 
     def center(
         self,
+        mean: Optional[DenseFunctionalData] = None,
         smooth: bool = True,
         **kwargs
     ) -> DenseFunctionalData:
@@ -939,8 +941,10 @@ class DenseFunctionalData(FunctionalData):
 
         Parameters
         ----------
+        mean: Optional[DenseFunctionalData], default=None
+            A precomputed mean as a DenseFunctionalData object.
         smooth: bool, default=True
-            Should the mean be smoothed?
+            Should the mean be smoothed? Not used if `mean` is not `None`.
         **kwargs:
             kernel_name: str, default='epanechnikov'
                 Name of the kernel used for local polynomial smoothing.
@@ -968,7 +972,13 @@ class DenseFunctionalData(FunctionalData):
         Functional data object with 10 observations on a 1-dimensional support.
 
         """
-        data_mean = self.mean(smooth=smooth, **kwargs)
+        if mean is None:
+            data_mean = self.mean(smooth=smooth, **kwargs)
+        else:
+            data_mean = mean.smooth(
+                points=self.argvals,
+                bandwidth=1 / np.prod(self.n_points)
+            )
         return DenseFunctionalData(
             DenseArgvals(self.argvals),
             DenseValues(self.values - data_mean.values)
@@ -1719,6 +1729,7 @@ class IrregularFunctionalData(FunctionalData):
 
     def center(
         self,
+        mean: Optional[DenseFunctionalData] = None,
         smooth: bool = True,
         **kwargs
     ) -> IrregularFunctionalData:
@@ -1726,6 +1737,8 @@ class IrregularFunctionalData(FunctionalData):
 
         Parameters
         ----------
+        mean: Optional[DenseFunctionalData], default=None
+            A precomputed mean as a DenseFunctionalData object.
         smooth: bool, default=True
             Should the mean be smoothed?
         **kwargs:
