@@ -218,6 +218,23 @@ class TestCenterMultivariateFunctionalData(unittest.TestCase):
         self.assertIsInstance(fdata_center, MultivariateFunctionalData)
         np.testing.assert_equal(fdata_center.n_functional, 2)
 
+    def test_center_1d_with_given_mean(self):
+        precomputed_mean = self.fdata.mean()
+
+        kl = KarhunenLoeve(
+            basis_name='bsplines', n_functions=5, random_state=43,
+            argvals=np.linspace(0, 1, 51)
+        )
+        kl.new(n_obs=100)
+
+        kl.add_noise_and_sparsify(0.01, 0.95)
+        fdata_new = MultivariateFunctionalData([kl.noisy_data, kl.sparse_data])
+
+        fdata_center = fdata_new.center(precomputed_mean)
+
+        self.assertIsInstance(fdata_center, MultivariateFunctionalData)
+        np.testing.assert_equal(fdata_center.n_functional, 2)
+
 
 class TestNormMultivariateFunctionalData(unittest.TestCase):
     def setUp(self) -> None:

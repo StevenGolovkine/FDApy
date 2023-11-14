@@ -2600,6 +2600,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     def center(
         self,
+        mean: Optional[MultivariateFunctionalData] = None,
         smooth: bool = True,
         **kwargs
     ) -> MultivariateFunctionalData:
@@ -2607,6 +2608,8 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Parameters
         ----------
+        mean: Optional[MultivariateFunctionalData], default=None
+            A precomputed mean as a MultivariateFunctionalData object.
         smooth: bool, default=True
             Should the mean be smoothed?
         **kwargs:
@@ -2639,9 +2642,15 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         Functional data object with 10 observations on a 1-dimensional support.
 
         """
-        return MultivariateFunctionalData([
-            fdata.center(smooth=smooth, **kwargs) for fdata in self.data
-        ])
+        if mean is None:
+            return MultivariateFunctionalData([
+                fdata.center(smooth=smooth, **kwargs) for fdata in self.data
+            ])
+        else:
+            return MultivariateFunctionalData([
+                fdata.center(mean=mean, smooth=smooth, **kwargs)
+                for (fdata, mean) in zip(self.data, mean.data)
+            ])
 
     def norm(
         self,
