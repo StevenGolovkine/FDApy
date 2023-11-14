@@ -9,8 +9,8 @@ import numpy as np
 import pandas as pd
 import unittest
 
-from FDApy.representation.argvals import DenseArgvals, IrregularArgvals
-from FDApy.representation.values import DenseValues, IrregularValues
+from FDApy.representation.argvals import DenseArgvals
+from FDApy.representation.values import DenseValues
 from FDApy.representation.functional_data import (
     DenseFunctionalData,
     IrregularFunctionalData,
@@ -282,6 +282,14 @@ class TestNormalizeMultivariateFunctionalData(unittest.TestCase):
         np.testing.assert_array_almost_equal(res.data[0].values, expected_values)
         expected_values = np.array([ 1.3584412 ,  2.20391159,  0.26684921, -0.37204357,  0.16429984, -1.94207116, -2.2046438 , -2.67303592, -1.12551113, -0.61670761, -1.21993587, -1.43580713, -1.7233163 , -1.616918  , -0.78573731, -1.44377352, -1.4159017 , -1.3747195 , -0.84180992,  1.36012511, -0.07931144,  0.66629818,  1.64239541,  1.9076571 ,  0.7593733 ,  0.79485713,  2.48112806,  0.33586305,  1.04240194,  2.53782715,  2.12152399,  2.28753089,  1.79492849,  3.60745374,  3.79473761,  2.83088629,  2.35500009,  2.63093076,  0.75359332,  0.71579549,  2.49641462, -0.67613604, -0.83308437, -2.35522448, -3.15461153, -6.33588495, -9.46246192])
         np.testing.assert_array_almost_equal(res.data[1].values[0], expected_values)
+
+    def test_normalize_with_given_weights(self):
+        res, weights = self.fdata.normalize(weights=np.array([1, 1]))
+
+        expected_weight = np.array([1, 1])
+        np.testing.assert_array_almost_equal(weights, expected_weight)
+
+        np.testing.assert_equal(res.n_functional, 2)
 
 
 class TestInnerProductMultivariateFunctionalData(unittest.TestCase):

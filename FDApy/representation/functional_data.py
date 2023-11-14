@@ -2715,6 +2715,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     def normalize(
         self,
+        weights: Optional[npt.NDArray[np.float64]] = None,
         method: str = 'trapz',
         use_argvals_stand: bool = False,
         **kwargs
@@ -2726,6 +2727,9 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Parameters
         ----------
+        weights: Optional[npt.NDArray[np.float64]], default=None
+            The weights used to normalize the data. If `weights = None`, the
+            weights are estimated by integrating the variance function [1]_.
         method: str, {'simpson', 'trapz'}, default = 'trapz'
             The method used to integrated.
         use_argvals_stand: bool, default=False
@@ -2761,10 +2765,13 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         observations., array([0.20365764, 0.19388443]))
 
         """
+        if weights is None:
+            weights = np.zeros(self.n_functional)
         normalization = [
             fdata.normalize(
-                method=method, use_argvals_stand=use_argvals_stand, **kwargs
-            ) for fdata in self.data
+                weights=ww, method=method,
+                use_argvals_stand=use_argvals_stand, **kwargs
+            ) for (fdata, ww) in zip(self.data, weights)
         ]
         data_norm = [data for data, _ in normalization]
         weights = np.array([weight for _, weight in normalization])
