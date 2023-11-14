@@ -343,7 +343,11 @@ class TestTransform(unittest.TestCase):
     def test_error_innpro(self):
         uf = UFPCA(n_components=2, method='covariance')
         uf.fit(self.fdata_uni)
+        with self.assertRaises(ValueError):
+            uf.transform(None, method='InnPro')
 
+        uf = UFPCA(n_components=2, method='inner-product')
+        uf.fit(self.fdata_uni)
         with self.assertRaises(ValueError):
             uf.transform(self.fdata_uni, method='InnPro')
 

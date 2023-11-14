@@ -336,7 +336,7 @@ class UFPCA():
 
     def transform(
         self,
-        data: DenseFunctionalData,
+        data: Optional[DenseFunctionalData] = None,
         method: str = 'NumInt',
         **kwargs
     ) -> npt.NDArray[np.float64]:
@@ -364,8 +364,9 @@ class UFPCA():
 
         Parameters
         ----------
-        data: DenseFunctionalData
-            Data
+        data: Optional[DenseFunctionalData], default=None
+            The data to be transformed. If `None`, the data are the same than
+            for the `fit` method.
         method: str, {'NumInt', 'PACE', 'InnPro'}, default='NumInt'
             Method used to estimate the scores. If ``method == 'NumInt'``,
             numerical integration method is performed. If
@@ -402,11 +403,16 @@ class UFPCA():
         }
 
         # Checkers
+        if method == 'InnPro' and data is not None:
+            raise ValueError(
+                f"The method {method} can not be used as the eigencomponents "
+                "have not been estimated using the provided data."
+            )
         if method == 'InnPro' and not hasattr(self, '_eigenvectors'):
-            raise ValueError((
+            raise ValueError(
                 f"The method {method} can not be used as the eigencomponents "
                 "have not been estimated using the inner-product matrix."
-            ))
+            )
 
         # Center the data using the estimated mean in the fitting step.
         data_new = DenseFunctionalData(
@@ -431,9 +437,7 @@ class UFPCA():
             temp = np.sqrt(data_new.n_obs * self.eigenvalues)
             return temp * self._eigenvectors
         else:
-            raise ValueError(
-                f"Method {method} not implemented."
-            )
+            raise ValueError(f"Method {method} not implemented.")
 
     def _pace(
         self,
