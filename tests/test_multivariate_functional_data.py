@@ -323,8 +323,13 @@ class TestInnerProductMultivariateFunctionalData(unittest.TestCase):
         self.fdata = MultivariateFunctionalData([fdata_1, fdata_2])
 
     def test_inner_prod(self):
-        res = self.fdata.inner_product()
+        res = self.fdata.inner_product(noise_variance=np.array([0, 0]))
         expected_res = np.array([[ 0.39261306,  0.06899153, -0.14614219, -0.0836462 ],[ 0.06899153,  0.32580074, -0.4890299 ,  0.07577286],[-0.14614219, -0.4890299 ,  0.94953678, -0.09322892],[-0.0836462 ,  0.07577286, -0.09322892,  0.17157688]])
+        np.testing.assert_array_almost_equal(res, expected_res)
+    
+    def test_inner_prod_with_unknow_variance(self):
+        res = self.fdata.inner_product()
+        expected_res = np.array([[ 0.3419482 ,  0.06899153, -0.14614219, -0.0836462 ],[ 0.06899153,  0.27513588, -0.4890299 ,  0.07577286],[-0.14614219, -0.4890299 ,  0.89887192, -0.09322892],[-0.0836462 ,  0.07577286, -0.09322892,  0.12091203]])
         np.testing.assert_array_almost_equal(res, expected_res)
 
 

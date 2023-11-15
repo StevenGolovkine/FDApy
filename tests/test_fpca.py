@@ -70,7 +70,7 @@ class TestFitInnerProduct(unittest.TestCase):
 
     def test_fit_inner_product_dense(self):
         points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 31)})
-        results = _fit_inner_product(data=self.fdata_uni, points=points, n_components=3)
+        results = _fit_inner_product(data=self.fdata_uni, points=points, n_components=3, noise_variance=0)
 
         expected_eigenvalues = np.array([0.24674571, 0.11342926, 0.05243551])
         np.testing.assert_array_almost_equal(results['eigenvalues'], expected_eigenvalues)
@@ -83,7 +83,7 @@ class TestFitInnerProduct(unittest.TestCase):
 
     def test_fit_inner_product_sparse(self):
         points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 31)})
-        results = _fit_inner_product(data=self.fdata_sparse, points=points, n_components=3)
+        results = _fit_inner_product(data=self.fdata_sparse, points=points, n_components=3, noise_variance=0)
 
         expected_eigenvalues = np.array([0.24652452, 0.11380499, 0.05214754])
         np.testing.assert_array_almost_equal(results['eigenvalues'], expected_eigenvalues)
@@ -101,7 +101,7 @@ class TestFitInnerProduct(unittest.TestCase):
         kl.new(n_obs=10)
         points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 31), 'input_dim_1': np.linspace(0, 1, 31)})
 
-        results = _fit_inner_product(data=kl.data, points=points, n_components=3)
+        results = _fit_inner_product(data=kl.data, points=points, n_components=3, noise_variance=0)
         
         expected_eigenvalues = np.array([0.01098398, 0.00483969, 0.00231953])
         np.testing.assert_array_almost_equal(results['eigenvalues'], expected_eigenvalues)

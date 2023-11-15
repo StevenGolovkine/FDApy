@@ -105,13 +105,14 @@ def _fit_inner_product(
     points: DenseArgvals,
     n_components: Union[int, float] = 1,
     smooth: bool = True,
+    noise_variance: Optional[float] = None,
     **kwargs
 ) -> Dict[str, object]:
     """Univariate Functional PCA using inner-product matrix decomposition.
 
     Parameters
     ----------
-    data: DenseFunctionalData
+    data: FunctionalData
         Training data used to estimate the eigencomponents.
     points: DenseArgvals
         The sampling points at which the covariance and the eigenfunctions
@@ -120,6 +121,9 @@ def _fit_inner_product(
         Number of components to be estimated.
     smooth: bool, default=True
         Should the mean and covariance be smoothed?
+    noise_variance: Optional[float], default=None
+            An estimation of the variance of the noise. If `None`, an
+            estimation is computed using the methodology in [1]_.
     **kwargs:
         kernel_name: str, default='epanechnikov'
             Name of the kernel used for local polynomial smoothing.
@@ -141,7 +145,10 @@ def _fit_inner_product(
 
     """
     # Compute inner product matrix and its eigendecomposition
-    in_prod = data.inner_product(method='trapz', smooth=smooth, **kwargs)
+    in_prod = data.inner_product(
+        method='trapz', smooth=smooth,
+        noise_variance=noise_variance, **kwargs
+    )
     eigenvalues, eigenvectors = _compute_eigen(in_prod, n_components)
 
     # Compute the eigenfunctions

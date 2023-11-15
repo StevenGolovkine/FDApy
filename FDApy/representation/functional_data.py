@@ -528,6 +528,7 @@ class FunctionalData(ABC):
         self,
         method: str = 'trapz',
         smooth: bool = True,
+        noise_variance: Optional[float] = None,
         **kwargs
     ) -> npt.NDArray[np.float64]:
         """Compute an estimate of the inner product matrix."""
@@ -1170,6 +1171,7 @@ class DenseFunctionalData(FunctionalData):
         self,
         method: str = 'trapz',
         smooth: bool = True,
+        noise_variance: Optional[float] = None,
         **kwargs
     ) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
@@ -1181,7 +1183,7 @@ class DenseFunctionalData(FunctionalData):
             \langle x, y \rangle = \int_{\mathcal{T}} x(t)y(t)dt,
             t \in \mathcal{T},
 
-        where :math:`\mathcal{T}` is a one- or multi-dimensional domain [1]_.
+        where :math:`\mathcal{T}` is a one- or multi-dimensional domain [2]_.
 
         Parameters
         ----------
@@ -1189,6 +1191,9 @@ class DenseFunctionalData(FunctionalData):
             The method used to integrated.
         smooth: bool, default=True
             Should the mean be smoothed?
+        noise_variance: Optional[float], default=None
+            An estimation of the variance of the noise. If `None`, an
+            estimation is computed using the methodology in [1]_.
         **kwargs:
             kernel_name: str, default='epanechnikov'
                 Name of the kernel used for local polynomial smoothing.
@@ -1199,7 +1204,6 @@ class DenseFunctionalData(FunctionalData):
                 bandwitdth is set to be the number of sampling points to the
                 power :math:`-1/5`.
 
-
         Returns
         -------
         npt.NDArray[np.float64], shape=(n_obs, n_obs)
@@ -1207,8 +1211,11 @@ class DenseFunctionalData(FunctionalData):
 
         References
         ----------
-        .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+        .. [1] Benko, M., Härdle, W. and Kneip, A. (2009). Common functional
+            principal components. The Annals of Statistics 37, 1--34.
+        .. [2] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
             Analysis, Springer Science, Chapter 2.
+
 
         Examples
         --------
@@ -1218,7 +1225,7 @@ class DenseFunctionalData(FunctionalData):
         ...     basis_name='bsplines', n_functions=5, random_state=42
         ... )
         >>> kl.new(n_obs=3)
-        >>> kl.data.inner_product()
+        >>> kl.data.inner_product(noise_variance=0)
         array([
             [ 0.16288536,  0.01958865, -0.10017322],
             [ 0.01958865,  0.17701988, -0.2459348 ],
@@ -1232,7 +1239,7 @@ class DenseFunctionalData(FunctionalData):
         ...     random_state=42, argvals=np.linspace(0, 1, 11)
         ... )
         >>> kl.new(n_obs=3)
-        >>> kl.data.inner_product()
+        >>> kl.data.inner_product(noise_variance=0)
         array([
             [ 0.01669878,  0.00349892, -0.00817676],
             [ 0.00349892,  0.03208174, -0.03777796],
@@ -1242,6 +1249,12 @@ class DenseFunctionalData(FunctionalData):
         """
         # Center the data
         data = self.center(smooth=smooth, **kwargs)
+
+        # Estimate the noise of the variance
+        if noise_variance is None:
+            self._noise_variance = self.noise_variance(order=2)
+        else:
+            self._noise_variance = noise_variance
 
         # Get parameters
         n_obs = data.n_obs
@@ -1256,9 +1269,14 @@ class DenseFunctionalData(FunctionalData):
                     *axis,
                     method=method
                 )
+        inner_mat = inner_mat - np.diag(np.repeat(self._noise_variance, n_obs))
+
+        # Estimate the diagional of the inner-product matrix
         inner_mat = inner_mat + inner_mat.T
         np.fill_diagonal(inner_mat, np.diag(inner_mat) / 2)
-        return inner_mat
+
+        self._inner_product_matrix = inner_mat
+        return self._inner_product_matrix
 
     def covariance(
         self,
@@ -2033,6 +2051,7 @@ class IrregularFunctionalData(FunctionalData):
         self,
         method: str = 'trapz',
         smooth: bool = True,
+        noise_variance: Optional[float] = None,
         **kwargs
     ) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
@@ -2052,6 +2071,9 @@ class IrregularFunctionalData(FunctionalData):
             The method used to integrated.
         smooth: bool, default=True
             Should the mean be smoothed?
+        noise_variance: Optional[float], default=None
+            An estimation of the variance of the noise. If `None`, an
+            estimation is computed using the methodology in [1]_.
         **kwargs:
             kernel_name: str, default='epanechnikov'
                 Name of the kernel used for local polynomial smoothing.
@@ -2086,7 +2108,7 @@ class IrregularFunctionalData(FunctionalData):
         ... )
         >>> kl.new(n_obs=3)
         >>> kl.sparsify(percentage=0.8, epsilon=0.05)
-        >>> kl.sparse_data.inner_product()
+        >>> kl.sparse_data.inner_product(noise_variance=0)
         array([
             [ 0.15749721,  0.01983093, -0.09607059],
             [ 0.01983093,  0.17937531, -0.24773228],
@@ -2103,6 +2125,12 @@ class IrregularFunctionalData(FunctionalData):
         # Center the data
         data = self.center(smooth=smooth, **kwargs)
 
+        # Estimate the noise of the variance
+        if noise_variance is None:
+            self._noise_variance = self.noise_variance(order=2)
+        else:
+            self._noise_variance = noise_variance
+
         dense_argvals = data.argvals.to_dense()['input_dim_0']
         new_values = np.zeros((data.n_obs, len(dense_argvals)))
         for idx, obs in enumerate(self):
@@ -2115,7 +2143,9 @@ class IrregularFunctionalData(FunctionalData):
             DenseArgvals({'input_dim_0': dense_argvals}),
             DenseValues(new_values)
         )
-        return self._data_inpro.inner_product(method=method)
+        return self._data_inpro.inner_product(
+            method=method, noise_variance=self._noise_variance
+        )
 
     def covariance(
         self,
@@ -2923,6 +2953,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         self,
         method: str = 'trapz',
         smooth: bool = True,
+        noise_variance: Optional[npt.NDArray[np.float64]] = None,
         **kwargs
     ) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
@@ -2943,6 +2974,9 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             The method used to integrated.
         smooth: bool, default=True
             Should the mean be smoothed?
+        noise_variance: Optional[npt.NDArray[np.float64]], default=None
+            An estimation of the variance of the noise. If `None`, an
+            estimation is computed using the methodology in [1]_.
         **kwargs:
             kernel_name: str, default='epanechnikov'
                 Name of the kernel used for local polynomial smoothing.
@@ -2958,6 +2992,11 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         npt.NDArray[np.float64], shape=(n_obs, n_obs)
             Inner product matrix of the data.
 
+        References
+        ----------
+        .. [1] Benko, M., Härdle, W. and Kneip, A. (2009). Common functional
+            principal components. The Annals of Statistics 37, 1--34.
+
         Examples
         --------
         >>> kl = KarhunenLoeve(
@@ -2969,7 +3008,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         >>> fdata_1 = kl.data
         >>> fdata_2 = kl.sparse_data
         >>> fdata = MultivariateFunctionalData([fdata_1, fdata_2])
-        >>> fdata.inner_product()
+        >>> fdata.inner_product(noise_variance=0)
         array([
             [ 0.39261306,  0.06899153, -0.14614219, -0.0836462 ],
             [ 0.06899153,  0.32580074, -0.4890299 ,  0.07577286],
@@ -2978,9 +3017,13 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         ])
 
         """
+        if noise_variance is None:
+            self._noise_variance = self.noise_variance(order=2)
+        else:
+            self._noise_variance = noise_variance
         return np.sum([
-            data.inner_product(method=method, smooth=smooth, **kwargs)
-            for data in self.data
+            data.inner_product(method, smooth, noise_variance, **kwargs)
+            for (data, noise_variance) in zip(self.data, self._noise_variance)
         ], axis=0)
 
     def covariance(
