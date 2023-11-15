@@ -29,7 +29,8 @@ from FDApy.misc.utils import (
     _shift,
     _standardization,
     _select_number_eigencomponents,
-    _compute_eigen
+    _compute_eigen,
+    _estimate_noise_variance
 )
 
 
@@ -558,3 +559,19 @@ class TestComputeEigen(unittest.TestCase):
 
         np.testing.assert_array_almost_equal(eig_val, expected_val)
         np.testing.assert_array_almost_equal(np.abs(eig_vec), expected_vec)
+
+
+class TestEstimateNoiseVariance(unittest.TestCase):
+    def test_estimate_noise_variance(self):
+        x = np.array([ 0.60968595,  0.42687124, -0.00694508, -0.24967824, -0.63924524, -0.155665  ,  0.45404848, -0.03835127, -0.30465133, -0.11510283, -0.60347426, -0.35214373, -0.29066131, -0.35554762, -0.17912665, -0.29495087, -0.23515825, -0.54776153, -0.19909394, -0.0385301 , -0.61965528, -0.59832842, -0.09553887, -0.42882287, -0.06147952, -0.46134948, -0.02184155, -0.30052157, -0.25294966,  0.06024915, -0.34776689, -0.45297977, -0.31705891, -0.08850962, -0.51147256,  0.01054835, -0.22216309,  0.18608676, -0.57413947, -0.18228223, -0.35070697, -0.12524521,  0.14817193,  0.08605626,  0.10274285,  0.15687236,  0.27068695,  0.03197991,  0.44725924,  0.46838016,  0.43646785,  0.50402285,  0.47398237,  0.8896721 ,  0.44072296,  0.41565703,  0.33837318,  0.29688513,  0.26844346,  0.36503099,  0.5629462 ,  0.66627843,  0.61341452,  0.4388009 ,  0.81669395,  0.78347266,  0.58234238,  0.46900352,  0.73152057,  0.64161388,  0.26314481,  0.55568595,  0.60984322,  0.32674417,  0.54322836,  0.144386  ,  0.73332652,  0.67426011,  0.29509681,  0.3847471 , -0.28804456, -0.06506755,  0.06566893, -0.17544926,  0.15190063,  0.36145407, -0.43087144, -0.44308208, -0.29677284, -0.08844341, -0.82711264, -0.60910319, -0.37459305, -1.27442565, -1.32106897, -1.26528966, -1.4294778 , -1.28054123, -1.56417686, -2.17799607, -1.83578592])
+        
+        results = _estimate_noise_variance(x, 2)
+        expected_results = 0.05999266
+        np.testing.assert_almost_equal(results, expected_results)
+
+        results = _estimate_noise_variance(x, 5)
+        expected_results = 0.07193388
+        np.testing.assert_almost_equal(results, expected_results)
+
+        with self.assertRaises(ValueError):
+            _estimate_noise_variance(x, 15)

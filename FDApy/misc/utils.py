@@ -12,6 +12,34 @@ import scipy
 
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
+#############################################################################
+# Constants
+#############################################################################
+DIFF_SEQUENCES = {
+    1: np.array([0.7071, -0.7071]),
+    2: np.array([0.8090, -0.5, -0.3090]),
+    3: np.array([0.1942, 0.2809, 0.3832, -0.8582]),
+    4: np.array([0.2708, -0.0142, 0.6909, -0.4858, -0.4617]),
+    5: np.array([0.9064, -0.2600, -0.2167, -0.1774, -0.1420, -0.1103]),
+    6: np.array([0.2400, 0.0300, -0.0342, 0.7738, -0.3587, -0.3038, -0.3472]),
+    7: np.array([
+        0.9302, -0.1965, -0.1728, -0.1506,
+        -0.1299, -0.1107, -0.0930, -0.0768
+    ]),
+    8: np.array([
+        0.2171, 0.0467, -0.0046, -0.0348,
+        0.8207, -0.2860, -0.2453, -0.2260, -0.2879
+    ]),
+    9: np.array([
+        0.9443, -0.1578, -0.1429, -0.1287, -0.1152,
+        -0.1025, -0.0905, -0.0792, -0.0687, -0.0588
+    ]),
+    10: np.array([
+        0.1995, 0.0539, 0.0104, -0.0140, -0.0325, 0.8510,
+        -0.2384, -0.2079, -0.1882, -0.1830, -0.2507
+    ])
+}
+
 
 #############################################################################
 # Standardization functions
@@ -374,9 +402,124 @@ def _shift(
     return res
 
 
+def _cartesian_product(
+    *arrays: List[npt.NDArray[np.float64]]
+) -> npt.NDArray[np.float64]:
+    """Compute the cartesian product of a list of arrays.
+
+    Parameters
+    ----------
+    arrays: List[npt.NDArray[np.float64]]
+        List of arrays
+
+    Returns
+    -------
+    npt.NDArray[np.float64]
+        The Cartedian product betwwen the (argument) arrays.
+
+    Example
+    -------
+    >>> _cartesian_product(np.array([1, 2]))
+    array([
+        [1],
+        [2]
+    ])
+
+    >>> _cartesian_product(np.array([0, 1]), np.array([1, 2, 3]))
+    array([
+        [0, 1],
+        [0, 2],
+        [0, 3],
+        [1, 1],
+        [1, 2],
+        [1, 3]
+    ])
+
+    >>> _cartesian_product(
+    ...     np.array([0, 1]), np.array([1, 2]), np.array([2, 3])
+    ... )
+    array([
+        [0, 1, 2],
+        [0, 1, 3],
+        [0, 2, 2],
+        [0, 2, 3],
+        [1, 1, 2],
+        [1, 1, 3],
+        [1, 2, 2],
+        [1, 2, 3]
+    ])
+
+    """
+    meshgrids = np.meshgrid(*arrays, indexing='ij')
+    stacked = np.column_stack([m.ravel() for m in meshgrids])
+    return stacked
+
+
 ##############################################################################
 # Array computation
 ##############################################################################
+
+def _integration_weights(
+    x: npt.NDArray[np.float64],
+    method: Union[str, Callable] = 'trapz'
+) -> npt.NDArray[np.float64]:
+    """Compute integration weights.
+
+    Compute weights for numerical integration over the domain `X` given
+    the method `method`.
+
+    Parameters
+    ----------
+    x: npt.NDArray[np.float64], shape=(n_points,)
+        Domain on which compute the weights.
+    method: Union[str, Callable], default='trapz'
+        The method to compute the weights.
+
+    Returns
+    -------
+    npt.NDArray[np.float64], shape=(n_points,)
+        The integration weights.
+
+    Example
+    -------
+    >>> _integration_weights(np.array([1, 2, 3, 4, 5]), method='trapz')
+    array([0.5, 1., 1., 1., 0.5])
+    >>> _integration_weights(np.array([1, 2, 3, 4, 5]), method='simpson')
+    array([0.33333333, 1.33333333, 0.66666667, 1.33333333, 0.33333333])
+
+    References
+    ----------
+    * https://en.wikipedia.org/wiki/Trapezoidal_rule
+    * https://en.wikipedia.org/wiki/Simpson%27s_rule
+
+    """
+    if method == 'trapz':
+        weights = 0.5 * np.concatenate(
+            (
+                np.array([x[1] - x[0]]),
+                2 * (x[1:(len(x) - 1)] - x[:(len(x) - 2)]),
+                np.array([x[len(x) - 1] - x[len(x) - 2]])
+            ), axis=None
+        )
+    elif method == 'simpson':
+        weights = np.concatenate(
+            (
+                np.array([x[1] - x[0]]),
+                [
+                    4 * h if idx % 2 == 0 else 2 * h
+                    for idx, h in enumerate(
+                        x[1:(len(x) - 1)] - x[:(len(x) - 2)]
+                    )
+                ],
+                np.array([x[len(x) - 1] - x[len(x) - 2]])
+            ), axis=None
+        ) / 3
+    elif callable(method):
+        weights = method(x)
+    else:
+        raise NotImplementedError(f"{method} not implemented!")
+    return weights  # type: ignore
+
 
 def _integrate(
     y: npt.NDArray[np.float64],
@@ -508,68 +651,6 @@ def _outer(
     return np.outer(x, y)
 
 
-def _integration_weights(
-    x: npt.NDArray[np.float64],
-    method: Union[str, Callable] = 'trapz'
-) -> npt.NDArray[np.float64]:
-    """Compute integration weights.
-
-    Compute weights for numerical integration over the domain `X` given
-    the method `method`.
-
-    Parameters
-    ----------
-    x: npt.NDArray[np.float64], shape=(n_points,)
-        Domain on which compute the weights.
-    method: Union[str, Callable], default='trapz'
-        The method to compute the weights.
-
-    Returns
-    -------
-    npt.NDArray[np.float64], shape=(n_points,)
-        The integration weights.
-
-    Example
-    -------
-    >>> _integration_weights(np.array([1, 2, 3, 4, 5]), method='trapz')
-    array([0.5, 1., 1., 1., 0.5])
-    >>> _integration_weights(np.array([1, 2, 3, 4, 5]), method='simpson')
-    array([0.33333333, 1.33333333, 0.66666667, 1.33333333, 0.33333333])
-
-    References
-    ----------
-    * https://en.wikipedia.org/wiki/Trapezoidal_rule
-    * https://en.wikipedia.org/wiki/Simpson%27s_rule
-
-    """
-    if method == 'trapz':
-        weights = 0.5 * np.concatenate(
-            (
-                np.array([x[1] - x[0]]),
-                2 * (x[1:(len(x) - 1)] - x[:(len(x) - 2)]),
-                np.array([x[len(x) - 1] - x[len(x) - 2]])
-            ), axis=None
-        )
-    elif method == 'simpson':
-        weights = np.concatenate(
-            (
-                np.array([x[1] - x[0]]),
-                [
-                    4 * h if idx % 2 == 0 else 2 * h
-                    for idx, h in enumerate(
-                        x[1:(len(x) - 1)] - x[:(len(x) - 2)]
-                    )
-                ],
-                np.array([x[len(x) - 1] - x[len(x) - 2]])
-            ), axis=None
-        ) / 3
-    elif callable(method):
-        weights = method(x)
-    else:
-        raise NotImplementedError(f"{method} not implemented!")
-    return weights  # type: ignore
-
-
 def _select_number_eigencomponents(
     eigenvalues: npt.NDArray[np.float64],
     percentage: Optional[Union[float, int]] = None
@@ -603,35 +684,6 @@ def _select_number_eigencomponents(
         return len(eigenvalues)
     else:
         raise ValueError('The `percentage` parameter is not correct.')
-
-
-def _compute_covariance(
-    eigenvalues: npt.NDArray[np.float64],
-    eigenfunctions: npt.NDArray[np.float64]
-) -> npt.NDArray[np.float64]:
-    """Compute the covariance matrix using Mercer's theorem.
-
-    Parameters
-    ----------
-    eigenvalues: npt.NDArray[np.float64], shape=(n_components,)
-        The singular values corresponding to each of selected components.
-    eigenfunctions: npt.NDArray[np.float64], shape=(n_components, n_points)
-        An array representing the eigenfunctions.
-
-    Returns
-    -------
-    npt.NDArray[np.float64]
-        An estimation of the covariance using Mercer's theorem.
-
-    References
-    ----------
-    - Mercer, J. (1909), "Functions of positive and negative type and their
-    connection with the theory of integral equations", Philosophical
-    Transactions of the Royal Society A, 209 (441-458): 415-446.
-
-    """
-    temp = np.dot(np.transpose(eigenfunctions), np.diag(eigenvalues))
-    return np.dot(temp, eigenfunctions)
 
 
 def _eigh(
@@ -671,59 +723,6 @@ def _eigh(
     return np.real(eigenvalues[::-1]), np.real(np.fliplr(eigenvectors))
 
 
-def _cartesian_product(
-    *arrays: List[npt.NDArray[np.float64]]
-) -> npt.NDArray[np.float64]:
-    """Compute the cartesian product of a list of arrays.
-
-    Parameters
-    ----------
-    arrays: List[npt.NDArray[np.float64]]
-        List of arrays
-
-    Returns
-    -------
-    npt.NDArray[np.float64]
-        The Cartedian product betwwen the (argument) arrays.
-
-    Example
-    -------
-    >>> _cartesian_product(np.array([1, 2]))
-    array([
-        [1],
-        [2]
-    ])
-
-    >>> _cartesian_product(np.array([0, 1]), np.array([1, 2, 3]))
-    array([
-        [0, 1],
-        [0, 2],
-        [0, 3],
-        [1, 1],
-        [1, 2],
-        [1, 3]
-    ])
-
-    >>> _cartesian_product(
-    ...     np.array([0, 1]), np.array([1, 2]), np.array([2, 3])
-    ... )
-    array([
-        [0, 1, 2],
-        [0, 1, 3],
-        [0, 2, 2],
-        [0, 2, 3],
-        [1, 1, 2],
-        [1, 1, 3],
-        [1, 2, 2],
-        [1, 2, 3]
-    ])
-
-    """
-    meshgrids = np.meshgrid(*arrays, indexing='ij')
-    stacked = np.column_stack([m.ravel() for m in meshgrids])
-    return stacked
-
-
 def _compute_eigen(
     data: npt.NDArray[np.float64],
     n_components: Optional[Union[np.float64, np.int64]] = None
@@ -760,3 +759,71 @@ def _compute_eigen(
     eigenvalues[eigenvalues < 0] = 0
     npc = _select_number_eigencomponents(eigenvalues, n_components)
     return eigenvalues[:npc], eigenvectors[:, :npc]
+
+
+def _compute_covariance(
+    eigenvalues: npt.NDArray[np.float64],
+    eigenfunctions: npt.NDArray[np.float64]
+) -> npt.NDArray[np.float64]:
+    """Compute the covariance matrix using Mercer's theorem.
+
+    Parameters
+    ----------
+    eigenvalues: npt.NDArray[np.float64], shape=(n_components,)
+        The singular values corresponding to each of selected components.
+    eigenfunctions: npt.NDArray[np.float64], shape=(n_components, n_points)
+        An array representing the eigenfunctions.
+
+    Returns
+    -------
+    npt.NDArray[np.float64]
+        An estimation of the covariance using Mercer's theorem.
+
+    References
+    ----------
+    .. [1] Mercer, J. (1909), Functions of positive and negative type and their
+    connection with the theory of integral equations, Philosophical
+    Transactions of the Royal Society A, 209 (441-458): 415-446.
+
+    """
+    temp = np.dot(np.transpose(eigenfunctions), np.diag(eigenvalues))
+    return np.dot(temp, eigenfunctions)
+
+
+def _estimate_noise_variance(
+    x: npt.NDArray[np.float64],
+    order: int = 2
+) -> float:
+    """Estimate the variance of the noise.
+
+    This function estimates the variance of the noise non-parametrically using
+    the methodology developed in [1]_. The estimator is based on the difference
+    of observed values.
+
+    Parameters
+    ----------
+    x: npt.NDArray[np.float64]
+        Vector of observed values.
+    order: int, default=2
+        Order of the difference sequence. The order has to be between 1 and 10.
+
+    Returns
+    -------
+    float
+        An estimation of the variance of the noise.
+
+    References
+    ----------
+    .. [1] Hall, P., Kay, J.W. and Titterington, D.M. (1990). Asymptotically
+        Optimal Difference-Based Estimation of Variance in Nonparametric
+        Regression. Biometrika 77, 521--528.
+
+    """
+    if order < 1 or order > 10:
+        raise ValueError("The order has to be between 1 and 10.")
+    weights = DIFF_SEQUENCES.get(order)
+    temp = sum(
+        np.matmul(weights, x[idx:(idx + order + 1)])**2
+        for idx in range(len(x) - order)
+    )
+    return temp / (len(x) - order)

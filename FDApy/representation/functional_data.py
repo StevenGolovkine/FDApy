@@ -121,7 +121,7 @@ def _smooth_covariance(
     return covariance
 
 
-def _estimate_noise_variance(
+def _estimate_noise_variance_with_covariance(
     raw_diagonal: npt.NDArray[np.float64],
     smooth_diagonal: npt.NDArray[np.float64],
     argvals: DenseArgvals,
@@ -1299,7 +1299,7 @@ class DenseFunctionalData(FunctionalData):
         cov = (cov + cov.T) / 2
 
         # Estimate noise variance ([2], [3])
-        self._noise_variance = _estimate_noise_variance(
+        self._noise_variance = _estimate_noise_variance_with_covariance(
             raw_diag_cov, np.diag(cov), self.argvals, points
         )
 
@@ -2130,7 +2130,7 @@ class IrregularFunctionalData(FunctionalData):
         cov = (cov + cov.T) / 2
 
         # Estimate noise variance ([2], [3])
-        self._noise_variance = _estimate_noise_variance(
+        self._noise_variance = _estimate_noise_variance_with_covariance(
             raw_diag_cov, np.diag(cov), self.argvals.to_dense(), points
         )
 
