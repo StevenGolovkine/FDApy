@@ -396,6 +396,48 @@ class TestPerformComputation(unittest.TestCase):
         np.testing.assert_array_almost_equal(result.values, expected_values)
 
 
+class TestNoisevariance(unittest.TestCase):
+    def setUp(self) -> None:
+        kl = KarhunenLoeve(
+            basis_name='bsplines', n_functions=5, random_state=42
+        )
+        kl.new(n_obs=100)
+        kl.sparsify(0.5)
+        self.fdata = kl.sparse_data
+
+    def test_noise_variance(self):
+        res = self.fdata.noise_variance(order=2)
+        expected_res = 0.006805102395353494
+        np.testing.assert_almost_equal(res, expected_res)
+
+    def test_noise_variance_error(self):
+        argvals = {
+            0: DenseArgvals({
+                'input_dim_0': np.array([1, 2, 3, 4]),
+                'input_dim_1': np.array([5, 6, 7])
+            }),
+            1: DenseArgvals({
+                'input_dim_0': np.array([2, 4]),
+                'input_dim_1': np.array([1, 2, 3])
+            }),
+            2: DenseArgvals({
+                'input_dim_0': np.array([4, 5, 6]),
+                'input_dim_1': np.array([8, 9])
+            })
+        }
+        values = {
+            0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
+            1: np.array([[1, 2, 3], [1, 2, 3]]),
+            2: np.array([[8, 9], [8, 9], [8, 9]])
+        }
+        irregu_fd = IrregularFunctionalData(
+            IrregularArgvals(argvals), IrregularValues(values)
+        )
+
+        with self.assertRaises(TypeError):
+            irregu_fd.noise_variance(2)
+
+
 class TestSmoothIrregular(unittest.TestCase):
     def setUp(self):
         name = 'bsplines'
