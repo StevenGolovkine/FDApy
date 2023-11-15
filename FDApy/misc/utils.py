@@ -822,8 +822,7 @@ def _estimate_noise_variance(
     if order < 1 or order > 10:
         raise ValueError("The order has to be between 1 and 10.")
     weights = DIFF_SEQUENCES.get(order)
-    temp = sum(
+    return np.mean([
         np.matmul(weights, x[idx:(idx + order + 1)])**2
         for idx in range(len(x) - order)
-    )
-    return temp / (len(x) - order)
+    ])
