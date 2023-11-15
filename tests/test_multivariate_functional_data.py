@@ -124,6 +124,22 @@ class MultivariateFunctionalDataTest(unittest.TestCase):
         self.assertIsInstance(fdata_long[1], pd.DataFrame)
 
 
+class TestNoisevariance(unittest.TestCase):
+    def setUp(self) -> None:
+        kl = KarhunenLoeve(
+            basis_name='bsplines', n_functions=5, random_state=42
+        )
+        kl.new(n_obs=100)
+        kl.add_noise(0.05)
+        kl.sparsify(0.5)
+        self.fdata = MultivariateFunctionalData([kl.noisy_data, kl.sparse_data])
+
+    def test_noise_variance(self):
+        res = self.fdata.noise_variance(order=2)
+        expected_res = [0.051922438333740877, 0.006671248206782777]
+        np.testing.assert_almost_equal(res, expected_res)
+
+
 class TestSmoothMultivariateFunctionalData(unittest.TestCase):
     def setUp(self):
         name = 'bsplines'
