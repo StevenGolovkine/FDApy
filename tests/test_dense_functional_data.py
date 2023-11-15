@@ -243,6 +243,28 @@ class TestDenseFunctionalData2D(unittest.TestCase):
         self.assertTrue(is_equal)
 
 
+class TestNoisevariance(unittest.TestCase):
+    def setUp(self) -> None:
+        kl = KarhunenLoeve(
+            basis_name='bsplines', n_functions=5, random_state=42
+        )
+        kl.new(n_obs=100)
+        kl.add_noise(0.05)
+        self.fdata = kl.noisy_data
+
+    def test_noise_variance(self):
+        res = self.fdata.noise_variance(order=2)
+        expected_res = 0.051922438333740877
+        np.testing.assert_almost_equal(res, expected_res)
+
+    def test_noise_variance_error(self):
+        kl = KarhunenLoeve(basis_name='bsplines', dimension='2D', n_functions=5)
+        kl.new(n_obs=10)
+
+        with self.assertRaises(TypeError):
+            kl.data.noise_variance(2)
+
+
 class TestSmoothDense(unittest.TestCase):
     def setUp(self):
         name = 'bsplines'
