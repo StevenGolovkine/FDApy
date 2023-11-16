@@ -65,7 +65,7 @@ def _fit_covariance(
         A dictionary with entries:
             - "eigenvalues"
             - "eigenfunctions"
-            - "noise_variance"
+            - "noise_variance_cov"
 
 
     References
@@ -92,7 +92,7 @@ def _fit_covariance(
 
     # Save the results
     results = dict()
-    results["noise_variance"] = data._noise_variance
+    results["noise_variance_cov"] = data._noise_variance_cov
     results["eigenvalues"] = eigenvalues
     results["eigenfunctions"] = DenseFunctionalData(
         points, DenseValues(eigenfunctions)
@@ -140,7 +140,6 @@ def _fit_inner_product(
         A dictionary with entries:
             - "eigenvalues"
             - "eigenfunctions"
-            - "noise_variance"
             - "eigenvectors"
 
     """
@@ -158,7 +157,6 @@ def _fit_inner_product(
 
     # Save the results
     results = dict()
-    results["noise_variance"] = data._noise_variance
     results['eigenvectors'] = eigenvectors
     results['eigenvalues'] = eigenvalues / data_smooth.n_obs
     results['eigenfunctions'] = DenseFunctionalData(
@@ -312,6 +310,13 @@ class UFPCA():
             Analysis, Springer Science, Chapter 8.
 
         """
+        if self.method == 'covariance' and data.n_dimension > 1:
+            raise ValueError((
+                "Estimation of the eigencomponents using the covariance "
+                f"operator is not implemented for {data.n_dimension}"
+                "-dimensional data."
+            ))
+
         if points is None:
             if isinstance(data, DenseFunctionalData):
                 points = data.argvals
@@ -326,28 +331,32 @@ class UFPCA():
         if self.normalize:
             data, self.weights = data.normalize(use_argvals_stand=True)
 
+        # Estimate the variance of the noise
+        if data.n_dimension > 1:
+            self._noise_variance = 0.0
+        else:
+            self._noise_variance = data.noise_variance(order=2)
+
         if self.method == 'covariance':
-            if data.n_dimension == 1:
-                results = _fit_covariance(data, points, smooth, **kwargs)
-            else:
-                raise ValueError((
-                    "Estimation of the eigencomponents using the covariance "
-                    f"operator is not implemented for {data.n_dimension}"
-                    "-dimensional data."
-                ))
+            results = _fit_covariance(
+                data=data, points=points, n_components=self._n_components,
+                smooth=smooth, **kwargs
+            )
         elif self.method == 'inner-product':
             results = _fit_inner_product(
-                data, points, self.n_components, smooth, **kwargs
+                data=data, points=points, n_components=self.n_components,
+                smooth=smooth, noise_variance=self._noise_variance, **kwargs
             )
         else:
             raise NotImplementedError(
                 f"The {self.method} method not implemented."
             )
 
-        self._noise_variance = results.get("noise_variance", 0.0)
+        # Save the results
         self._eigenvalues = results.get("eigenvalues", None)
         self._eigenfunctions = results.get("eigenfunctions", None)
         self._eigenvectors = results.get("eigenvectors", None)
+        self._training_data = data
 
         # Compute an estimation of the covariance
         if data.n_dimension == 1:
@@ -366,7 +375,6 @@ class UFPCA():
                 "The estimation of the covariance is not performed for "
                 f"{data.n_dimension}-dimensional data."
             ), UserWarning)
-        self._training_data = data
 
     def transform(
         self,

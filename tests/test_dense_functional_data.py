@@ -564,7 +564,7 @@ class TestCovarianceDense(unittest.TestCase):
         expected_noise = 0.07383871598487848
 
         np.testing.assert_almost_equal(results.values, expected_results)
-        np.testing.assert_almost_equal(self.fdata._noise_variance, expected_noise)
+        np.testing.assert_almost_equal(self.fdata._noise_variance_cov, expected_noise)
 
     def test_points(self):
         points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 6)})
@@ -575,7 +575,7 @@ class TestCovarianceDense(unittest.TestCase):
         expected_noise = 0.035029758855601834
 
         np.testing.assert_almost_equal(results.values, expected_results)
-        np.testing.assert_almost_equal(self.fdata._noise_variance, expected_noise)
+        np.testing.assert_almost_equal(self.fdata._noise_variance_cov, expected_noise)
 
     def test_data2d(self):
         kl = KarhunenLoeve(

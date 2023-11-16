@@ -1376,7 +1376,7 @@ class DenseFunctionalData(FunctionalData):
         cov = (cov + cov.T) / 2
 
         # Estimate noise variance ([2], [3])
-        self._noise_variance = _estimate_noise_variance_with_covariance(
+        self._noise_variance_cov = _estimate_noise_variance_with_covariance(
             raw_diag_cov, np.diag(cov), self.argvals, points
         )
 
@@ -2265,7 +2265,7 @@ class IrregularFunctionalData(FunctionalData):
         cov = (cov + cov.T) / 2
 
         # Estimate noise variance ([2], [3])
-        self._noise_variance = _estimate_noise_variance_with_covariance(
+        self._noise_variance_cov = _estimate_noise_variance_with_covariance(
             raw_diag_cov, np.diag(cov), self.argvals.to_dense(), points
         )
 
@@ -3095,7 +3095,9 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             fdata.covariance(pp, smooth, **kwargs)
             for fdata, pp in zip(self.data, points)
         ])
-        self._noise_variance = [fdata._noise_variance for fdata in self.data]
+        self._noise_variance_cov = [
+            fdata._noise_variance_cov for fdata in self.data
+        ]
         return self._covariance
 
     ###########################################################################

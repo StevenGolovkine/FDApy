@@ -368,7 +368,7 @@ class TestCovarianceMultivariateFunctionalData(unittest.TestCase):
         np.testing.assert_array_almost_equal(self.fdata._covariance.data[1].values[0, 1], expected_values)
 
         expected_noise = [0.010135268522470093, 0.0471033417347996]
-        np.testing.assert_almost_equal(self.fdata._noise_variance, expected_noise)
+        np.testing.assert_almost_equal(self.fdata._noise_variance_cov, expected_noise)
 
     def test_covariance_points(self):
         points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 11)})
@@ -382,7 +382,7 @@ class TestCovarianceMultivariateFunctionalData(unittest.TestCase):
         np.testing.assert_array_almost_equal(self.fdata._covariance.data[1].values[0, 1], expected_values)
 
         expected_noise = [0.007162139187388261, 0.04058380216259712]
-        np.testing.assert_almost_equal(self.fdata._noise_variance, expected_noise)
+        np.testing.assert_almost_equal(self.fdata._noise_variance_cov, expected_noise)
 
 
 class TestConcatenateMultivariateFunctionalData(unittest.TestCase):
