@@ -128,7 +128,7 @@ def _estimate_noise_variance_with_covariance(
     argvals: DenseArgvals,
     points: DenseArgvals
 ):
-    """Estimate the noise variance.
+    """Estimate the variance of the noise using the covariance diagonal.
 
     Parameters
     ----------
@@ -145,6 +145,12 @@ def _estimate_noise_variance_with_covariance(
     -------
     np.float64
         An estimation of the variance of the noise.
+
+    References
+    ----------
+    .. [2] Yao, F., Müller, H.-G., Wang, J.-L. (2005). Functional Data
+        Analysis for Sparse Longitudinal Data. Journal of the American
+        Statistical Association 100, pp. 577--590.
 
     """
     lp = LocalPolynomial(

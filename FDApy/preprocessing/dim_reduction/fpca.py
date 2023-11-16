@@ -158,6 +158,7 @@ def _fit_inner_product(
 
     # Save the results
     results = dict()
+    results["noise_variance"] = data._noise_variance
     results['eigenvectors'] = eigenvectors
     results['eigenvalues'] = eigenvalues / data_smooth.n_obs
     results['eigenfunctions'] = DenseFunctionalData(
