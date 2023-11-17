@@ -15,7 +15,8 @@ from typing import Dict, Optional, List, Union
 from ...representation.argvals import DenseArgvals
 from ...representation.values import DenseValues
 from ...representation.functional_data import (
-    FunctionalData, DenseFunctionalData, MultivariateFunctionalData
+    FunctionalData, DenseFunctionalData,
+    IrregularFunctionalData, MultivariateFunctionalData
 )
 from ...misc.utils import (
     _compute_covariance,
@@ -27,7 +28,7 @@ from .fcp_tpa import FCPTPA
 
 
 #############################################################################
-# Utilities
+# Utilities to fit
 
 def _fit_covariance(
     data: FunctionalData,
@@ -163,6 +164,76 @@ def _fit_inner_product(
         points, DenseValues(eigenfunctions.T)
     )
     return results
+
+
+#############################################################################
+# Utilities to transform
+
+def _transform_numerical_integration_dense(
+    data: DenseFunctionalData,
+    eigenfunctions: DenseFunctionalData,
+    method: str = "trapz"
+) -> npt.NDArray[np.float64]:
+    """Estimate scores using numerical integration.
+
+    Parameters
+    ----------
+    data: DenseFunctionalData
+        Data.
+    eigenfunctions: DenseFunctionalData
+        Estimate of the eigenfunctions.
+    method: str, {'trapz', 'simpson'}, default='trapz'
+        Method used to perform numerical integration.
+
+    Returns
+    -------
+    npt.NDArray[np.float64], shape=(n_obs, n_components)
+        An array representing the projection of the data onto the basis of
+        functions defined by the eigenfunctions.
+
+    """
+    axis = [argvals for argvals in data.argvals.values()]
+    temp = [obs * eigenfunctions.values for obs in data.values]
+
+    scores = np.zeros((data.n_obs, eigenfunctions.n_obs))
+    for idx, curves in enumerate(temp):
+        for idx_eigen, curve in enumerate(curves):
+            scores[idx, idx_eigen] = _integrate(curve, *axis, method=method)
+    return scores
+
+
+def _transform_numerical_integration_irregular(
+    data: IrregularFunctionalData,
+    eigenfunctions: DenseFunctionalData,
+    method: str = "trapz"
+) -> npt.NDArray[np.float64]:
+    """Estimate scores using numerical integration.
+
+    Parameters
+    ----------
+    data: IrregularFunctionalData
+        Data.
+    eigenfunctions: DenseFunctionalData
+        Estimate of the eigenfunctions.
+    method: str, {'trapz', 'simpson'}, default='trapz'
+        Method used to perform numerical integration.
+
+    Returns
+    -------
+    npt.NDArray[np.float64], shape=(n_obs, n_components)
+        An array representing the projection of the data onto the basis of
+        functions defined by the eigenfunctions.
+
+    """
+    scores = np.zeros((data.n_obs, eigenfunctions.n_obs))
+    for idx, obs in enumerate(data):
+        eigen_sampled = eigenfunctions.smooth(points=obs.argvals[idx])
+        temp = eigen_sampled.values * obs.values[idx]
+        for idx_eigen, curve in enumerate(temp):
+            scores[idx, idx_eigen] = _integrate(
+                curve, obs.argvals[idx]['input_dim_0'], method=method
+            )
+    return scores
 
 
 #############################################################################
@@ -455,19 +526,13 @@ class UFPCA():
                 f"The method {method} can not be used as the eigencomponents "
                 "have not been estimated using the inner-product matrix."
             )
-
-        # Center the data using the estimated mean in the fitting step.
-        data_new = DenseFunctionalData(
-            DenseArgvals(data.argvals),
-            DenseValues(data.values - self.mean.values)
-        )
-
-        if self.normalize:
-            values = data_new.values / self.weights
-            data_new = DenseFunctionalData(
-                DenseArgvals(data_new.argvals),
-                DenseValues(values)
-            )
+        if data is None:
+            data = self._training_data
+        else:
+            # Center the data using the estimated mean in the fitting step.
+            data_new = data.center(mean=self._mean)
+            if self.normalize:
+                data_new = data.normalize(weights=self.weights)
 
         if method == 'NumInt':
             return self._numerical_integration(
