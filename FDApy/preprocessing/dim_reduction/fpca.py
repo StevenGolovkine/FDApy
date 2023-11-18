@@ -535,9 +535,16 @@ class UFPCA():
                 data_new = data.normalize(weights=self.weights)
 
         if method == 'NumInt':
-            return self._numerical_integration(
-                data_new, parameters['integration_method']
-            )
+            if isinstance(data, DenseFunctionalData):
+                return _transform_numerical_integration_dense(
+                    data_new, self.eigenfunctions,
+                    parameters['integration_method']
+                )
+            else:
+                return _transform_numerical_integration_irregular(
+                    data_new, self._eigenfunctions,
+                    parameters['integration_method']
+                )
         elif method == 'PACE':
             return self._pace(data_new, parameters['tol'])
         elif method == 'InnPro':
