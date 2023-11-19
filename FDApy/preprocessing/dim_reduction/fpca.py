@@ -509,12 +509,6 @@ class UFPCA():
             100, pp. 577--590.
 
         """
-        # Get the keyword arguments
-        parameters = {
-            'tol': kwargs.get('tol', 1e-4),
-            'integration_method': kwargs.get('integration_method', 'trapz')
-        }
-
         # Checkers
         if method == 'InnPro' and data is not None:
             raise ValueError(
@@ -538,15 +532,15 @@ class UFPCA():
             if isinstance(data, DenseFunctionalData):
                 return _transform_numerical_integration_dense(
                     data_new, self.eigenfunctions,
-                    parameters['integration_method']
+                    method=kwargs.get('integration_method', 'trapz')
                 )
             else:
                 return _transform_numerical_integration_irregular(
                     data_new, self._eigenfunctions,
-                    parameters['integration_method']
+                    method=kwargs.get('integration_method', 'trapz')
                 )
         elif method == 'PACE':
-            return self._pace(data_new, parameters['tol'])
+            return self._pace(data_new, kwargs.get('tol', 1e-4))
         elif method == 'InnPro':
             temp = np.sqrt(data_new.n_obs * self.eigenvalues)
             return temp * self._eigenvectors
