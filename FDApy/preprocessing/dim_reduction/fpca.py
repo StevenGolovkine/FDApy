@@ -590,41 +590,6 @@ class UFPCA():
             [data.values, sigma_inv, self.eigenfunctions.values.T]
         )
 
-    def _numerical_integration(
-        self,
-        data: DenseFunctionalData,
-        method: str = "trapz"
-    ) -> npt.NDArray[np.float64]:
-        """Estimate scores using numerical integration.
-
-        Parameters
-        ----------
-        data: DenseFunctionalData
-            Data
-        method: str, {'trapz', 'simpson'}, default='trapz'
-            Method used to perform numerical integration.
-
-        Returns
-        -------
-        npt.NDArray[np.float64], shape=(n_obs, n_components)
-            An array representing the projection of the data onto the basis of
-            functions defined by the eigenfunctions.
-
-        TODO: Change _integrate
-
-        """
-        if data.n_dimension > 2:
-            raise ValueError("The dimension of the data have to be 1 or 2.")
-
-        axis = [argvals for argvals in data.argvals.values()]
-        temp = [traj * self.eigenfunctions.values for traj in data.values]
-
-        scores = np.zeros((data.n_obs, self.n_components))
-        for idx, curves in enumerate(temp):
-            for idx_eigen, curve in enumerate(curves):
-                scores[idx, idx_eigen] = _integrate(curve, *axis)
-        return scores
-
     def inverse_transform(
         self,
         scores: npt.NDArray[np.float64]
