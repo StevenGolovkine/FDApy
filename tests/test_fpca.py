@@ -18,6 +18,8 @@ from FDApy.preprocessing.dim_reduction.fpca import (
     _fit_covariance,
     _fit_inner_product,
     _transform_numerical_integration_dense,
+    _transform_numerical_integration_irregular,
+    _transform_pace_dense
 )
 
 
@@ -124,9 +126,6 @@ class TestTransformNumericalIntegrationDense(unittest.TestCase):
         )
         kl.new(n_obs=10)
         kl.add_noise(0.05)
-        kl.sparsify(0.95, 0.01)
-
-        self.fdata_sparse = kl.sparse_data
         self.fdata_uni = kl.noisy_data
 
         uf = UFPCA(n_components=2, method='covariance')
@@ -150,3 +149,49 @@ class TestTransformNumericalIntegrationDense(unittest.TestCase):
         expected_scores = np.array([[-0.02274272, -0.01767752],[-0.14201805, -0.03527876],[ 0.20025465,  0.01227318],[-0.0490446 , -0.04197494],[ 0.00975116, -0.01904456],[ 0.08457573, -0.02113259],[ 0.04962573,  0.0915368 ],[-0.01979976,  0.0609952 ],[ 0.04741364,  0.03495292],[ 0.12644882,  0.00416015]])
 
         np.testing.assert_array_almost_equal(np.abs(scores), np.abs(expected_scores))
+
+
+class TestTransformNumericalIntegrationIrregular(unittest.TestCase):
+    def setUp(self):
+        warnings.simplefilter('ignore', category=UserWarning)
+
+        kl = KarhunenLoeve(
+            basis_name='bsplines', n_functions=5, random_state=42
+        )
+        kl.new(n_obs=10)
+        kl.add_noise(0.05)
+        kl.sparsify(0.95, 0.01)
+
+        self.fdata_sparse = kl.sparse_data
+
+        uf = UFPCA(n_components=0.95, method='covariance')
+        uf.fit(self.fdata_sparse)
+        self.uf_eigen = uf.eigenfunctions
+
+    def test_numerical_integration(self):
+        scores_sparse = _transform_numerical_integration_irregular(self.fdata_sparse, self.uf_eigen)
+        expected_scores = np.array([[ 0.22203175,  0.17646635,  0.20582599],[ 0.08804525,  0.411517  , -0.0441252 ],[ 0.13957335, -0.67481938,  0.03599057],[ 0.08157136,  0.08586396, -0.18263835],[ 0.17731011,  0.07096538,  0.00388039],[ 0.19391082, -0.27504909, -0.09204208],[-0.4688101 , -0.15005271,  0.24150274],[-0.39397066,  0.05064411,  0.08163727],[-0.13128561, -0.22303583,  0.11581405],[ 0.16903147, -0.45101713,  0.05664777]])
+        np.testing.assert_array_almost_equal(np.abs(scores_sparse), np.abs(expected_scores))
+
+
+class TestTransformPACEDense(unittest.TestCase):
+    def setUp(self):
+        warnings.simplefilter('ignore', category=UserWarning)
+
+        kl = KarhunenLoeve(
+            basis_name='bsplines', n_functions=5, random_state=42
+        )
+        kl.new(n_obs=10)
+        self.fdata_uni = kl.data
+
+        uf = UFPCA(n_components=2, method='covariance')
+        uf.fit(self.fdata_uni)
+        self.uf_eigen = uf.eigenfunctions
+        self.uf_eigenvalues = uf.eigenvalues
+        self.uf_covariance = uf.covariance
+        self.uf_noise_variance = uf._noise_variance
+
+    def test_numerical_integration(self):
+        scores_dense = _transform_pace_dense(self.fdata_uni, self.uf_eigen, self.uf_eigenvalues, self.uf_covariance, self.uf_noise_variance)
+        expected_scores = np.array([[ 0.24212314,  0.24921302], [ 0.03652277,  0.4068994 ], [ 0.32109446, -0.57696941], [ 0.10211818,  0.0989874 ], [ 0.20237008,  0.1220943 ], [ 0.30280806, -0.21208465], [-0.57660564, -0.26435718], [-0.53225578, -0.0887243 ], [-0.11531408, -0.23412856], [ 0.31302944, -0.3614893 ]])
+        np.testing.assert_array_almost_equal(np.abs(scores_dense), np.abs(expected_scores))

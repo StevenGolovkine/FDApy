@@ -236,6 +236,42 @@ def _transform_numerical_integration_irregular(
     return scores
 
 
+def _transform_pace_dense(
+    data: DenseFunctionalData,
+    eigenfunctions: DenseFunctionalData,
+    eigenvalues: npt.NDArray[np.float64],
+    covariance: DenseFunctionalData,
+    noise_variance: float
+) -> npt.NDArray[np.float64]:
+    """Estimate scores using PACE.
+
+    Parameters
+    ----------
+    data: DenseFunctionalData
+        Data.
+    eigenfunctions: DenseFunctionalData
+        Estimate of the eigenfunctions.
+    eigenvalues: npt.NDArray[np.float64]
+        Estimate of the eigenvalues
+    covariance: DenseFunctionalData
+        Estimate of the covariance
+    noise_variance: float
+        Estimate of the noise_variance
+
+    Returns
+    -------
+    npt.NDArray[np.float64], shape=(n_obs, n_components)
+        An array representing the projection of the data onto the basis of
+        functions defined by the eigenfunctions.
+
+    """
+    noise_mat = noise_variance * np.eye(covariance.values[0].shape[0])
+    sigma_inv = np.linalg.pinv(covariance.values[0] + noise_mat)
+    return eigenvalues * np.linalg.multi_dot([
+        data.values, sigma_inv, eigenfunctions.values.T
+    ])
+
+
 #############################################################################
 # Class UFPCA
 
