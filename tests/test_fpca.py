@@ -14,8 +14,10 @@ from FDApy.representation.values import DenseValues
 from FDApy.representation.functional_data import DenseFunctionalData
 from FDApy.simulation.karhunen import KarhunenLoeve
 from FDApy.preprocessing.dim_reduction.fpca import (
+    UFPCA,
     _fit_covariance,
-    _fit_inner_product
+    _fit_inner_product,
+    _transform_numerical_integration_dense,
 )
 
 
@@ -111,3 +113,40 @@ class TestFitInnerProduct(unittest.TestCase):
 
         expected_eigenvectors = np.array([[-0.16023502, -0.25916387,  0.69352094],[-0.59327901, -0.18169182, -0.15757975],[ 0.58892225, -0.14372699, -0.10404258],[-0.28024854, -0.28946203, -0.44447702],[-0.01298703, -0.09790341,  0.42423096],[ 0.21479235, -0.19854235, -0.15823092],[ 0.05588307,  0.66067552,  0.14747419],[-0.18637344,  0.51507827, -0.13311371],[ 0.03540505,  0.14717772, -0.1778395 ],[ 0.33400626, -0.15137129, -0.09853385]])
         np.testing.assert_array_almost_equal(np.abs(results['eigenvectors']), np.abs(expected_eigenvectors))
+
+
+class TestTransformNumericalIntegrationDense(unittest.TestCase):
+    def setUp(self):
+        warnings.simplefilter('ignore', category=UserWarning)
+
+        kl = KarhunenLoeve(
+            basis_name='bsplines', n_functions=5, random_state=42
+        )
+        kl.new(n_obs=10)
+        kl.add_noise(0.05)
+        kl.sparsify(0.95, 0.01)
+
+        self.fdata_sparse = kl.sparse_data
+        self.fdata_uni = kl.noisy_data
+
+        uf = UFPCA(n_components=2, method='covariance')
+        uf.fit(self.fdata_uni)
+        self.uf_eigen = uf.eigenfunctions
+
+    def test_numerical_integration(self):
+        scores_dense = _transform_numerical_integration_dense(self.fdata_uni, self.uf_eigen)
+        expected_scores = np.array([[ 0.23185638,  0.27092884],[ 0.02684859,  0.41977244],[ 0.35129452, -0.57867029],[ 0.04697217,  0.06655563],[ 0.20541785,  0.12994119],[ 0.2936377 , -0.18557023],[-0.59218129, -0.25986862],[-0.55898506, -0.14784151],[-0.09181077, -0.19276825],[ 0.323464  , -0.3623928 ]])
+        np.testing.assert_array_almost_equal(np.abs(scores_dense), np.abs(expected_scores))
+
+    def test_numerical_integration_2d(self):
+        kl = KarhunenLoeve(basis_name='bsplines', n_functions=5, argvals=np.linspace(0, 1, 10), dimension='2D', random_state=42)
+        kl.new(n_obs=10)
+        fdata = kl.data
+
+        uf = UFPCA(n_components=2, method='inner-product')
+        uf.fit(fdata)
+
+        scores = _transform_numerical_integration_dense(fdata, uf.eigenfunctions)
+        expected_scores = np.array([[-0.02274272, -0.01767752],[-0.14201805, -0.03527876],[ 0.20025465,  0.01227318],[-0.0490446 , -0.04197494],[ 0.00975116, -0.01904456],[ 0.08457573, -0.02113259],[ 0.04962573,  0.0915368 ],[-0.01979976,  0.0609952 ],[ 0.04741364,  0.03495292],[ 0.12644882,  0.00416015]])
+
+        np.testing.assert_array_almost_equal(np.abs(scores), np.abs(expected_scores))
