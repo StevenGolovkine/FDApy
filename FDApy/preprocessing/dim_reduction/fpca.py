@@ -272,6 +272,63 @@ def _transform_pace_dense(
     ])
 
 
+def _transform_pace_irregular(
+    data: DenseFunctionalData,
+    eigenfunctions: DenseFunctionalData,
+    eigenvalues: npt.NDArray[np.float64],
+    covariance: DenseFunctionalData,
+    noise_variance: float
+) -> npt.NDArray[np.float64]:
+    """Estimate scores using PACE.
+
+    Parameters
+    ----------
+    data: DenseFunctionalData
+        Data.
+    eigenfunctions: DenseFunctionalData
+        Estimate of the eigenfunctions.
+    eigenvalues: npt.NDArray[np.float64]
+        Estimate of the eigenvalues
+    covariance: DenseFunctionalData
+        Estimate of the covariance
+    noise_variance: float
+        Estimate of the noise_variance
+
+    Returns
+    -------
+    npt.NDArray[np.float64], shape=(n_obs, n_components)
+        An array representing the projection of the data onto the basis of
+        functions defined by the eigenfunctions.
+
+    """
+    points = data.argvals.to_dense()
+    argvals_cov = DenseArgvals({
+        'input_dim_0': data.argvals.to_dense()['input_dim_0'],
+        'input_dim_1': data.argvals.to_dense()['input_dim_0'],
+    })
+    covariance_sampled = covariance.smooth(points=argvals_cov)
+    eigenfunctions_sampled = eigenfunctions.smooth(points=points)
+
+    scores = np.zeros((data.n_obs, eigenfunctions.n_obs))
+    for idx, fdata in enumerate(data):
+        obs_points = np.isin(
+            data.argvals.to_dense()['input_dim_0'],
+            fdata.argvals[idx]['input_dim_0']
+        )
+
+        mask = np.outer(obs_points, obs_points)
+        cov_sampled = covariance_sampled.values[0, mask].\
+            reshape(2 * fdata.n_points[idx])
+        eigen_sampled = eigenfunctions_sampled.values[:, obs_points]
+
+        noise_mat = noise_variance * np.eye(cov_sampled.shape[0])
+        sigma_inv = np.linalg.pinv(cov_sampled + noise_mat)
+        scores[idx, :] = eigenvalues * np.linalg.multi_dot([
+            fdata.values[idx], sigma_inv, eigen_sampled.T
+        ])
+    return scores
+
+
 #############################################################################
 # Class UFPCA
 
@@ -576,49 +633,22 @@ class UFPCA():
                     method=kwargs.get('integration_method', 'trapz')
                 )
         elif method == 'PACE':
-            return self._pace(data_new, kwargs.get('tol', 1e-4))
+            noise_variance = max(kwargs.get('tol', 1e-4), self._noise_variance)
+            if isinstance(data, DenseFunctionalData):
+                return _transform_pace_dense(
+                    data_new, self.eigenfunctions, self.eigenvalues,
+                    self.covariance, noise_variance
+                )
+            else:
+                return _transform_pace_irregular(
+                    data_new, self.eigenfunctions, self.eigenvalues,
+                    self.covariance, noise_variance
+                )
         elif method == 'InnPro':
             temp = np.sqrt(data_new.n_obs * self.eigenvalues)
             return temp * self._eigenvectors
         else:
             raise ValueError(f"Method {method} not implemented.")
-
-    def _pace(
-        self,
-        data: DenseFunctionalData,
-        tol: float = 1e-4
-    ) -> npt.NDArray[np.float64]:
-        """Estimate scores using PACE algorithm.
-
-        Parameters
-        ----------
-        data: DenseFunctionalData
-            Data
-        tol: float, default=1e-4
-            Tolerance parameter to prevent overflow to inverse a matrix.
-
-        Returns
-        -------
-        npt.NDArray[np.float64], shape=(n_obs, n_components)
-            An array representing the projection of the data onto the basis of
-            functions defined by the eigenfunctions.
-
-        References
-        ----------
-        .. [1] Yao, Müller and Wang (2005), Functional Data Analysis for Sparse
-            Longitudinal Data. Journal of the American Statistical Association,
-            100, pp. 577--590.
-
-        """
-        print(self._noise_variance)
-        if not hasattr(self, '_noise_variance'):
-            self._noise_variance = 0.0
-        noise = max(tol, self._noise_variance)
-        noise_mat = noise * np.eye(self.covariance.values[0].shape[0])
-        sigma_inv = np.linalg.pinv(self.covariance.values[0] + noise_mat)
-        return self.eigenvalues * np.linalg.multi_dot(
-            [data.values, sigma_inv, self.eigenfunctions.values.T]
-        )
 
     def inverse_transform(
         self,
