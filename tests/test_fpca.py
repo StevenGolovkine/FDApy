@@ -19,7 +19,8 @@ from FDApy.preprocessing.dim_reduction.fpca import (
     _fit_inner_product,
     _transform_numerical_integration_dense,
     _transform_numerical_integration_irregular,
-    _transform_pace_dense
+    _transform_pace_dense,
+    _transform_pace_irregular
 )
 
 
@@ -174,7 +175,7 @@ class TestTransformNumericalIntegrationIrregular(unittest.TestCase):
         np.testing.assert_array_almost_equal(np.abs(scores_sparse), np.abs(expected_scores))
 
 
-class TestTransformPACEDense(unittest.TestCase):
+class TestTransformPACE(unittest.TestCase):
     def setUp(self):
         warnings.simplefilter('ignore', category=UserWarning)
 
@@ -182,16 +183,31 @@ class TestTransformPACEDense(unittest.TestCase):
             basis_name='bsplines', n_functions=5, random_state=42
         )
         kl.new(n_obs=10)
-        self.fdata_uni = kl.data
+        kl.add_noise_and_sparsify(0.05, 0.9, 0.05)
+        self.fdata_uni = kl.noisy_data
+        self.fdata_sparse = kl.sparse_data
 
-        uf = UFPCA(n_components=2, method='covariance')
-        uf.fit(self.fdata_uni)
-        self.uf_eigen = uf.eigenfunctions
-        self.uf_eigenvalues = uf.eigenvalues
-        self.uf_covariance = uf.covariance
-        self.uf_noise_variance = uf._noise_variance
+        uf_dense = UFPCA(n_components=2, method='covariance')
+        uf_dense.fit(self.fdata_uni)
+        self.uf_dense = uf_dense
 
-    def test_numerical_integration(self):
-        scores_dense = _transform_pace_dense(self.fdata_uni, self.uf_eigen, self.uf_eigenvalues, self.uf_covariance, self.uf_noise_variance)
-        expected_scores = np.array([[ 0.24212314,  0.24921302], [ 0.03652277,  0.4068994 ], [ 0.32109446, -0.57696941], [ 0.10211818,  0.0989874 ], [ 0.20237008,  0.1220943 ], [ 0.30280806, -0.21208465], [-0.57660564, -0.26435718], [-0.53225578, -0.0887243 ], [-0.11531408, -0.23412856], [ 0.31302944, -0.3614893 ]])
+        uf_sparse = UFPCA(n_components=2, method='covariance')
+        uf_sparse.fit(self.fdata_sparse)
+        self.uf_sparse = uf_sparse
+
+    def test_pace_dense(self):
+        scores_dense = scores_dense = _transform_pace_dense(
+            self.fdata_uni, self.uf_dense.eigenfunctions, self.uf_dense.eigenvalues,
+            self.uf_dense.covariance, self.uf_dense._noise_variance
+        )
+        expected_scores = np.array([[ 0.2250209 ,  0.26640435], [ 0.03071671,  0.42263802], [ 0.34750068, -0.57693324], [ 0.04796388,  0.06556203], [ 0.20086595,  0.12434758], [ 0.29359884, -0.18454036], [-0.5901051 , -0.25663729], [-0.55689136, -0.14721497], [-0.08779404, -0.18558396], [ 0.32294073, -0.35842484]])
         np.testing.assert_array_almost_equal(np.abs(scores_dense), np.abs(expected_scores))
+
+    def test_pace_irregular(self):
+        scores_sparse = _transform_pace_irregular(
+            self.fdata_sparse, self.uf_sparse.eigenfunctions,
+            self.uf_sparse.eigenvalues, self.uf_sparse.covariance,
+            self.uf_sparse._noise_variance
+        )
+        expected_scores = np.array([[ 0.21468274,  0.17152223],[ 0.08052812,  0.42301138],[ 0.29872919, -0.62039464],[ 0.05720657,  0.0820881 ],[ 0.22212744,  0.12684133],[ 0.26609097, -0.20669733],[-0.62263044, -0.21029513],[-0.56512957, -0.10453311],[-0.10389419, -0.1884054 ],[ 0.28613813, -0.39222563]])
+        np.testing.assert_array_almost_equal(np.abs(scores_sparse), np.abs(expected_scores))

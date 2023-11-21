@@ -306,8 +306,13 @@ def _transform_pace_irregular(
         'input_dim_0': data.argvals.to_dense()['input_dim_0'],
         'input_dim_1': data.argvals.to_dense()['input_dim_0'],
     })
-    covariance_sampled = covariance.smooth(points=argvals_cov)
-    eigenfunctions_sampled = eigenfunctions.smooth(points=points)
+    bandwidth = 1 / points.n_points[0]
+    covariance_sampled = covariance.smooth(
+        points=argvals_cov, bandwidth=bandwidth
+    )
+    eigenfunctions_sampled = eigenfunctions.smooth(
+        points=points, bandwidth=bandwidth
+    )
 
     scores = np.zeros((data.n_obs, eigenfunctions.n_obs))
     for idx, fdata in enumerate(data):
