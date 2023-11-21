@@ -334,6 +334,32 @@ def _transform_pace_irregular(
     return scores
 
 
+def _transform_innpro(
+    data: DenseFunctionalData,
+    eigenvectors: npt.NDArray[np.float64],
+    eigenvalues: npt.NDArray[np.float64]
+):
+    """Estimate scores using the eigenvectors of the inner-product matrix.
+
+    Parameters
+    ----------
+    data: DenseFunctionalData
+        Data.
+    eigenvectors: npt.NDArray[np.float64]
+        Estimate of the eigenvectors of the inner-product matrix.
+    eigenvalues: npt.NDArray[np.float64]
+        Estimate of the eigenvalues.
+
+    Returns
+    -------
+    npt.NDArray[np.float64], shape=(n_obs, n_components)
+        An array representing the projection of the data onto the basis of
+        functions defined by the eigenfunctions.
+
+    """
+    return np.sqrt(data.n_obs * eigenvalues) * eigenvectors
+
+
 #############################################################################
 # Class UFPCA
 
@@ -619,7 +645,7 @@ class UFPCA():
                 "have not been estimated using the inner-product matrix."
             )
         if data is None:
-            data = self._training_data
+            data_new = self._training_data
         else:
             # Center the data using the estimated mean in the fitting step.
             data_new = data.center(mean=self._mean)
@@ -627,7 +653,7 @@ class UFPCA():
                 data_new = data.normalize(weights=self.weights)
 
         if method == 'NumInt':
-            if isinstance(data, DenseFunctionalData):
+            if isinstance(data_new, DenseFunctionalData):
                 return _transform_numerical_integration_dense(
                     data_new, self.eigenfunctions,
                     method=kwargs.get('integration_method', 'trapz')
@@ -639,7 +665,7 @@ class UFPCA():
                 )
         elif method == 'PACE':
             noise_variance = max(kwargs.get('tol', 1e-4), self._noise_variance)
-            if isinstance(data, DenseFunctionalData):
+            if isinstance(data_new, DenseFunctionalData):
                 return _transform_pace_dense(
                     data_new, self.eigenfunctions, self.eigenvalues,
                     self.covariance, noise_variance
@@ -650,8 +676,9 @@ class UFPCA():
                     self.covariance, noise_variance
                 )
         elif method == 'InnPro':
-            temp = np.sqrt(data_new.n_obs * self.eigenvalues)
-            return temp * self._eigenvectors
+            return _transform_innpro(
+                data_new, self._eigenvectors, self.eigenvalues
+            )
         else:
             raise ValueError(f"Method {method} not implemented.")
 
