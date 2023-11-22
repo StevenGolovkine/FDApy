@@ -639,7 +639,7 @@ class UFPCA():
                 f"The method {method} can not be used as the eigencomponents "
                 "have not been estimated using the provided data."
             )
-        if method == 'InnPro' and not hasattr(self, '_eigenvectors'):
+        if method == 'InnPro' and self._eigenvectors is None:
             raise ValueError(
                 f"The method {method} can not be used as the eigencomponents "
                 "have not been estimated using the inner-product matrix."
@@ -650,7 +650,7 @@ class UFPCA():
             # Center the data using the estimated mean in the fitting step.
             data_new = data.center(mean=self._mean)
             if self.normalize:
-                data_new = data.normalize(weights=self.weights)
+                data_new, _ = data.normalize(weights=self.weights)
 
         if method == 'NumInt':
             if isinstance(data_new, DenseFunctionalData):

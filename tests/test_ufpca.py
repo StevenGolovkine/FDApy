@@ -153,36 +153,6 @@ class TestFit(unittest.TestCase):
             uf.fit(kl.data)
 
 
-# class TestPace(unittest.TestCase):
-#     def setUp(self):
-#         argvals = np.linspace(0, 1, 10)
-#         kl = KarhunenLoeve(
-#             basis_name='fourier', argvals=argvals, 
-#             n_functions=5, random_state=42
-#         )
-#         kl.new(n_obs=50)
-#         self.data = kl.data
-
-#     def test_pace(self):
-#         self.data.covariance()
-        
-#         uf = UFPCA(n_components=2, method='covariance')
-#         uf.fit(self.data)
-
-#         scores = uf._pace(self.data)
-
-#         expected_scores = np.array([
-#             [ 1.46015886e+00,  2.04695739e+00],
-#             [ 4.94950452e-01,  1.78515078e-01],
-#             [ 2.15517571e-01, -1.99545738e-01],
-#             [ 4.73664501e-01, -1.56381155e-01],
-#             [ 7.73468093e-01,  2.56786248e-01]
-#         ])
-#         np.testing.assert_array_almost_equal(
-#             np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
-#         )
-
-
 class TestTransform(unittest.TestCase):
     def setUp(self):
         warnings.simplefilter('ignore', category=UserWarning)
@@ -196,89 +166,57 @@ class TestTransform(unittest.TestCase):
         self.fdata_uni = kl.data
         self.fdata_sparse = kl.sparse_data
 
-    # def test_error_innpro(self):
-    #     uf = UFPCA(n_components=2, method='covariance')
-    #     uf.fit(self.fdata_uni)
-    #     with self.assertRaises(ValueError):
-    #         uf.transform(None, method='InnPro')
+        uf_dense = UFPCA(n_components=2, method='covariance', normalize=True)
+        uf_dense.fit(self.fdata_uni)
+        self.uf_dense = uf_dense
+        
+        uf_sparse = UFPCA(n_components=2, method='inner-product', normalize=True)
+        uf_sparse.fit(self.fdata_sparse)
+        self.uf_sparse = uf_sparse
 
-    #     uf = UFPCA(n_components=2, method='inner-product')
-    #     uf.fit(self.fdata_uni)
-    #     with self.assertRaises(ValueError):
-    #         uf.transform(self.fdata_uni, method='InnPro')
-
-    def test_error_unkown_method(self):
-        uf = UFPCA(n_components=2, method='covariance')
-        uf.fit(self.fdata_uni)
+    def test_error_innpro(self):
+        with self.assertRaises(ValueError):
+            self.uf_sparse.transform(self.fdata_uni, method='InnPro')
 
         with self.assertRaises(ValueError):
-            uf.transform(self.fdata_uni, method='error')
+            self.uf_dense.transform(None, method='InnPro')
 
-#     def test_pace(self):
-#         self.data.covariance()
+    def test_error_unkown_method(self):
+        with self.assertRaises(ValueError):
+            self.uf_dense.transform(self.fdata_uni, method='error')
+    
+    def test_data_none(self):
+        scores = self.uf_dense.transform(None, method='NumInt')
+        expected_scores = np.array([[ 1.03857683,  1.61120636],[ 0.02698638,  2.33010653],[ 1.38748226, -2.28995058],[ 0.33836467,  0.88750734],[ 0.84348845,  1.02930045],[ 1.29442399, -0.56477517],[-2.83064835, -0.8054215 ],[-2.63650019,  0.01381634],[-0.67908482, -0.68846887],[ 1.34022021, -1.28508822]])
+        np.testing.assert_array_almost_equal(np.abs(scores), np.abs(expected_scores))
 
-#         uf = UFPCA(n_components=2, method='inner-product')
-#         uf.fit(self.data)
+    def test_data_notnone(self):
+        scores = self.uf_dense.transform(self.fdata_uni, method='NumInt')
+        expected_scores = np.array([[ 1.16668875,  1.1781701 ],[ 0.1550983 ,  1.89707026],[ 1.51559417, -2.72298685],[ 0.46647658,  0.45447107],[ 0.97160037,  0.59626419],[ 1.42253591, -0.99781144],[-2.70253643, -1.23845777],[-2.50838828, -0.41921993],[-0.55097291, -1.12150514],[ 1.46833212, -1.71812449]])
+        np.testing.assert_array_almost_equal(np.abs(scores), np.abs(expected_scores))
 
-#         scores = uf.transform(self.data, method='PACE')
-#         expected_scores = np.array([
-#             [-1.35951225, -1.83425839],
-#             [-0.39430398,  0.03418355],
-#             [-0.11487114,  0.41224429],
-#             [-0.37301803,  0.36907972],
-#             [-0.67282157, -0.0440876 ]
-#         ])
-#         np.testing.assert_array_almost_equal(
-#             np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
-#         )
+    def test_numint(self):
+        scores = self.uf_dense.transform(self.fdata_uni, method='NumInt')
+        expected_scores = np.array([[ 1.16668875,  1.1781701 ],[ 0.1550983 ,  1.89707026],[ 1.51559417, -2.72298685],[ 0.46647658,  0.45447107],[ 0.97160037,  0.59626419],[ 1.42253591, -0.99781144],[-2.70253643, -1.23845777],[-2.50838828, -0.41921993],[-0.55097291, -1.12150514],[ 1.46833212, -1.71812449]])
+        np.testing.assert_array_almost_equal(np.abs(scores), np.abs(expected_scores))
+    
+        scores = self.uf_sparse.transform(self.fdata_sparse, method='NumInt')
+        expected_scores = np.array([[-0.83507801, -0.92195017],[-0.40138979, -2.51487027],[-0.62402752,  4.25886926],[-0.40436644, -0.33542023],[-0.81332431, -0.38368811],[-0.92628724,  1.85931084],[ 2.30964255,  0.68885099],[ 1.94817015, -0.37545912],[ 0.69676134,  1.3309878 ],[-0.71135272,  2.88052162]])
+        np.testing.assert_array_almost_equal(np.abs(scores), np.abs(expected_scores))
 
-#     def test_numint(self):
-#         uf = UFPCA(n_components=2, method='inner-product')
-#         uf.fit(self.data)
+    def test_pace(self):
+        scores = self.uf_dense.transform(self.fdata_uni, method='PACE')
+        expected_scores = np.array([[ 1.1406154 ,  1.17401501], [ 0.17205472,  1.91685814], [ 1.51264055, -2.71803916], [ 0.48106745,  0.4663187 ], [ 0.95334311,  0.57517276], [ 1.42649532, -0.99910737], [-2.71632551, -1.24535746], [-2.50739818, -0.41797038], [-0.5432319 , -1.10295379], [ 1.47464713, -1.70293616]])
+        np.testing.assert_array_almost_equal(np.abs(scores), np.abs(expected_scores))
+    
+        scores = self.uf_sparse.transform(self.fdata_sparse, method='PACE')
+        expected_scores = np.array([[-1.77978776, -1.21343952],[-0.78121225, -2.24403358],[-1.59098361,  3.38501734],[-0.79879207, -0.42793204],[-1.64606605, -0.54251804],[-2.04657897,  1.35474214],[ 4.77828892,  1.26008528],[ 4.05131443,  0.14788476],[ 1.29330155,  1.25980083],[-1.71546274,  2.22756554]])
+        np.testing.assert_array_almost_equal(np.abs(scores), np.abs(expected_scores))
 
-#         scores = uf.transform(self.data, method='NumInt')
-#         expected_scores = np.array([
-#             [-1.32124942, -1.7905831 ],
-#             [-0.54539202, -0.13829588],
-#             [-0.01131015,  0.53047647],
-#             [-0.39974495,  0.33857587],
-#             [-0.68649162, -0.05968698]
-#         ])
-#         np.testing.assert_array_almost_equal(
-#             np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
-#         )
-
-    # def test_innpro(self):
-    #     uf = UFPCA(n_components=2, method='inner-product')
-    #     uf.fit(self.data_uni)
-
-    #     scores = uf.transform(self.data, method='InnPro')
-    #     expected_scores = np.array([
-    #         [-1.32124942, -1.7905831 ],
-    #         [-0.54539202, -0.13829588],
-    #         [-0.01131015,  0.53047647],
-    #         [-0.39974495,  0.33857587],
-    #         [-0.68649162, -0.05968698]
-    #     ])
-    #     np.testing.assert_array_almost_equal(
-    #         np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
-    #     )
-
-#     # def test_normalize(self):
-#     #     uf = UFPCA(n_components=2, method='inner-product', normalize=True)
-#     #     uf.fit(self.data)
-
-#     #     scores = uf.transform(self.data, method='InnPro')
-#     #     expected_scores = np.array([
-#     #         [-0.30298673, -0.41061355],
-#     #         [-0.1250684 , -0.03171378],
-#     #         [-0.00259362,  0.12164799],
-#     #         [-0.09166885,  0.07764166],
-#     #         [-0.15742512, -0.01368732]
-#     #     ])
-#     #     np.testing.assert_array_almost_equal(
-#     #         np.abs(scores[:5, :]), np.abs(expected_scores), decimal=4
-#     #     )
+    def test_innpro(self):
+        scores = self.uf_sparse.transform(method='InnPro')
+        expected_scores = np.array([[-1.3121429 , -1.94493404],[-0.09384769, -2.91629487],[-1.69314081,  2.89618655],[-0.43382027, -1.09186274],[-1.05862142, -1.25499434],[-1.60518627,  0.73376555],[ 3.56531104,  0.99841448],[ 3.2889    , -0.0419241 ],[ 0.85839191,  0.86656285],[-1.64872606,  1.64496551]])
+        np.testing.assert_array_almost_equal(np.abs(scores), np.abs(expected_scores))
 
 
 # class TestInverseTranform(unittest.TestCase):
