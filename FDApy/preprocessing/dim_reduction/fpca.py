@@ -709,19 +709,13 @@ class UFPCA():
             scores into the original curve space.
 
         """
-        argvals = self.eigenfunctions.argvals
-        if self.eigenfunctions.n_dimension == 1:
-            values = np.dot(scores, self.eigenfunctions.values)
-        elif self.eigenfunctions.n_dimension == 2:
-            values = np.einsum(
-                'ij,jkl->ikl',
-                scores,
-                self.eigenfunctions.values
-            )
-        else:
-            raise ValueError("The dimension of the data have to be 1 or 2.")
+        values = np.einsum(
+            'ij , j... -> i...',
+            scores,
+            self.eigenfunctions.values
+        )
         return DenseFunctionalData(
-            DenseArgvals(argvals),
+            DenseArgvals(self.eigenfunctions.argvals),
             DenseValues(self.weights * values + self.mean.values)
         )
 
