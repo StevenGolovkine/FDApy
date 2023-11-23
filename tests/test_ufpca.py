@@ -9,16 +9,12 @@ import numpy as np
 import unittest
 import warnings
 
-from FDApy.representation.argvals import DenseArgvals
-from FDApy.representation.values import DenseValues
 from FDApy.representation.functional_data import (
     DenseFunctionalData,
     IrregularFunctionalData
 )
 from FDApy.simulation.karhunen import KarhunenLoeve
-from FDApy.preprocessing.dim_reduction.fpca import (
-    UFPCA
-)
+from FDApy.preprocessing.dim_reduction.fpca import UFPCA
 
 
 class UFPCATest(unittest.TestCase):

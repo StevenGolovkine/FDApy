@@ -734,13 +734,13 @@ class MFPCA():
 
     Parameters
     ----------
-    method: np.str_, {'covariance', 'inner-product'}, default='covariance'
+    method: str, {'covariance', 'inner-product'}, default='covariance'
         Method used to estimate the eigencomponents. If
         ``method == 'covariance'``, the estimation is based on an
         eigendecomposition of the covariance operator of each univariate
         components. If ``method == 'inner-product'``, the estimation is
         based on an eigendecomposition of the inner-product matrix.
-    n_components: Optional[List[Union[np.int64, np.float64]]], default=None
+    n_components: Optional[List[Union[int, float]]], default=None
         Number of components to keep. If ``method=='covariance'``,
         `n_components` should be a list of length :math:`P`. Each entry
         represents the variance explained by each univariate component. Note
@@ -753,7 +753,7 @@ class MFPCA():
         integer, `n_components` are kept. If `0 < n_components < 1`, select the
         number of components such that the amount of variance that needs to be
         explained is greater than the percentage specified by `n_components`.
-    normalize: np.bool_, default=False
+    normalize: bool, default=False
         Perform a normalization of the data.
 
     Attributes
@@ -780,9 +780,9 @@ class MFPCA():
 
     def __init__(
         self,
-        method: np.str_ = 'covariance',
-        n_components: Optional[List[Union[np.int64, np.float64]]] = None,
-        normalize: np.bool_ = False
+        method: str = 'covariance',
+        n_components: Optional[List[Union[int, float]]] = None,
+        normalize: bool = False
     ) -> None:
         """Initialize MFPCA object."""
         self.n_components = n_components
@@ -791,42 +791,42 @@ class MFPCA():
         self.weights = None
 
     @property
-    def method(self) -> np.str_:
+    def method(self) -> str:
         """Getter for `method`."""
         return self._method
 
     @method.setter
-    def method(self, new_method: np.str_) -> None:
+    def method(self, new_method: str) -> None:
         self._method = new_method
 
     @property
-    def n_components(self) -> Optional[List[Union[np.int64, np.float64]]]:
+    def n_components(self) -> List[Union[int, float]]:
         """Getter for `n_components`."""
         return self._n_components
 
     @n_components.setter
     def n_components(
         self,
-        new_n_components: Optional[List[Union[np.int64, np.float64]]]
+        new_n_components: List[Union[int, float]]
     ) -> None:
         self._n_components = new_n_components
 
     @property
-    def normalize(self) -> np.bool_:
+    def normalize(self) -> bool:
         """Getter for `normalize`."""
         return self._normalize
 
     @normalize.setter
-    def normalize(self, new_normalize: np.bool_) -> None:
+    def normalize(self, new_normalize: bool) -> None:
         self._normalize = new_normalize
 
     @property
-    def mean(self) -> DenseFunctionalData:
+    def mean(self) -> MultivariateFunctionalData:
         """Getter for `mean`."""
         return self._mean
 
     @property
-    def covariance(self) -> DenseFunctionalData:
+    def covariance(self) -> MultivariateFunctionalData:
         """Getter for `covariance`."""
         return self._covariance
 
@@ -836,7 +836,7 @@ class MFPCA():
         return self._eigenvalues
 
     @property
-    def eigenfunctions(self) -> DenseFunctionalData:
+    def eigenfunctions(self) -> MultivariateFunctionalData:
         """Getter for `eigenfunctions`."""
         return self._eigenfunctions
 
