@@ -58,7 +58,7 @@ ufpca.fit(data)
 # Estimate the scores -- projection of the curves onto the eigenfunctions --
 # using the eigenvectors from the decomposition of the inner-product matrix.
 # numerical integration.
-scores = ufpca.transform(data, method='InnPro')
+scores = ufpca.transform(method='InnPro')
 
 # Plot of the scores
 _ = plt.scatter(scores[:, 0], scores[:, 1])
