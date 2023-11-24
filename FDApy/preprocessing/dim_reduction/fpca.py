@@ -886,25 +886,19 @@ class MFPCA():
         if points is None:
             points = self.n_functional * [None]
 
-        # Center the data
-        data_mean = data.mean()
-        data_new = MultivariateFunctionalData([
-            DenseFunctionalData(
-                DenseArgvals(data_uni.argvals),
-                DenseValues(data_uni.values - mean.values)
-            ) for data_uni, mean in zip(data.data, data_mean.data)
-        ])
+        # Compute the mean and center the data.
+        self._mean = data.mean(points=points, smooth=smooth, **kwargs)
+        data = data.center(mean=self._mean, smooth=smooth, **kwargs)
 
         # Normalize the data
         if self.normalize:
-            data_new, self.weights = data_new.normalize(use_argvals_stand=True)
+            data, self.weights = data.normalize(use_argvals_stand=True)
 
         # Estimate eigencomponents
-        self._mean = data_mean
         if self.method == 'covariance':
-            self._fit_covariance(data_new, scores_method)
+            self._fit_covariance(data, scores_method)
         elif self.method == 'inner-product':
-            self._fit_inner_product(data_new)
+            self._fit_inner_product(data)
         else:
             raise NotImplementedError(
                 f"{self.method} method not implemented."
