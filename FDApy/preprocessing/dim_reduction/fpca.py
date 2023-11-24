@@ -843,7 +843,10 @@ class MFPCA():
     def fit(
         self,
         data: MultivariateFunctionalData,
-        scores_method: np.str_ = 'NumInt'
+        points: Optional[List[DenseArgvals]] = None,
+        smooth: bool = True,
+        scores_method: str = 'NumInt',
+        **kwargs
     ) -> None:
         """Estimate the eigencomponents of the data.
 
@@ -854,9 +857,23 @@ class MFPCA():
         ----------
         data: MultivariateFunctionalData
             Training data used to estimate the eigencomponents.
-        scores_method: np.str_, {'NumInt', 'PACE'}, default='NumInt'
+        points: Optional[List[DenseArgvals]]
+            The sampling points at which the covariance and the eigenfunctions
+            will be estimated.
+        smooth: bool, default=True
+            Should the mean and covariance be smoothed?
+        scores_method: str, {'NumInt', 'PACE', 'InnPro'}, default='NumInt'
             Method for the estimation of the univariate scores for the
             diagonalization of the covariance operator.
+        **kwargs:
+            kernel_name: str, default='epanechnikov'
+                Name of the kernel used for local polynomial smoothing.
+            degree: int, default=1
+                Degree used for local polynomial smoothing.
+            bandwidth: float
+                Bandwidth used for local polynomial smoothing. The default
+                bandwitdth is set to be the number of sampling points to the
+                power :math:`-1/5`.
 
         References
         ----------
@@ -866,11 +883,8 @@ class MFPCA():
             pp. 649--659.
 
         """
-        # Checkers
-        if not isinstance(data, MultivariateFunctionalData):
-            raise TypeError(
-                'MFPCA only support MultivariateFunctionalData object!'
-            )
+        if points is None:
+            points = self.n_functional * [None]
 
         # Center the data
         data_mean = data.mean()
