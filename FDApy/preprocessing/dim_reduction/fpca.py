@@ -1045,8 +1045,8 @@ class MFPCA():
 
     def transform(
         self,
-        data: MultivariateFunctionalData,
-        method: np.str_ = 'NumInt',
+        data: Optional[MultivariateFunctionalData] = None,
+        method: str = 'NumInt',
         **kwargs
     ) -> npt.NDArray[np.float64]:
         r"""Apply dimensionality reduction to the data.
@@ -1071,9 +1071,9 @@ class MFPCA():
 
         Parameters
         ----------
-        data: MultivariateFunctionalData
+        data: Optional[MultivariateFunctionalData], default=None
             Data
-        method: np.str_, {'NumInt', 'InnPro'}, default='NumInt'
+        method: str, {'NumInt', 'InnPro'}, default='NumInt'
             Method used to estimate the scores. If ``method == 'NumInt'``,
             numerical integration method is performed. If
             ``method == 'InnPro'``, the estimation is performed using the
@@ -1081,7 +1081,7 @@ class MFPCA():
             eigencomponents have been estimated using the inner-product
             matrix.)
         **kwargs:
-            integration_method: np.str_, {'trapz', 'simpson'}, default='trapz'
+            integration_method: str, {'trapz', 'simpson'}, default='trapz'
                 Method used to perform numerical integration, only used if
                 ``method == 'NumInt'``.
 
