@@ -101,6 +101,105 @@ def _fit_covariance(
     return results
 
 
+def _fit_covariance_multivariate(
+    data: MultivariateFunctionalData,
+    points: DenseArgvals,
+    n_components: List[Union[int, float]],
+    smooth: bool = True,
+    scores_method: str = 'NumInt',
+    **kwargs
+) -> Dict[str, object]:
+    """Multivariate Functional PCA using the covariance operator.
+
+    Parameters
+    ----------
+    data: FunctionalData
+        Training data.
+    points: DenseArgvals
+        The sampling points at which the covariance and the eigenfunctions
+        will be estimated.
+    n_components: List[Union[int, float]]
+        Number of components to be estimated.
+    smooth: bool, default=True
+        Should the mean and covariance be smoothed?
+    scores_method: str, {'NumInt', 'PACE'}, default='NumInt'
+        Method for the estimation of the univariate scores.
+    **kwargs:
+        kernel_name: str, default='epanechnikov'
+            Name of the kernel used for local polynomial smoothing.
+        degree: int, default=1
+            Degree used for local polynomial smoothing.
+        bandwidth: float
+            Bandwidth used for local polynomial smoothing. The default
+            bandwitdth is set to be the number of sampling points to the
+            power :math:`-1/5`.
+
+    """
+    # Step 1: Perform univariate fPCA on each functions.
+    ufpca_list, scores = [], []
+    for fdata_uni, n_comp in zip(data.data, n_components):
+        if fdata_uni.n_dimension == 1:
+            ufpca = UFPCA(n_components=n_comp, normalize=True)
+            ufpca.fit(data=fdata_uni, points=None, smooth=True)
+            scores_uni = ufpca.transform(method=scores_method)
+        elif fdata_uni.n_dimension == 2:
+            n_points = fdata_uni.n_points
+            mat_v = np.diff(np.identity(n_points[0]))
+            mat_w = np.diff(np.identity(n_points[1]))
+            ufpca = FCPTPA(n_components=n_comp, normalize=True)
+            ufpca.fit(
+                fdata_uni,
+                penalty_matrices={
+                    'v': np.dot(mat_v, mat_v.T),
+                    'w': np.dot(mat_w, mat_w.T)
+                },
+                alpha_range={'v': (1e-4, 1e4), 'w': (1e-4, 1e4)},
+                tolerance=1e-4,
+                max_iteration=15,
+                adapt_tolerance=True
+            )
+            scores_uni = ufpca.transform(fdata_uni)
+        ufpca_list.append(ufpca)
+        scores.append(scores_uni)
+    scores_univariate = np.concatenate(scores, axis=1)
+
+    # Step 2: Estimation of the covariance of the scores.
+    temp = np.dot(scores_univariate.T, scores_univariate)
+    covariance = temp / (len(scores_univariate) - 1)
+
+    # Step 3: Eigenanalysis of the covariance of the scores.
+    # We choose to keep all the components here.
+    eigenvalues, eigenvectors = _compute_eigen(covariance)
+
+    # Step 4: Estimation of the multivariate eigenfunctions.
+    # Retrieve the number of eigenfunctions for each univariate function.
+    nb_eigenfunction_uni = [0]
+    for ufpca in ufpca_list:
+        nb_eigenfunction_uni.append(len(ufpca.eigenvalues))
+    nb_eigenfunction_uni_cum = np.cumsum(nb_eigenfunction_uni)
+
+    # Compute the multivariate eigenbasis.
+    eigenfunctions = []
+    for idx, ufpca in enumerate(ufpca_list):
+        start = nb_eigenfunction_uni_cum[idx]
+        end = nb_eigenfunction_uni_cum[idx + 1]
+        values = np.dot(
+            ufpca.eigenfunctions.values.T,
+            eigenvectors[start:end, :]
+        )
+        eigenfunctions.append(
+            DenseFunctionalData(ufpca.eigenfunctions.argvals, values.T)
+        )
+
+    # Save the results
+    results = dict()
+    results["eigenvalues"] = eigenvalues
+    results["eigenfunctions"] = MultivariateFunctionalData(eigenfunctions)
+    results["_ufpca_list"] = ufpca_list
+    results["_scores_univariate"] = scores_univariate
+    return results
+
+
 def _fit_inner_product(
     data: FunctionalData,
     points: DenseArgvals,
@@ -965,13 +1064,25 @@ class MFPCA():
 
         # Estimate eigencomponents
         if self.method == 'covariance':
-            self._fit_covariance(data, scores_method)
+            results = _fit_covariance_multivariate(
+                data=data, points=points, n_components=self.n_components,
+                smooth=smooth, scores_method=scores_method, **kwargs
+            )
         elif self.method == 'inner-product':
-            self._fit_inner_product(data)
+            results = _fit_inner_product(
+                data=data, points=points, n_components=self.n_components,
+                smooth=smooth, noise_variance=self._noise_variance, **kwargs
+            )
         else:
             raise NotImplementedError(
                 f"{self.method} method not implemented."
             )
+
+        # Save the results
+        self._eigenvalues = results.get("eigenvalues", None)
+        self._eigenfunctions = results.get("eigenfunctions", None)
+        self._eigenvectors = results.get("eigenvectors", None)
+        self._training_data = data
 
     def _fit_covariance(
         self,
@@ -1067,39 +1178,6 @@ class MFPCA():
         self._covariance = covariance
         self._eigenvalues = eigenvalues
         self.eigenvectors = eigenvectors
-        self._eigenfunctions = MultivariateFunctionalData(eigenfunctions)
-
-    def _fit_inner_product(
-        self,
-        data: MultivariateFunctionalData
-    ) -> None:
-        """Multivariate FPCA using inner-product matrix decomposition.
-
-        Parameters
-        ----------
-        data: MultivariateFunctionalData
-            Training data used to estimate the eigencomponents.
-
-        """
-        inn_pro = data.inner_product()
-        # Compute inner product matrix and its eigendecomposition
-        eigenvalues, eigenvectors = _compute_eigen(
-            inn_pro,
-            self.n_components
-        )
-        eigenfunctions = [
-            DenseFunctionalData(
-                DenseArgvals(data_uni.argvals),
-                DenseValues(np.transpose(
-                    np.matmul(
-                        data_uni.values.T, eigenvectors
-                    ) / np.sqrt(eigenvalues)
-                ))
-            ) for data_uni in data.data
-        ]
-
-        self._eigenvectors = eigenvectors
-        self._eigenvalues = eigenvalues / data.n_obs
         self._eigenfunctions = MultivariateFunctionalData(eigenfunctions)
 
     def transform(
