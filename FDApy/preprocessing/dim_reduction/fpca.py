@@ -166,6 +166,75 @@ def _fit_inner_product(
     return results
 
 
+def _fit_inner_product_multivariate(
+    data: MultivariateFunctionalData,
+    points: DenseArgvals,
+    n_components: Union[int, float] = 1,
+    smooth: bool = True,
+    noise_variance: Optional[npt.NDArray[np.float64]] = None,
+    **kwargs
+) -> Dict[str, object]:
+    """Multivariate Functional PCA using inner-product matrix decomposition.
+
+    Parameters
+    ----------
+    data: MultivariateFunctionalData
+        Training data used to estimate the eigencomponents.
+    points: Optional[List[DenseArgvals]]
+        The sampling points at which the covariance and the eigenfunctions
+        will be estimated.
+    n_components: Union[int, float], default=1
+        Number of components to be estimated.
+    smooth: bool, default=True
+        Should the mean and covariance be smoothed?
+    noise_variance: Optional[npt.NDArray[np.float64]], default=None
+            An estimation of the variance of the noise. If `None`, an
+            estimation is computed using the methodology in [1]_.
+    **kwargs:
+        kernel_name: str, default='epanechnikov'
+            Name of the kernel used for local polynomial smoothing.
+        degree: int, default=1
+            Degree used for local polynomial smoothing.
+        bandwidth: float
+            Bandwidth used for local polynomial smoothing. The default
+            bandwitdth is set to be the number of sampling points to the
+            power :math:`-1/5`.
+
+    Returns
+    -------
+    Dict[str, object]
+        A dictionary with entries:
+            - "eigenvalues"
+            - "eigenfunctions"
+            - "eigenvectors"
+
+    """
+    # Compute inner product matrix and its eigendecomposition
+    in_prod = data.inner_product(
+        method='trapz', smooth=smooth,
+        noise_variance=noise_variance, **kwargs
+    )
+    eigenvalues, eigenvectors = _compute_eigen(in_prod, n_components)
+
+    # Compute the eigenfunctions
+    data_smooth = data.smooth(points)
+    temp = [
+        np.matmul(data_uni.values.T, eigenvectors) / np.sqrt(eigenvalues)
+        for data_uni in data_smooth.data
+    ]
+    eigenfunctions = [
+        DenseFunctionalData(data_uni.argvals, eigenfunction.T)
+        for data_uni, eigenfunction in zip(data_smooth.data, temp)
+    ]
+
+    # Save the results
+    results = dict()
+    results['eigenvectors'] = eigenvectors
+    results['eigenvalues'] = eigenvalues / data_smooth.n_obs
+    results['eigenfunctions'] = MultivariateFunctionalData(eigenfunctions)
+    return results
+
+
 #############################################################################
 # Utilities to transform
 
@@ -728,7 +797,7 @@ class MFPCA():
 
     Linear dimensionality reduction of a multivariate functional dataset. The
     projection of the data in a lower dimensional space is performed using
-    a diagomalization of the covariance operator of each univariate component
+    a diagonalization of the covariance operator of each univariate component
     or of the inner-product matrix of the data. It is assumed that the data
     have :math:`P` components.
 
@@ -1032,16 +1101,6 @@ class MFPCA():
         self._eigenvectors = eigenvectors
         self._eigenvalues = eigenvalues / data.n_obs
         self._eigenfunctions = MultivariateFunctionalData(eigenfunctions)
-
-        # Compute an estimation of the covariance
-
-        # if compute_covariance:
-        #     argvals = data.argvals['input_dim_0']
-        #     covariance = _compute_covariance(eigenvalues, eigenfunctions)
-        #     self.covariance = DenseFunctionalData(
-        #         {'input_dim_0': argvals, 'input_dim_1': argvals},
-        #         covariance[np.newaxis]
-        #     )
 
     def transform(
         self,
