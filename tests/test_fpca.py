@@ -15,12 +15,14 @@ from FDApy.representation.functional_data import MultivariateFunctionalData
 from FDApy.simulation.karhunen import KarhunenLoeve
 from FDApy.preprocessing.dim_reduction.fpca import (
     UFPCA,
+    MFPCA,
     _fit_covariance,
     _fit_covariance_multivariate,
     _fit_inner_product,
     _fit_inner_product_multivariate,
     _transform_numerical_integration_dense,
     _transform_numerical_integration_irregular,
+    _transform_numerical_integration_multivariate,
     _transform_pace_dense,
     _transform_pace_irregular,
     _transform_innpro
@@ -290,6 +292,27 @@ class TestTransformNumericalIntegrationIrregular(unittest.TestCase):
         scores_sparse = _transform_numerical_integration_irregular(self.fdata_sparse, self.uf_eigen)
         expected_scores = np.array([[ 0.22203175,  0.17646635,  0.20582599],[ 0.08804525,  0.411517  , -0.0441252 ],[ 0.13957335, -0.67481938,  0.03599057],[ 0.08157136,  0.08586396, -0.18263835],[ 0.17731011,  0.07096538,  0.00388039],[ 0.19391082, -0.27504909, -0.09204208],[-0.4688101 , -0.15005271,  0.24150274],[-0.39397066,  0.05064411,  0.08163727],[-0.13128561, -0.22303583,  0.11581405],[ 0.16903147, -0.45101713,  0.05664777]])
         np.testing.assert_array_almost_equal(np.abs(scores_sparse), np.abs(expected_scores))
+
+
+class TestTransformNumericalIntegrationMultivariate(unittest.TestCase):
+    def setUp(self):
+        kl = KarhunenLoeve(
+            basis_name='bsplines', n_functions=5, random_state=42
+        )
+        kl.new(n_obs=10)
+        kl.sparsify(0.8, 0.05)
+
+        fdata_uni = kl.data
+        fdata_sparse = kl.sparse_data
+        self.fdata = MultivariateFunctionalData([fdata_uni, fdata_sparse])
+
+    def test_transform_numerical_integration_multivariate(self):
+        mfpca = MFPCA(method='inner-product', n_components=0.99, normalize=True)
+        mfpca.fit(data=self.fdata)
+        scores = _transform_numerical_integration_multivariate(self.fdata, mfpca.eigenfunctions)
+
+        expected_scores = np.array([[-0.23088085, -0.24624012, -0.23762601,  0.06124054],[-0.08485071, -0.59499141,  0.04542012,  0.10265522],[-0.20915246,  0.9774695 , -0.03458839, -0.10009942],[-0.10652329, -0.10083873,  0.23702994, -0.12966593],[-0.21598637, -0.11004404, -0.01121227,  0.04467352],[-0.26290006,  0.41208368,  0.12826174, -0.04299151],[ 0.5996467 ,  0.21030178, -0.32748158, -0.00300093],[ 0.52098708, -0.0455177 , -0.14593991, -0.00927207],[ 0.16587221,  0.3223784 , -0.15784764,  0.00964865],[-0.22468411,  0.65290198, -0.08219735,  0.02588314]])
+        np.testing.assert_array_almost_equal(np.abs(scores), np.abs(expected_scores))
 
 
 class TestTransformPACE(unittest.TestCase):

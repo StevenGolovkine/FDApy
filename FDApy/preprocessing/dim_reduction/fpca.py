@@ -404,6 +404,42 @@ def _transform_numerical_integration_irregular(
     return scores
 
 
+def _transform_numerical_integration_multivariate(
+    data: MultivariateFunctionalData,
+    eigenfunctions: MultivariateFunctionalData,
+    method: str = "trapz"
+) -> npt.NDArray[np.float64]:
+    """Estimate scores using numerical integration.
+
+    Parameters
+    ----------
+    data: DenseFunctionalData
+        Data.
+    eigenfunctions: DenseFunctionalData
+        Estimate of the eigenfunctions.
+    method: str, {'trapz', 'simpson'}, default='trapz'
+        Method used to perform numerical integration.
+
+    Returns
+    -------
+    npt.NDArray[np.float64], shape=(n_obs, n_components)
+        An array representing the projection of the data onto the basis of
+        functions defined by the eigenfunctions.
+
+    """
+    scores = [None] * eigenfunctions.n_functional
+    for idx, (eigen, data) in enumerate(zip(eigenfunctions.data, data.data)):
+        if isinstance(data, DenseFunctionalData):
+            scores[idx] = _transform_numerical_integration_dense(
+                data=data, eigenfunctions=eigen, method=method
+            )
+        else:
+            scores[idx] = _transform_numerical_integration_irregular(
+                data, eigen, method=method
+            )
+    return np.array(scores).sum(axis=0)
+
+
 def _transform_pace_dense(
     data: DenseFunctionalData,
     eigenfunctions: DenseFunctionalData,
@@ -1180,8 +1216,9 @@ class MFPCA():
         if method == 'PACE':
             raise ValueError("PACE method not implemented.")
         elif method == 'NumInt':
-            return self._numerical_integration(
-                data_new, parameters['integration_method']
+            return _transform_numerical_integration_multivariate(
+                data_new, self._eigenfunctions,
+                parameters['integration_method']
             )
         elif method == 'InnPro':
             temp = np.sqrt(data.n_obs * self.eigenvalues)
@@ -1190,51 +1227,6 @@ class MFPCA():
             raise ValueError(
                 f"Method {method} not implemented."
             )
-
-    def _numerical_integration(
-        self,
-        data: MultivariateFunctionalData,
-        method: np.str_ = "trapz"
-    ) -> npt.NDArray[np.float64]:
-        """Estimate scores using numerical integration.
-
-        Parameters
-        ----------
-        data: MultivariateFunctionalData
-            Data
-        method: np.str_, {'trapz', 'simpson'}, default='trapz'
-            Method used to perform numerical integration.
-
-        Returns
-        -------
-        npt.NDArray[np.float64], shape=(n_obs, n_components)
-            An array representing the projection of the data onto the basis of
-            functions defined by the eigenfunctions.
-
-        TODO: Change _integrate
-
-        """
-        scores_uni = [None] * len(self.eigenfunctions)
-        for idx, (dat_uni, eigen) in enumerate(zip(data, self.eigenfunctions)):
-            projection = _integrate(
-                [traj * eigen.values for traj in dat_uni.values],
-                dat_uni.argvals['input_dim_0'],
-                method=method
-            )
-            if eigen.n_dimension == 1:
-                scores_uni[idx] = projection
-            elif eigen.n_dimension == 2:
-                scores_uni[idx] = _integrate(
-                    projection,
-                    dat_uni.argvals['input_dim_1'],
-                    method=method
-                )
-            else:
-                raise ValueError(
-                    "The dimension of the data have to be 1 or 2."
-                )
-
-        return np.array(scores_uni).sum(axis=0)
 
     def inverse_transform(
         self,
