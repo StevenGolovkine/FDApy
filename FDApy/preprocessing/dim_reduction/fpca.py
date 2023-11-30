@@ -1153,7 +1153,7 @@ class MFPCA():
         ----------
         data: Optional[MultivariateFunctionalData], default=None
             Data
-        method: str, {'NumInt', 'InnPro'}, default='NumInt'
+        method: str, {'NumInt', 'PACE', 'InnPro'}, default='NumInt'
             Method used to estimate the scores. If ``method == 'NumInt'``,
             numerical integration method is performed. If
             ``method == 'InnPro'``, the estimation is performed using the
@@ -1187,46 +1187,38 @@ class MFPCA():
             pp. 649--659.
 
         """
-        # Get the keyword arguments
-        parameters = {
-            'integration_method': kwargs.get('integration_method', 'trapz')
-        }
-
         # Checkers
-        if method == 'InnPro' and not hasattr(self, '_eigenvectors'):
-            raise ValueError((
+        if method == 'InnPro' and data is not None:
+            raise ValueError(
+                f"The method {method} can not be used as the eigencomponents "
+                "have not been estimated using the provided data."
+            )
+        if method == 'InnPro' and self._eigenvectors is None:
+            raise ValueError(
                 f"The method {method} can not be used as the eigencomponents "
                 "have not been estimated using the inner-product matrix."
-            ))
+            )
+        if data is None:
+            data_new = self._training_data
+        else:
+            # Center the data using the estimated mean in the fitting step.
+            data_new = data.center(mean=self._mean)
+            if self.normalize:
+                data_new, _ = data.normalize(weights=self.weights)
 
-        # Center the data using the estimated mean in the fitting step.
-        data_new = MultivariateFunctionalData([
-            DenseFunctionalData(
-                DenseArgvals(data_uni.argvals),
-                DenseValues(data_uni.values - mean.values)
-            ) for data_uni, mean in zip(data, self.mean)
-        ])
-
-        # TODO: Add checkers
-        if self.normalize:
-            data_new, self.weights = data_new.normalize(use_argvals_stand=True)
-            # values = data.values / self.weights
-            # data = MultivariateFunctionalData(data.argvals, values)
-
-        if method == 'PACE':
-            raise ValueError("PACE method not implemented.")
-        elif method == 'NumInt':
+        if method == 'NumInt':
             return _transform_numerical_integration_multivariate(
                 data_new, self._eigenfunctions,
-                parameters['integration_method']
+                kwargs.get('integration_method', 'trapz')
             )
+        elif method == 'PACE':
+            raise ValueError("PACE method not implemented.")
         elif method == 'InnPro':
-            temp = np.sqrt(data.n_obs * self.eigenvalues)
-            return temp * self._eigenvectors
-        else:
-            raise ValueError(
-                f"Method {method} not implemented."
+            return _transform_innpro(
+                data_new, self._eigenvectors, self.eigenvalues
             )
+        else:
+            raise ValueError(f"Method {method} not implemented.")
 
     def inverse_transform(
         self,
@@ -1252,8 +1244,8 @@ class MFPCA():
         Returns
         -------
         MultivariateFunctionalData
-            A ``MultivariateFunctionalData`` object representing the
-            transformation of the scores into the original curve space.
+            A MultivariateFunctionalData object representing the transformation
+            of the scores into the original curve space.
 
         """
         if self.weights is None:
