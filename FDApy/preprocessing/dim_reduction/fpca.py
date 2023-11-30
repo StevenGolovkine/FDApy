@@ -1052,7 +1052,7 @@ class MFPCA():
 
         """
         if points is None:
-            points = self.n_functional * [None]
+            points = data.n_functional * [None]
 
         # Compute the mean and center the data.
         self._mean = data.mean(points=points, smooth=smooth, **kwargs)
@@ -1062,6 +1062,9 @@ class MFPCA():
         if self.normalize:
             data, self.weights = data.normalize(use_argvals_stand=True)
 
+        # Estimate the variance of the noise
+        self._noise_variance = data.noise_variance(order=2)
+
         # Estimate eigencomponents
         if self.method == 'covariance':
             results = _fit_covariance_multivariate(
@@ -1069,7 +1072,7 @@ class MFPCA():
                 smooth=smooth, scores_method=scores_method, **kwargs
             )
         elif self.method == 'inner-product':
-            results = _fit_inner_product(
+            results = _fit_inner_product_multivariate(
                 data=data, points=points, n_components=self.n_components,
                 smooth=smooth, noise_variance=self._noise_variance, **kwargs
             )
