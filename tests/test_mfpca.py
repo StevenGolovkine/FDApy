@@ -89,3 +89,57 @@ class TestFit(unittest.TestCase):
 
         expected_eigenfunctions_1 = np.array([ 1.19402528,  1.12581035,  1.05862136,  0.99331525,  0.92962648,  0.86681029,  0.80540216,  0.7456192 ,  0.68739479,  0.63019594,  0.57374473,  0.51817946,  0.4635616 ,  0.41002789,  0.35770495,  0.30669376,  0.25700357,  0.20865093,  0.16154101,  0.11560034,  0.07085556,  0.02733228, -0.01505494, -0.05638883, -0.09665062, -0.13587261, -0.17402688, -0.21118244, -0.24737413, -0.28252503, -0.3167998 , -0.35042044, -0.38322848, -0.41505126, -0.44594561, -0.47591227, -0.50500601, -0.53332601, -0.56086632, -0.58767891, -0.61384599, -0.6395004 , -0.66440777, -0.68768028, -0.70910254, -0.72874301, -0.74678156, -0.76326941, -0.77776352, -0.79042139, -0.80151735, -0.81076387, -0.81808212, -0.82366341, -0.82780941, -0.83073806, -0.83278878, -0.8342926 , -0.83463565, -0.83337876, -0.83110255, -0.82803255, -0.82400623, -0.81914145, -0.81355364, -0.80704227, -0.79957444, -0.79109815, -0.78145753, -0.77087256, -0.759584  , -0.74738282, -0.73393982, -0.71917072, -0.70303744, -0.68548873, -0.66646528, -0.64591172, -0.6238615 , -0.60024565, -0.57500067, -0.54813913, -0.51964564, -0.48943034, -0.45748802, -0.42391772, -0.38853214, -0.35116314, -0.31209243, -0.27126803, -0.22853284, -0.18330967, -0.13535887, -0.08495511, -0.03188824,  0.02336574,  0.08060379,  0.13951809,  0.20078964,  0.26471271,  0.33080149])
         np.testing.assert_array_almost_equal(np.abs(mfpca.eigenfunctions.data[1].values[0]), np.abs(expected_eigenfunctions_1))
+
+
+class TestTransform(unittest.TestCase):
+    def setUp(self):
+        warnings.simplefilter('ignore', category=UserWarning)
+
+        kl = KarhunenLoeve(
+            basis_name='bsplines', n_functions=5, random_state=42
+        )
+        kl.new(n_obs=10)
+        kl.sparsify(0.8, 0.05)
+
+        fdata_uni = kl.data
+        fdata_sparse = kl.sparse_data
+        self.fdata = MultivariateFunctionalData([fdata_uni, fdata_sparse])
+
+        mfpca_cov = MFPCA(n_components=[2, 2], method='covariance', normalize=True)
+        mfpca_cov.fit(self.fdata)
+        self.mfpca_cov = mfpca_cov
+        
+        mfpca_inn = MFPCA(n_components=2, method='inner-product', normalize=True)
+        mfpca_inn.fit(self.fdata)
+        self.mfpca_inn = mfpca_inn
+
+    def test_error_innpro(self):
+        with self.assertRaises(ValueError):
+            self.mfpca_cov.transform(self.fdata, method='InnPro')
+
+        with self.assertRaises(ValueError):
+            self.mfpca_cov.transform(None, method='InnPro')
+
+    def test_error_unkown_method(self):
+        with self.assertRaises(ValueError):
+            self.mfpca_cov.transform(self.fdata, method='error')
+    
+    def test_data_none(self):
+        scores = self.mfpca_cov.transform(None, method='NumInt')
+        expected_scores = np.array([[ 0.95753043,  2.67570818,  0.28459838, -0.02256917],[ 2.79515671,  2.53812271,  0.42915128,  0.0364238 ],[-4.20655814, -1.1109952 , -0.40367335, -0.29026642],[ 0.57921642,  1.11346464, -0.06183846, -0.02530755],[ 0.37330027,  1.95009793,  0.21190821, -0.14963979],[-2.06518133,  0.63958928, -0.1271601 , -0.26717931],[ 1.89462225, -3.61084519, -0.18833857,  0.42579222],[ 2.62881597, -2.55320304, -0.07945005,  0.36701679],[-0.14982394, -1.41598382, -0.15245475,  0.10330174],[-2.8983734 , -0.07105038, -0.19464333, -0.22883083]])
+        np.testing.assert_array_almost_equal(np.abs(scores), np.abs(expected_scores))
+
+    def test_data_notnone(self):
+        scores = self.mfpca_cov.transform(self.fdata, method='NumInt')
+        expected_scores = np.array([[ 0.33910714,  2.32144149,  0.21584025, -0.00775407],[ 2.17670773,  2.18386248,  0.3603851 ,  0.05121032],[-4.82500604, -1.46530483, -0.47248196, -0.27543601],[-0.02302468,  0.80627075, -0.08100833, -0.03691257],[-0.24512652,  1.59595955,  0.14325991, -0.13493928],[-2.67543872,  0.31006755, -0.17003225, -0.26655722],[ 1.273019  , -3.96845772, -0.26170151,  0.44067017],[ 2.01064377, -2.90704725, -0.14770679,  0.38168942],[-0.76822501, -1.77001555, -0.22099653,  0.11793261],[-3.51677755, -0.42521749, -0.26330459, -0.21408512]])
+        np.testing.assert_array_almost_equal(np.abs(scores), np.abs(expected_scores))
+
+    def test_numint(self):
+        scores = self.mfpca_inn.transform(self.fdata, method='NumInt')
+        expected_scores = np.array([[-1.21640419, -1.30420282],[-0.45964864, -3.19354221],[-1.0860186 ,  5.26480494],[-0.56416797, -0.52730895],[-1.14328856, -0.57885154],[-1.38384028,  2.22884568],[ 3.18237149,  1.09983748],[ 2.7567867 , -0.27065239],[ 0.8882041 ,  1.72581606],[-1.17147325,  3.52179092]])
+        np.testing.assert_array_almost_equal(np.abs(scores), np.abs(expected_scores))
+    
+    def test_innpro(self):
+        scores = self.mfpca_inn.transform(method='InnPro')
+        expected_scores = np.array([[-1.67302776, -2.5203345 ],[-0.08610058, -3.72131113],[-2.19617915,  3.69635949],[-0.54965729, -1.39795227],[-1.35116198, -1.61606303],[-2.06348873,  0.93224925],[ 4.54742773,  1.29749921],[ 4.21298438, -0.02568143],[ 1.08996581,  1.11768554],[-2.12941088,  2.09340916]])
+        np.testing.assert_array_almost_equal(np.abs(scores), np.abs(expected_scores))
