@@ -1123,6 +1123,9 @@ class MFPCA():
         self._eigenvectors = results.get("eigenvectors", None)
         self._training_data = data
 
+        # TODO: Add covariance computation
+        self._covariance = None
+
     def transform(
         self,
         data: Optional[MultivariateFunctionalData] = None,
