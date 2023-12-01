@@ -1248,22 +1248,13 @@ class MFPCA():
             of the scores into the original curve space.
 
         """
-        if self.weights is None:
-            self.weights = np.repeat(1, self.eigenfunctions.n_functional)
-        res = [None] * self.eigenfunctions.n_functional
+        results = [None] * self.eigenfunctions.n_functional
         for idx, (mean, eigenfunction, weight) in enumerate(
-            zip(self.mean, self.eigenfunctions, self.weights)
+            zip(self.mean.data, self.eigenfunctions.data, self.weights)
         ):
-            if eigenfunction.n_dimension == 1:
-                values = np.dot(scores, eigenfunction.values)
-            elif eigenfunction.n_dimension == 2:
-                values = np.einsum('ij,jkl->ikl', scores, eigenfunction.values)
-            else:
-                raise ValueError(
-                    "The dimension of the data have to be 1 or 2."
-                )
-            res[idx] = DenseFunctionalData(
+            values = np.einsum('ij,j... -> i...', scores, eigenfunction.values)
+            results[idx] = DenseFunctionalData(
                 DenseArgvals(eigenfunction.argvals),
                 DenseValues(weight * values + mean.values)
             )
-        return MultivariateFunctionalData(res)
+        return MultivariateFunctionalData(results)
