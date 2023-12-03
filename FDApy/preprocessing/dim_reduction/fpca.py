@@ -1152,6 +1152,9 @@ class MFPCA():
         where :math:`l_k` and :math:`v_{k}` are the eigenvalues and
         eigenvectors of the inner-product matrix.
 
+        TODO: Add PACE.
+        TODO: Test for 2D functional data
+
         Parameters
         ----------
         data: Optional[MultivariateFunctionalData], default=None
