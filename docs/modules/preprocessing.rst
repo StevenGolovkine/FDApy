@@ -1,6 +1,11 @@
 Preprocessing
 =============
 
+.. toctree::
+	:includehidden:
+	:maxdepth: 2
+	:titlesonly:
+
 .. automodule:: FDApy.preprocessing.dim_reduction.fpca
     :members:
 

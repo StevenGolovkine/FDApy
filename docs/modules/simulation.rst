@@ -1,5 +1,10 @@
 Simulation
-==============
+==========
+
+.. toctree::
+	:includehidden:
+	:maxdepth: 2
+	:titlesonly:
 
 This module is used to define an abstract Simulation class. We may simulate
 different data from a linear combination of basis functions or multiple
