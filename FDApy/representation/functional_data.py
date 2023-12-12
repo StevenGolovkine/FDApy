@@ -1277,7 +1277,7 @@ class DenseFunctionalData(FunctionalData):
                 )
         inner_mat = inner_mat - np.diag(np.repeat(self._noise_variance, n_obs))
 
-        # Estimate the diagional of the inner-product matrix
+        # Estimate the diagonal of the inner-product matrix
         inner_mat = inner_mat + inner_mat.T
         np.fill_diagonal(inner_mat, np.diag(inner_mat) / 2)
 

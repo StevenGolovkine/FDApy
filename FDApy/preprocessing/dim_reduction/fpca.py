@@ -210,6 +210,8 @@ def _fit_inner_product(
 ) -> Dict[str, object]:
     """Univariate Functional PCA using inner-product matrix decomposition.
 
+    TODO: Consider another to choose the bandwidth.
+
     Parameters
     ----------
     data: FunctionalData
@@ -251,7 +253,10 @@ def _fit_inner_product(
     eigenvalues, eigenvectors = _compute_eigen(in_prod, n_components)
 
     # Compute the eigenfunctions
-    data_smooth = data.smooth(points)
+    data_smooth = data.smooth(
+        points,
+        bandwidth=4 / np.product(points.n_points)
+    )
     eigenfunctions = np.matmul(data_smooth.values.T, eigenvectors)
     eigenfunctions = eigenfunctions / np.sqrt(eigenvalues)
 
