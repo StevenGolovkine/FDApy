@@ -210,7 +210,7 @@ def _fit_inner_product(
 ) -> Dict[str, object]:
     """Univariate Functional PCA using inner-product matrix decomposition.
 
-    TODO: Consider another to choose the bandwidth.
+    TODO: Consider another way to choose the bandwidth.
 
     Parameters
     ----------
@@ -382,6 +382,8 @@ def _transform_numerical_integration_irregular(
 ) -> npt.NDArray[np.float64]:
     """Estimate scores using numerical integration.
 
+    TODO: Consider another way to choose the bandwidth.
+
     Parameters
     ----------
     data: IrregularFunctionalData
@@ -400,7 +402,10 @@ def _transform_numerical_integration_irregular(
     """
     scores = np.zeros((data.n_obs, eigenfunctions.n_obs))
     for idx, obs in enumerate(data):
-        eigen_sampled = eigenfunctions.smooth(points=obs.argvals[idx])
+        eigen_sampled = eigenfunctions.smooth(
+            points=obs.argvals[idx],
+            bandwidth=4 / np.product(obs.argvals[idx].n_points)
+        )
         temp = eigen_sampled.values * obs.values[idx]
         for idx_eigen, curve in enumerate(temp):
             scores[idx, idx_eigen] = _integrate(
