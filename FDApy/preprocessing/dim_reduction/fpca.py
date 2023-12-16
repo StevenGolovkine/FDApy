@@ -321,7 +321,10 @@ def _fit_inner_product_multivariate(
     eigenvalues, eigenvectors = _compute_eigen(in_prod, n_components)
 
     # Compute the eigenfunctions
-    data_smooth = data.smooth(points)
+    data_smooth = data.smooth(
+        points,
+        bandwidth=[4 / np.product(pp.n_points) for pp in points]
+    )
     temp = [
         np.matmul(data_uni.values.T, eigenvectors) / np.sqrt(eigenvalues)
         for data_uni in data_smooth.data
@@ -994,8 +997,8 @@ class MFPCA():
 
     def __init__(
         self,
+        n_components: List[Union[int, float]],
         method: str = 'covariance',
-        n_components: Optional[List[Union[int, float]]] = None,
         normalize: bool = False
     ) -> None:
         """Initialize MFPCA object."""
@@ -1098,7 +1101,9 @@ class MFPCA():
 
         """
         if points is None:
-            points = data.n_functional * [None]
+            points = [dd.argvals for dd in data.data]
+        if self.weights is None:
+            self.weights = np.repeat(1, data.n_functional)
 
         # Compute the mean and center the data.
         self._mean = data.mean(points=points, smooth=smooth, **kwargs)
