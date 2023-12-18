@@ -8,6 +8,7 @@ Example of multivariate functional principal components analysis of
 
 ###############################################################################
 #
+
 # Author: Steven Golovkine <steven_golovkine@icloud.com>
 # License: MIT
 
@@ -49,67 +50,66 @@ data = kl.noisy_data
 
 _ = plot_multivariate(data)
 
-
-# ###############################################################################
-# # Covariance decomposition
-# # ------------------------
-# #
-# # Perform multivariate FPCA with an estimation of the number of components by
-# # the percentage of variance explained using a decomposition of the covariance
-# # operator.
+###############################################################################
+# Covariance decomposition
+# ------------------------
+#
+# Perform multivariate FPCA with an estimation of the number of components by
+# the percentage of variance explained using a decomposition of the covariance
+# operator.
 mfpca_cov = MFPCA(n_components=[0.99, 0.99], method='covariance')
 mfpca_cov.fit(data)
 
-# # Plot the eigenfunctions
+# Plot the eigenfunctions
 _ = plot_multivariate(mfpca_cov.eigenfunctions)
 
 
-# ###############################################################################
-# # Estimate the scores -- projection of the curves onto the eigenfunctions.
+###############################################################################
+# Estimate the scores -- projection of the curves onto the eigenfunctions.
 scores_numint = mfpca_cov.transform(data, method='NumInt')
 
-# # Plot of the scores
+# Plot of the scores
 _ = plt.scatter(scores_numint[:, 0], scores_numint[:, 1])
 
 
-# ###############################################################################
-# # Reconstruct the curves using the scores.
+###############################################################################
+# Reconstruct the curves using the scores.
 data_recons_numint = mfpca_cov.inverse_transform(scores_numint)
 
 
-# ###############################################################################
-# # Inner-product matrix decomposition
-# # ----------------------------------
-# #
-# # Perform univariate FPCA with an estimation of the number of components by the
-# # percentage of variance explained using a decomposition of the inner-product
-# # matrix.
+###############################################################################
+# Inner-product matrix decomposition
+# ----------------------------------
+#
+# Perform univariate FPCA with an estimation of the number of components by the
+# percentage of variance explained using a decomposition of the inner-product
+# matrix.
 mfpca_innpro = MFPCA(n_components=0.99, method='inner-product')
 mfpca_innpro.fit(data)
 
-# # Plot the eigenfunctions
+# Plot the eigenfunctions
 _ = plot_multivariate(mfpca_innpro.eigenfunctions)
 
 
 
-# ###############################################################################
-# # Estimate the scores -- projection of the curves onto the eigenfunctions --
-# # using the eigenvectors from the decomposition of the inner-product matrix.
+###############################################################################
+# Estimate the scores -- projection of the curves onto the eigenfunctions --
+# using the eigenvectors from the decomposition of the inner-product matrix.
 scores_innpro = mfpca_innpro.transform(method='InnPro')
 
-# # Plot of the scores
+# Plot of the scores
 _ = plt.scatter(scores_innpro[:, 0], scores_innpro[:, 1])
 
 
 
-# ###############################################################################
-# # Reconstruct the curves using the scores.
+###############################################################################
+# Reconstruct the curves using the scores.
 data_recons_innpro = mfpca_innpro.inverse_transform(scores_innpro)
 
 
 
-# ###############################################################################
-# # Comparison of the methods.
+###############################################################################
+# Comparison of the methods.
 colors_numint = np.array([[0.9, 0, 0, 1]])
 colors_pace = np.array([[0, 0.9, 0, 1]])
 colors_innpro = np.array([[0.9, 0, 0.9, 1]])
