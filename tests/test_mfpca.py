@@ -19,9 +19,9 @@ from FDApy.preprocessing.dim_reduction.fpca import (
 class MFPCATest(unittest.TestCase):
     def test_init(self):
         # Test default initialization
-        fpca = MFPCA()
+        fpca = MFPCA(n_components=0.99)
         self.assertEqual(fpca.method, 'covariance')
-        self.assertIsNone(fpca.n_components)
+        self.assertEqual(fpca.n_components, 0.99)
         self.assertFalse(fpca.normalize)
         self.assertEqual(fpca.weights, None)
 
@@ -32,17 +32,17 @@ class MFPCATest(unittest.TestCase):
         self.assertTrue(fpca.normalize)
 
     def test_method(self):
-        ufpc = MFPCA()
+        ufpc = MFPCA(n_components=0.99)
         ufpc.method = 'inner-product'
         self.assertEqual(ufpc.method, 'inner-product')
 
     def test_n_components(self):
-        ufpc = MFPCA()
+        ufpc = MFPCA(n_components=0.99)
         ufpc.n_components = [4, 3]
         self.assertEqual(ufpc.n_components, [4, 3])
 
     def test_normalize(self):
-        ufpc = MFPCA()
+        ufpc = MFPCA(n_components=0.99)
         ufpc.normalize = True
         self.assertTrue(ufpc.normalize)
 

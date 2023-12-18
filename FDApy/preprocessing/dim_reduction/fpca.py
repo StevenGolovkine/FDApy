@@ -1101,7 +1101,10 @@ class MFPCA():
 
         """
         if points is None:
-            points = [dd.argvals for dd in data.data]
+            points = [
+                dd.argvals if isinstance(dd, DenseFunctionalData)
+                else dd.argvals.to_dense() for dd in data.data
+            ]
         if self.weights is None:
             self.weights = np.repeat(1, data.n_functional)
 
