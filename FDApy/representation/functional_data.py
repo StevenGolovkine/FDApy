@@ -1647,6 +1647,8 @@ class IrregularFunctionalData(FunctionalData):
         estimation of the variance of the noise is the mean over the set of
         curves.
 
+        TODO: Add multidimensional estimation.
+
         Parameters
         ----------
         order: int, default=2
