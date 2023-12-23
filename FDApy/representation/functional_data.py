@@ -12,6 +12,7 @@ import itertools
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+import warnings
 
 from abc import ABC, abstractmethod
 from collections import UserList
@@ -828,7 +829,11 @@ class DenseFunctionalData(FunctionalData):
 
         """
         if self.n_dimension > 1:
-            raise TypeError("Only implemented for one-dimensional data.")
+            warnings.warn((
+                "The estimation of the variance of the noise is not performed "
+                "for data with dimension larger than 1 and is set to 0."
+            ), UserWarning)
+            return 0
         return np.mean([
             _estimate_noise_variance(obs.values[0], order) for obs in self
         ])
@@ -1680,7 +1685,11 @@ class IrregularFunctionalData(FunctionalData):
 
         """
         if self.n_dimension > 1:
-            raise TypeError("Only implemented for one-dimensional data.")
+            warnings.warn((
+                "The estimation of the variance of the noise is not performed "
+                "for data with dimension larger than 1 and is set to 0."
+            ), UserWarning)
+            return 0
         return np.mean([
             _estimate_noise_variance(obs.values[idx], order)
             for idx, obs in enumerate(self)
