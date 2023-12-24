@@ -434,7 +434,7 @@ class TestNoisevariance(unittest.TestCase):
             IrregularArgvals(argvals), IrregularValues(values)
         )
 
-        with self.assertRaises(TypeError):
+        with self.assertWarns(UserWarning):
             irregu_fd.noise_variance(2)
 
 

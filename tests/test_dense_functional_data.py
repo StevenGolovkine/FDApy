@@ -261,7 +261,7 @@ class TestNoisevariance(unittest.TestCase):
         kl = KarhunenLoeve(basis_name='bsplines', dimension='2D', n_functions=5)
         kl.new(n_obs=10)
 
-        with self.assertRaises(TypeError):
+        with self.assertWarns(UserWarning):
             kl.data.noise_variance(2)
 
 
