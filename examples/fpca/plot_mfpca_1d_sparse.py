@@ -113,14 +113,9 @@ colors_innpro = np.array([[0.9, 0, 0.9, 1]])
 fig, axes = plt.subplots(nrows=5, ncols=2, figsize=(16,16))
 for idx_plot, idx in enumerate(np.random.choice(n_obs, 5)):
     for idx_data, (dd, dd_numint, dd_innpro) in enumerate(zip(kl.data.data, data_recons_numint.data, data_recons_innpro.data)):
-        axes[idx_plot, idx_data] = plot(dd[idx], ax=axes[idx_plot, idx_data])
-        axes[idx_plot, idx_data] = plot(dd_numint[idx], colors=colors_numint, ax=axes[idx_plot, idx_data])
-        axes[idx_plot, idx_data] = plot(dd_innpro[idx], colors=colors_innpro, ax=axes[idx_plot, idx_data])
-
-    #temp_ax = axes.flatten()[idx_plot]
-    #temp_ax = plot_multivariate(kl.data[idx], ax=temp_ax, label='True')
-    #plot_multivariate(data_recons_numint[idx], colors=colors_numint, ax=temp_ax, label='Reconstruction NumInt')
-    #plot_multivariate(data_recons_innpro[idx], colors=colors_innpro, ax=temp_ax, label='Reconstruction InnPro')
-    #temp_ax.legend()
+        axes[idx_plot, idx_data] = plot(dd[idx], ax=axes[idx_plot, idx_data], label='True')
+        axes[idx_plot, idx_data] = plot(dd_numint[idx], colors=colors_numint, ax=axes[idx_plot, idx_data], label='Reconstruction NumInt')
+        axes[idx_plot, idx_data] = plot(dd_innpro[idx], colors=colors_innpro, ax=axes[idx_plot, idx_data], label='Reconstruction InnPro')
+        axes[idx_plot, idx_data].legend()
 plt.show()
 
