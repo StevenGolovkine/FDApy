@@ -12,9 +12,10 @@ Multivariate Basis of multi-dimensional data
 
 # Load packages
 import numpy as np
+import matplotlib.pyplot as plt
 
 from FDApy.representation.basis import MultivariateBasis
-from FDApy.visualization.plot import plot_multivariate
+from FDApy.visualization.plot import plot
 
 # Parameters
 n_components = 2
@@ -40,7 +41,18 @@ basis = MultivariateBasis(
     rchoice=random_state.choice
 )
 
-_ = plot_multivariate(basis)
+# Plot of the basis
+fig = plt.figure(figsize=plt.figaspect(0.5))
+
+ax = fig.add_subplot(1, 2, 1)
+ax = plot(basis.data[0], ax=ax)
+ax.set_title('First component')
+  
+ax = fig.add_subplot(1, 2, 2, projection='3d')
+ax = plot(basis.data[1], ax=ax)
+ax.set_title('Second component')
+
+plt.show()
 
 
 ###############################################################################
@@ -56,4 +68,15 @@ basis = MultivariateBasis(
     runif=random_state.uniform
 )
 
-_ = plot_multivariate(basis)
+# Plot of the basis
+fig = plt.figure(figsize=plt.figaspect(0.5))
+
+ax = fig.add_subplot(1, 2, 1)
+ax = plot(basis.data[0], ax=ax)
+ax.set_title('First component')
+  
+ax = fig.add_subplot(1, 2, 2, projection='3d')
+ax = plot(basis.data[1], ax=ax)
+ax.set_title('Second component')
+
+plt.show()
