@@ -17,10 +17,7 @@ import warnings
 from abc import ABC, abstractmethod
 from collections import UserList
 from collections.abc import Iterator
-from typing import (
-    Callable, Dict, Iterable, Optional, List,
-    Tuple, Type, Union
-)
+from typing import Callable, Dict, Iterable, Optional, List, Tuple, Type, Union
 
 from .argvals import Argvals, DenseArgvals, IrregularArgvals
 from .values import Values, DenseValues, IrregularValues
@@ -37,8 +34,7 @@ from ..misc.utils import _shift
 ###############################################################################
 # Utilities function
 def _tensor_product(
-    data1: DenseFunctionalData,
-    data2: DenseFunctionalData
+    data1: DenseFunctionalData, data2: DenseFunctionalData
 ) -> DenseFunctionalData:
     """Compute the tensor product between functional data.
 
@@ -60,8 +56,8 @@ def _tensor_product(
 
     """
     arg = {
-        'input_dim_0': data1.argvals['input_dim_0'],
-        'input_dim_1': data2.argvals['input_dim_0']
+        "input_dim_0": data1.argvals["input_dim_0"],
+        "input_dim_1": data2.argvals["input_dim_0"],
     }
     val = [_outer(i, j) for i in data1.values for j in data2.values]
     return DenseFunctionalData(DenseArgvals(arg), DenseValues(np.array(val)))
@@ -71,7 +67,7 @@ def _smooth_covariance(
     covariance_matrix: npt.NDArray[np.float64],
     argvals: DenseArgvals,
     points: DenseArgvals,
-    **kwargs
+    **kwargs,
 ):
     """Smooth the covariance.
 
@@ -106,17 +102,16 @@ def _smooth_covariance(
     fdata_long = covariance_fd.to_long()
     fdata_long = fdata_long.dropna()
 
-    x = fdata_long.drop(['id', 'values'], axis=1, inplace=False).values
-    y = fdata_long['values'].values
+    x = fdata_long.drop(["id", "values"], axis=1, inplace=False).values
+    y = fdata_long["values"].values
     points_mat = _cartesian_product(*points.values())
 
     lp = LocalPolynomial(
-        kernel_name=kwargs.get('kernel_name', 'epanechnikov'),
+        kernel_name=kwargs.get("kernel_name", "epanechnikov"),
         bandwidth=kwargs.get(
-            'bandwidth',
-            np.product(covariance_fd.n_points)**(-1 / 5)
+            "bandwidth", np.product(covariance_fd.n_points) ** (-1 / 5)
         ),
-        degree=kwargs.get('degree', 2)
+        degree=kwargs.get("degree", 2),
     )
     covariance = lp.predict(y=y, x=x, x_new=points_mat)
     covariance = covariance.reshape(points.n_points)
@@ -127,7 +122,7 @@ def _estimate_noise_variance_with_covariance(
     raw_diagonal: npt.NDArray[np.float64],
     smooth_diagonal: npt.NDArray[np.float64],
     argvals: DenseArgvals,
-    points: DenseArgvals
+    points: DenseArgvals,
 ):
     """Estimate the variance of the noise using the covariance diagonal.
 
@@ -155,27 +150,23 @@ def _estimate_noise_variance_with_covariance(
 
     """
     lp = LocalPolynomial(
-        kernel_name='epanechnikov',
-        bandwidth=len(raw_diagonal)**(- 1 / 5),
-        degree=1
+        kernel_name="epanechnikov", bandwidth=len(raw_diagonal) ** (-1 / 5), degree=1
     )
     var_hat = lp.predict(
         y=raw_diagonal,
         x=_cartesian_product(*argvals.values()),
-        x_new=_cartesian_product(*points.values())
+        x_new=_cartesian_product(*points.values()),
     )
     lower = [int(np.round(0.25 * el)) for el in points.n_points]
     upper = [int(np.round(0.75 * el)) for el in points.n_points]
     bounds = slice(*tuple(lower + upper))
     temp = _integrate(
         (var_hat - smooth_diagonal)[bounds],
-        points['input_dim_0'][bounds],
-        method='trapz'
+        points["input_dim_0"][bounds],
+        method="trapz",
     )
 
-    return np.maximum(
-        2 * temp / points.range()['input_dim_0'], 0
-    )
+    return np.maximum(2 * temp / points.range()["input_dim_0"], 0)
 
 
 ###############################################################################
@@ -195,9 +186,7 @@ class FunctionalData(ABC):
     ###########################################################################
     # Checkers
     @staticmethod
-    def _check_same_type(
-        *fdata: Type[FunctionalData]
-    ) -> None:
+    def _check_same_type(*fdata: Type[FunctionalData]) -> None:
         """Raise an error if elements in `fdata` have different type.
 
         Raises
@@ -211,9 +200,7 @@ class FunctionalData(ABC):
             raise TypeError("Elements do not have the same types.")
 
     @staticmethod
-    def _check_same_nobs(
-        *fdata: Type[FunctionalData]
-    ) -> None:
+    def _check_same_nobs(*fdata: Type[FunctionalData]) -> None:
         """Raise an arror if elements in `fdata` have different number of obs.
 
         Raises
@@ -224,14 +211,10 @@ class FunctionalData(ABC):
         """
         n_obs = set(obj.n_obs for obj in fdata)
         if len(n_obs) > 1:
-            raise ValueError(
-                "Elements do not have the same number of observations."
-            )
+            raise ValueError("Elements do not have the same number of observations.")
 
     @staticmethod
-    def _check_same_ndim(
-        *fdata: Type[FunctionalData]
-    ) -> None:
+    def _check_same_ndim(*fdata: Type[FunctionalData]) -> None:
         """Raise an error if elements in `fdata` have different dimension.
 
         Raises
@@ -245,9 +228,7 @@ class FunctionalData(ABC):
             raise ValueError("Elements do not have the same dimensions.")
 
     @staticmethod
-    def _is_compatible(
-        *fdata: Type[FunctionalData]
-    ) -> None:
+    def _is_compatible(*fdata: Type[FunctionalData]) -> None:
         """Raise an error if elements in `fdata` are not compatible.
 
         Parameters
@@ -278,17 +259,13 @@ class FunctionalData(ABC):
     @staticmethod
     @abstractmethod
     def _perform_computation(
-        fdata1: Type[FunctionalData],
-        fdata2: Type[FunctionalData],
-        func: Callable
+        fdata1: Type[FunctionalData], fdata2: Type[FunctionalData], func: Callable
     ) -> Type[FunctionalData]:
         """Perform computation."""
 
     @staticmethod
     @abstractmethod
-    def concatenate(
-        *fdata: Type[FunctionalData]
-    ) -> Type[FunctionalData]:
+    def concatenate(*fdata: Type[FunctionalData]) -> Type[FunctionalData]:
         """Concatenate FunctionalData objects.
 
         Parameters
@@ -333,51 +310,30 @@ class FunctionalData(ABC):
         return FunctionalDataIterator(self)
 
     @abstractmethod
-    def __getitem__(
-        self,
-        index: int
-    ) -> Type[FunctionalData]:
+    def __getitem__(self, index: int) -> Type[FunctionalData]:
         """Override getitem function, called when self[index]."""
 
-    def __add__(
-        self,
-        obj: Type[FunctionalData]
-    ) -> Type[FunctionalData]:
+    def __add__(self, obj: Type[FunctionalData]) -> Type[FunctionalData]:
         """Override add function."""
         return self._perform_computation(self, obj, np.add)
 
-    def __sub__(
-        self,
-        obj: Type[FunctionalData]
-    ) -> Type[FunctionalData]:
+    def __sub__(self, obj: Type[FunctionalData]) -> Type[FunctionalData]:
         """Override sub function."""
         return self._perform_computation(self, obj, np.subtract)
 
-    def __mul__(
-        self,
-        obj: Type[FunctionalData]
-    ) -> Type[FunctionalData]:
+    def __mul__(self, obj: Type[FunctionalData]) -> Type[FunctionalData]:
         """Override mul function."""
         return self._perform_computation(self, obj, np.multiply)
 
-    def __rmul__(
-        self,
-        obj: Type[FunctionalData]
-    ) -> Type[FunctionalData]:
+    def __rmul__(self, obj: Type[FunctionalData]) -> Type[FunctionalData]:
         """Override rmul function."""
         return self * obj
 
-    def __truediv__(
-        self,
-        obj: Type[FunctionalData]
-    ) -> Type[FunctionalData]:
+    def __truediv__(self, obj: Type[FunctionalData]) -> Type[FunctionalData]:
         """Override truediv function."""
         return self._perform_computation(self, obj, np.true_divide)
 
-    def __floordiv__(
-        self,
-        obj: Type[FunctionalData]
-    ) -> Type[FunctionalData]:
+    def __floordiv__(self, obj: Type[FunctionalData]) -> Type[FunctionalData]:
         """Override floordiv function."""
         return self._perform_computation(self, obj, np.floor_divide)
 
@@ -386,50 +342,35 @@ class FunctionalData(ABC):
     ###########################################################################
     # Properties
     @property
-    def argvals(
-        self
-    ) -> Type[Argvals]:
+    def argvals(self) -> Type[Argvals]:
         """Getter for argvals."""
         return self._argvals
 
     @argvals.setter
     @abstractmethod
-    def argvals(
-        self,
-        new_argvals: Type[Argvals]
-    ) -> None:
+    def argvals(self, new_argvals: Type[Argvals]) -> None:
         """Setter for argvals."""
 
     @property
-    def argvals_stand(
-        self
-    ) -> Type[Argvals]:
+    def argvals_stand(self) -> Type[Argvals]:
         """Getter for argvals_stand."""
         return self._argvals_stand
 
     @argvals_stand.setter
-    def argvals_stand(
-        self,
-        new_argvals_stand: Type[Argvals]
-    ) -> None:
+    def argvals_stand(self, new_argvals_stand: Type[Argvals]) -> None:
         """Setter for argvals_stand."""
         if not isinstance(new_argvals_stand, Argvals):
-            raise TypeError('new_argvals_stand must be an Argvals object.')
+            raise TypeError("new_argvals_stand must be an Argvals object.")
         self._argvals_stand = new_argvals_stand
 
     @property
-    def values(
-        self
-    ) -> Type[Values]:
+    def values(self) -> Type[Values]:
         """Getter for values."""
         return self._values
 
     @values.setter
     @abstractmethod
-    def values(
-        self,
-        new_values: Type[Values]
-    ) -> None:
+    def values(self, new_values: Type[Values]) -> None:
         """Setter for values."""
 
     @property
@@ -477,10 +418,7 @@ class FunctionalData(ABC):
         """Convert the data to long format."""
 
     @abstractmethod
-    def noise_variance(
-        self,
-        order: int = 2
-    ) -> float:
+    def noise_variance(self, order: int = 2) -> float:
         """Estimate the variance of the noise."""
 
     @abstractmethod
@@ -489,25 +427,19 @@ class FunctionalData(ABC):
         points: Optional[DenseArgvals] = None,
         kernel_name: Optional[str] = "epanechnikov",
         bandwidth: Optional[float] = None,
-        degree: Optional[int] = 1
+        degree: Optional[int] = 1,
     ) -> Type[FunctionalData]:
         """Smooth the data."""
 
     @abstractmethod
     def mean(
-        self,
-        points: Optional[DenseArgvals] = None,
-        smooth: bool = True,
-        **kwargs
+        self, points: Optional[DenseArgvals] = None, smooth: bool = True, **kwargs
     ) -> DenseFunctionalData:
         """Compute an estimate of the mean."""
 
     @abstractmethod
     def center(
-        self,
-        mean: Optional[FunctionalData] = None,
-        smooth: bool = True,
-        **kwargs
+        self, mean: Optional[FunctionalData] = None, smooth: bool = True, **kwargs
     ) -> FunctionalData:
         """Center the data."""
 
@@ -515,8 +447,8 @@ class FunctionalData(ABC):
     def norm(
         self,
         squared: bool = False,
-        method: str = 'trapz',
-        use_argvals_stand: bool = False
+        method: str = "trapz",
+        use_argvals_stand: bool = False,
     ) -> npt.NDArray[np.float64]:
         """Norm of each observation of the data."""
 
@@ -524,19 +456,19 @@ class FunctionalData(ABC):
     def normalize(
         self,
         weights: float = 0.0,
-        method: str = 'trapz',
+        method: str = "trapz",
         use_argvals_stand: bool = False,
-        **kwargs
+        **kwargs,
     ) -> Tuple[FunctionalData, float]:
         """Normalize the data."""
 
     @abstractmethod
     def inner_product(
         self,
-        method: str = 'trapz',
+        method: str = "trapz",
         smooth: bool = True,
         noise_variance: Optional[float] = None,
-        **kwargs
+        **kwargs,
     ) -> npt.NDArray[np.float64]:
         """Compute an estimate of the inner product matrix."""
 
@@ -545,7 +477,7 @@ class FunctionalData(ABC):
         self,
         points: Optional[DenseArgvals] = None,
         smooth: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ) -> Type[FunctionalData]:
         """Compute an estimate of the covariance."""
 
@@ -628,9 +560,7 @@ class DenseFunctionalData(FunctionalData):
     # Static methods
     @staticmethod
     def _perform_computation(
-        fdata1: DenseFunctionalData,
-        fdata2: DenseFunctionalData,
-        func: Callable
+        fdata1: DenseFunctionalData, fdata2: DenseFunctionalData, func: Callable
     ) -> DenseFunctionalData:
         """Perform computation defined by `func` if they are compatible.
 
@@ -654,9 +584,7 @@ class DenseFunctionalData(FunctionalData):
         return DenseFunctionalData(fdata1.argvals, new_values)
 
     @staticmethod
-    def concatenate(
-        *fdata: DenseFunctionalData
-    ) -> DenseFunctionalData:
+    def concatenate(*fdata: DenseFunctionalData) -> DenseFunctionalData:
         """Concatenate DenseFunctional objects.
 
         Returns
@@ -665,9 +593,7 @@ class DenseFunctionalData(FunctionalData):
             The concatenated object.
 
         """
-        super(
-            DenseFunctionalData, DenseFunctionalData
-        ).concatenate(*fdata)
+        super(DenseFunctionalData, DenseFunctionalData).concatenate(*fdata)
         argvals = DenseArgvals.concatenate(*[el.argvals for el in fdata])
         values = DenseValues.concatenate(*[el.values for el in fdata])
         return DenseFunctionalData(argvals, values)
@@ -676,18 +602,11 @@ class DenseFunctionalData(FunctionalData):
 
     ###########################################################################
     # Magic methods
-    def __init__(
-        self,
-        argvals: DenseArgvals,
-        values: DenseValues
-    ) -> None:
+    def __init__(self, argvals: DenseArgvals, values: DenseValues) -> None:
         """Initialize UnivariateFunctionalData object."""
         super().__init__(argvals, values)
 
-    def __getitem__(
-        self,
-        index: int
-    ) -> DenseFunctionalData:
+    def __getitem__(self, index: int) -> DenseFunctionalData:
         """Overrride getitem function, called when self[index].
 
         Parameters
@@ -711,27 +630,21 @@ class DenseFunctionalData(FunctionalData):
     ###########################################################################
     # Properties
     @FunctionalData.argvals.setter
-    def argvals(
-        self,
-        new_argvals: DenseArgvals
-    ) -> None:
+    def argvals(self, new_argvals: DenseArgvals) -> None:
         """Setter for argvals."""
         if not isinstance(new_argvals, DenseArgvals):
-            raise TypeError('new_argvals must be a DenseArgvals object.')
-        if hasattr(self, 'values'):
+            raise TypeError("new_argvals must be a DenseArgvals object.")
+        if hasattr(self, "values"):
             self._values.compatible_with(new_argvals)
         self._argvals = new_argvals
         self._argvals_stand = self._argvals.normalization()
 
     @FunctionalData.values.setter
-    def values(
-        self,
-        new_values: DenseValues
-    ) -> None:
+    def values(self, new_values: DenseValues) -> None:
         """Setter for values."""
         if not isinstance(new_values, DenseValues):
-            raise TypeError('new_values must be a DenseValues object.')
-        if hasattr(self, 'argvals'):
+            raise TypeError("new_values must be a DenseValues object.")
+        if hasattr(self, "argvals"):
             self._argvals.compatible_with(new_values)
         self._values = new_values
 
@@ -785,8 +698,8 @@ class DenseFunctionalData(FunctionalData):
         sampling_points = list(itertools.product(*self.argvals.values()))
         temp = pd.DataFrame(self.n_obs * sampling_points)
         temp.columns = list(self.argvals.keys())
-        temp['id'] = np.repeat(np.arange(self.n_obs), np.prod(self.n_points))
-        temp['values'] = self.values.flatten()
+        temp["id"] = np.repeat(np.arange(self.n_obs), np.prod(self.n_points))
+        temp["values"] = self.values.flatten()
         return temp
 
     def noise_variance(self, order: int = 2) -> float:
@@ -829,21 +742,22 @@ class DenseFunctionalData(FunctionalData):
 
         """
         if self.n_dimension > 1:
-            warnings.warn((
-                "The estimation of the variance of the noise is not performed "
-                "for data with dimension larger than 1 and is set to 0."
-            ), UserWarning)
+            warnings.warn(
+                (
+                    "The estimation of the variance of the noise is not performed "
+                    "for data with dimension larger than 1 and is set to 0."
+                ),
+                UserWarning,
+            )
             return 0
-        return np.mean([
-            _estimate_noise_variance(obs.values[0], order) for obs in self
-        ])
+        return np.mean([_estimate_noise_variance(obs.values[0], order) for obs in self])
 
     def smooth(
         self,
         points: Optional[DenseArgvals] = None,
         kernel_name: str = "epanechnikov",
         bandwidth: Optional[float] = None,
-        degree: int = 1
+        degree: int = 1,
     ) -> DenseFunctionalData:
         """Smooth the data.
 
@@ -900,7 +814,7 @@ class DenseFunctionalData(FunctionalData):
         if points is None:
             points = self.argvals
         if bandwidth is None:
-            bandwidth = np.product(self.n_points)**(-1 / 5)
+            bandwidth = np.product(self.n_points) ** (-1 / 5)
 
         argvals_mat = _cartesian_product(*self.argvals.values())
         points_mat = _cartesian_product(*points.values())
@@ -912,17 +826,12 @@ class DenseFunctionalData(FunctionalData):
         smooth = np.zeros((self.n_obs, *points.n_points))
         for idx, obs in enumerate(self):
             smooth[idx, :] = lp.predict(
-                y=obs.values.flatten(),
-                x=argvals_mat,
-                x_new=points_mat
+                y=obs.values.flatten(), x=argvals_mat, x_new=points_mat
             ).reshape(smooth.shape[1:])
         return DenseFunctionalData(points, DenseValues(smooth))
 
     def mean(
-        self,
-        points: Optional[DenseArgvals] = None,
-        smooth: bool = True,
-        **kwargs
+        self, points: Optional[DenseArgvals] = None, smooth: bool = True, **kwargs
     ) -> DenseFunctionalData:
         """Compute an estimate of the mean.
 
@@ -988,20 +897,16 @@ class DenseFunctionalData(FunctionalData):
         if smooth:
             self._mean = self._mean.smooth(
                 points=points,
-                kernel_name=kwargs.get('kernel_name', 'epanechnikov'),
+                kernel_name=kwargs.get("kernel_name", "epanechnikov"),
                 bandwidth=kwargs.get(
-                    'bandwidth',
-                    np.product(self.n_points)**(-1 / 5)
+                    "bandwidth", np.product(self.n_points) ** (-1 / 5)
                 ),
-                degree=kwargs.get('degree', 1)
+                degree=kwargs.get("degree", 1),
             )
         return self._mean
 
     def center(
-        self,
-        mean: Optional[DenseFunctionalData] = None,
-        smooth: bool = True,
-        **kwargs
+        self, mean: Optional[DenseFunctionalData] = None, smooth: bool = True, **kwargs
     ) -> DenseFunctionalData:
         """Center the data.
 
@@ -1042,19 +947,17 @@ class DenseFunctionalData(FunctionalData):
             data_mean = self.mean(smooth=smooth, **kwargs)
         else:
             data_mean = mean.smooth(
-                points=self.argvals,
-                bandwidth=1 / np.prod(self.n_points)
+                points=self.argvals, bandwidth=1 / np.prod(self.n_points)
             )
         return DenseFunctionalData(
-            DenseArgvals(self.argvals),
-            DenseValues(self.values - data_mean.values)
+            DenseArgvals(self.argvals), DenseValues(self.values - data_mean.values)
         )
 
     def norm(
         self,
         squared: bool = False,
-        method: str = 'trapz',
-        use_argvals_stand: bool = False
+        method: str = "trapz",
+        use_argvals_stand: bool = False,
     ) -> npt.NDArray[np.float64]:
         r"""Norm of each observation of the data.
 
@@ -1110,9 +1013,7 @@ class DenseFunctionalData(FunctionalData):
 
         norm_fd = np.zeros(n_obs)
         for idx in np.arange(n_obs):
-            norm_fd[idx] = _integrate(
-                sq_values[idx], *axis, method=method
-            )
+            norm_fd[idx] = _integrate(sq_values[idx], *axis, method=method)
 
         if squared:
             return np.array(norm_fd)
@@ -1122,9 +1023,9 @@ class DenseFunctionalData(FunctionalData):
     def normalize(
         self,
         weights: float = 0.0,
-        method: str = 'trapz',
+        method: str = "trapz",
         use_argvals_stand: bool = False,
-        **kwargs
+        **kwargs,
     ) -> Tuple[DenseFunctionalData, float]:
         r"""Normalize the data.
 
@@ -1180,10 +1081,10 @@ class DenseFunctionalData(FunctionalData):
 
     def inner_product(
         self,
-        method: str = 'trapz',
+        method: str = "trapz",
         smooth: bool = True,
         noise_variance: Optional[float] = None,
-        **kwargs
+        **kwargs,
     ) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
 
@@ -1272,13 +1173,10 @@ class DenseFunctionalData(FunctionalData):
         axis = [argvals for argvals in data.argvals.values()]
 
         inner_mat = np.zeros((n_obs, n_obs))
-        for (i, j) in itertools.product(np.arange(n_obs), repeat=2):
+        for i, j in itertools.product(np.arange(n_obs), repeat=2):
             if i <= j:
                 inner_mat[i, j] = _inner_product(
-                    data.values[i],
-                    data.values[j],
-                    *axis,
-                    method=method
+                    data.values[i], data.values[j], *axis, method=method
                 )
         inner_mat = inner_mat - np.diag(np.repeat(self._noise_variance, n_obs))
 
@@ -1290,10 +1188,7 @@ class DenseFunctionalData(FunctionalData):
         return self._inner_product_matrix
 
     def covariance(
-        self,
-        points: Optional[DenseArgvals] = None,
-        smooth: bool = True,
-        **kwargs
+        self, points: Optional[DenseArgvals] = None, smooth: bool = True, **kwargs
     ) -> DenseFunctionalData:
         r"""Compute an estimate of the covariance function.
 
@@ -1353,20 +1248,22 @@ class DenseFunctionalData(FunctionalData):
 
         """
         if self.n_dimension > 1:
-            raise ValueError(
-                'Only one dimensional functional data are supported.'
-            )
+            raise ValueError("Only one dimensional functional data are supported.")
 
         if points is None:
             points = self.argvals
-        argvals_cov = DenseArgvals({
-            'input_dim_0': self.argvals['input_dim_0'],
-            'input_dim_1': self.argvals['input_dim_0'],
-        })
-        points_cov = DenseArgvals({
-            'input_dim_0': points['input_dim_0'],
-            'input_dim_1': points['input_dim_0'],
-        })
+        argvals_cov = DenseArgvals(
+            {
+                "input_dim_0": self.argvals["input_dim_0"],
+                "input_dim_1": self.argvals["input_dim_0"],
+            }
+        )
+        points_cov = DenseArgvals(
+            {
+                "input_dim_0": points["input_dim_0"],
+                "input_dim_1": points["input_dim_0"],
+            }
+        )
 
         # Center the data
         data = self.center(smooth=smooth, **kwargs)
@@ -1385,10 +1282,9 @@ class DenseFunctionalData(FunctionalData):
             raw_diag_cov, np.diag(cov), self.argvals, points
         )
 
-        self._covariance = DenseFunctionalData(
-            points_cov, DenseValues(cov[np.newaxis])
-        )
+        self._covariance = DenseFunctionalData(points_cov, DenseValues(cov[np.newaxis]))
         return self._covariance
+
     ###########################################################################
 
 
@@ -1462,9 +1358,7 @@ class IrregularFunctionalData(FunctionalData):
     # Static methods
     @staticmethod
     def _perform_computation(
-        fdata1: IrregularFunctionalData,
-        fdata2: IrregularFunctionalData,
-        func: Callable
+        fdata1: IrregularFunctionalData, fdata2: IrregularFunctionalData, func: Callable
     ) -> IrregularFunctionalData:
         """Perform computation defined by `func` if they are compatible.
 
@@ -1487,17 +1381,14 @@ class IrregularFunctionalData(FunctionalData):
 
         new_values = {
             idx: func(obs1, obs2)
-            for (idx, obs1), (_, obs2)
-            in zip(fdata1.values.items(), fdata2.values.items())
+            for (idx, obs1), (_, obs2) in zip(
+                fdata1.values.items(), fdata2.values.items()
+            )
         }
-        return IrregularFunctionalData(
-            fdata1.argvals, IrregularValues(new_values)
-        )
+        return IrregularFunctionalData(fdata1.argvals, IrregularValues(new_values))
 
     @staticmethod
-    def concatenate(
-        *fdata: IrregularFunctionalData
-    ) -> IrregularFunctionalData:
+    def concatenate(*fdata: IrregularFunctionalData) -> IrregularFunctionalData:
         """Concatenate IrregularFunctionalData objects.
 
         Returns
@@ -1506,9 +1397,7 @@ class IrregularFunctionalData(FunctionalData):
             The concatenated objects.
 
         """
-        super(
-            IrregularFunctionalData, IrregularFunctionalData
-        ).concatenate(*fdata)
+        super(IrregularFunctionalData, IrregularFunctionalData).concatenate(*fdata)
         argvals = IrregularArgvals.concatenate(*[el.argvals for el in fdata])
         values = IrregularValues.concatenate(*[el.values for el in fdata])
         return IrregularFunctionalData(argvals, values)
@@ -1517,18 +1406,11 @@ class IrregularFunctionalData(FunctionalData):
 
     ###########################################################################
     # Magic methods
-    def __init__(
-        self,
-        argvals: IrregularArgvals,
-        values: IrregularValues
-    ) -> None:
+    def __init__(self, argvals: IrregularArgvals, values: IrregularValues) -> None:
         """Initialize IrregularFunctionalData object."""
         super().__init__(argvals, values)
 
-    def __getitem__(
-        self,
-        index: int
-    ) -> IrregularFunctionalData:
+    def __getitem__(self, index: int) -> IrregularFunctionalData:
         """Overrride getitem function, called when self[index].
 
         Parameters
@@ -1550,8 +1432,7 @@ class IrregularFunctionalData(FunctionalData):
             argvals = {index: self.argvals[index]}
             values = {index: self.values[index]}
         return IrregularFunctionalData(
-            IrregularArgvals(argvals),
-            IrregularValues(values)
+            IrregularArgvals(argvals), IrregularValues(values)
         )
 
     ###########################################################################
@@ -1559,27 +1440,21 @@ class IrregularFunctionalData(FunctionalData):
     ###########################################################################
     # Properties
     @FunctionalData.argvals.setter
-    def argvals(
-        self,
-        new_argvals: IrregularArgvals
-    ) -> None:
+    def argvals(self, new_argvals: IrregularArgvals) -> None:
         """Setter for argvals."""
         if not isinstance(new_argvals, IrregularArgvals):
-            raise TypeError('new_argvals must be a IrregularArgvals object.')
-        if hasattr(self, 'values'):
+            raise TypeError("new_argvals must be a IrregularArgvals object.")
+        if hasattr(self, "values"):
             self._values.compatible_with(new_argvals)
         self._argvals = new_argvals
         self._argvals_stand = self._argvals.normalization()
 
     @FunctionalData.values.setter
-    def values(
-        self,
-        new_values: IrregularValues
-    ) -> None:
+    def values(self, new_values: IrregularValues) -> None:
         """Setter for values."""
         if not isinstance(new_values, IrregularValues):
-            raise TypeError('new_values must be a IrregularValues object.')
-        if hasattr(self, 'argvals'):
+            raise TypeError("new_values must be a IrregularValues object.")
+        if hasattr(self, "argvals"):
             self._argvals.compatible_with(new_values)
         self._values = new_values
 
@@ -1638,8 +1513,8 @@ class IrregularFunctionalData(FunctionalData):
 
             temp = pd.DataFrame(sampling_points)
             temp.columns = list(cur_argvals.keys())
-            temp['id'] = idx
-            temp['values'] = cur_values.flatten()
+            temp["id"] = idx
+            temp["values"] = cur_values.flatten()
             temp_list.append(temp)
         return pd.concat(temp_list, ignore_index=True)
 
@@ -1685,22 +1560,27 @@ class IrregularFunctionalData(FunctionalData):
 
         """
         if self.n_dimension > 1:
-            warnings.warn((
-                "The estimation of the variance of the noise is not performed "
-                "for data with dimension larger than 1 and is set to 0."
-            ), UserWarning)
+            warnings.warn(
+                (
+                    "The estimation of the variance of the noise is not performed "
+                    "for data with dimension larger than 1 and is set to 0."
+                ),
+                UserWarning,
+            )
             return 0
-        return np.mean([
-            _estimate_noise_variance(obs.values[idx], order)
-            for idx, obs in enumerate(self)
-        ])
+        return np.mean(
+            [
+                _estimate_noise_variance(obs.values[idx], order)
+                for idx, obs in enumerate(self)
+            ]
+        )
 
     def smooth(
         self,
         points: Optional[DenseArgvals] = None,
         kernel_name: str = "epanechnikov",
         bandwidth: Optional[float] = None,
-        degree: int = 1
+        degree: int = 1,
     ) -> DenseFunctionalData:
         """Smooth the data.
 
@@ -1764,7 +1644,7 @@ class IrregularFunctionalData(FunctionalData):
             points = self.argvals.to_dense()
         if bandwidth is None:
             n_points = np.mean([obs for obs in self.n_points.values()])
-            bandwidth = n_points**(-1 / 5)
+            bandwidth = n_points ** (-1 / 5)
 
         points_mat = _cartesian_product(*points.values())
 
@@ -1776,17 +1656,12 @@ class IrregularFunctionalData(FunctionalData):
         for idx, obs in enumerate(self):
             argvals_mat = _cartesian_product(*obs.argvals[idx].values())
             smooth[idx, :] = lp.predict(
-                y=obs.values[idx].flatten(),
-                x=argvals_mat,
-                x_new=points_mat
+                y=obs.values[idx].flatten(), x=argvals_mat, x_new=points_mat
             ).reshape(smooth.shape[1:])
         return DenseFunctionalData(points, DenseValues(smooth))
 
     def mean(
-        self,
-        points: Optional[DenseArgvals] = None,
-        smooth: bool = True,
-        **kwargs
+        self, points: Optional[DenseArgvals] = None, smooth: bool = True, **kwargs
     ) -> DenseFunctionalData:
         """Compute an estimate of the mean.
 
@@ -1847,20 +1722,20 @@ class IrregularFunctionalData(FunctionalData):
         """
         if points is None:
             points = self.argvals.to_dense()
-        bandwidth = kwargs.get('bandwidth', None)
+        bandwidth = kwargs.get("bandwidth", None)
         if bandwidth is None:
             n_points = np.mean([obs for obs in self.n_points.values()])
-            bandwidth = n_points**(-1 / 5)
+            bandwidth = n_points ** (-1 / 5)
 
         fdata_long = self.to_long()
-        x = fdata_long.drop(['id', 'values'], axis=1, inplace=False).values
-        y = fdata_long['values'].values
+        x = fdata_long.drop(["id", "values"], axis=1, inplace=False).values
+        y = fdata_long["values"].values
         points_mat = _cartesian_product(*points.values())
 
         lp = LocalPolynomial(
-            kernel_name=kwargs.get('kernel_name', 'epanechnikov'),
+            kernel_name=kwargs.get("kernel_name", "epanechnikov"),
             bandwidth=bandwidth,
-            degree=kwargs.get('degree', 1)
+            degree=kwargs.get("degree", 1),
         )
         pred = lp.predict(y=y, x=x, x_new=points_mat).reshape(points.n_points)
 
@@ -1868,10 +1743,7 @@ class IrregularFunctionalData(FunctionalData):
         return self._mean
 
     def center(
-        self,
-        mean: Optional[DenseFunctionalData] = None,
-        smooth: bool = True,
-        **kwargs
+        self, mean: Optional[DenseFunctionalData] = None, smooth: bool = True, **kwargs
     ) -> IrregularFunctionalData:
         """Center the data.
 
@@ -1911,33 +1783,26 @@ class IrregularFunctionalData(FunctionalData):
         """
         new_argvals = self.argvals.to_dense()
         if mean is None:
-            data_mean = self.mean(
-                points=new_argvals, smooth=smooth, **kwargs
-            )
+            data_mean = self.mean(points=new_argvals, smooth=smooth, **kwargs)
         else:
             data_mean = mean.smooth(
-                new_argvals,
-                bandwidth=1 / np.prod(new_argvals.n_points)
+                new_argvals, bandwidth=1 / np.prod(new_argvals.n_points)
             )
 
         obs_centered = {}
         for idx, obs in enumerate(self):
             obs_points = np.isin(
-                new_argvals['input_dim_0'],
-                obs.argvals[idx]['input_dim_0']
+                new_argvals["input_dim_0"], obs.argvals[idx]["input_dim_0"]
             )
             mean_obs = data_mean.values[0][obs_points]
             obs_centered[idx] = obs.values[idx] - mean_obs
-        return IrregularFunctionalData(
-            self.argvals,
-            IrregularValues(obs_centered)
-        )
+        return IrregularFunctionalData(self.argvals, IrregularValues(obs_centered))
 
     def norm(
         self,
         squared: bool = False,
-        method: str = 'trapz',
-        use_argvals_stand: bool = False
+        method: str = "trapz",
+        use_argvals_stand: bool = False,
     ) -> npt.NDArray[np.float64]:
         r"""Norm of each observation of the data.
 
@@ -1990,9 +1855,7 @@ class IrregularFunctionalData(FunctionalData):
             else:
                 axis = [argvals for argvals in obs.argvals[idx].values()]
             sq_values = np.power(obs.values[idx], 2)
-            norm_fd[idx] = _integrate(
-                sq_values, *axis, method=method
-            )
+            norm_fd[idx] = _integrate(sq_values, *axis, method=method)
 
         if squared:
             return np.array(norm_fd)
@@ -2002,9 +1865,9 @@ class IrregularFunctionalData(FunctionalData):
     def normalize(
         self,
         weights: float = 0.0,
-        method: str = 'trapz',
+        method: str = "trapz",
         use_argvals_stand: bool = False,
-        **kwargs
+        **kwargs,
     ) -> Tuple[FunctionalData, float]:
         r"""Normalize the data.
 
@@ -2066,10 +1929,10 @@ class IrregularFunctionalData(FunctionalData):
 
     def inner_product(
         self,
-        method: str = 'trapz',
+        method: str = "trapz",
         smooth: bool = True,
         noise_variance: Optional[float] = None,
-        **kwargs
+        **kwargs,
     ) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
 
@@ -2135,8 +1998,7 @@ class IrregularFunctionalData(FunctionalData):
         """
         if self.n_dimension > 1:
             raise NotImplementedError(
-                "Only implemented for one-dimensional irregular ",
-                "functional data."
+                "Only implemented for one-dimensional irregular ", "functional data."
             )
 
         # Center the data
@@ -2148,27 +2010,23 @@ class IrregularFunctionalData(FunctionalData):
         else:
             self._noise_variance = noise_variance
 
-        dense_argvals = data.argvals.to_dense()['input_dim_0']
+        dense_argvals = data.argvals.to_dense()["input_dim_0"]
         new_values = np.zeros((data.n_obs, len(dense_argvals)))
         for idx, obs in enumerate(self):
-            tt = obs.argvals[idx]['input_dim_0']
+            tt = obs.argvals[idx]["input_dim_0"]
             intervals = (tt + _shift(tt, -1)) / 2
             indices = np.searchsorted(intervals, dense_argvals)
             new_values[idx, :] = obs.values[idx][indices]
 
         self._data_inpro = DenseFunctionalData(
-            DenseArgvals({'input_dim_0': dense_argvals}),
-            DenseValues(new_values)
+            DenseArgvals({"input_dim_0": dense_argvals}), DenseValues(new_values)
         )
         return self._data_inpro.inner_product(
             method=method, noise_variance=self._noise_variance
         )
 
     def covariance(
-        self,
-        points: Optional[DenseArgvals] = None,
-        smooth: bool = True,
-        **kwargs
+        self, points: Optional[DenseArgvals] = None, smooth: bool = True, **kwargs
     ) -> IrregularFunctionalData:
         """Compute an estimate of the covariance function.
 
@@ -2234,19 +2092,22 @@ class IrregularFunctionalData(FunctionalData):
         """
         if self.n_dimension > 1:
             raise NotImplementedError(
-                "Only implemented for one-dimensional irregular ",
-                "functional data."
+                "Only implemented for one-dimensional irregular ", "functional data."
             )
         if points is None:
             points = self.argvals.to_dense()
-        argvals_cov = DenseArgvals({
-            'input_dim_0': self.argvals.to_dense()['input_dim_0'],
-            'input_dim_1': self.argvals.to_dense()['input_dim_0'],
-        })
-        points_cov = DenseArgvals({
-            'input_dim_0': points['input_dim_0'],
-            'input_dim_1': points['input_dim_0'],
-        })
+        argvals_cov = DenseArgvals(
+            {
+                "input_dim_0": self.argvals.to_dense()["input_dim_0"],
+                "input_dim_1": self.argvals.to_dense()["input_dim_0"],
+            }
+        )
+        points_cov = DenseArgvals(
+            {
+                "input_dim_0": points["input_dim_0"],
+                "input_dim_1": points["input_dim_0"],
+            }
+        )
         n_points = self.argvals.to_dense().n_points
 
         # Center the data
@@ -2257,8 +2118,7 @@ class IrregularFunctionalData(FunctionalData):
         cov_count = np.zeros(np.power(n_points, 2))
         for idx, obs in enumerate(data):
             obs_points = np.isin(
-                self.argvals.to_dense()['input_dim_0'],
-                obs.argvals[idx]['input_dim_0']
+                self.argvals.to_dense()["input_dim_0"], obs.argvals[idx]["input_dim_0"]
             )
             mask = np.outer(obs_points, obs_points).flatten()
             cov = np.outer(obs.values[idx], obs.values[idx]).flatten()
@@ -2280,9 +2140,7 @@ class IrregularFunctionalData(FunctionalData):
             raw_diag_cov, np.diag(cov), self.argvals.to_dense(), points
         )
 
-        self._covariance = DenseFunctionalData(
-            points_cov, DenseValues(cov[np.newaxis])
-        )
+        self._covariance = DenseFunctionalData(points_cov, DenseValues(cov[np.newaxis]))
         return self._covariance
 
     ###########################################################################
@@ -2338,9 +2196,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     ###########################################################################
     # Static methods
     @staticmethod
-    def concatenate(
-        *fdata: MultivariateFunctionalData
-    ) -> MultivariateFunctionalData:
+    def concatenate(*fdata: MultivariateFunctionalData) -> MultivariateFunctionalData:
         """Concatenate MultivariateFunctionalData objects.
 
         Parameters
@@ -2375,14 +2231,12 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             else:
                 new[idx] = IrregularFunctionalData.concatenate(*data_uni)
         return MultivariateFunctionalData(new)
+
     ###########################################################################
 
     ###########################################################################
     # Magic methods
-    def __init__(
-        self,
-        initlist: List[Type[FunctionalData]]
-    ) -> None:
+    def __init__(self, initlist: List[Type[FunctionalData]]) -> None:
         """Initialize MultivariateFunctionalData object."""
         FunctionalData._check_same_nobs(*initlist)
         self.data = initlist
@@ -2394,10 +2248,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             f" functions of {self.n_obs} observations."
         )
 
-    def __getitem__(
-        self,
-        index: int
-    ) -> MultivariateFunctionalData:
+    def __getitem__(self, index: int) -> MultivariateFunctionalData:
         """Overrride getitem function, called when self[index].
 
         Parameters
@@ -2509,6 +2360,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     def reverse(self) -> None:
         """Reserve the elements of the list in place."""
         super().reverse()
+
     ###########################################################################
 
     ###########################################################################
@@ -2629,7 +2481,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         points: Optional[List[DenseArgvals]] = None,
         kernel_name: Optional[List[str]] = None,
         bandwidth: Optional[List[float]] = None,
-        degree: Optional[List[int]] = None
+        degree: Optional[List[int]] = None,
     ):
         """Smooth the data.
 
@@ -2703,35 +2555,33 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             degree = self.n_functional * [1]
 
         if (
-            not isinstance(points, list) or
-            not isinstance(kernel_name, list) or
-            not isinstance(bandwidth, list) or
-            not isinstance(degree, list)
+            not isinstance(points, list)
+            or not isinstance(kernel_name, list)
+            or not isinstance(bandwidth, list)
+            or not isinstance(degree, list)
         ):
-            raise TypeError('Each parameter has to be a list.')
+            raise TypeError("Each parameter has to be a list.")
         if (
-                len(points) != self.n_functional or
-                len(kernel_name) != self.n_functional or
-                len(bandwidth) != self.n_functional or
-                len(degree) != self.n_functional
+            len(points) != self.n_functional
+            or len(kernel_name) != self.n_functional
+            or len(bandwidth) != self.n_functional
+            or len(degree) != self.n_functional
         ):
             raise ValueError(
-                'Each parameter has to be a list of length '
-                f'{self.n_functional}.'
+                "Each parameter has to be a list of length " f"{self.n_functional}."
             )
 
-        return MultivariateFunctionalData([
-            fdata.smooth(pp, kernel, bb, dd)
-            for (fdata, pp, kernel, bb, dd) in zip(
-                self.data, points, kernel_name, bandwidth, degree
-            )
-        ])
+        return MultivariateFunctionalData(
+            [
+                fdata.smooth(pp, kernel, bb, dd)
+                for (fdata, pp, kernel, bb, dd) in zip(
+                    self.data, points, kernel_name, bandwidth, degree
+                )
+            ]
+        )
 
     def mean(
-        self,
-        points: Optional[List[DenseArgvals]] = None,
-        smooth: bool = True,
-        **kwargs
+        self, points: Optional[List[DenseArgvals]] = None, smooth: bool = True, **kwargs
     ) -> MultivariateFunctionalData:
         """Compute an estimate of the mean.
 
@@ -2787,22 +2637,24 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         if points is None:
             points = self.n_functional * [None]
         if not isinstance(points, list):
-            raise TypeError('`points` has to be a list.')
+            raise TypeError("`points` has to be a list.")
         if len(points) != self.n_functional:
             raise ValueError(
-                f'`points` has to be a list of length {self.n_functional}.'
+                f"`points` has to be a list of length {self.n_functional}."
             )
-        self._mean = MultivariateFunctionalData([
-            fdata.mean(points=pp, smooth=smooth, **kwargs)
-            for (fdata, pp) in zip(self.data, points)
-        ])
+        self._mean = MultivariateFunctionalData(
+            [
+                fdata.mean(points=pp, smooth=smooth, **kwargs)
+                for (fdata, pp) in zip(self.data, points)
+            ]
+        )
         return self._mean
 
     def center(
         self,
         mean: Optional[MultivariateFunctionalData] = None,
         smooth: bool = True,
-        **kwargs
+        **kwargs,
     ) -> MultivariateFunctionalData:
         """Center the data.
 
@@ -2843,20 +2695,22 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         """
         if mean is None:
-            return MultivariateFunctionalData([
-                fdata.center(smooth=smooth, **kwargs) for fdata in self.data
-            ])
+            return MultivariateFunctionalData(
+                [fdata.center(smooth=smooth, **kwargs) for fdata in self.data]
+            )
         else:
-            return MultivariateFunctionalData([
-                fdata.center(mean=mean, smooth=smooth, **kwargs)
-                for (fdata, mean) in zip(self.data, mean.data)
-            ])
+            return MultivariateFunctionalData(
+                [
+                    fdata.center(mean=mean, smooth=smooth, **kwargs)
+                    for (fdata, mean) in zip(self.data, mean.data)
+                ]
+            )
 
     def norm(
         self,
         squared: bool = False,
-        method: str = 'trapz',
-        use_argvals_stand: bool = False
+        method: str = "trapz",
+        use_argvals_stand: bool = False,
     ) -> npt.NDArray[np.float64]:
         r"""Norm of each observation of the data.
 
@@ -2896,18 +2750,17 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         array([1.05384959, 0.84700578, 1.37439764, 0.59235447])
 
         """
-        norm_uni = np.array([
-            fdata.norm(squared, method, use_argvals_stand)
-            for fdata in self.data
-        ])
+        norm_uni = np.array(
+            [fdata.norm(squared, method, use_argvals_stand) for fdata in self.data]
+        )
         return np.sum(norm_uni, axis=0)
 
     def normalize(
         self,
         weights: Optional[npt.NDArray[np.float64]] = None,
-        method: str = 'trapz',
+        method: str = "trapz",
         use_argvals_stand: bool = False,
-        **kwargs
+        **kwargs,
     ) -> Tuple[MultivariateFunctionalData, npt.NDArray[np.float64]]:
         r"""Normalize the data.
 
@@ -2958,9 +2811,9 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             weights = np.zeros(self.n_functional)
         normalization = [
             fdata.normalize(
-                weights=ww, method=method,
-                use_argvals_stand=use_argvals_stand, **kwargs
-            ) for (fdata, ww) in zip(self.data, weights)
+                weights=ww, method=method, use_argvals_stand=use_argvals_stand, **kwargs
+            )
+            for (fdata, ww) in zip(self.data, weights)
         ]
         data_norm = [data for data, _ in normalization]
         weights = np.array([weight for _, weight in normalization])
@@ -2968,10 +2821,10 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     def inner_product(
         self,
-        method: str = 'trapz',
+        method: str = "trapz",
         smooth: bool = True,
         noise_variance: Optional[npt.NDArray[np.float64]] = None,
-        **kwargs
+        **kwargs,
     ) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
 
@@ -3038,16 +2891,16 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             self._noise_variance = self.noise_variance(order=2)
         else:
             self._noise_variance = noise_variance
-        return np.sum([
-            data.inner_product(method, smooth, noise_variance, **kwargs)
-            for (data, noise_variance) in zip(self.data, self._noise_variance)
-        ], axis=0)
+        return np.sum(
+            [
+                data.inner_product(method, smooth, noise_variance, **kwargs)
+                for (data, noise_variance) in zip(self.data, self._noise_variance)
+            ],
+            axis=0,
+        )
 
     def covariance(
-        self,
-        points: Optional[List[DenseArgvals]] = None,
-        smooth: bool = True,
-        **kwargs
+        self, points: Optional[List[DenseArgvals]] = None, smooth: bool = True, **kwargs
     ) -> MultivariateFunctionalData:
         """Compute an estimate of the covariance.
 
@@ -3097,18 +2950,18 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         if points is None:
             points = self.n_functional * [None]
         if not isinstance(points, list):
-            raise TypeError('`points` has to be a list.')
+            raise TypeError("`points` has to be a list.")
         if len(points) != self.n_functional:
             raise ValueError(
-                f'`points` has to be a list of length {self.n_functional}.'
+                f"`points` has to be a list of length {self.n_functional}."
             )
-        self._covariance = MultivariateFunctionalData([
-            fdata.covariance(pp, smooth, **kwargs)
-            for fdata, pp in zip(self.data, points)
-        ])
-        self._noise_variance_cov = [
-            fdata._noise_variance_cov for fdata in self.data
-        ]
+        self._covariance = MultivariateFunctionalData(
+            [
+                fdata.covariance(pp, smooth, **kwargs)
+                for fdata, pp in zip(self.data, points)
+            ]
+        )
+        self._noise_variance_cov = [fdata._noise_variance_cov for fdata in self.data]
         return self._covariance
 
     ###########################################################################

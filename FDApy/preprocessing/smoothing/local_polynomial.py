@@ -19,9 +19,8 @@ from sklearn.preprocessing import PolynomialFeatures
 ##############################################################################
 # Inner functions for the LocalPolynomial class.
 
-def _gaussian(
-    x: npt.NDArray[np.float64]
-) -> npt.NDArray[np.float64]:
+
+def _gaussian(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     r"""Compute the Gaussian density with mean 0 and standard deviation 1.
 
     The Gaussian density is given by
@@ -40,12 +39,10 @@ def _gaussian(
         Values of the kernel.
 
     """
-    return np.exp(- np.square(x) / 2) / np.sqrt(2 * np.pi)
+    return np.exp(-np.square(x) / 2) / np.sqrt(2 * np.pi)
 
 
-def _epanechnikov(
-    x: npt.NDArray[np.float64]
-) -> npt.NDArray[np.float64]:
+def _epanechnikov(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     r"""Compute the Epanechnikov kernel.
 
     The Epanechnikov kernel is given, in [1]_ equation 6.4, by
@@ -76,9 +73,7 @@ def _epanechnikov(
     return kernel
 
 
-def _tri_cube(
-    x: npt.NDArray[np.float64]
-) -> npt.NDArray[np.float64]:
+def _tri_cube(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     r"""Compute the tri-cube kernel.
 
     The tri-cube kernel is given, in [1]_ equation 6.6, by
@@ -109,9 +104,7 @@ def _tri_cube(
     return kernel
 
 
-def _bi_square(
-    x: npt.NDArray[np.float64]
-) -> npt.NDArray[np.float64]:
+def _bi_square(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     r"""Compute the bi-square kernel.
 
     The bi-square kernel is given, in [1]_, by
@@ -142,9 +135,7 @@ def _bi_square(
     return kernel
 
 
-def _kernel(
-    name: np.str_
-) -> Callable:
+def _kernel(name: np.str_) -> Callable:
     """Map between kernel names and functions.
 
     Parameters
@@ -158,25 +149,23 @@ def _kernel(
         The kernel function.
 
     """
-    if name == 'gaussian':
+    if name == "gaussian":
         return _gaussian
-    elif name == 'epanechnikov':
+    elif name == "epanechnikov":
         return _epanechnikov
-    elif name == 'tricube':
+    elif name == "tricube":
         return _tri_cube
-    elif name == 'bisquare':
+    elif name == "bisquare":
         return _bi_square
     else:
-        raise NotImplementedError(
-            f'The kernel {name} is not implemented'
-        )
+        raise NotImplementedError(f"The kernel {name} is not implemented")
 
 
 def _compute_kernel(
     x: npt.NDArray[np.float64],
     x0: Union[float, npt.NDArray[np.float64]],
     bandwidth: float,
-    kernel: Callable = _epanechnikov
+    kernel: Callable = _epanechnikov,
 ) -> npt.NDArray[np.float64]:
     r"""Compute the weights at a particular query point.
 
@@ -225,7 +214,7 @@ def _local_regression(
     dmat: npt.NDArray[np.float64],
     dmat_x0: npt.NDArray[np.float64],
     bandwidth: float = 0.05,
-    kernel: Callable = _epanechnikov
+    kernel: Callable = _epanechnikov,
 ) -> float:
     r"""Local polynomial regression for one point.
 
@@ -268,13 +257,9 @@ def _local_regression(
         Second Edition, Springer Series in Statistics.
 
     """
-    kernel_values = _compute_kernel(
-        x=x, x0=x0, bandwidth=bandwidth, kernel=kernel
-    )
+    kernel_values = _compute_kernel(x=x, x0=x0, bandwidth=bandwidth, kernel=kernel)
     temp = dmat.T * kernel_values
-    beta = np.linalg.lstsq(
-        np.dot(temp, dmat), np.dot(temp, y), rcond=1e-10
-    )[0]
+    beta = np.linalg.lstsq(np.dot(temp, dmat), np.dot(temp, y), rcond=1e-10)[0]
 
     return np.dot(dmat_x0, beta)
 
@@ -282,7 +267,8 @@ def _local_regression(
 #############################################################################
 # Class LocalPolynomial
 
-class LocalPolynomial():
+
+class LocalPolynomial:
     r"""Local Polynomial Regression.
 
     This module implements Local Polynomial Regression over different
@@ -358,7 +344,7 @@ class LocalPolynomial():
         kernel_name: np.str_ = "gaussian",
         bandwidth: float = 0.05,
         degree: int = 1,
-        robust: bool = False
+        robust: bool = False,
     ) -> None:
         """Initialize LocalPolynomial object."""
         self.kernel_name = kernel_name
@@ -384,7 +370,7 @@ class LocalPolynomial():
     @bandwidth.setter
     def bandwidth(self, new_bandwidth: float) -> None:
         if new_bandwidth <= 0:
-            raise ValueError('Bandwidth parameter must be strictly positive.')
+            raise ValueError("Bandwidth parameter must be strictly positive.")
         self._bandwidth = new_bandwidth
 
     @property
@@ -395,7 +381,7 @@ class LocalPolynomial():
     @degree.setter
     def degree(self, new_degree: int) -> None:
         if new_degree < 0:
-            raise ValueError('Degree parameter must be positive.')
+            raise ValueError("Degree parameter must be positive.")
         self._degree = new_degree
         self._poly_features = PolynomialFeatures(degree=new_degree)
 
@@ -422,7 +408,7 @@ class LocalPolynomial():
         self,
         y: npt.NDArray[np.float64],
         x: npt.NDArray[np.float64],
-        x_new: Optional[npt.NDArray[np.float64]] = None
+        x_new: Optional[npt.NDArray[np.float64]] = None,
     ) -> npt.NDArray[np.float64]:
         """Predict using local polynomial regression.
 

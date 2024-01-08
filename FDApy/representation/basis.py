@@ -22,6 +22,7 @@ from .values import DenseValues
 #######################################################################
 # Definition of the basis (eigenfunctions)
 
+
 def _basis_legendre(
     argvals: npt.NDArray[np.float64],
     n_functions: int = 3,
@@ -67,8 +68,7 @@ def _basis_legendre(
 
 
 def _basis_wiener(
-    argvals: npt.NDArray[np.float64],
-    n_functions: int = 3
+    argvals: npt.NDArray[np.float64], n_functions: int = 3
 ) -> npt.NDArray[np.float64]:
     r"""Define Wiener basis of function.
 
@@ -110,8 +110,7 @@ def _basis_wiener(
 
 
 def _basis_fourier(
-    argvals: npt.NDArray[np.float64],
-    n_functions: int = 3
+    argvals: npt.NDArray[np.float64], n_functions: int = 3
 ) -> npt.NDArray[np.float64]:
     r"""Define Fourier basis of function.
 
@@ -148,7 +147,7 @@ def _basis_fourier(
     values = np.ones((n_functions, len(argvals))) / np.sqrt(np.ptp(argvals))
 
     norm = np.sqrt(2 / np.ptp(argvals))
-    xx = ((2 * np.pi * (argvals - np.min(argvals)) / np.ptp(argvals)) - np.pi)
+    xx = (2 * np.pi * (argvals - np.min(argvals)) / np.ptp(argvals)) - np.pi
     for k in np.arange(1, n_functions):
         # We consider k + 1 because of Python indexation
         if k % 2:  # k + 1 even
@@ -198,24 +197,20 @@ def _basis_bsplines(
 
     inner_knots = np.linspace(0, 1, n_inner_knots + 2)
     inner_knots = np.quantile(argvals, inner_knots)
-    knots = np.pad(inner_knots, (degree, degree), 'edge')
+    knots = np.pad(inner_knots, (degree, degree), "edge")
     coefs = np.eye(n_functions)
     basis = scipy.interpolate.splev(argvals, (knots, coefs, degree))
     return np.vstack(basis)
 
 
 def _basis_natural_cubic_splines(
-    argvals: npt.NDArray[np.float64],
-    n_functions: int = 5,
-    degree: int = 3
+    argvals: npt.NDArray[np.float64], n_functions: int = 5, degree: int = 3
 ) -> npt.NDArray[np.float64]:
     """Define natural cubic splines basis of functions."""
 
 
 def _basis_cyclic_cubic_splines(
-    argvals: npt.NDArray[np.float64],
-    n_functions: int = 5,
-    degree: int = 3
+    argvals: npt.NDArray[np.float64], n_functions: int = 5, degree: int = 3
 ) -> npt.NDArray[np.float64]:
     """Define cyclic cubic splines basis of functions."""
 
@@ -226,7 +221,7 @@ def _simulate_basis(
     n_functions: int = 5,
     is_normalized: bool = False,
     add_intercept: bool = True,
-    **kwargs
+    **kwargs,
 ) -> npt.NDArray[np.float64]:
     """Redirect to the right simulation basis function.
 
@@ -264,16 +259,16 @@ def _simulate_basis(
     if not add_intercept:
         n_functions = n_functions + 1
 
-    if name == 'legendre':
+    if name == "legendre":
         values = _basis_legendre(argvals, n_functions)
-    elif name == 'wiener':
+    elif name == "wiener":
         values = _basis_wiener(argvals, n_functions)
-    elif name == 'fourier':
+    elif name == "fourier":
         values = _basis_fourier(argvals, n_functions)
-    elif name == 'bsplines':
-        values = _basis_bsplines(argvals, n_functions, kwargs.get('degree', 3))
+    elif name == "bsplines":
+        values = _basis_bsplines(argvals, n_functions, kwargs.get("degree", 3))
     else:
-        raise NotImplementedError(f'Basis {name!r} not implemented!')
+        raise NotImplementedError(f"Basis {name!r} not implemented!")
 
     if is_normalized:
         norm2 = np.sqrt(scipy.integrate.simpson(values * values, argvals))
@@ -291,7 +286,7 @@ def _simulate_basis_multivariate_weighted(
     n_functions: int = 5,
     is_normalized: bool = False,
     runif: Optional[Callable] = np.random.uniform,
-    **kwargs
+    **kwargs,
 ):
     """Simulate function for multivariate functional data.
 
@@ -339,9 +334,8 @@ def _simulate_basis_multivariate_weighted(
     weights = np.sqrt(alpha / np.sum(alpha))
 
     return [
-        weight * _simulate_basis(
-            name, argval, n_functions, is_normalized, **kwargs
-        ) for name, argval, weight in zip(basis_name, argvals, weights)
+        weight * _simulate_basis(name, argval, n_functions, is_normalized, **kwargs)
+        for name, argval, weight in zip(basis_name, argvals, weights)
     ]
 
 
@@ -351,7 +345,7 @@ def _simulate_basis_multivariate_split(
     n_functions: int = 5,
     is_normalized: bool = False,
     rchoice: Callable = np.random.choice,
-    **kwargs
+    **kwargs,
 ):
     """Simulate function for multivariate functional data.
 
@@ -400,13 +394,11 @@ def _simulate_basis_multivariate_split(
 
     # Simulate the "big" basis
     x_concat = np.concatenate(x)
-    values = _simulate_basis(
-        basis_name, x_concat, n_functions, is_normalized, **kwargs
-    )
+    values = _simulate_basis(basis_name, x_concat, n_functions, is_normalized, **kwargs)
 
     flips = rchoice((-1, 1), size=len(argvals))
     return [
-        flips[idx] * values[:, split_vals[idx]:split_vals[idx + 1]]
+        flips[idx] * values[:, split_vals[idx] : split_vals[idx + 1]]
         for idx in np.arange(len(argvals))
     ]
 
@@ -418,7 +410,7 @@ def _simulate_basis_multivariate(
     argvals: List[npt.NDArray[np.float64]],
     n_functions: int = 5,
     is_normalized: bool = False,
-    **kwargs
+    **kwargs,
 ) -> npt.NDArray[np.float64]:
     """Redirect to the right simulation basis function.
 
@@ -466,42 +458,47 @@ def _simulate_basis_multivariate(
 
     """
     if len(argvals) != n_components:
-        raise ValueError(f'`len(argvals)` should be equal to {n_components}.')
+        raise ValueError(f"`len(argvals)` should be equal to {n_components}.")
 
-    if simulation_type == 'split':
+    if simulation_type == "split":
         if not isinstance(name, (str, str)):
             raise ValueError(
-                'For the `split` simulation type, `basis_name` '
-                'should be a str.'
+                "For the `split` simulation type, `basis_name` " "should be a str."
             )
         values = _simulate_basis_multivariate_split(
-            name, argvals, n_functions, is_normalized,
-            kwargs.pop('rchoice', np.random.choice), **kwargs
+            name,
+            argvals,
+            n_functions,
+            is_normalized,
+            kwargs.pop("rchoice", np.random.choice),
+            **kwargs,
         )
-    elif simulation_type == 'weighted':
+    elif simulation_type == "weighted":
         if not isinstance(name, list):
             raise ValueError(
-                'For the `weighted` simulation type, `basis_name` '
-                'should be a list.'
+                "For the `weighted` simulation type, `basis_name` " "should be a list."
             )
         if len(name) != n_components:
             raise ValueError(
-                'For the `weighted` simulation type, `len(basis_name)` '
-                f'should be equal to {n_components}.'
+                "For the `weighted` simulation type, `len(basis_name)` "
+                f"should be equal to {n_components}."
             )
         values = _simulate_basis_multivariate_weighted(
-            name, argvals, n_functions, is_normalized,
-            kwargs.pop('runif', np.random.uniform), **kwargs
+            name,
+            argvals,
+            n_functions,
+            is_normalized,
+            kwargs.pop("runif", np.random.uniform),
+            **kwargs,
         )
     else:
-        raise NotImplementedError(
-            f'Simulation {simulation_type!r} not implemented!'
-        )
+        raise NotImplementedError(f"Simulation {simulation_type!r} not implemented!")
     return values
 
 
 ###############################################################################
 # Class Basis
+
 
 class Basis(DenseFunctionalData):
     r"""Define univariate orthonormal basis.
@@ -534,11 +531,11 @@ class Basis(DenseFunctionalData):
         self,
         name: str,
         n_functions: int = 5,
-        dimension: str = '1D',
+        dimension: str = "1D",
         argvals: Optional[npt.NDArray[np.float64]] = None,
         is_normalized: bool = False,
         add_intercept: bool = True,
-        **kwargs
+        **kwargs,
     ) -> None:
         """Initialize Basis object."""
         self.name = name
@@ -552,27 +549,24 @@ class Basis(DenseFunctionalData):
             name, argvals, n_functions, is_normalized, add_intercept, **kwargs
         )
 
-        if dimension == '1D':
+        if dimension == "1D":
             super().__init__(
-                DenseArgvals({'input_dim_0': argvals}),
-                DenseValues(values)
+                DenseArgvals({"input_dim_0": argvals}), DenseValues(values)
             )
-        elif dimension == '2D':
+        elif dimension == "2D":
             cut = np.ceil(np.sqrt(n_functions)).astype(int)
             rest = (n_functions / cut + 1).astype(int)
 
             basis_first_dim = DenseFunctionalData(
-                DenseArgvals({'input_dim_0': argvals}),
-                DenseValues(values[:cut])
+                DenseArgvals({"input_dim_0": argvals}), DenseValues(values[:cut])
             )
             basis_second_dim = DenseFunctionalData(
-                DenseArgvals({'input_dim_0': argvals}),
-                DenseValues(values[1:(rest + 1)])
+                DenseArgvals({"input_dim_0": argvals}),
+                DenseValues(values[1 : (rest + 1)]),
             )
             basis2d = _tensor_product(basis_first_dim, basis_second_dim)
             super().__init__(
-                DenseArgvals(basis2d.argvals),
-                DenseValues(basis2d.values[:n_functions])
+                DenseArgvals(basis2d.argvals), DenseValues(basis2d.values[:n_functions])
             )
         else:
             raise ValueError(f"{dimension} is not a valid dimension!")
@@ -585,7 +579,7 @@ class Basis(DenseFunctionalData):
     @name.setter
     def name(self, new_name: str) -> None:
         if not isinstance(new_name, str):
-            raise TypeError(f'{new_name!r} has to be `str`.')
+            raise TypeError(f"{new_name!r} has to be `str`.")
         self._name = new_name
 
     @property
@@ -652,7 +646,7 @@ class MultivariateBasis(MultivariateFunctionalData):
         dimension: Optional[List[str]] = None,
         argvals: Optional[npt.NDArray[np.float64]] = None,
         is_normalized: bool = False,
-        **kwargs
+        **kwargs,
     ) -> None:
         """Initialize Basis object."""
         self.simulation_type = simulation_type
@@ -661,22 +655,24 @@ class MultivariateBasis(MultivariateFunctionalData):
 
         if argvals is None:
             argvals = n_components * [np.arange(0, 1.01, 0.01)]
-        self.dimension = (
-            n_components * ['1D'] if dimension is None else dimension
-        )
+        self.dimension = n_components * ["1D"] if dimension is None else dimension
 
         values = _simulate_basis_multivariate(
-            simulation_type, n_components, name,
-            argvals, n_functions, is_normalized, **kwargs
+            simulation_type,
+            n_components,
+            name,
+            argvals,
+            n_functions,
+            is_normalized,
+            **kwargs,
         )
 
         basis_fd = []
         for argval, basis, dim in zip(argvals, values, self.dimension):
             temp = DenseFunctionalData(
-                DenseArgvals({'input_dim_0': argval}),
-                DenseValues(basis)
+                DenseArgvals({"input_dim_0": argval}), DenseValues(basis)
             )
-            if dim == '2D':
+            if dim == "2D":
                 temp = _tensor_product(temp, temp)
             basis_fd.append(temp[:n_functions])
         super().__init__(basis_fd)
@@ -689,7 +685,7 @@ class MultivariateBasis(MultivariateFunctionalData):
     @simulation_type.setter
     def simulation_type(self, new_simulation_type: str) -> None:
         if not isinstance(new_simulation_type, str):
-            raise TypeError(f'{new_simulation_type!r} has to be `str`.')
+            raise TypeError(f"{new_simulation_type!r} has to be `str`.")
         self._simulation_type = new_simulation_type
 
     @property
@@ -701,13 +697,10 @@ class MultivariateBasis(MultivariateFunctionalData):
     def name(self, new_name: Union[str, List[str]]) -> None:
         if isinstance(new_name, str):
             self._name = new_name
-        elif (
-            isinstance(new_name, list) and
-            all(isinstance(x, str) for x in new_name)
-        ):
+        elif isinstance(new_name, list) and all(isinstance(x, str) for x in new_name):
             self._name = new_name
         else:
-            raise TypeError(f'{new_name!r} has to be a `str` or `List[str]`.')
+            raise TypeError(f"{new_name!r} has to be a `str` or `List[str]`.")
 
     @property
     def is_normalized(self) -> bool:

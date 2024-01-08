@@ -15,14 +15,16 @@ from typing import Dict, Optional, List, Union
 from ...representation.argvals import DenseArgvals
 from ...representation.values import DenseValues
 from ...representation.functional_data import (
-    FunctionalData, DenseFunctionalData,
-    IrregularFunctionalData, MultivariateFunctionalData
+    FunctionalData,
+    DenseFunctionalData,
+    IrregularFunctionalData,
+    MultivariateFunctionalData,
 )
 from ...misc.utils import (
     _compute_covariance,
     _integrate,
     _integration_weights,
-    _compute_eigen
+    _compute_eigen,
 )
 from .fcp_tpa import FCPTPA
 
@@ -30,12 +32,13 @@ from .fcp_tpa import FCPTPA
 #############################################################################
 # Utilities to fit
 
+
 def _fit_covariance(
     data: FunctionalData,
     points: DenseArgvals,
     n_components: Union[int, float] = 1,
     smooth: bool = True,
-    **kwargs
+    **kwargs,
 ) -> Dict[str, object]:
     """Univariate Functional PCA using the covariance operator.
 
@@ -79,8 +82,8 @@ def _fit_covariance(
     covariance = data.covariance(points=points, smooth=smooth, **kwargs)
 
     # Choose the W_j's and the S_j's (Ramsey and Silverman, 2005)
-    argvals = points['input_dim_0']
-    weight = _integration_weights(argvals, method='trapz')
+    argvals = points["input_dim_0"]
+    weight = _integration_weights(argvals, method="trapz")
 
     # Compute the eigenvalues and eigenvectors of W^{1/2}VW^{1/2}
     weight_sqrt = np.diag(np.sqrt(weight))
@@ -95,9 +98,7 @@ def _fit_covariance(
     results = dict()
     results["noise_variance_cov"] = data._noise_variance_cov
     results["eigenvalues"] = eigenvalues
-    results["eigenfunctions"] = DenseFunctionalData(
-        points, DenseValues(eigenfunctions)
-    )
+    results["eigenfunctions"] = DenseFunctionalData(points, DenseValues(eigenfunctions))
     return results
 
 
@@ -106,8 +107,8 @@ def _fit_covariance_multivariate(
     points: DenseArgvals,
     n_components: List[Union[int, float]],
     smooth: bool = True,
-    scores_method: str = 'NumInt',
-    **kwargs
+    scores_method: str = "NumInt",
+    **kwargs,
 ) -> Dict[str, object]:
     """Multivariate Functional PCA using the covariance operator.
 
@@ -150,13 +151,13 @@ def _fit_covariance_multivariate(
             ufpca.fit(
                 fdata_uni,
                 penalty_matrices={
-                    'v': np.dot(mat_v, mat_v.T),
-                    'w': np.dot(mat_w, mat_w.T)
+                    "v": np.dot(mat_v, mat_v.T),
+                    "w": np.dot(mat_w, mat_w.T),
                 },
-                alpha_range={'v': (1e-4, 1e4), 'w': (1e-4, 1e4)},
+                alpha_range={"v": (1e-4, 1e4), "w": (1e-4, 1e4)},
                 tolerance=1e-4,
                 max_iteration=15,
-                adapt_tolerance=True
+                adapt_tolerance=True,
             )
             scores_uni = ufpca.transform(fdata_uni)
         ufpca_list.append(ufpca)
@@ -183,10 +184,7 @@ def _fit_covariance_multivariate(
     for idx, ufpca in enumerate(ufpca_list):
         start = nb_eigenfunction_uni_cum[idx]
         end = nb_eigenfunction_uni_cum[idx + 1]
-        values = np.dot(
-            ufpca.eigenfunctions.values.T,
-            eigenvectors[start:end, :]
-        )
+        values = np.dot(ufpca.eigenfunctions.values.T, eigenvectors[start:end, :])
         eigenfunctions.append(
             DenseFunctionalData(ufpca.eigenfunctions.argvals, values.T)
         )
@@ -206,7 +204,7 @@ def _fit_inner_product(
     n_components: Union[int, float] = 1,
     smooth: bool = True,
     noise_variance: Optional[float] = None,
-    **kwargs
+    **kwargs,
 ) -> Dict[str, object]:
     """Univariate Functional PCA using inner-product matrix decomposition.
 
@@ -247,24 +245,20 @@ def _fit_inner_product(
     """
     # Compute inner product matrix and its eigendecomposition
     in_prod = data.inner_product(
-        method='trapz', smooth=smooth,
-        noise_variance=noise_variance, **kwargs
+        method="trapz", smooth=smooth, noise_variance=noise_variance, **kwargs
     )
     eigenvalues, eigenvectors = _compute_eigen(in_prod, n_components)
 
     # Compute the eigenfunctions
-    data_smooth = data.smooth(
-        points,
-        bandwidth=4 / np.product(points.n_points)
-    )
+    data_smooth = data.smooth(points, bandwidth=4 / np.product(points.n_points))
     eigenfunctions = np.matmul(data_smooth.values.T, eigenvectors)
     eigenfunctions = eigenfunctions / np.sqrt(eigenvalues)
 
     # Save the results
     results = dict()
-    results['eigenvectors'] = eigenvectors
-    results['eigenvalues'] = eigenvalues / data_smooth.n_obs
-    results['eigenfunctions'] = DenseFunctionalData(
+    results["eigenvectors"] = eigenvectors
+    results["eigenvalues"] = eigenvalues / data_smooth.n_obs
+    results["eigenfunctions"] = DenseFunctionalData(
         points, DenseValues(eigenfunctions.T)
     )
     return results
@@ -276,7 +270,7 @@ def _fit_inner_product_multivariate(
     n_components: Union[int, float] = 1,
     smooth: bool = True,
     noise_variance: Optional[npt.NDArray[np.float64]] = None,
-    **kwargs
+    **kwargs,
 ) -> Dict[str, object]:
     """Multivariate Functional PCA using inner-product matrix decomposition.
 
@@ -315,15 +309,13 @@ def _fit_inner_product_multivariate(
     """
     # Compute inner product matrix and its eigendecomposition
     in_prod = data.inner_product(
-        method='trapz', smooth=smooth,
-        noise_variance=noise_variance, **kwargs
+        method="trapz", smooth=smooth, noise_variance=noise_variance, **kwargs
     )
     eigenvalues, eigenvectors = _compute_eigen(in_prod, n_components)
 
     # Compute the eigenfunctions
     data_smooth = data.smooth(
-        points,
-        bandwidth=[4 / np.product(pp.n_points) for pp in points]
+        points, bandwidth=[4 / np.product(pp.n_points) for pp in points]
     )
     temp = [
         np.matmul(data_uni.values.T, eigenvectors) / np.sqrt(eigenvalues)
@@ -336,19 +328,20 @@ def _fit_inner_product_multivariate(
 
     # Save the results
     results = dict()
-    results['eigenvectors'] = eigenvectors
-    results['eigenvalues'] = eigenvalues / data_smooth.n_obs
-    results['eigenfunctions'] = MultivariateFunctionalData(eigenfunctions)
+    results["eigenvectors"] = eigenvectors
+    results["eigenvalues"] = eigenvalues / data_smooth.n_obs
+    results["eigenfunctions"] = MultivariateFunctionalData(eigenfunctions)
     return results
 
 
 #############################################################################
 # Utilities to transform
 
+
 def _transform_numerical_integration_dense(
     data: DenseFunctionalData,
     eigenfunctions: DenseFunctionalData,
-    method: str = "trapz"
+    method: str = "trapz",
 ) -> npt.NDArray[np.float64]:
     """Estimate scores using numerical integration.
 
@@ -381,7 +374,7 @@ def _transform_numerical_integration_dense(
 def _transform_numerical_integration_irregular(
     data: IrregularFunctionalData,
     eigenfunctions: DenseFunctionalData,
-    method: str = "trapz"
+    method: str = "trapz",
 ) -> npt.NDArray[np.float64]:
     """Estimate scores using numerical integration.
 
@@ -406,13 +399,12 @@ def _transform_numerical_integration_irregular(
     scores = np.zeros((data.n_obs, eigenfunctions.n_obs))
     for idx, obs in enumerate(data):
         eigen_sampled = eigenfunctions.smooth(
-            points=obs.argvals[idx],
-            bandwidth=4 / np.product(obs.argvals[idx].n_points)
+            points=obs.argvals[idx], bandwidth=4 / np.product(obs.argvals[idx].n_points)
         )
         temp = eigen_sampled.values * obs.values[idx]
         for idx_eigen, curve in enumerate(temp):
             scores[idx, idx_eigen] = _integrate(
-                curve, obs.argvals[idx]['input_dim_0'], method=method
+                curve, obs.argvals[idx]["input_dim_0"], method=method
             )
     return scores
 
@@ -420,7 +412,7 @@ def _transform_numerical_integration_irregular(
 def _transform_numerical_integration_multivariate(
     data: MultivariateFunctionalData,
     eigenfunctions: MultivariateFunctionalData,
-    method: str = "trapz"
+    method: str = "trapz",
 ) -> npt.NDArray[np.float64]:
     """Estimate scores using numerical integration.
 
@@ -458,7 +450,7 @@ def _transform_pace_dense(
     eigenfunctions: DenseFunctionalData,
     eigenvalues: npt.NDArray[np.float64],
     covariance: DenseFunctionalData,
-    noise_variance: float
+    noise_variance: float,
 ) -> npt.NDArray[np.float64]:
     """Estimate scores using PACE.
 
@@ -484,9 +476,9 @@ def _transform_pace_dense(
     """
     noise_mat = noise_variance * np.eye(covariance.values[0].shape[0])
     sigma_inv = np.linalg.pinv(covariance.values[0] + noise_mat)
-    return eigenvalues * np.linalg.multi_dot([
-        data.values, sigma_inv, eigenfunctions.values.T
-    ])
+    return eigenvalues * np.linalg.multi_dot(
+        [data.values, sigma_inv, eigenfunctions.values.T]
+    )
 
 
 def _transform_pace_irregular(
@@ -494,7 +486,7 @@ def _transform_pace_irregular(
     eigenfunctions: DenseFunctionalData,
     eigenvalues: npt.NDArray[np.float64],
     covariance: DenseFunctionalData,
-    noise_variance: float
+    noise_variance: float,
 ) -> npt.NDArray[np.float64]:
     """Estimate scores using PACE.
 
@@ -519,42 +511,40 @@ def _transform_pace_irregular(
 
     """
     points = data.argvals.to_dense()
-    argvals_cov = DenseArgvals({
-        'input_dim_0': data.argvals.to_dense()['input_dim_0'],
-        'input_dim_1': data.argvals.to_dense()['input_dim_0'],
-    })
+    argvals_cov = DenseArgvals(
+        {
+            "input_dim_0": data.argvals.to_dense()["input_dim_0"],
+            "input_dim_1": data.argvals.to_dense()["input_dim_0"],
+        }
+    )
     bandwidth = 1 / points.n_points[0]
-    covariance_sampled = covariance.smooth(
-        points=argvals_cov, bandwidth=bandwidth
-    )
-    eigenfunctions_sampled = eigenfunctions.smooth(
-        points=points, bandwidth=bandwidth
-    )
+    covariance_sampled = covariance.smooth(points=argvals_cov, bandwidth=bandwidth)
+    eigenfunctions_sampled = eigenfunctions.smooth(points=points, bandwidth=bandwidth)
 
     scores = np.zeros((data.n_obs, eigenfunctions.n_obs))
     for idx, fdata in enumerate(data):
         obs_points = np.isin(
-            data.argvals.to_dense()['input_dim_0'],
-            fdata.argvals[idx]['input_dim_0']
+            data.argvals.to_dense()["input_dim_0"], fdata.argvals[idx]["input_dim_0"]
         )
 
         mask = np.outer(obs_points, obs_points)
-        cov_sampled = covariance_sampled.values[0, mask].\
-            reshape(2 * fdata.n_points[idx])
+        cov_sampled = covariance_sampled.values[0, mask].reshape(
+            2 * fdata.n_points[idx]
+        )
         eigen_sampled = eigenfunctions_sampled.values[:, obs_points]
 
         noise_mat = noise_variance * np.eye(cov_sampled.shape[0])
         sigma_inv = np.linalg.pinv(cov_sampled + noise_mat)
-        scores[idx, :] = eigenvalues * np.linalg.multi_dot([
-            fdata.values[idx], sigma_inv, eigen_sampled.T
-        ])
+        scores[idx, :] = eigenvalues * np.linalg.multi_dot(
+            [fdata.values[idx], sigma_inv, eigen_sampled.T]
+        )
     return scores
 
 
 def _transform_innpro(
     data: DenseFunctionalData,
     eigenvectors: npt.NDArray[np.float64],
-    eigenvalues: npt.NDArray[np.float64]
+    eigenvalues: npt.NDArray[np.float64],
 ):
     """Estimate scores using the eigenvectors of the inner-product matrix.
 
@@ -580,7 +570,8 @@ def _transform_innpro(
 #############################################################################
 # Class UFPCA
 
-class UFPCA():
+
+class UFPCA:
     """UFPCA -- Univariate Functional Principal Components Analysis.
 
     Linear dimensionality reduction of a univariate functional dataset. The
@@ -628,9 +619,9 @@ class UFPCA():
 
     def __init__(
         self,
-        method: str = 'covariance',
+        method: str = "covariance",
         n_components: Optional[Union[int, float]] = None,
-        normalize: bool = False
+        normalize: bool = False,
     ) -> None:
         """Initaliaze UFPCA object."""
         self.n_components = n_components
@@ -690,7 +681,7 @@ class UFPCA():
         data: FunctionalData,
         points: Optional[DenseArgvals] = None,
         smooth: bool = True,
-        **kwargs
+        **kwargs,
     ) -> None:
         """Estimate the eigencomponents of the data.
 
@@ -722,12 +713,14 @@ class UFPCA():
             Analysis, Springer Science, Chapter 8.
 
         """
-        if self.method == 'covariance' and data.n_dimension > 1:
-            raise ValueError((
-                "Estimation of the eigencomponents using the covariance "
-                f"operator is not implemented for {data.n_dimension}"
-                "-dimensional data."
-            ))
+        if self.method == "covariance" and data.n_dimension > 1:
+            raise ValueError(
+                (
+                    "Estimation of the eigencomponents using the covariance "
+                    f"operator is not implemented for {data.n_dimension}"
+                    "-dimensional data."
+                )
+            )
 
         if points is None:
             if isinstance(data, DenseFunctionalData):
@@ -749,20 +742,25 @@ class UFPCA():
         else:
             self._noise_variance = data.noise_variance(order=2)
 
-        if self.method == 'covariance':
+        if self.method == "covariance":
             results = _fit_covariance(
-                data=data, points=points, n_components=self._n_components,
-                smooth=smooth, **kwargs
+                data=data,
+                points=points,
+                n_components=self._n_components,
+                smooth=smooth,
+                **kwargs,
             )
-        elif self.method == 'inner-product':
+        elif self.method == "inner-product":
             results = _fit_inner_product(
-                data=data, points=points, n_components=self.n_components,
-                smooth=smooth, noise_variance=self._noise_variance, **kwargs
+                data=data,
+                points=points,
+                n_components=self.n_components,
+                smooth=smooth,
+                noise_variance=self._noise_variance,
+                **kwargs,
             )
         else:
-            raise NotImplementedError(
-                f"The {self.method} method not implemented."
-            )
+            raise NotImplementedError(f"The {self.method} method not implemented.")
 
         # Save the results
         self._eigenvalues = results.get("eigenvalues", None)
@@ -776,23 +774,28 @@ class UFPCA():
                 self._eigenvalues, self._eigenfunctions.values
             )
             self._covariance = DenseFunctionalData(
-                DenseArgvals({
-                    'input_dim_0': points['input_dim_0'],
-                    'input_dim_1': points['input_dim_0']
-                }),
-                DenseValues(covariance[np.newaxis])
+                DenseArgvals(
+                    {
+                        "input_dim_0": points["input_dim_0"],
+                        "input_dim_1": points["input_dim_0"],
+                    }
+                ),
+                DenseValues(covariance[np.newaxis]),
             )
         else:
-            warnings.warn((
-                "The estimation of the covariance is not performed for "
-                f"{data.n_dimension}-dimensional data."
-            ), UserWarning)
+            warnings.warn(
+                (
+                    "The estimation of the covariance is not performed for "
+                    f"{data.n_dimension}-dimensional data."
+                ),
+                UserWarning,
+            )
 
     def transform(
         self,
         data: Optional[DenseFunctionalData] = None,
-        method: str = 'NumInt',
-        **kwargs
+        method: str = "NumInt",
+        **kwargs,
     ) -> npt.NDArray[np.float64]:
         r"""Apply dimensionality reduction to the data.
 
@@ -851,12 +854,12 @@ class UFPCA():
 
         """
         # Checkers
-        if method == 'InnPro' and data is not None:
+        if method == "InnPro" and data is not None:
             raise ValueError(
                 f"The method {method} can not be used as the eigencomponents "
                 "have not been estimated using the provided data."
             )
-        if method == 'InnPro' and self._eigenvectors is None:
+        if method == "InnPro" and self._eigenvectors is None:
             raise ValueError(
                 f"The method {method} can not be used as the eigencomponents "
                 "have not been estimated using the inner-product matrix."
@@ -869,40 +872,43 @@ class UFPCA():
             if self.normalize:
                 data_new, _ = data.normalize(weights=self.weights)
 
-        if method == 'NumInt':
+        if method == "NumInt":
             if isinstance(data_new, DenseFunctionalData):
                 return _transform_numerical_integration_dense(
-                    data_new, self.eigenfunctions,
-                    method=kwargs.get('integration_method', 'trapz')
+                    data_new,
+                    self.eigenfunctions,
+                    method=kwargs.get("integration_method", "trapz"),
                 )
             else:
                 return _transform_numerical_integration_irregular(
-                    data_new, self._eigenfunctions,
-                    method=kwargs.get('integration_method', 'trapz')
+                    data_new,
+                    self._eigenfunctions,
+                    method=kwargs.get("integration_method", "trapz"),
                 )
-        elif method == 'PACE':
-            noise_variance = max(kwargs.get('tol', 1e-4), self._noise_variance)
+        elif method == "PACE":
+            noise_variance = max(kwargs.get("tol", 1e-4), self._noise_variance)
             if isinstance(data_new, DenseFunctionalData):
                 return _transform_pace_dense(
-                    data_new, self.eigenfunctions, self.eigenvalues,
-                    self.covariance, noise_variance
+                    data_new,
+                    self.eigenfunctions,
+                    self.eigenvalues,
+                    self.covariance,
+                    noise_variance,
                 )
             else:
                 return _transform_pace_irregular(
-                    data_new, self.eigenfunctions, self.eigenvalues,
-                    self.covariance, noise_variance
+                    data_new,
+                    self.eigenfunctions,
+                    self.eigenvalues,
+                    self.covariance,
+                    noise_variance,
                 )
-        elif method == 'InnPro':
-            return _transform_innpro(
-                data_new, self._eigenvectors, self.eigenvalues
-            )
+        elif method == "InnPro":
+            return _transform_innpro(data_new, self._eigenvectors, self.eigenvalues)
         else:
             raise ValueError(f"Method {method} not implemented.")
 
-    def inverse_transform(
-        self,
-        scores: npt.NDArray[np.float64]
-    ) -> DenseFunctionalData:
+    def inverse_transform(self, scores: npt.NDArray[np.float64]) -> DenseFunctionalData:
         r"""Transform the data back to its original space.
 
         Given a set of scores :math:`c_{ik}`, we reconstruct the observations
@@ -926,21 +932,18 @@ class UFPCA():
             scores into the original curve space.
 
         """
-        values = np.einsum(
-            'ij , j... -> i...',
-            scores,
-            self.eigenfunctions.values
-        )
+        values = np.einsum("ij , j... -> i...", scores, self.eigenfunctions.values)
         return DenseFunctionalData(
             DenseArgvals(self.eigenfunctions.argvals),
-            DenseValues(self.weights * values + self.mean.values)
+            DenseValues(self.weights * values + self.mean.values),
         )
 
 
 #############################################################################
 # Class MFPCA
 
-class MFPCA():
+
+class MFPCA:
     r"""MFPCA -- Multivariate Functional Principal Components Analysis.
 
     Linear dimensionality reduction of a multivariate functional dataset. The
@@ -998,8 +1001,8 @@ class MFPCA():
     def __init__(
         self,
         n_components: List[Union[int, float]],
-        method: str = 'covariance',
-        normalize: bool = False
+        method: str = "covariance",
+        normalize: bool = False,
     ) -> None:
         """Initialize MFPCA object."""
         self.n_components = n_components
@@ -1022,10 +1025,7 @@ class MFPCA():
         return self._n_components
 
     @n_components.setter
-    def n_components(
-        self,
-        new_n_components: List[Union[int, float]]
-    ) -> None:
+    def n_components(self, new_n_components: List[Union[int, float]]) -> None:
         self._n_components = new_n_components
 
     @property
@@ -1062,8 +1062,8 @@ class MFPCA():
         data: MultivariateFunctionalData,
         points: Optional[List[DenseArgvals]] = None,
         smooth: bool = True,
-        scores_method: str = 'NumInt',
-        **kwargs
+        scores_method: str = "NumInt",
+        **kwargs,
     ) -> None:
         """Estimate the eigencomponents of the data.
 
@@ -1102,8 +1102,10 @@ class MFPCA():
         """
         if points is None:
             points = [
-                dd.argvals if isinstance(dd, DenseFunctionalData)
-                else dd.argvals.to_dense() for dd in data.data
+                dd.argvals
+                if isinstance(dd, DenseFunctionalData)
+                else dd.argvals.to_dense()
+                for dd in data.data
             ]
         if self.weights is None:
             self.weights = np.repeat(1, data.n_functional)
@@ -1120,20 +1122,26 @@ class MFPCA():
         self._noise_variance = data.noise_variance(order=2)
 
         # Estimate eigencomponents
-        if self.method == 'covariance':
+        if self.method == "covariance":
             results = _fit_covariance_multivariate(
-                data=data, points=points, n_components=self.n_components,
-                smooth=smooth, scores_method=scores_method, **kwargs
+                data=data,
+                points=points,
+                n_components=self.n_components,
+                smooth=smooth,
+                scores_method=scores_method,
+                **kwargs,
             )
-        elif self.method == 'inner-product':
+        elif self.method == "inner-product":
             results = _fit_inner_product_multivariate(
-                data=data, points=points, n_components=self.n_components,
-                smooth=smooth, noise_variance=self._noise_variance, **kwargs
+                data=data,
+                points=points,
+                n_components=self.n_components,
+                smooth=smooth,
+                noise_variance=self._noise_variance,
+                **kwargs,
             )
         else:
-            raise NotImplementedError(
-                f"{self.method} method not implemented."
-            )
+            raise NotImplementedError(f"{self.method} method not implemented.")
 
         # Save the results
         self._eigenvalues = results.get("eigenvalues", None)
@@ -1147,8 +1155,8 @@ class MFPCA():
     def transform(
         self,
         data: Optional[MultivariateFunctionalData] = None,
-        method: str = 'NumInt',
-        **kwargs
+        method: str = "NumInt",
+        **kwargs,
     ) -> npt.NDArray[np.float64]:
         r"""Apply dimensionality reduction to the data.
 
@@ -1212,12 +1220,12 @@ class MFPCA():
 
         """
         # Checkers
-        if method == 'InnPro' and data is not None:
+        if method == "InnPro" and data is not None:
             raise ValueError(
                 f"The method {method} can not be used as the eigencomponents "
                 "have not been estimated using the provided data."
             )
-        if method == 'InnPro' and self._eigenvectors is None:
+        if method == "InnPro" and self._eigenvectors is None:
             raise ValueError(
                 f"The method {method} can not be used as the eigencomponents "
                 "have not been estimated using the inner-product matrix."
@@ -1230,23 +1238,21 @@ class MFPCA():
             if self.normalize:
                 data_new, _ = data.normalize(weights=self.weights)
 
-        if method == 'NumInt':
+        if method == "NumInt":
             return _transform_numerical_integration_multivariate(
-                data_new, self._eigenfunctions,
-                kwargs.get('integration_method', 'trapz')
+                data_new,
+                self._eigenfunctions,
+                kwargs.get("integration_method", "trapz"),
             )
-        elif method == 'PACE':
+        elif method == "PACE":
             raise ValueError("PACE method not implemented.")
-        elif method == 'InnPro':
-            return _transform_innpro(
-                data_new, self._eigenvectors, self.eigenvalues
-            )
+        elif method == "InnPro":
+            return _transform_innpro(data_new, self._eigenvectors, self.eigenvalues)
         else:
             raise ValueError(f"Method {method} not implemented.")
 
     def inverse_transform(
-        self,
-        scores: npt.NDArray[np.float64]
+        self, scores: npt.NDArray[np.float64]
     ) -> MultivariateFunctionalData:
         r"""Transform the data back to its original space.
 
@@ -1276,9 +1282,9 @@ class MFPCA():
         for idx, (mean, eigenfunction, weight) in enumerate(
             zip(self.mean.data, self.eigenfunctions.data, self.weights)
         ):
-            values = np.einsum('ij,j... -> i...', scores, eigenfunction.values)
+            values = np.einsum("ij,j... -> i...", scores, eigenfunction.values)
             results[idx] = DenseFunctionalData(
                 DenseArgvals(eigenfunction.argvals),
-                DenseValues(weight * values + mean.values)
+                DenseValues(weight * values + mean.values),
             )
         return MultivariateFunctionalData(results)

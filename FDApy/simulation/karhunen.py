@@ -14,7 +14,8 @@ from typing import Any, Callable, Optional, Sequence, Tuple, Union
 from ..representation.argvals import DenseArgvals
 from ..representation.values import DenseValues
 from ..representation.functional_data import (
-    DenseFunctionalData, MultivariateFunctionalData
+    DenseFunctionalData,
+    MultivariateFunctionalData,
 )
 from ..representation.basis import Basis, MultivariateBasis
 from .simulation import Simulation
@@ -23,9 +24,8 @@ from .simulation import Simulation
 #############################################################################
 # Definition of the decreasing of the eigenvalues
 
-def _eigenvalues_linear(
-    n: int = 3
-) -> npt.NDArray[np.float64]:
+
+def _eigenvalues_linear(n: int = 3) -> npt.NDArray[np.float64]:
     """Generate linear decreasing eigenvalues.
 
     Parameters
@@ -47,9 +47,7 @@ def _eigenvalues_linear(
     return (n - np.arange(1, n + 1) + 1) / n
 
 
-def _eigenvalues_exponential(
-    n: int = 3
-) -> npt.NDArray[np.float64]:
+def _eigenvalues_exponential(n: int = 3) -> npt.NDArray[np.float64]:
     """Generate exponential decreasing eigenvalues.
 
     Parameters
@@ -71,9 +69,7 @@ def _eigenvalues_exponential(
     return np.exp(-(np.arange(0, n)) / 2)
 
 
-def _eigenvalues_quadratic(
-    n: int = 3
-) -> npt.NDArray[np.float64]:
+def _eigenvalues_quadratic(n: int = 3) -> npt.NDArray[np.float64]:
     """Generate quadratic decreasing eigenvalues.
 
     Parameters
@@ -92,12 +88,10 @@ def _eigenvalues_quadratic(
     array([1., 0.25, 0.11111111])
 
     """
-    return np.power(np.arange(1., n + 1), -2)
+    return np.power(np.arange(1.0, n + 1), -2)
 
 
-def _eigenvalues_inverse(
-    n: int = 3
-) -> npt.NDArray[np.float64]:
+def _eigenvalues_inverse(n: int = 3) -> npt.NDArray[np.float64]:
     """Generate inverse decreasing eigenvalues.
 
     Parameters
@@ -116,12 +110,10 @@ def _eigenvalues_inverse(
     array([1., 0.5, 0.33333333])
 
     """
-    return np.power(np.arange(1., n + 1), -1)
+    return np.power(np.arange(1.0, n + 1), -1)
 
 
-def _eigenvalues_sqrt(
-    n: int = 3
-) -> npt.NDArray[np.float64]:
+def _eigenvalues_sqrt(n: int = 3) -> npt.NDArray[np.float64]:
     """Generate square-root decreasing eigenvalues.
 
     Parameters
@@ -140,12 +132,10 @@ def _eigenvalues_sqrt(
     array([1., 0.70710678, 0.57735027, 0.5])
 
     """
-    return np.power(np.arange(1., n + 1), -1 / 2)
+    return np.power(np.arange(1.0, n + 1), -1 / 2)
 
 
-def _eigenvalues_wiener(
-    n: int = 3
-) -> npt.NDArray[np.float64]:
+def _eigenvalues_wiener(n: int = 3) -> npt.NDArray[np.float64]:
     """Generate eigenvalues from a Wiener process.
 
     Parameters
@@ -167,10 +157,7 @@ def _eigenvalues_wiener(
     return np.power((np.pi / 2) * (2 * np.arange(1, n + 1) - 1), -2)
 
 
-def _simulate_eigenvalues(
-    name: str,
-    n: int = 3
-) -> npt.NDArray[np.float64]:
+def _simulate_eigenvalues(name: str, n: int = 3) -> npt.NDArray[np.float64]:
     """Generate eigenvalues.
 
     Parameters
@@ -193,23 +180,21 @@ def _simulate_eigenvalues(
 
     """
     if n < 1:
-        raise ValueError(f'Parameter has to be strictly positive (now {n})')
-    if name == 'linear':
+        raise ValueError(f"Parameter has to be strictly positive (now {n})")
+    if name == "linear":
         return _eigenvalues_linear(n)
-    elif name == 'exponential':
+    elif name == "exponential":
         return _eigenvalues_exponential(n)
-    elif name == 'quadratic':
+    elif name == "quadratic":
         return _eigenvalues_quadratic(n)
-    elif name == 'inverse':
+    elif name == "inverse":
         return _eigenvalues_inverse(n)
-    elif name == 'sqrt':
+    elif name == "sqrt":
         return _eigenvalues_sqrt(n)
-    elif name == 'wiener':
+    elif name == "wiener":
         return _eigenvalues_wiener(n)
     else:
-        raise NotImplementedError(
-            'Eigenvalues generation method is not implemented!'
-        )
+        raise NotImplementedError("Eigenvalues generation method is not implemented!")
 
 
 #############################################################################
@@ -219,7 +204,7 @@ def _make_coef(
     n_features: int,
     centers: npt.NDArray[np.float64],
     clusters_std: npt.NDArray[np.float64],
-    rnorm: Callable = np.random.multivariate_normal
+    rnorm: Callable = np.random.multivariate_normal,
 ) -> Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
     """Simulate a set of coefficients for the Karhunen-Loève decomposition.
 
@@ -267,7 +252,7 @@ def _make_coef(
     n_centers = centers.shape[1]
 
     n_obs_per_center = np.ones(n_centers, dtype=int) * (n_obs // n_centers)
-    n_obs_per_center[:n_obs % n_centers] += 1
+    n_obs_per_center[: n_obs % n_centers] += 1
     cum_sum_n_obs = np.cumsum(n_obs_per_center)
 
     coefs = np.empty(shape=(n_obs, n_features), dtype=np.float64)
@@ -277,18 +262,14 @@ def _make_coef(
         end_idx = cum_sum_n_obs[idx]
 
         coefs[start_idx:end_idx, :] = rnorm(
-            mean=centers[:, idx],
-            cov=np.diag(clusters_std[:, idx]),
-            size=n_obs
+            mean=centers[:, idx], cov=np.diag(clusters_std[:, idx]), size=n_obs
         )
         labels[start_idx:end_idx] = idx
     return coefs, labels
 
 
 def _initialize_centers(
-    n_features: int,
-    n_clusters: int,
-    centers: Optional[npt.NDArray[np.float64]] = None
+    n_features: int, n_clusters: int, centers: Optional[npt.NDArray[np.float64]] = None
 ) -> npt.NDArray[np.float64]:
     """Initialize the centers of the clusters.
 
@@ -314,7 +295,7 @@ def _initialize_centers(
 def _initialize_clusters_std(
     n_features: int,
     n_clusters: int,
-    clusters_std: Optional[Union[str, npt.NDArray[np.float64]]] = None
+    clusters_std: Optional[Union[str, npt.NDArray[np.float64]]] = None,
 ) -> npt.NDArray[np.float64]:
     """Initialize the standard deviation of the clusters.
 
@@ -349,8 +330,7 @@ def _initialize_clusters_std(
 #############################################################################
 # Generation of univariate functional data
 def _compute_data(
-    basis: DenseFunctionalData,
-    coefficients: npt.NDArray[np.float64]
+    basis: DenseFunctionalData, coefficients: npt.NDArray[np.float64]
 ) -> DenseFunctionalData:
     r"""Compute functional data.
 
@@ -387,17 +367,13 @@ def _compute_data(
     elif basis.n_dimension == 2:
         values = np.tensordot(coefficients, basis.values, axes=1)
     else:
-        raise ValueError(
-            f"The basis dimension {basis.n_dimension} has to be 1D or 2D."
-        )
-    return DenseFunctionalData(
-        DenseArgvals(basis.argvals),
-        DenseValues(values)
-    )
+        raise ValueError(f"The basis dimension {basis.n_dimension} has to be 1D or 2D.")
+    return DenseFunctionalData(DenseArgvals(basis.argvals), DenseValues(values))
 
 
 #############################################################################
 # Definition of the KarhunenLoeve simulation
+
 
 class KarhunenLoeve(Simulation):
     r"""Class that defines simulation based on Karhunen-Loève decomposition.
@@ -473,7 +449,7 @@ class KarhunenLoeve(Simulation):
     @staticmethod
     def _check_basis_none(
         basis_name: Optional[Union[str, Sequence[str]]],
-        basis: Optional[Union[Basis, MultivariateBasis]]
+        basis: Optional[Union[Basis, MultivariateBasis]],
     ) -> None:
         """Check if `basis_name` of `basis` is `None`.
 
@@ -491,19 +467,16 @@ class KarhunenLoeve(Simulation):
             If both `basis_name` and `basis` are not None.
 
         """
-        if (
-            ((basis_name is not None) and (basis is not None)) or
-            ((basis_name is None) and (basis is None))
+        if ((basis_name is not None) and (basis is not None)) or (
+            (basis_name is None) and (basis is None)
         ):
             raise ValueError(
-                'Only one of the arguments `basis_name` or `basis` have to be '
-                'provided. Do not know which basis to use.'
+                "Only one of the arguments `basis_name` or `basis` have to be "
+                "provided. Do not know which basis to use."
             )
 
     @staticmethod
-    def _check_basis_type(
-        basis: Optional[Union[Basis, MultivariateBasis]]
-    ) -> None:
+    def _check_basis_type(basis: Optional[Union[Basis, MultivariateBasis]]) -> None:
         """Check if `basis` has the right type.
 
         Parameters
@@ -518,13 +491,8 @@ class KarhunenLoeve(Simulation):
             Basis class.
 
         """
-        if (
-            (not isinstance(basis, (Basis, MultivariateBasis))) and
-            (basis is not None)
-        ):
-            raise ValueError(
-                'The basis argument has to be an instance of Basis.'
-            )
+        if (not isinstance(basis, (Basis, MultivariateBasis))) and (basis is not None):
+            raise ValueError("The basis argument has to be an instance of Basis.")
 
     @staticmethod
     def _create_basis(
@@ -532,7 +500,7 @@ class KarhunenLoeve(Simulation):
         dimension: Union[str, Sequence[str]],
         n_functions: int,
         argvals: Optional[npt.NDArray[np.float64]] = None,
-        **kwargs_basis
+        **kwargs_basis,
     ) -> Union[Basis, MultivariateBasis]:
         """Create a list of Basis given some parameters.
 
@@ -564,29 +532,29 @@ class KarhunenLoeve(Simulation):
                 n_functions=n_functions,
                 dimension=dimension,
                 argvals=argvals,
-                **kwargs_basis
+                **kwargs_basis,
             )
         else:  # isinstance(basis_name, list)
             return MultivariateBasis(
-                simulation_type='weighted',
+                simulation_type="weighted",
                 n_components=len(basis_name),
                 name=basis_name,
                 n_functions=n_functions,
                 dimension=dimension,
                 argvals=argvals,
                 rchoice=None,
-                **kwargs_basis
+                **kwargs_basis,
             )
 
     def __init__(
         self,
         basis_name: Union[str, Sequence[str]],
         n_functions: np.int_ = 5,
-        dimension: Union[str, Sequence[str]] = '1D',
+        dimension: Union[str, Sequence[str]] = "1D",
         argvals: Optional[npt.NDArray[np.float64]] = None,
         basis: Optional[Union[Basis, Sequence[Basis]]] = None,
         random_state: Optional[int] = None,
-        **kwargs_basis: Any
+        **kwargs_basis: Any,
     ) -> None:
         """Initialize KarhunenLoeve object."""
         # Checkers
@@ -606,7 +574,7 @@ class KarhunenLoeve(Simulation):
         n_obs: int,
         n_clusters: int = 1,
         argvals: Optional[npt.NDArray[np.float64]] = None,
-        **kwargs
+        **kwargs,
     ) -> None:
         """Simulate realizations from Karhunen-Loève decomposition.
 
@@ -639,26 +607,24 @@ class KarhunenLoeve(Simulation):
             rnorm = self.random_state.multivariate_normal
 
         # Get parameters
-        centers = kwargs.get('centers', None)
-        clusters_std = kwargs.get('clusters_std', None)
+        centers = kwargs.get("centers", None)
+        clusters_std = kwargs.get("clusters_std", None)
 
         # Initialize parameters
         n_features = self.basis.n_obs
         centers = _initialize_centers(n_features, n_clusters, centers)
-        clusters_std = _initialize_clusters_std(
-            n_features, n_clusters, clusters_std
-        )
+        clusters_std = _initialize_clusters_std(n_features, n_clusters, clusters_std)
 
         # Generate coefficients
-        coef, labels = _make_coef(
-            n_obs, n_features, centers, clusters_std, rnorm
-        )
+        coef, labels = _make_coef(n_obs, n_features, centers, clusters_std, rnorm)
         if isinstance(self.basis, Basis):
             self.data = _compute_data(basis=self.basis, coefficients=coef)
         else:  # self.basis is MultivariateBasis
-            self.data = MultivariateFunctionalData([
-                _compute_data(basis=basis, coefficients=coef)
-                for basis in self.basis.data
-            ])
+            self.data = MultivariateFunctionalData(
+                [
+                    _compute_data(basis=basis, coefficients=coef)
+                    for basis in self.basis.data
+                ]
+            )
         self.labels = labels
         self.eigenvalues = clusters_std[:, 0]

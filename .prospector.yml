@@ -1,5 +1,5 @@
 strictness: veryhigh
-max-line-length: 79
+max-line-length: 88
 doc-warnings: yes
 
 ignore-paths:
@@ -23,6 +23,8 @@ mccabe:
 
 pep8:
     run: true
+    disable:
+        - E203
 
 pep257:
     run: true

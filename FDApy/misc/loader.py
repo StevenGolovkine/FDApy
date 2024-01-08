@@ -16,15 +16,14 @@ from ..representation.argvals import DenseArgvals, IrregularArgvals
 from ..representation.values import DenseValues, IrregularValues
 from ..representation.functional_data import (
     DenseFunctionalData,
-    IrregularFunctionalData
+    IrregularFunctionalData,
 )
 
 
 ###############################################################################
 # Loader for csv
 def read_csv(
-    filepath: str,
-    **kwargs
+    filepath: str, **kwargs
 ) -> Union[DenseFunctionalData, IrregularFunctionalData]:
     """Read a comma-separated values (csv) file into Functional Data.
 
@@ -62,8 +61,7 @@ def read_csv(
 
 
 def _read_csv_dense(
-    data: pd.DataFrame,
-    argvals: npt.NDArray[np.float64]
+    data: pd.DataFrame, argvals: npt.NDArray[np.float64]
 ) -> DenseFunctionalData:
     """Load a csv file into a DenseFunctionalData object.
 
@@ -80,14 +78,13 @@ def _read_csv_dense(
         The loaded csv file
 
     """
-    argvals_ = DenseArgvals({'input_dim_0': argvals})
+    argvals_ = DenseArgvals({"input_dim_0": argvals})
     values = DenseValues(np.array(data))
     return DenseFunctionalData(argvals_, values)
 
 
 def _read_csv_irregular(
-    data: pd.DataFrame,
-    argvals: npt.NDArray[np.float64]
+    data: pd.DataFrame, argvals: npt.NDArray[np.float64]
 ) -> IrregularFunctionalData:
     """Load a csv file into an IrregularFunctionalData object.
 
@@ -105,11 +102,8 @@ def _read_csv_irregular(
 
     """
     argvals_ = {
-        idx: DenseArgvals({'input_dim_0': argvals[~np.isnan(row)]})
+        idx: DenseArgvals({"input_dim_0": argvals[~np.isnan(row)]})
         for idx, row in enumerate(data.values)
     }
     values = {idx: row[~np.isnan(row)] for idx, row in enumerate(data.values)}
-    return IrregularFunctionalData(
-        IrregularArgvals(argvals_),
-        IrregularValues(values)
-    )
+    return IrregularFunctionalData(IrregularArgvals(argvals_), IrregularValues(values))

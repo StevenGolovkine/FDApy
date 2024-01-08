@@ -247,14 +247,9 @@ class DenseArgvals(Argvals):
     @property
     def min_max(self) -> Dict(SyntaxWarning, Tuple[float, float]):
         """Get the minimum and maximum sampling points for each dimension."""
-        return {
-            idx: (min(argval), max(argval)) for idx, argval in self.items()
-        }
+        return {idx: (min(argval), max(argval)) for idx, argval in self.items()}
 
-    def range(
-        self,
-        percentage: float = 1.0
-    ) -> Dict[str, float]:
+    def range(self, percentage: float = 1.0) -> Dict[str, float]:
         """Get the range of sampling points for each dimension.
 
         Parameters
@@ -269,8 +264,7 @@ class DenseArgvals(Argvals):
 
         """
         return {
-            idx: percentage * (max - min)
-            for idx, (min, max) in self.min_max.items()
+            idx: percentage * (max - min) for idx, (min, max) in self.min_max.items()
         }
 
     def normalization(self) -> DenseArgvals:
@@ -287,10 +281,12 @@ class DenseArgvals(Argvals):
             Normalized argvals.
 
         """
-        return DenseArgvals({
-            dim: (points - min(points)) / (max(points) - min(points))
-            for dim, points in self.items()
-        })
+        return DenseArgvals(
+            {
+                dim: (points - min(points)) / (max(points) - min(points))
+                for dim, points in self.items()
+            }
+        )
 
 
 ###############################################################################

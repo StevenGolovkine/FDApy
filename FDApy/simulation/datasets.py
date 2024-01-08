@@ -20,10 +20,9 @@ from .simulation import Simulation
 #############################################################################
 # Definition of the simulation settings
 
+
 def _zhang_chen(
-    n_obs: int,
-    argvals: npt.NDArray[np.float64],
-    rnorm: Callable = np.random.normal
+    n_obs: int, argvals: npt.NDArray[np.float64], rnorm: Callable = np.random.normal
 ) -> npt.NDArray[np.float64]:
     """Define a simulation from Zhang and Chen (2007).
 
@@ -52,6 +51,7 @@ def _zhang_chen(
 #############################################################################
 # Definition of the Datasets simulation
 
+
 class Datasets(Simulation):
     r"""Class that defines simulation based on published papers.
 
@@ -62,11 +62,7 @@ class Datasets(Simulation):
 
     """
 
-    def __init__(
-        self,
-        basis_name: str,
-        random_state: Optional[int] = None
-    ) -> None:
+    def __init__(self, basis_name: str, random_state: Optional[int] = None) -> None:
         """Initialize Datasets object."""
         super().__init__(basis_name, random_state)
 
@@ -93,10 +89,10 @@ class Datasets(Simulation):
             compliant with the class :mod:`Simulation`.
 
         """
-        if self.basis_name == 'zhang_chen':
+        if self.basis_name == "zhang_chen":
             self.data = DenseFunctionalData(
-                argvals=DenseArgvals({'input_dim_0': argvals}),
-                values=DenseValues(_zhang_chen(n_obs=n_obs, argvals=argvals))
+                argvals=DenseArgvals({"input_dim_0": argvals}),
+                values=DenseValues(_zhang_chen(n_obs=n_obs, argvals=argvals)),
             )
         else:
             raise NotImplementedError

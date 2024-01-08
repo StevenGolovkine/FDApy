@@ -22,22 +22,41 @@ DIFF_SEQUENCES = {
     4: np.array([0.2708, -0.0142, 0.6909, -0.4858, -0.4617]),
     5: np.array([0.9064, -0.2600, -0.2167, -0.1774, -0.1420, -0.1103]),
     6: np.array([0.2400, 0.0300, -0.0342, 0.7738, -0.3587, -0.3038, -0.3472]),
-    7: np.array([
-        0.9302, -0.1965, -0.1728, -0.1506,
-        -0.1299, -0.1107, -0.0930, -0.0768
-    ]),
-    8: np.array([
-        0.2171, 0.0467, -0.0046, -0.0348,
-        0.8207, -0.2860, -0.2453, -0.2260, -0.2879
-    ]),
-    9: np.array([
-        0.9443, -0.1578, -0.1429, -0.1287, -0.1152,
-        -0.1025, -0.0905, -0.0792, -0.0687, -0.0588
-    ]),
-    10: np.array([
-        0.1995, 0.0539, 0.0104, -0.0140, -0.0325, 0.8510,
-        -0.2384, -0.2079, -0.1882, -0.1830, -0.2507
-    ])
+    7: np.array(
+        [0.9302, -0.1965, -0.1728, -0.1506, -0.1299, -0.1107, -0.0930, -0.0768]
+    ),
+    8: np.array(
+        [0.2171, 0.0467, -0.0046, -0.0348, 0.8207, -0.2860, -0.2453, -0.2260, -0.2879]
+    ),
+    9: np.array(
+        [
+            0.9443,
+            -0.1578,
+            -0.1429,
+            -0.1287,
+            -0.1152,
+            -0.1025,
+            -0.0905,
+            -0.0792,
+            -0.0687,
+            -0.0588,
+        ]
+    ),
+    10: np.array(
+        [
+            0.1995,
+            0.0539,
+            0.0104,
+            -0.0140,
+            -0.0325,
+            0.8510,
+            -0.2384,
+            -0.2079,
+            -0.1882,
+            -0.1830,
+            -0.2507,
+        ]
+    ),
 }
 
 
@@ -47,7 +66,7 @@ DIFF_SEQUENCES = {
 def _normalization(
     x: npt.NDArray[np.float64],
     max_x: Optional[float] = None,
-    min_x: Optional[float] = None
+    min_x: Optional[float] = None,
 ) -> npt.NDArray[np.float64]:
     r"""Normalize a vector :math:`[a, b]` into a vector :math:`[0, 1]`.
 
@@ -117,9 +136,7 @@ def _standardization(
         return (x - np.mean(x)) / np.std(x)
 
 
-def _row_mean(
-    x: npt.NDArray[np.float64]
-) -> npt.NDArray[np.float64]:
+def _row_mean(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     """Compute the mean of an array with respect to the rows.
 
     This function computes the mean of an array with respect to the rows.
@@ -152,9 +169,7 @@ def _row_mean(
     return np.mean(x, axis=0)
 
 
-def _row_var(
-    x: npt.NDArray[np.float64]
-) -> npt.NDArray[np.float64]:
+def _row_var(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     """Compute the variance of an array with respect to the rows.
 
     This function computes the variance of the rows of an array.
@@ -187,9 +202,7 @@ def _row_var(
     return x.var(axis=0)
 
 
-def _col_mean(
-    x: npt.NDArray[np.float64]
-) -> npt.NDArray[np.float64]:
+def _col_mean(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     """Compute the mean of an array with respect to the columns.
 
     This function computes the mean of an array with respect to the columns.
@@ -222,9 +235,7 @@ def _col_mean(
     return x.mean(axis=1)
 
 
-def _col_var(
-    x: npt.NDArray[np.float64]
-) -> npt.NDArray[np.float64]:
+def _col_var(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     """Compute the variance of an array with respect to the columns.
 
     This function computes the variance of the column of an array.
@@ -261,10 +272,8 @@ def _col_var(
 # Array manipulation functions.
 ############################################################################
 
-def _get_axis_dimension(
-    x: npt.NDArray[np.float64],
-    axis: int = 0
-) -> int:
+
+def _get_axis_dimension(x: npt.NDArray[np.float64], axis: int = 0) -> int:
     """Get the dimension of an array :math:`X` along the `axis`.
 
     Parameters
@@ -292,9 +301,7 @@ def _get_axis_dimension(
     return x.shape[axis]
 
 
-def _get_dict_dimension(
-    x: Dict[str, npt.NDArray[np.float64]]
-) -> Tuple[int, ...]:
+def _get_dict_dimension(x: Dict[str, npt.NDArray[np.float64]]) -> Tuple[int, ...]:
     """Return the shape of an object defined as a dict of np.ndarray.
 
     Parameters
@@ -321,8 +328,7 @@ def _get_dict_dimension(
 
 
 def _get_obs_shape(
-    x: Dict[str, Dict[int, npt.NDArray[np.float64]]],
-    obs: int
+    x: Dict[str, Dict[int, npt.NDArray[np.float64]]], obs: int
 ) -> Tuple[int, ...]:
     """Get the shape of `obs` if `X` is a nested dict.
 
@@ -357,9 +363,7 @@ def _get_obs_shape(
 
 
 def _shift(
-    x: npt.NDArray[np.float64],
-    num: int = 0,
-    fill_value: float = np.nan
+    x: npt.NDArray[np.float64], num: int = 0, fill_value: float = np.nan
 ) -> npt.NDArray[np.float64]:
     """Shift an array.
 
@@ -403,7 +407,7 @@ def _shift(
 
 
 def _cartesian_product(
-    *arrays: List[npt.NDArray[np.float64]]
+    *arrays: List[npt.NDArray[np.float64]],
 ) -> npt.NDArray[np.float64]:
     """Compute the cartesian product of a list of arrays.
 
@@ -450,7 +454,7 @@ def _cartesian_product(
     ])
 
     """
-    meshgrids = np.meshgrid(*arrays, indexing='ij')
+    meshgrids = np.meshgrid(*arrays, indexing="ij")
     stacked = np.column_stack([m.ravel() for m in meshgrids])
     return stacked
 
@@ -459,9 +463,9 @@ def _cartesian_product(
 # Array computation
 ##############################################################################
 
+
 def _integration_weights(
-    x: npt.NDArray[np.float64],
-    method: Union[str, Callable] = 'trapz'
+    x: npt.NDArray[np.float64], method: Union[str, Callable] = "trapz"
 ) -> npt.NDArray[np.float64]:
     """Compute integration weights.
 
@@ -493,27 +497,30 @@ def _integration_weights(
     * https://en.wikipedia.org/wiki/Simpson%27s_rule
 
     """
-    if method == 'trapz':
+    if method == "trapz":
         weights = 0.5 * np.concatenate(
             (
                 np.array([x[1] - x[0]]),
-                2 * (x[1:(len(x) - 1)] - x[:(len(x) - 2)]),
-                np.array([x[len(x) - 1] - x[len(x) - 2]])
-            ), axis=None
+                2 * (x[1 : (len(x) - 1)] - x[: (len(x) - 2)]),
+                np.array([x[len(x) - 1] - x[len(x) - 2]]),
+            ),
+            axis=None,
         )
-    elif method == 'simpson':
-        weights = np.concatenate(
-            (
-                np.array([x[1] - x[0]]),
-                [
-                    4 * h if idx % 2 == 0 else 2 * h
-                    for idx, h in enumerate(
-                        x[1:(len(x) - 1)] - x[:(len(x) - 2)]
-                    )
-                ],
-                np.array([x[len(x) - 1] - x[len(x) - 2]])
-            ), axis=None
-        ) / 3
+    elif method == "simpson":
+        weights = (
+            np.concatenate(
+                (
+                    np.array([x[1] - x[0]]),
+                    [
+                        4 * h if idx % 2 == 0 else 2 * h
+                        for idx, h in enumerate(x[1 : (len(x) - 1)] - x[: (len(x) - 2)])
+                    ],
+                    np.array([x[len(x) - 1] - x[len(x) - 2]]),
+                ),
+                axis=None,
+            )
+            / 3
+        )
     elif callable(method):
         weights = method(x)
     else:
@@ -522,9 +529,7 @@ def _integration_weights(
 
 
 def _integrate(
-    y: npt.NDArray[np.float64],
-    *args: npt.NDArray[np.float64],
-    method: str = 'simpson'
+    y: npt.NDArray[np.float64], *args: npt.NDArray[np.float64], method: str = "simpson"
 ) -> float:
     r"""Compute an estimate of the integral of 1-dimensional curve.
 
@@ -561,12 +566,12 @@ def _integrate(
     15.75
 
     """
-    if method == 'simpson':
+    if method == "simpson":
         integrate = scipy.integrate.simps
-    elif method == 'trapz':
+    elif method == "trapz":
         integrate = np.trapz
     else:
-        raise ValueError(f'{method} not implemented!')
+        raise ValueError(f"{method} not implemented!")
 
     temp = integrate(x=args[0], y=y, axis=0)
     for dimension in args[1:]:
@@ -578,7 +583,7 @@ def _inner_product(
     x: npt.NDArray[np.float64],
     y: npt.NDArray[np.float64],
     *axis: Optional[npt.NDArray[np.float64]],
-    method: str = 'trapz'
+    method: str = "trapz",
 ) -> float:
     r"""Compute the inner product between two curves.
 
@@ -621,8 +626,7 @@ def _inner_product(
 
 
 def _outer(
-    x: npt.NDArray[np.float64],
-    y: npt.NDArray[np.float64]
+    x: npt.NDArray[np.float64], y: npt.NDArray[np.float64]
 ) -> npt.NDArray[np.float64]:
     """Compute the tensor product of two vectors.
 
@@ -652,8 +656,7 @@ def _outer(
 
 
 def _select_number_eigencomponents(
-    eigenvalues: npt.NDArray[np.float64],
-    percentage: Optional[Union[float, int]] = None
+    eigenvalues: npt.NDArray[np.float64], percentage: Optional[Union[float, int]] = None
 ) -> int:
     """Select the number of eigencomponents.
 
@@ -683,12 +686,11 @@ def _select_number_eigencomponents(
     elif percentage is None:
         return len(eigenvalues)
     else:
-        raise ValueError('The `percentage` parameter is not correct.')
+        raise ValueError("The `percentage` parameter is not correct.")
 
 
 def _eigh(
-    matrix: npt.NDArray[np.float64],
-    UPLO: str = 'L'  # noqa
+    matrix: npt.NDArray[np.float64], UPLO: str = "L"  # noqa
 ) -> Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
     """Return the eigenvalues and eigenvectors of a real symmetrix matrix.
 
@@ -725,7 +727,7 @@ def _eigh(
 
 def _compute_eigen(
     data: npt.NDArray[np.float64],
-    n_components: Optional[Union[np.float64, np.int64]] = None
+    n_components: Optional[Union[np.float64, np.int64]] = None,
 ) -> Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
     """Compute the eigendecomposition of a matrix.
 
@@ -762,8 +764,7 @@ def _compute_eigen(
 
 
 def _compute_covariance(
-    eigenvalues: npt.NDArray[np.float64],
-    eigenfunctions: npt.NDArray[np.float64]
+    eigenvalues: npt.NDArray[np.float64], eigenfunctions: npt.NDArray[np.float64]
 ) -> npt.NDArray[np.float64]:
     """Compute the covariance matrix using Mercer's theorem.
 
@@ -790,10 +791,7 @@ def _compute_covariance(
     return np.dot(temp, eigenfunctions)
 
 
-def _estimate_noise_variance(
-    x: npt.NDArray[np.float64],
-    order: int = 2
-) -> float:
+def _estimate_noise_variance(x: npt.NDArray[np.float64], order: int = 2) -> float:
     """Estimate the variance of the noise.
 
     This function estimates the variance of the noise non-parametrically using
@@ -822,7 +820,9 @@ def _estimate_noise_variance(
     if order < 1 or order > 10:
         raise ValueError("The order has to be between 1 and 10.")
     weights = DIFF_SEQUENCES.get(order)
-    return np.mean([
-        np.matmul(weights, x[idx:(idx + order + 1)])**2
-        for idx in range(len(x) - order)
-    ])
+    return np.mean(
+        [
+            np.matmul(weights, x[idx : (idx + order + 1)]) ** 2
+            for idx in range(len(x) - order)
+        ]
+    )

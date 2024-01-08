@@ -15,16 +15,15 @@ from matplotlib.axes import Axes
 from typing import Optional, List, Union
 
 from ..representation.functional_data import (
-    DenseFunctionalData, IrregularFunctionalData, MultivariateFunctionalData
+    DenseFunctionalData,
+    IrregularFunctionalData,
+    MultivariateFunctionalData,
 )
 
 
 #############################################################################
 # Utility functions
-def _init_ax(
-    ax: Optional[Axes] = None,
-    projection: str = 'rectilinear'
-) -> Axes:
+def _init_ax(ax: Optional[Axes] = None, projection: str = "rectilinear") -> Axes:
     """Initialize axes."""
     if ax is None:
         ax = plt.axes(projection=projection)
@@ -38,7 +37,7 @@ def _plot_1d(
     labels: npt.NDArray[np.float64],
     colors: Optional[npt.NDArray[np.float64]] = None,
     ax: Optional[Axes] = None,
-    **plt_kwargs
+    **plt_kwargs,
 ) -> Axes:
     """Plot one dimensional functional data.
 
@@ -69,23 +68,15 @@ def _plot_1d(
 
     if isinstance(data, DenseFunctionalData):
         for obs, l in zip(data.values, labels):
-            ax.plot(
-                data.argvals['input_dim_0'], obs, c=colors[l], **plt_kwargs
-            )
+            ax.plot(data.argvals["input_dim_0"], obs, c=colors[l], **plt_kwargs)
     elif isinstance(data, IrregularFunctionalData):
         for argval, value, l in zip(
-            data.argvals.values(),
-            data.values.values(),
-            labels
+            data.argvals.values(), data.values.values(), labels
         ):
-            ax.plot(
-                argval['input_dim_0'], value, c=colors[l], **plt_kwargs
-            )
-            ax.scatter(
-                argval['input_dim_0'], value, c=[colors[l]], **plt_kwargs
-            )
+            ax.plot(argval["input_dim_0"], value, c=colors[l], **plt_kwargs)
+            ax.scatter(argval["input_dim_0"], value, c=[colors[l]], **plt_kwargs)
     else:
-        raise TypeError('Data type not recognized!')
+        raise TypeError("Data type not recognized!")
     return ax
 
 
@@ -94,7 +85,7 @@ def _plot_2d(
     labels: npt.NDArray[np.float64],
     colors: Optional[npt.NDArray[np.float64]] = None,
     ax: Optional[Axes] = None,
-    **plt_kwargs
+    **plt_kwargs,
 ) -> Axes:
     """Plot two dimensional functional data.
 
@@ -126,24 +117,21 @@ def _plot_2d(
     if isinstance(data, DenseFunctionalData):
         if data.n_obs == 1:
             cs = ax.contourf(
-                data.argvals['input_dim_1'],
-                data.argvals['input_dim_0'],
+                data.argvals["input_dim_1"],
+                data.argvals["input_dim_0"],
                 data.values.squeeze(),
-                **plt_kwargs
+                **plt_kwargs,
             )
             plt.colorbar(cs)
         else:
             x, y = np.meshgrid(
-                data.argvals['input_dim_0'],
-                data.argvals['input_dim_1'],
-                indexing='ij'
+                data.argvals["input_dim_0"], data.argvals["input_dim_1"], indexing="ij"
             )
             for obs, l in zip(data.values, labels):
                 ax.plot_surface(x, y, obs, color=colors[l], **plt_kwargs)
     elif isinstance(data, IrregularFunctionalData):
         raise NotImplementedError(
-            "Currently 2d irregular functional data"
-            " plotting is not implemented."
+            "Currently 2d irregular functional data" " plotting is not implemented."
         )
     else:
         raise TypeError("Data type not recognized!")
@@ -157,7 +145,7 @@ def plot(
     labels: Optional[npt.NDArray[np.float64]] = None,
     colors: Optional[npt.NDArray[np.float64]] = None,
     ax: Optional[Axes] = None,
-    **plt_kwargs
+    **plt_kwargs,
 ) -> Axes:
     """Plot function for univariate functional data.
 
@@ -187,13 +175,13 @@ def plot(
     if labels is None:
         labels = np.arange(data.n_obs)
     if data.n_dimension == 1:
-        ax = _init_ax(ax, projection='rectilinear')
+        ax = _init_ax(ax, projection="rectilinear")
         ax = _plot_1d(data, labels, colors, ax, **plt_kwargs)
     elif data.n_dimension == 2:
         if data.n_obs == 1:
-            ax = _init_ax(ax, projection='rectilinear')
+            ax = _init_ax(ax, projection="rectilinear")
         else:
-            ax = _init_ax(ax, projection='3d')
+            ax = _init_ax(ax, projection="3d")
         ax = _plot_2d(data, labels, colors, ax, **plt_kwargs)
     else:
         raise ValueError(
@@ -209,7 +197,7 @@ def plot_multivariate(
     titles: Optional[List[str]] = None,
     colors: Optional[npt.NDArray[np.float64]] = None,
     ax: Optional[Axes] = None,
-    **plt_kwargs
+    **plt_kwargs,
 ) -> List[Axes]:
     """Plot function for multivariate functional data.
 

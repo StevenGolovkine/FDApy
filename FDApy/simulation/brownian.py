@@ -20,8 +20,9 @@ from .simulation import Simulation
 #############################################################################
 # Definition of the different Browian motion
 
+
 def _init_brownian(
-    argvals: npt.NDArray[np.float64]
+    argvals: npt.NDArray[np.float64],
 ) -> Tuple[float, npt.NDArray[np.float64]]:
     """Initialize Brownian motions.
 
@@ -47,7 +48,7 @@ def _init_brownian(
 def _standard_brownian(
     argvals: npt.NDArray[np.float64],
     init_point: float = 0.0,
-    rnorm: Callable = np.random.normal
+    rnorm: Callable = np.random.normal,
 ) -> npt.NDArray[np.float64]:
     """Generate standard Brownian motion.
 
@@ -95,7 +96,7 @@ def _geometric_brownian(
     init_point: float = 1.0,
     mu: float = 0.0,
     sigma: float = 1.0,
-    rnorm: Callable = np.random.normal
+    rnorm: Callable = np.random.normal,
 ) -> npt.NDArray[np.float64]:
     """Generate geometric Brownian motion.
 
@@ -135,9 +136,7 @@ def _geometric_brownian(
 
     """
     if not init_point > 0:
-        raise ValueError(
-            'The parameter `init_point` must be stricly positive.'
-        )
+        raise ValueError("The parameter `init_point` must be stricly positive.")
 
     delta, argvals = _init_brownian(argvals)
     const = mu - sigma**2 / 2
@@ -149,7 +148,7 @@ def _geometric_brownian(
 def _fractional_brownian(
     argvals: npt.NDArray[np.float64],
     hurst: float = 0.5,
-    rnorm: Callable = np.random.normal
+    rnorm: Callable = np.random.normal,
 ) -> npt.NDArray[np.float64]:
     """Generate fractional Brownian motion.
 
@@ -184,11 +183,12 @@ def _fractional_brownian(
     >>> _fractional_brownian(argvals=np.arange(0, 1, 0.01), hurst=0.7)
 
     """
+
     def p(idx, hurst):
         return np.power(idx, 2 * hurst)
 
     if hurst <= 0:
-        raise ValueError('The Hurst parameter has to be strictly positive.')
+        raise ValueError("The Hurst parameter has to be strictly positive.")
 
     _, argvals = _init_brownian(argvals)
     n = np.size(argvals)
@@ -198,12 +198,12 @@ def _fractional_brownian(
         temp = p(idx + 1, hurst) - 2 * p(idx, hurst) + p(idx - 1, hurst)
         vec[idx] = 0.5 * temp
     inv_vec = vec[::-1]
-    vec = np.append(vec, inv_vec[1:len(inv_vec) - 1])
+    vec = np.append(vec, inv_vec[1 : len(inv_vec) - 1])
     lamb = np.real(np.fft.fft(vec) / (2 * n))
 
     rng = rnorm(size=2 * n) + rnorm(size=2 * n) * 1j
     values = np.fft.fft(np.sqrt(lamb) * rng)
-    return np.power(n, -hurst) * np.cumsum(np.real(values[1:(n + 1)]))
+    return np.power(n, -hurst) * np.cumsum(np.real(values[1 : (n + 1)]))
 
 
 def _simulate_brownian(
@@ -246,32 +246,29 @@ def _simulate_brownian(
     >>> simulate_brownian(brownian_type='standard')
 
     """
-    if name == 'standard':
+    if name == "standard":
         return _standard_brownian(
-            argvals,
-            init_point=kwargs.get('init_point', 0.0),
-            rnorm=rnorm
+            argvals, init_point=kwargs.get("init_point", 0.0), rnorm=rnorm
         )
-    elif name == 'geometric':
+    elif name == "geometric":
         return _geometric_brownian(
             argvals,
-            init_point=kwargs.get('init_point', 1.0),
-            mu=kwargs.get('mu', 0.0),
-            sigma=kwargs.get('sigma', 1.0),
-            rnorm=rnorm
+            init_point=kwargs.get("init_point", 1.0),
+            mu=kwargs.get("mu", 0.0),
+            sigma=kwargs.get("sigma", 1.0),
+            rnorm=rnorm,
         )
-    elif name == 'fractional':
+    elif name == "fractional":
         return _fractional_brownian(
-            argvals,
-            hurst=kwargs.get('hurst', 0.5),
-            rnorm=rnorm
+            argvals, hurst=kwargs.get("hurst", 0.5), rnorm=rnorm
         )
     else:
-        raise NotImplementedError('Brownian type not implemented!')
+        raise NotImplementedError("Brownian type not implemented!")
 
 
 #############################################################################
 # Definition of the Brownian class
+
 
 class Brownian(Simulation):
     """Class that defines Brownian motions simulation.
@@ -361,12 +358,8 @@ class Brownian(Simulation):
         values = np.zeros(shape=(n_obs, len(argvals)))
         for idx in range(n_obs):
             values[idx, :] = _simulate_brownian(
-                name=self.basis_name,
-                argvals=argvals,
-                rnorm=rnorm,
-                **kwargs
+                name=self.basis_name, argvals=argvals, rnorm=rnorm, **kwargs
             )
         self.data = DenseFunctionalData(
-            DenseArgvals({'input_dim_0': argvals}),
-            DenseValues(values)
+            DenseArgvals({"input_dim_0": argvals}), DenseValues(values)
         )
