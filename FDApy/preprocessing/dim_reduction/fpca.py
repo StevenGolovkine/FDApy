@@ -195,6 +195,7 @@ def _fit_covariance_multivariate(
     results["eigenfunctions"] = MultivariateFunctionalData(eigenfunctions)
     results["_ufpca_list"] = ufpca_list
     results["_scores_univariate"] = scores_univariate
+    results["_scores_eigenvectors"] = eigenvectors
     return results
 
 
@@ -541,11 +542,35 @@ def _transform_pace_irregular(
     return scores
 
 
+def _transform_pace_multivariate(
+    eigenvectors: npt.NDArray[np.float64],
+    scores_univariate: npt.NDArray[np.float64],
+) -> npt.NDArray[np.float64]:
+    """Estimate scores using PACE.
+
+    Parameters
+    ----------
+    eigenvectors: npt.NDArray[np.float64]
+        Estimate of the eigenvectors of the scores.
+    scores_univariate: npt.NDArray[np.float64]
+        Estimate of the scores of the univariate components.
+
+    Returns
+    -------
+    npt.NDArray[np.float64], shape=(n_obs, n_components)
+        An array representing the projection of the data onto the basis of
+        functions defined by the eigenfunctions.
+
+
+    """
+    return np.dot(scores_univariate, eigenvectors)
+
+
 def _transform_innpro(
     data: DenseFunctionalData,
     eigenvectors: npt.NDArray[np.float64],
     eigenvalues: npt.NDArray[np.float64],
-):
+) -> npt.NDArray[np.float64]:
     """Estimate scores using the eigenvectors of the inner-product matrix.
 
     Parameters
@@ -1147,6 +1172,8 @@ class MFPCA:
         self._eigenvalues = results.get("eigenvalues", None)
         self._eigenfunctions = results.get("eigenfunctions", None)
         self._eigenvectors = results.get("eigenvectors", None)
+        self._scores_univariate = results.get("_scores_univariate", None)
+        self._scores_eigenvectors = results.get("_scores_eigenvectors", None)
         self._training_data = data
 
         # TODO: Add covariance computation
@@ -1245,7 +1272,9 @@ class MFPCA:
                 kwargs.get("integration_method", "trapz"),
             )
         elif method == "PACE":
-            raise ValueError("PACE method not implemented.")
+            return _transform_pace_multivariate(
+                self._scores_eigenvectors, self._scores_univariate
+            )
         elif method == "InnPro":
             return _transform_innpro(data_new, self._eigenvectors, self.eigenvalues)
         else:

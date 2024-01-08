@@ -126,10 +126,6 @@ class TestTransform(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.mfpca_cov.transform(self.fdata, method='error')
 
-    def test_error_pace(self):
-        with self.assertRaises(ValueError):
-            self.mfpca_cov.transform(self.fdata, method='PACE')
-    
     def test_data_none(self):
         scores = self.mfpca_cov.transform(None, method='NumInt')
         expected_scores = np.array([[-1.53552641e+00, -2.72380203e+00,  4.41053298e-01,  6.16888163e-02],[-2.80254083e-03, -3.65442509e+00,  3.73541592e-01, -1.31036695e-02],[-2.29107486e+00,  3.57649777e+00, -3.41509771e-01,  3.19624595e-01],[-4.09201776e-01, -1.16263743e+00, -1.03957758e-01, -1.85953370e-02],[-1.31354769e+00, -1.67787168e+00,  2.28000350e-01,  1.29112020e-01],[-2.06976263e+00,  9.51201217e-01, -1.52761341e-01,  2.58541056e-01],[ 4.45750159e+00,  1.31528572e+00, -1.81176929e-01, -4.84145064e-01],[ 4.15061196e+00,  1.32705567e-01, -1.48918161e-01, -4.25258363e-01],[ 1.03903754e+00,  1.12201466e+00, -1.48570176e-01, -8.57121480e-02],[-2.18044794e+00,  1.97826557e+00, -1.61852177e-01,  2.81073329e-01]])
