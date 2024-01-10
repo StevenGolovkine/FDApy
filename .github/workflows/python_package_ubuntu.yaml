@@ -32,8 +32,9 @@ jobs:
 
       - name: Run tests
         run: |
-          pip install numpy
-          pip install pytest-cov
+          pip debug --verbose .
+          pip install numba
+          pip install ".[test]"
           pytest --cov FDApy
 
       - name: Upload coverage to Codecov
