@@ -190,7 +190,7 @@ class Simulation(ABC):
         n_obs: int,
         n_clusters: int = 1,
         argvals: Optional[npt.NDArray[np.float64]] = None,
-        **kwargs
+        **kwargs,
     ) -> None:
         """Simulate a new set of curves."""
 

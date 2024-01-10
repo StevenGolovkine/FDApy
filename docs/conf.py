@@ -20,7 +20,7 @@ project = 'FDApy'
 author = 'Steven Golovkine'
 
 # The full version, including alpha/beta/rc tags
-release = '0.8.6'
+release = '1.0.0'
 
 
 # -- General configuration ---------------------------------------------------

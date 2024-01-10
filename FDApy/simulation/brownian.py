@@ -210,7 +210,7 @@ def _simulate_brownian(
     name: str,
     argvals: npt.NDArray[np.float64],
     rnorm: Callable = np.random.normal,
-    **kwargs
+    **kwargs,
 ) -> npt.NDArray[np.float64]:
     """Simulate Brownian motion.
 
@@ -315,7 +315,7 @@ class Brownian(Simulation):
         n_obs: int,
         n_clusters: int = 1,
         argvals: Optional[npt.NDArray[np.float64]] = None,
-        **kwargs
+        **kwargs,
     ) -> None:
         """Simulate realizations of a Brownian motion.
 

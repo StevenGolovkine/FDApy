@@ -21,3 +21,5 @@ __getattr__, __dir__, __all__ = lazy.attach(
         "misc": ["read_csv"],
     },
 )
+
+__version__ = "1.0.0"

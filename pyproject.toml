@@ -1,0 +1,68 @@
+[project]
+name = "FDApy"
+description = "A Python package to analyze functional data."
+readme = "README.rst"
+requires-python = ">=3.9, <4"
+license = {file = "LICENSE"}
+keywords = [
+	"functional data analysis"
+]
+maintainers = [
+  {name = "Steven Golovkine", email = "steven_golovkine@icloud.com"},
+]
+classifiers = [
+    'Programming Language :: Python :: 3.9',
+    'Topic :: Scientific/Engineering :: Mathematics'
+]
+
+dynamic = ["version"]
+
+dependencies = [
+	'csaps>=1.1.0',
+    'lazy_loader',
+    'matplotlib',
+    'numpy>=1.24.0',
+    'pandas>=2.0.0',
+    'scikit-learn>=1.2.0',
+    'scipy>=1.10.0'
+]
+
+[project.optional-dependencies]
+docs = [
+    "csaps",
+    "matplotlib",
+    "mpldatacursor",
+    "networkx",
+    "numpy",
+    "numpydoc",
+    "pandas",
+    "pillow",
+    "pydata-sphinx-theme",
+    "scikit-learn",
+    "scikit-fda",
+    "scipy",
+    "setuptools>=41.2",
+    "sphinx>=3",
+    "sphinx-gallery",
+]
+test = [
+  "pytest",
+  "pytest-env",
+  "pytest-subtests",
+  "scipy<1.11.0",
+]
+
+[project.urls]
+homepage = "https://github.com/StevenGolovkine/FDApy"
+documentation = "https://fdapy.readthedocs.io"
+repository = "https://github.com/StevenGolovkine/FDApy"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["FDApy*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "FDApy.__version__"}

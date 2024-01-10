@@ -1,8 +1,0 @@
-csaps
-lazy_loader
-matplotlib
-networkx
-numpy
-pandas
-scikit-learn
-scipy
