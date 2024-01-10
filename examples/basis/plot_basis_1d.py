@@ -13,8 +13,8 @@ One-dimensional Basis
 # Load packages
 import numpy as np
 
-from FDApy.representation.basis import Basis
-from FDApy.visualization.plot import plot
+from FDApy.representation import Basis
+from FDApy.visualization import plot
 
 # Parameters
 n_functions = 5

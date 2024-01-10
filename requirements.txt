@@ -1,4 +1,5 @@
 csaps
+lazy_loader
 matplotlib
 networkx
 numpy
