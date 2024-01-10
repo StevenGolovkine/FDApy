@@ -32,8 +32,6 @@ docs = [
     "csaps",
     "matplotlib",
     "mpldatacursor",
-    "networkx",
-    "numpy",
     "numpydoc",
     "pandas",
     "pillow",
