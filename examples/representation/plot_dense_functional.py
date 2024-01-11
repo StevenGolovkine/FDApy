@@ -12,10 +12,9 @@ Examples of representation of univariate and dense functional data.
 # Load packages
 import numpy as np
 
-from FDApy.representation.functional_data import DenseFunctionalData
-from FDApy.representation.argvals import DenseArgvals
-from FDApy.representation.values import DenseValues
-from FDApy.visualization._plot import plot
+from FDApy import DenseFunctionalData
+from FDApy.representation import DenseArgvals, DenseValues
+from FDApy.visualization import plot
 
 ###############################################################################
 # The representation of dense functional data

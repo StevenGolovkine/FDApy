@@ -12,10 +12,10 @@ Examples of smoothing of univariate and dense functional data.
 import matplotlib.pyplot as plt
 import numpy as np
 
-from FDApy.representation.functional_data import MultivariateFunctionalData
-from FDApy.representation.argvals import DenseArgvals
-from FDApy.simulation.karhunen import KarhunenLoeve
-from FDApy.visualization._plot import plot_multivariate
+from FDApy import MultivariateFunctionalData
+from FDApy.representation import DenseArgvals
+from FDApy.simulation import KarhunenLoeve
+from FDApy.visualization import plot_multivariate
 
 # Set general parameters
 rng = 42

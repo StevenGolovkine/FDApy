@@ -11,8 +11,8 @@ Examples of simulation of clusters of univariate functional data.
 # Load packages
 import numpy as np
 
-from FDApy.simulation.karhunen import KarhunenLoeve
-from FDApy.visualization._plot import plot
+from FDApy.simulation import KarhunenLoeve
+from FDApy.visualization import plot
 
 # Set general parameters
 rng = 42

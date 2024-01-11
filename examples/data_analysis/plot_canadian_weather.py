@@ -15,11 +15,11 @@ Example of the Canadian weather dataset.
 import matplotlib.pyplot as plt
 import numpy as np
 
-from FDApy.representation.argvals import DenseArgvals
-from FDApy.preprocessing.dim_reduction.fpca import UFPCA
+from FDApy.representation import DenseArgvals
+from FDApy.preprocessing import UFPCA
 
-from FDApy.misc.loader import read_csv
-from FDApy.visualization._plot import plot
+from FDApy import read_csv
+from FDApy.visualization import plot
 
 # Load data
 temp_data = read_csv('../data/canadian_temperature_daily.csv', index_col=0)

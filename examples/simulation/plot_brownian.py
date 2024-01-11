@@ -15,8 +15,8 @@ Examples of simulation of Brownian motion.
 # Load packages
 import numpy as np
 
-from FDApy.simulation.brownian import Brownian
-from FDApy.visualization._plot import plot
+from FDApy.simulation import Brownian
+from FDApy.visualization import plot
 
 # Set general parameters
 rng = 42

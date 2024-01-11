@@ -35,8 +35,8 @@ Examples of simulation using the multivariate Karhunen-Loève decomposition.
 # Load packages
 import numpy as np
 
-from FDApy.simulation.karhunen import KarhunenLoeve
-from FDApy.visualization._plot import plot_multivariate
+from FDApy.simulation import KarhunenLoeve
+from FDApy.visualization import plot_multivariate
 
 # Set general parameters
 rng = 42

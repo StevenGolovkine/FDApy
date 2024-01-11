@@ -11,14 +11,14 @@ Examples of representation of multivariate functional data.
 # Load packages
 import numpy as np
 
-from FDApy.representation.functional_data import (
+from FDApy import (
     DenseFunctionalData,
     IrregularFunctionalData,
     MultivariateFunctionalData
 )
-from FDApy.representation.argvals import DenseArgvals, IrregularArgvals
-from FDApy.representation.values import DenseValues, IrregularValues
-from FDApy.visualization._plot import plot_multivariate
+from FDApy.representation import DenseArgvals, IrregularArgvals
+from FDApy.representation import DenseValues, IrregularValues
+from FDApy.visualization import plot_multivariate
 
 
 ###############################################################################

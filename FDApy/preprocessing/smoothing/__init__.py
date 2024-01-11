@@ -1,6 +1,10 @@
-"""
-Smoothing module.
+"""Smoothing module."""
+import lazy_loader as lazy
 
-This module contains function for smoothing including local polynomial
-smoothing and an estimation of the bandwidth parameter.
-"""
+__getattr__, __dir__, __all__ = lazy.attach(
+    __name__,
+    submodules=["local_polynomial"],
+    submod_attrs={
+        "local_polynomial": ["LocalPolynomial"],
+    },
+)

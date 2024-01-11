@@ -15,9 +15,8 @@ Example of functional principal components analysis of 2-dimensional data.
 import matplotlib.pyplot as plt
 import numpy as np
 
-from FDApy.simulation.karhunen import KarhunenLoeve
-from FDApy.preprocessing.dim_reduction.fpca import UFPCA
-from FDApy.preprocessing.dim_reduction.fcp_tpa import FCPTPA
+from FDApy.simulation import KarhunenLoeve
+from FDApy.preprocessing import FCPTPA, UFPCA
 from FDApy.visualization._plot import plot
 
 

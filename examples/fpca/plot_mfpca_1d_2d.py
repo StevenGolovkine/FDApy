@@ -16,9 +16,9 @@ combinaison of 1- and 2-dimensional data.
 import matplotlib.pyplot as plt
 import numpy as np
 
-from FDApy.simulation.karhunen import KarhunenLoeve
-from FDApy.preprocessing.dim_reduction.fpca import MFPCA
-from FDApy.visualization._plot import plot
+from FDApy.simulation import KarhunenLoeve
+from FDApy.preprocessing import MFPCA
+from FDApy.visualization import plot
 
 # Set general parameters
 rng = 42

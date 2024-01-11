@@ -16,9 +16,7 @@ regression.
 import matplotlib.pyplot as plt
 import numpy as np
 
-from mpl_toolkits.mplot3d import Axes3D
-
-from FDApy.preprocessing.smoothing.local_polynomial import LocalPolynomial
+from FDApy.preprocessing import LocalPolynomial
 
 # Set general parameters
 rng = 42
