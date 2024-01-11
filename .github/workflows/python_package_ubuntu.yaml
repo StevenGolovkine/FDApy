@@ -35,7 +35,7 @@ jobs:
           pip debug --verbose .
           pip install numba
           pip install ".[test]"
-          pytest --cov FDApy
+          pytest --cov=FDApy/
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
