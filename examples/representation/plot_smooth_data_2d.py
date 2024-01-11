@@ -15,7 +15,7 @@ import numpy as np
 from FDApy.representation.functional_data import MultivariateFunctionalData
 from FDApy.representation.argvals import DenseArgvals
 from FDApy.simulation.karhunen import KarhunenLoeve
-from FDApy.visualization.plot import plot_multivariate
+from FDApy.visualization._plot import plot_multivariate
 
 # Set general parameters
 rng = 42

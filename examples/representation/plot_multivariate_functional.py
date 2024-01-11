@@ -18,7 +18,7 @@ from FDApy.representation.functional_data import (
 )
 from FDApy.representation.argvals import DenseArgvals, IrregularArgvals
 from FDApy.representation.values import DenseValues, IrregularValues
-from FDApy.visualization.plot import plot_multivariate
+from FDApy.visualization._plot import plot_multivariate
 
 
 ###############################################################################

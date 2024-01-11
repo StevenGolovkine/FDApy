@@ -18,7 +18,7 @@ import numpy as np
 from FDApy.simulation.karhunen import KarhunenLoeve
 from FDApy.preprocessing.dim_reduction.fpca import UFPCA
 from FDApy.preprocessing.dim_reduction.fcp_tpa import FCPTPA
-from FDApy.visualization.plot import plot
+from FDApy.visualization._plot import plot
 
 
 # Set general parameters

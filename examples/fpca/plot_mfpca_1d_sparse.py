@@ -18,7 +18,7 @@ import numpy as np
 
 from FDApy.simulation.karhunen import KarhunenLoeve
 from FDApy.preprocessing.dim_reduction.fpca import MFPCA
-from FDApy.visualization.plot import plot, plot_multivariate
+from FDApy.visualization._plot import plot, plot_multivariate
 
 # Set general parameters
 rng = 42

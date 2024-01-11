@@ -12,7 +12,7 @@ Examples of simulation of clusters of multivariate functional data.
 import numpy as np
 
 from FDApy.simulation.karhunen import KarhunenLoeve
-from FDApy.visualization.plot import plot_multivariate
+from FDApy.visualization._plot import plot_multivariate
 
 # Set general parameters
 rng = 42

@@ -10,7 +10,7 @@ Examples of simulation of functional data and the effect of adding noise and spa
 
 # Load packages
 from FDApy.simulation.karhunen import KarhunenLoeve
-from FDApy.visualization.plot import plot
+from FDApy.visualization._plot import plot
 
 # Set general parameters
 rng = 42

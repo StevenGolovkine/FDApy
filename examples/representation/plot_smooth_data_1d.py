@@ -14,7 +14,7 @@ import numpy as np
 
 from FDApy.simulation.karhunen import KarhunenLoeve
 from FDApy.representation.argvals import DenseArgvals
-from FDApy.visualization.plot import plot
+from FDApy.visualization._plot import plot
 
 # Set general parameters
 rng = 42

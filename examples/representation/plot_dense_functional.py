@@ -1,3 +1,4 @@
+
 """
 Representation of univariate and dense functional data
 ======================================================
@@ -14,7 +15,7 @@ import numpy as np
 from FDApy.representation.functional_data import DenseFunctionalData
 from FDApy.representation.argvals import DenseArgvals
 from FDApy.representation.values import DenseValues
-from FDApy.visualization.plot import plot
+from FDApy.visualization._plot import plot
 
 ###############################################################################
 # The representation of dense functional data

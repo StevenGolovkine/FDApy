@@ -18,7 +18,7 @@ from FDApy.representation.functional_data import (
     IrregularFunctionalData,
     MultivariateFunctionalData
 )
-from FDApy.visualization.plot import (
+from FDApy.visualization._plot import (
     _init_ax,
     _plot_1d,
     _plot_2d,

@@ -14,8 +14,8 @@ Multivariate Basis of two-dimensional data
 import numpy as np
 import matplotlib.pyplot as plt
 
-from FDApy.representation.basis import MultivariateBasis
-from FDApy.visualization.plot import plot
+from FDApy.representation import MultivariateBasis
+from FDApy.visualization import plot
 
 # Parameters
 n_components = 2

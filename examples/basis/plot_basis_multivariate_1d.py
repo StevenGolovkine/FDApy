@@ -13,8 +13,8 @@ Multivariate Basis of one-dimensional data
 # Load packages
 import numpy as np
 
-from FDApy.representation.basis import MultivariateBasis
-from FDApy.visualization.plot import plot_multivariate
+from FDApy.representation import MultivariateBasis
+from FDApy.visualization import plot_multivariate
 
 # Parameters
 n_components = 2
