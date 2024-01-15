@@ -122,7 +122,7 @@ def _plot_2d(
                 data.values.squeeze(),
                 **plt_kwargs,
             )
-            plt.colorbar(cs)
+            plt.colorbar(cs, ax=ax)
         else:
             x, y = np.meshgrid(
                 data.argvals["input_dim_0"], data.argvals["input_dim_1"], indexing="ij"
