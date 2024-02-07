@@ -46,9 +46,9 @@ Check out the documentation for more complete information on the available featu
 Documentation
 =============
 
-The documentation is available at `https://fdapy.readthedocs.io/en/stable/`_, which included detailled information about API references and several examples presenting the different functionalities.
+The documentation is available `here <https://fdapy.readthedocs.io/en/stable/>`_, which included detailled information about API references and several examples presenting the different functionalities.
 
-The documentation of the latest version can be found at `https://fdapy.readthedocs.io/en/latest/`_.
+The documentation of the latest version can be found at `here <https://fdapy.readthedocs.io/en/latest/>`_
 
 Installation
 ============
