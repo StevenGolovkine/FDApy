@@ -14,12 +14,6 @@ import numpy.typing as npt
 # Inner functions for the PSplines class.
 
 
-def _tpower(x, knots, p):
-    res = np.zeros((len(x), len(knots)))
-    for idx, knot in enumerate(knots):
-        res[:, idx] = np.power(x - knot, p) * (x >= knot)
-    return res
-
 
 ########################################################################################
 # class PSplines
