@@ -15,7 +15,7 @@ from FDApy.simulation.brownian import (
     _geometric_brownian,
     _fractional_brownian,
     _simulate_brownian,
-    Brownian
+    Brownian,
 )
 
 
@@ -25,7 +25,7 @@ class TestInitBrownian(unittest.TestCase):
         argvals = np.array([1, 2, 3, 4, 5])
         delta, _ = _init_brownian(argvals)
         np.testing.assert_almost_equal(delta, 0.8)
-    
+
     def test_argvals(self):
         # Test if the function returns the correct argvals
         argvals = np.array([1, 2, 3, 4, 5])
@@ -89,7 +89,6 @@ class TestFractionalBrownian(unittest.TestCase):
         self.argvals = np.arange(0, 1, 0.01)
 
     def test_output_shape(self):
-        
         fbm = _fractional_brownian(
             self.argvals, hurst=0.7, rnorm=np.random.default_rng(42).normal
         )
@@ -119,52 +118,49 @@ class TestSimulateBrownian(unittest.TestCase):
 
     def test_error(self):
         with self.assertRaises(NotImplementedError):
-            _simulate_brownian(name='error', argvals=self.argvals)
+            _simulate_brownian(name="error", argvals=self.argvals)
 
     def test_standard_brownian(self):
         """Test if _simulate_brownian returns a standard brownian motion."""
-        brownian_type = 'standard'
+        brownian_type = "standard"
         brownian = _simulate_brownian(brownian_type, self.argvals)
         self.assertEqual(brownian[0], 0)
 
     def test_geometric_brownian(self):
         """Test if _simulate_brownian returns a geometric brownian motion."""
-        brownian_type = 'geometric'
+        brownian_type = "geometric"
         mu, sigma, init_point = 0.1, 0.5, 1.0
         brownian = _simulate_brownian(
-            brownian_type, self.argvals,
-            mu=mu, sigma=sigma, init_point=init_point
+            brownian_type, self.argvals, mu=mu, sigma=sigma, init_point=init_point
         )
         self.assertTrue(np.all(brownian > 0))
 
     def test_fractional_brownian(self):
         """Test if _simulate_brownian returns a fractional brownian motion."""
-        brownian_type = 'fractional'
+        brownian_type = "fractional"
         hurst = 0.6
-        brownian = _simulate_brownian(
-            brownian_type, self.argvals, hurst=hurst
-        )
+        brownian = _simulate_brownian(brownian_type, self.argvals, hurst=hurst)
         self.assertEqual(brownian.shape, (100,))
 
 
 class TestBrownian(unittest.TestCase):
     def test_standard_brownian(self):
         # Test standard Brownian motion simulation
-        brownian = Brownian(name='standard')
+        brownian = Brownian(name="standard")
         brownian.new(n_obs=1)
         self.assertIsInstance(brownian.data, DenseFunctionalData)
         self.assertEqual(brownian.data.n_obs, 1)
 
     def test_geometric_brownian(self):
         # Test geometric Brownian motion simulation
-        brownian = Brownian(name='geometric', random_state=42)
+        brownian = Brownian(name="geometric", random_state=42)
         brownian.new(n_obs=1, mu=0.05, sigma=0.1, init_point=100)
         self.assertIsInstance(brownian.data, DenseFunctionalData)
         self.assertEqual(brownian.data.n_obs, 1)
 
     def test_fractional_brownian(self):
         # Test fractional Brownian motion simulation
-        brownian = Brownian(name='fractional', random_state=42)
+        brownian = Brownian(name="fractional", random_state=42)
         brownian.new(n_obs=1, hurst=0.4)
         self.assertIsInstance(brownian.data, DenseFunctionalData)
         self.assertEqual(brownian.data.n_obs, 1)
