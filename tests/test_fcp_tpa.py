@@ -6,7 +6,10 @@ Written with the help of ChatGPT.
 
 """
 import numpy as np
+import pickle
 import unittest
+
+from pathlib import Path
 
 from FDApy.representation.functional_data import DenseFunctionalData
 from FDApy.simulation.karhunen import KarhunenLoeve
@@ -23,6 +26,8 @@ from FDApy.preprocessing.dim_reduction.fcp_tpa import (
     _update_components
 )
 from numpy.linalg import norm
+
+THIS_DIR = Path(__file__)
 
 
 class TestInitializeVectors(unittest.TestCase):
@@ -305,7 +310,7 @@ class TestUpdateComponents(unittest.TestCase):
 class FCPTPATest(unittest.TestCase):
     def setUp(self):
         kl = KarhunenLoeve(
-            basis_name='bsplines',
+            basis_name='fourier',
             n_functions=5,
             dimension='2D',
             argvals=np.linspace(0, 1, 10),
@@ -372,7 +377,7 @@ class FCPTPATest(unittest.TestCase):
 class TestFit(unittest.TestCase):
     def setUp(self):
         kl = KarhunenLoeve(
-            basis_name='bsplines',
+            basis_name='fourier',
             n_functions=5,
             dimension='2D',
             argvals=np.linspace(0, 1, 10),
@@ -422,7 +427,7 @@ class TestFit(unittest.TestCase):
 class TestFitNorm(unittest.TestCase):
     def setUp(self):
         kl = KarhunenLoeve(
-            basis_name='bsplines',
+            basis_name='fourier',
             n_functions=5,
             dimension='2D',
             argvals=np.linspace(0, 1, 10),
@@ -460,7 +465,7 @@ class TestFitNorm(unittest.TestCase):
 class TestTransform(unittest.TestCase):
     def setUp(self):
         kl = KarhunenLoeve(
-            basis_name='bsplines',
+            basis_name='fourier',
             n_functions=5,
             dimension='2D',
             argvals=np.linspace(0, 1, 10),
@@ -526,7 +531,7 @@ class TestTransform(unittest.TestCase):
 class TestInverseTransform(unittest.TestCase):
     def setUp(self):
         kl = KarhunenLoeve(
-            basis_name='bsplines',
+            basis_name='fourier',
             n_functions=5,
             dimension='2D',
             argvals=np.linspace(0, 1, 10),

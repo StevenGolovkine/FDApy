@@ -20,7 +20,6 @@ from FDApy.representation.functional_data import (
 )
 from FDApy.representation.argvals import DenseArgvals, IrregularArgvals
 from FDApy.representation.values import DenseValues, IrregularValues
-from FDApy.simulation.karhunen import KarhunenLoeve
 
 THIS_DIR = Path(__file__)
 
@@ -249,11 +248,11 @@ class TestDenseFunctionalData2D(unittest.TestCase):
 
 class TestNoisevariance(unittest.TestCase):
     def setUp(self) -> None:
-        fname = THIS_DIR.parent / 'data/bsplines_noisy_5_100_005.pickle'
+        fname = THIS_DIR.parent / 'data/data_noisy_5_100_005.pickle'
         with open(fname, 'rb') as handle:
             self.fdata = pickle.load(handle)
         
-        fname = THIS_DIR.parent / 'data/bsplines_noisy_5_100_005_2D.pickle'
+        fname = THIS_DIR.parent / 'data/data_noisy_5_100_005_2D.pickle'
         with open(fname, 'rb') as handle:
             self.fdata_2D = pickle.load(handle)
 
@@ -270,11 +269,11 @@ class TestNoisevariance(unittest.TestCase):
 
 class TestSmoothDense(unittest.TestCase):
     def setUp(self):
-        fname = THIS_DIR.parent / 'data/bsplines_noisy_5_1_005.pickle'
+        fname = THIS_DIR.parent / 'data/data_noisy_5_1_005.pickle'
         with open(fname, 'rb') as handle:
             self.fdata = pickle.load(handle)
 
-        fname = THIS_DIR.parent / 'data/bsplines_noisy_5_1_001_2D.pickle'
+        fname = THIS_DIR.parent / 'data/data_noisy_5_1_001_2D.pickle'
         with open(fname, 'rb') as handle:
             self.fdata_2D = pickle.load(handle)
 
@@ -395,11 +394,11 @@ class TestSmoothDense(unittest.TestCase):
 
 class TestMeanDense(unittest.TestCase):
     def setUp(self):
-        fname = THIS_DIR.parent / 'data/bsplines_noisy_5_100_005.pickle'
+        fname = THIS_DIR.parent / 'data/data_noisy_5_100_005.pickle'
         with open(fname, 'rb') as handle:
             self.fdata = pickle.load(handle)
         
-        fname = THIS_DIR.parent / 'data/bsplines_noisy_5_100_005_2D.pickle'
+        fname = THIS_DIR.parent / 'data/data_noisy_5_100_005_2D.pickle'
         with open(fname, 'rb') as handle:
             self.fdata_2D = pickle.load(handle)
 
@@ -605,11 +604,11 @@ class TestMeanDense(unittest.TestCase):
 
 class TestCenterDense(unittest.TestCase):
     def setUp(self):
-        fname = THIS_DIR.parent / 'data/bsplines_noisy_5_10_001.pickle'
+        fname = THIS_DIR.parent / 'data/data_noisy_5_10_001.pickle'
         with open(fname, 'rb') as handle:
             self.fdata = pickle.load(handle)
         
-        fname = THIS_DIR.parent / 'data/bsplines_noisy_5_10_001_2D.pickle'
+        fname = THIS_DIR.parent / 'data/data_noisy_5_10_001_2D.pickle'
         with open(fname, 'rb') as handle:
             self.fdata_2D = pickle.load(handle)
 
@@ -868,11 +867,11 @@ class TestCenterDense(unittest.TestCase):
 
 class TestNormDense(unittest.TestCase):
     def setUp(self) -> None:
-        fname = THIS_DIR.parent / 'data/bsplines_noisy_5_10_001.pickle'
+        fname = THIS_DIR.parent / 'data/data_noisy_5_10_001.pickle'
         with open(fname, 'rb') as handle:
             self.fdata = pickle.load(handle)
         
-        fname = THIS_DIR.parent / 'data/bsplines_noisy_5_10_001_2D.pickle'
+        fname = THIS_DIR.parent / 'data/data_noisy_5_10_001_2D.pickle'
         with open(fname, 'rb') as handle:
             self.fdata_2D = pickle.load(handle)
 
@@ -899,11 +898,11 @@ class TestNormDense(unittest.TestCase):
 
 class TestNormalizeDense(unittest.TestCase):
     def setUp(self) -> None:
-        fname = THIS_DIR.parent / 'data/bsplines_noisy_5_10_001.pickle'
+        fname = THIS_DIR.parent / 'data/data_noisy_5_10_001.pickle'
         with open(fname, 'rb') as handle:
             self.fdata = pickle.load(handle)
         
-        fname = THIS_DIR.parent / 'data/bsplines_noisy_5_10_001_2D.pickle'
+        fname = THIS_DIR.parent / 'data/data_noisy_5_10_001_2D.pickle'
         with open(fname, 'rb') as handle:
             self.fdata_2D = pickle.load(handle)
 
@@ -1066,11 +1065,11 @@ class TestNormalizeDense(unittest.TestCase):
 
 class TestInnerProductDense(unittest.TestCase):
     def setUp(self) -> None:
-        fname = THIS_DIR.parent / 'data/bsplines_noisy_5_10_001.pickle'
+        fname = THIS_DIR.parent / 'data/data_noisy_5_10_001.pickle'
         with open(fname, 'rb') as handle:
             self.fdata = pickle.load(handle)
         
-        fname = THIS_DIR.parent / 'data/bsplines_noisy_5_10_001_2D.pickle'
+        fname = THIS_DIR.parent / 'data/data_noisy_5_10_001_2D.pickle'
         with open(fname, 'rb') as handle:
             self.fdata_2D = pickle.load(handle)
 
@@ -1175,11 +1174,11 @@ class TestInnerProductDense(unittest.TestCase):
 
 class TestCovarianceDense(unittest.TestCase):
     def setUp(self) -> None:
-        fname = THIS_DIR.parent / 'data/bsplines_noisy_5_10_001.pickle'
+        fname = THIS_DIR.parent / 'data/data_noisy_5_10_001.pickle'
         with open(fname, 'rb') as handle:
             self.fdata = pickle.load(handle)
         
-        fname = THIS_DIR.parent / 'data/bsplines_noisy_5_10_001_2D.pickle'
+        fname = THIS_DIR.parent / 'data/data_noisy_5_10_001_2D.pickle'
         with open(fname, 'rb') as handle:
             self.fdata_2D = pickle.load(handle)
 
