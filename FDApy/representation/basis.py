@@ -203,18 +203,6 @@ def _basis_bsplines(
     return np.vstack(basis)
 
 
-def _basis_natural_cubic_splines(
-    argvals: npt.NDArray[np.float64], n_functions: int = 5, degree: int = 3
-) -> npt.NDArray[np.float64]:
-    """Define natural cubic splines basis of functions."""
-
-
-def _basis_cyclic_cubic_splines(
-    argvals: npt.NDArray[np.float64], n_functions: int = 5, degree: int = 3
-) -> npt.NDArray[np.float64]:
-    """Define cyclic cubic splines basis of functions."""
-
-
 def _simulate_basis(
     name: str,
     argvals: npt.NDArray[np.float64],
