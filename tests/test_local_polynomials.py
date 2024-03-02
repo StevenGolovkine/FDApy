@@ -155,7 +155,7 @@ class TestComputeKernel(unittest.TestCase):
         np.testing.assert_array_almost_equal(output, expected_output)
 
 
-class TestLocalregression(unittest.TestCase):
+class TestLocalRegression(unittest.TestCase):
     def test_regression_one_dimensional(self):
         x = np.linspace(0, 1, 11)
         y = np.sin(x)
