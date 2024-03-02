@@ -10,7 +10,7 @@ import numpy as np
 import unittest
 
 from FDApy.representation.argvals import DenseArgvals, IrregularArgvals
-from FDApy.representation.values import DenseValues, IrregularValues
+from FDApy.representation.values import IrregularValues
 from FDApy.representation.functional_data import (
     DenseFunctionalData, IrregularFunctionalData
 )
