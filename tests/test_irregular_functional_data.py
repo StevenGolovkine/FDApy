@@ -15,7 +15,6 @@ from FDApy.representation.functional_data import (
     DenseFunctionalData,
     IrregularFunctionalData
 )
-from FDApy.simulation.karhunen import KarhunenLoeve
 
 THIS_DIR = Path(__file__)
 

@@ -6,7 +6,10 @@ Written with the help of ChatGPT.
 
 """
 import numpy as np
+import pickle
 import unittest
+
+from pathlib import Path
 
 from FDApy.representation.basis import Basis, MultivariateBasis
 from FDApy.representation.argvals import DenseArgvals
@@ -30,6 +33,7 @@ from FDApy.simulation.karhunen import (
     KarhunenLoeve
 )
 
+THIS_DIR = Path(__file__)
 
 class TestEigenvaluesLinear(unittest.TestCase):
     def test_eigenvalues_exponential_default(self):
@@ -331,8 +335,13 @@ class TestInitializeClusterStd(unittest.TestCase):
 
 class TestComputeData(unittest.TestCase):
     def setUp(self):
-        self.basis1d = Basis(name='legendre', n_functions=2, dimension='1D')
-        self.basis2d = Basis(name='legendre', n_functions=2, dimension='2D')
+        fname = THIS_DIR.parent / 'data/basis_2_1D.pickle'
+        with open(fname, 'rb') as handle:
+            self.basis1d = pickle.load(handle)
+        
+        fname = THIS_DIR.parent / 'data/basis_2_2D.pickle'
+        with open(fname, 'rb') as handle:
+            self.basis2d = pickle.load(handle)
 
         self.coef_1d = np.array([[0.30471708, -0.73537981]])
         self.coef_2d = np.array([[0.30471708, -0.90065266]])
@@ -358,12 +367,14 @@ class TestComputeData(unittest.TestCase):
 
 class TestCheckBasisNone(unittest.TestCase):
     def setUp(self):
-        self.basis = Basis(name='legendre', n_functions=2, dimension='1D')
+        fname = THIS_DIR.parent / 'data/basis_2_1D.pickle'
+        with open(fname, 'rb') as handle:
+            self.basis1d = pickle.load(handle)
         self.basis_name = 'fourier'
 
     def test_raise_error(self):
         with self.assertRaises(ValueError):
-            KarhunenLoeve._check_basis_none(self.basis_name, self.basis)
+            KarhunenLoeve._check_basis_none(self.basis_name, self.basis1d)
 
     def test_raise_error_none(self):
         with self.assertRaises(ValueError):
@@ -376,13 +387,13 @@ class TestCheckBasisNone(unittest.TestCase):
 
 class TestCheckBasisType(unittest.TestCase):
     def setUp(self):
-        self.basis = Basis(name='legendre', n_functions=2, dimension='1D')
-        self.basis_multi = MultivariateBasis(
-            simulation_type='split',
-            n_components=2,
-            name='fourier',
-            n_functions=3
-        )
+        fname = THIS_DIR.parent / 'data/basis_2_1D.pickle'
+        with open(fname, 'rb') as handle:
+            self.basis1d = pickle.load(handle)
+
+        fname = THIS_DIR.parent / 'data/basis_multi_3_1D.pickle'
+        with open(fname, 'rb') as handle:
+            self.basis_multi = pickle.load(handle)
 
     def test_raise_error(self):
         with self.assertRaises(ValueError):
@@ -393,7 +404,7 @@ class TestCheckBasisType(unittest.TestCase):
         self.assertTrue(True)  # if no error was raised, the test is successful
 
     def test_basis_basis(self):
-        KarhunenLoeve._check_basis_type(self.basis)
+        KarhunenLoeve._check_basis_type(self.basis1d)
         self.assertTrue(True)  # if no error was raised, the test is successful
 
     def test_basis_list_basis(self):
