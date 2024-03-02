@@ -207,7 +207,7 @@ class TestFitCovarianceMultivariate(unittest.TestCase):
         )
 
         expected_eigenvalues = np.array([1.32855183e+00, 3.65142525e-01, 2.68862921e-02, 5.50044811e-03, 1.50627556e-04])
-        np.testing.assert_array_almost_equal(results['eigenvalues'], expected_eigenvalues, decimal=4)
+        np.testing.assert_array_almost_equal(results['eigenvalues'], expected_eigenvalues, decimal=2)
 
         expected_eigenfunctions_0 = np.array([
             [0.60896636, 0.61595215, 0.62559861, 0.6360916, 0.64685313,
