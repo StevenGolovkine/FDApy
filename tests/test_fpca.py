@@ -14,7 +14,6 @@ from pathlib import Path
 
 from FDApy.representation.argvals import DenseArgvals
 from FDApy.representation.functional_data import MultivariateFunctionalData
-from FDApy.simulation.karhunen import KarhunenLoeve
 from FDApy.preprocessing.dim_reduction.fpca import (
     UFPCA,
     MFPCA,
