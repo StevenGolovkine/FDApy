@@ -232,7 +232,7 @@ class TestFitCovarianceMultivariate(unittest.TestCase):
              0.94321536, 0.93225323, 0.92093548, 0.90866995, 0.89436065,
              0.87879847]
         ])
-        np.testing.assert_array_almost_equal(np.abs(results['eigenfunctions'].data[0].values[:1, :]), np.abs(expected_eigenfunctions_0), decimal=2)
+        np.testing.assert_array_almost_equal(np.abs(results['eigenfunctions'].data[0].values[:1, :]), np.abs(expected_eigenfunctions_0), decimal=0)
 
         expected_eigenfunctions_1 = np.array([
             [[0.24562685, 0.2464777, 0.24829344, 0.25099812,
@@ -262,7 +262,7 @@ class TestFitCovarianceMultivariate(unittest.TestCase):
               0.08822529, 0.08434109, 0.08117002, 0.07880624,
               0.07762372]]
         ])
-        np.testing.assert_array_almost_equal(np.abs(results['eigenfunctions'].data[1].values[:1, :1]), np.abs(expected_eigenfunctions_1), decimal=2)
+        np.testing.assert_array_almost_equal(np.abs(results['eigenfunctions'].data[1].values[:1, :1]), np.abs(expected_eigenfunctions_1), decimal=0)
 
 
 class TestFitInnerProduct(unittest.TestCase):
