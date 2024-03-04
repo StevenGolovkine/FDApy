@@ -164,14 +164,14 @@ def _basis_bsplines(
     argvals: npt.NDArray[np.float64],
     n_functions: int = 10,
     degree: int = 3,
-    domain_min: float = None,
-    domain_max: float = None,
+    domain_min: Optional[float] = None,
+    domain_max: Optional[float] = None,
 ) -> npt.NDArray[np.float64]:
     """Define B-splines basis of function.
 
     Build a basis of :math:`n_functions` functions using B-splines basis on the
     interval defined by ``argvals``. We assume that the knots are regularly spaced. The
-    number of knots is equal to ``n_functions - degree``. 
+    number of knots is equal to ``n_functions - degree``.
 
     Parameters
     ----------
@@ -181,6 +181,10 @@ def _basis_bsplines(
         Number of considered B-splines.
     degree: int, default=3
         Degree of the B-splines. The default gives cubic splines.
+    domain_min: float, default=None
+        Minimum number for the argvals.
+    domain_max: float, default=None
+        Maximum number for hte argvals.
 
     Returns
     -------
@@ -221,18 +225,18 @@ def _basis_bsplines(
         num=int(n_segments + 2 * degree) + 1,
         endpoint=True,
     )
-    P = _tpower(argvals, knots, degree)
-    D = np.diff(np.eye(P.shape[1]), n=degree + 1, axis=0) / (
+    p_mat = _tpower(argvals, knots, degree)
+    d_mat = np.diff(np.eye(p_mat.shape[1]), n=degree + 1, axis=0) / (
         gamma(degree + 1) * np.power(dx, degree)
     )
-    B = np.power(-1, degree + 1) * P @ D.T
+    basis_mat = np.power(-1, degree + 1) * p_mat @ d_mat.T
 
     # Make B-splines exactly zero beyond their end knots
-    sk = knots[np.arange(B.shape[1]) + degree + 1]
+    sk = knots[np.arange(basis_mat.shape[1]) + degree + 1]
     mask = np.zeros((len(argvals), len(sk)))
     for idx, val in enumerate(argvals):
         mask[idx, :] = val < sk
-    return (B * mask).T
+    return (basis_mat * mask).T
 
 
 def _simulate_basis(
@@ -287,11 +291,12 @@ def _simulate_basis(
         values = _basis_fourier(argvals, n_functions)
     elif name == "bsplines":
         values = _basis_bsplines(
-            argvals, n_functions,
+            argvals,
+            n_functions,
             degree=kwargs.get("degree", 3),
             domain_min=kwargs.get("domain_min", np.min(argvals)),
-            domain_max=kwargs.get("domain_max", np.max(argvals))
-    )
+            domain_max=kwargs.get("domain_max", np.max(argvals)),
+        )
     else:
         raise NotImplementedError(f"Basis {name!r} not implemented!")
 
