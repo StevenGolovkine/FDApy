@@ -212,18 +212,6 @@ def _basis_bsplines(
             res[:, idx] = np.power(x - knot, p) * (x >= knot)
         return res
 
-    # Check domain and adjust it if necessary
-    if domain_min is None:
-        domain_min = np.min(argvals)
-    if domain_max is None:
-        domain_max = np.max(argvals)
-    if domain_min > min(argvals):
-        domain_min = np.min(argvals)
-        warnings.warn(f"Left boundary adjusted to min(x) = {domain_min}.")
-    if domain_max < np.max(argvals):
-        domain_max = np.max(argvals)
-        warnings.warn(f"Right boundary adjusted to max(x) = {domain_max}.")
-
     # Compute the B-splines
     n_segments = n_functions - degree
     dx = (domain_max - domain_min) / n_segments
@@ -298,7 +286,12 @@ def _simulate_basis(
     elif name == "fourier":
         values = _basis_fourier(argvals, n_functions)
     elif name == "bsplines":
-        values = _basis_bsplines(argvals, n_functions, kwargs.get("degree", 3))
+        values = _basis_bsplines(
+            argvals, n_functions,
+            degree=kwargs.get("degree", 3),
+            domain_min=kwargs.get("domain_min", np.min(argvals)),
+            domain_max=kwargs.get("domain_max", np.max(argvals))
+    )
     else:
         raise NotImplementedError(f"Basis {name!r} not implemented!")
 
