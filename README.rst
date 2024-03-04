@@ -15,7 +15,7 @@ FDApy: a Python package to analyze functional data
 		:target: https://github.com/StevenGolovkine/FDApy/actions
 		:alt: Github - Workflow
 
-.. image:: https://img.shields.io/pypi/l/FDApy
+.. image:: https://img.shields.io/badge/License-MIT-blue.svg
 		:target: https://raw.githubusercontent.com/StevenGolovkine/FDApy/master/LICENSE
 		:alt: PyPI - License
 
