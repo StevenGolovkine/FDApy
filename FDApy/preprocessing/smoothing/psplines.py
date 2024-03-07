@@ -18,6 +18,56 @@ from ...representation.basis import _basis_bsplines
 
 ########################################################################################
 # Inner functions for the PSplines class.
+def _fit_one_dimensional(
+    data: npt.NDArray[np.float64],
+    basis: npt.NDArray[np.float64],
+    sample_weights: Optional[npt.NDArray[np.float64]] = None,
+    penalty: float = 1.0,
+    order_penalty: int = 2
+):
+    """One dimensional P-splines smoothing.
+    
+    Parameters
+    ----------
+    
+    Returns
+    -------
+
+    """
+    # Get parameters.
+    n_obs = len(data)
+    n_basis = basis.shape[1]
+
+    # Construct the penalty.
+    pen_mat = np.sqrt(penalty) * np.diff(np.eye(n_basis), n=order_penalty, axis=0)
+    nix = np.zeros(n_basis - order_penalty)
+
+    # Build the different part of the model.
+    if sample_weights is None:
+        sample_weights = np.ones(n_obs)
+    new_basis_mat = np.vstack([basis, pen_mat])
+    new_y = np.concatenate([data, nix])
+    new_weights_mat = np.diag(np.concatenate([sample_weights, nix + 1]))
+
+    # Fit the model
+    fit = np.linalg.lstsq(new_weights_mat @ new_basis_mat, new_y, rcond=None)
+    beta_hat = fit[0]
+    y_hat = basis @ beta_hat
+
+    return y_hat
+
+
+def _fit_n_dimensional():
+    """N-dimensional P-splines smoothing.
+    
+    Parameters
+    ----------
+    
+    Returns
+    -------
+    
+    """
+    pass
 
 
 ########################################################################################
