@@ -410,8 +410,7 @@ def _fit_n_dimensional(
     DD = [d.T @ d for d in D]
     PP = _tensor_product_penalties(DD)
 
-    lambdas = (1, 1, 1)
-    P = np.sum([l * P for (l, P) in zip(lambdas, PP)], axis=0)
+    P = np.sum([l * P for (l, P) in zip(penalty, PP)], axis=0)
 
     # Last part of the equation
     R = _rotated_h_transform(basis_list[0].T, data * sample_weights)
@@ -522,24 +521,25 @@ class PSplines:
             domain_max=np.max(x),
         ).T
 
-        # Construct penalty stuff
-        n = basis_mat.shape[1]
-        pen_mat = np.sqrt(penalty) * np.diff(np.eye(n), n=self.order_penalty, axis=0)
-        nix = np.zeros(n - self.order_penalty)
+        if len(y.shape) == 1:
+            res = _fit_one_dimensional(
+                data=y,
+                basis=basis_mat,
+                sample_weights=sample_weights,
+                penalty=penalty,
+                order_penalty=2
+            )
+        else:
+            res = _fit_n_dimensional(
+                data=y,
+                basis_list=basis_mat,
+                sample_weights=sample_weights,
+                penalty=penalty,
+                order_penalty=2
+            )
 
-        if sample_weights is None:
-            sample_weights = np.ones(m)
-        new_basis_mat = np.vstack([basis_mat, pen_mat])
-        new_y = np.concatenate([y, nix])
-        new_weights_mat = np.diag(np.concatenate([sample_weights, nix + 1]))
-
-        fit = np.linalg.lstsq(new_weights_mat @ new_basis_mat, new_y, rcond=None)
-        beta_hat = fit[0]
-        y_hat = basis_mat @ beta_hat
-
-        q_mat, r_mat = np.linalg.qr(new_basis_mat)
-        hat_mat = np.sum(np.power(q_mat, 2), axis=1)[:m]
-
+        beta_hat = res['beta_hat']
+        hat_mat = res['hat_matrix']
         # Cross-validation and dispersion
         r = (y - y_hat) / (1 - hat_mat)
         cv = np.sqrt(np.mean(np.power(r, 2)))
@@ -567,8 +567,7 @@ class PSplines:
             "sigma": sigma,
             "cv": cv,
             "effdim": ed,
-            "ed_resid": ed_resid,
-            "R": r_mat,
+            "ed_resid": ed_resid
         }
         return self
 
