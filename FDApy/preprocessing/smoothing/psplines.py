@@ -11,9 +11,60 @@ import numpy.typing as npt
 
 from scipy.linalg import solve_triangular
 
-from typing import Optional
+from typing import Optional, List
 
 from ...representation.basis import _basis_bsplines
+
+
+########################################################################################
+# Utils
+def _row_tensor(
+    x: npt.NDArray[np.float64],
+    y: Optional[npt.NDArray[np.float64]] = None
+) -> npt.NDArray[np.float64]:
+    if y is None:
+        y = x
+    onex = np.ones((1, x.shape[1]))
+    oney = np.ones((1, y.shape[1]))
+    return np.kron(x, oney) * np.kron(onex, y)
+
+
+def _h_transform(X, A):
+    d = A.shape
+    M = A.reshape(d[0], np.prod(d[1:]))
+    XM = X @ M
+    return XM.reshape((XM.shape[0], *d[1:]))
+
+
+def _rotate(A):
+    return np.moveaxis(A, 0, -1)
+
+
+def _rotated_h_transform(X, A):
+    return _rotate(_h_transform(X, A))
+
+
+def _create_permutation(p, k):
+    a = np.arange(0, k)
+    b = np.arange(0, p)
+    m = np.add.outer(a * p, b)
+    return m.flatten('F')
+
+
+def _tensor_product_penalties(S):
+    m = len(S)
+    I = [np.eye(n) for n in [s.shape[1] for s in S]]
+    TS = []
+    if m == 1:
+        TS.append(S[0])
+    else:
+        for i in range(m):
+            M0 = S[i] if i == 0 else I[0]
+            for j in range(1, m):
+                M1 = S[j] if i == j else I[j]
+                M0 = np.kron(M0, M1)
+            TS.append(np.mean([M0, M0.T], axis=0) if M0.shape[0] == M0.shape[1] else M0)
+    return TS
 
 
 ########################################################################################
@@ -39,25 +90,39 @@ def _fit_one_dimensional(
     n_basis = basis.shape[1]
 
     # Construct the penalty.
-    pen_mat = np.sqrt(penalty) * np.diff(np.eye(n_basis), n=order_penalty, axis=0)
-    nix = np.zeros(n_basis - order_penalty)
+    pen_mat = np.diff(np.eye(n_basis), n=order_penalty, axis=0)
 
     # Build the different part of the model.
     if sample_weights is None:
         sample_weights = np.ones(n_obs)
-    new_basis_mat = np.vstack([basis, pen_mat])
-    new_y = np.concatenate([data, nix])
-    new_weights_mat = np.diag(np.concatenate([sample_weights, nix + 1]))
+    weight_mat = np.diag(sample_weights)
 
+    bwb_mat = basis.T @ weight_mat @ basis
+    pen_mat = penalty * pen_mat.T @ pen_mat
+    bwy_mat = basis.T @ weight_mat @ data
+    
     # Fit the model
-    fit = np.linalg.lstsq(new_weights_mat @ new_basis_mat, new_y, rcond=None)
-    beta_hat = fit[0]
+    inv_mat = np.linalg.pinv(bwb_mat + pen_mat)
+    beta_hat = inv_mat @ bwy_mat
     y_hat = basis @ beta_hat
 
-    return y_hat
+    # Compute the hat matrix
+    hat_matrix = np.diag(basis @ inv_mat @ basis.T @ weight_mat)
+
+    return {
+        'y_hat': y_hat,
+        'beta_hat': beta_hat,
+        'hat_matrix': hat_matrix
+    }
 
 
-def _fit_n_dimensional():
+def _fit_n_dimensional(
+    data: npt.NDArray[np.float64],
+    basis_list: List[npt.NDArray[np.float64]],
+    sample_weights: Optional[npt.NDArray[np.float64]] = None,
+    penalty: float = 1.0,
+    order_penalty: int = 2
+):
     """N-dimensional P-splines smoothing.
     
     Parameters
@@ -67,8 +132,44 @@ def _fit_n_dimensional():
     -------
     
     """
-    pass
+    n = tuple(basis.shape[1] for basis in basis_list)
+    RT = [_row_tensor(basis) for basis in basis_list]
 
+    XWX = _rotated_h_transform(RT[0].T, sample_weights)
+    for idx in np.arange(1, len(RT)):
+        XWX = _rotated_h_transform(RT[idx].T, XWX)
+    XWX = XWX.reshape(np.repeat(n, 2)).\
+        transpose(_create_permutation(2, len(n))).\
+        reshape((np.prod(n), np.prod(n)))
+
+    # Penalty
+    E = [np.eye(i) for i in n]
+    D = [np.diff(i, n=1, axis=0) for i in E]
+    DD = [d.T @ d for d in D]
+    PP = _tensor_product_penalties(DD)
+
+    lambdas = (1, 1, 1)
+    P = np.sum([l * P for (l, P) in zip(lambdas, PP)], axis=0)
+
+    # Last part of the equation
+    R = _rotated_h_transform(basis_list[0].T, data * sample_weights)
+    for idx in np.arange(1, len(basis_list)):
+        R = _rotated_h_transform(basis_list[idx].T, R)
+    R = R.reshape(np.prod(n))
+
+    # Fit 
+    fit = np.linalg.lstsq(XWX + P, R, rcond=None)
+    A = fit[0].reshape(n)
+    Zhat = _rotated_h_transform(basis_list[0], A)
+    for idx in np.arange(1, len(basis_list)):
+        Zhat = _rotated_h_transform(basis_list[idx], Zhat)
+
+    # Compute the H matrix
+    return {
+        'y_hat': Zhat,
+        'beta_hat': A,
+        'hat_matrix': 0
+    }
 
 ########################################################################################
 # class PSplines
