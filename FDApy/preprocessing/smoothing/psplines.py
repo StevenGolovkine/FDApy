@@ -25,15 +25,16 @@ def _row_tensor(
     Compute the row-wise tensor product of two 2D arrays.
 
     The row-wise tensor product of two 2D arrays `x` and `y` is a 2D array `z` such that
-    `z[i, j] = x[i, :] * y[j, :]` for all `i` in `range(x.shape[0])` and `j` in
-    `range(y.shape[0])`. If `y` is not provided, it defaults to `x`.
+    each row of `z` is the Kronecker product of the corresponding row of `x` and `y`.
+    If `y` is not provided, it defaults to `x`. Note that `x` and `y` must have the
+    same number of rows.
 
     Parameters
     ----------
-    x : npt.NDArray[np.float64]
+    x: npt.NDArray[np.float64]
         A 2D array of shape `(m, n)`.
-    y : Optional[npt.NDArray[np.float64]], optional
-        A 2D array of shape `(p, q)`. If not provided, it defaults to `x`.
+    y: Optional[npt.NDArray[np.float64]], optional
+        A 2D array of shape `(m, q)`. If not provided, it defaults to `x`.
 
     Returns
     -------
@@ -43,21 +44,33 @@ def _row_tensor(
     Examples
     --------
     >>> x = np.array([[1, 2], [3, 4]])
-    >>> y = np.array([[5, 6], [7, 8]])
+    >>> y = np.array([[5, 6, 7], [7, 8, 9]])
     >>> _row_tensor(x, y)
-    array([[ 5.,  6., 10., 12.],
-           [15., 18., 20., 24.],
-           [21., 24., 28., 32.],
-           [42., 48., 56., 64.]])
+    array([
+        [ 5.,  6.,  7., 10., 12., 14.],
+        [21., 24., 27., 28., 32., 36.]
+    ])
     >>> _row_tensor(x)
-    array([[ 1.,  2.,  2.,  4.],
-           [ 3.,  4.,  6.,  8.],
-           [ 9., 12., 12., 16.],
-           [12., 16., 16., 20.]])
+    array([
+        [ 1.,  2.,  2.,  4.],
+        [ 9., 12., 12., 16.]
+    ])
+
+    Notes
+    -----
+    This function is adapted from [1]_.
+
+    References
+    ----------
+    ..[1] Currie, I. D., Durban, M., Eilers, P. H. C. (2006), Generalized Linear Array
+        Models with Applications to Multidimensional Smoothing. Journal of the Royal
+        Statistical Society. Series B (Statistical Methodology) 68, pp.259--280.
 
     """
     if y is None:
         y = x
+    if x.shape[0] != y.shape[0]:
+        raise ValueError("`x` and `y` must have the same number of rows.")
     onex = np.ones((1, x.shape[1]))
     oney = np.ones((1, y.shape[1]))
     return np.kron(x, oney) * np.kron(onex, y)
@@ -67,34 +80,46 @@ def _h_transform(
     x: npt.NDArray[np.float64], y: npt.NDArray[np.float64]
 ) -> npt.NDArray[np.float64]:
     """
-    Compute the H-transform of a 2D array `y` with respect to a 1D array `x`.
+    Compute the H-transform of a nD array `y` with respect to a 2D array `x`.
 
-    The H-transform of a 2D array `y` with respect to a 1D array `x` is a 2D array `z`
-    such that `z[i, j, ...] = x @ y[:, j, ...]` for all `j` in
-    `range(y.shape[1])`, `...` in `range(y.shape[2:])`.
+    The H-transform of a nD array `y` with respect to a 2D array `x` is a nD array `z`.
+    The H-transform generalizes the pre-multiplication of vectors and matrices by a
+    matrix.
 
     Parameters
     ----------
-    x : npt.NDArray[np.float64]
-        A 1D array of shape `(m,)`.
-    y : npt.NDArray[np.float64]
-        A 2D array of shape `(m, n1, n2, ..., nk)`.
+    x: npt.NDArray[np.float64]
+        A 2D array of shape `(n, m)`.
+    y: npt.NDArray[np.float64]
+        A nD array of shape `(m, n1, n2, ..., nk)`.
 
     Returns
     -------
     npt.NDArray[np.float64]
-        A 2D array of shape `(m, n1, n2, ..., nk)`.
+        A nD array of shape `(n, n1, n2, ..., nk)`.
+
+    Notes
+    -----
+    This function is adapted from [1]_.
 
     Examples
     --------
-    >>> x = np.array([1, 2, 3])
+    >>> x = np.array([[1, 2, 3]])
     >>> y = np.array([[1, 2], [3, 4], [5, 6]])
     >>> _h_transform(x, y)
-    array([[ 14.,  32.],
-           [ 20.,  46.],
-           [ 26.,  60.]])
+    array([[22, 28]])
+
+    References
+    ----------
+    ..[1] Currie, I. D., Durban, M., Eilers, P. H. C. (2006), Generalized Linear Array
+        Models with Applications to Multidimensional Smoothing. Journal of the Royal
+        Statistical Society. Series B (Statistical Methodology) 68, pp.259--280.
 
     """
+    if x.shape[1] != y.shape[0]:
+        raise ValueError(
+            "The second dimension of `x` must be equal to the first dimension of `y`."
+        )
     y_dim = y.shape
     y_reshape = y.reshape(y_dim[0], np.prod(y_dim[1:]))
     xy_product = x @ y_reshape
@@ -105,12 +130,13 @@ def _rotate(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     """
     Rotate the axes of a multi-dimensional array to the right.
 
-    The `_rotate` function moves the first axis of a multi-dimensional array to the last
-    position. This is equivalent to rotating the axes of the array to the right.
+    The rotation of a nD array moves the first axis of a multi-dimensional array to the
+    last position. This is equivalent to rotating the axes of the array to the right.
+    It generalizes the transpose operation to nD arrays.
 
     Parameters
     ----------
-    x : npt.NDArray[np.float64]
+    x: npt.NDArray[np.float64]
         A multi-dimensional array of shape `(n1, n2, ..., nk)`.
 
     Returns
@@ -118,14 +144,25 @@ def _rotate(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     npt.NDArray[np.float64]
         A multi-dimensional array of shape `(n2, ..., nk, n1)`.
 
+    Notes
+    -----
+    This function is adapted from [1]_.
+
     Examples
     --------
-    >>> x = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
+    >>> x = np.array([[[1, 2], [3, 4], [5, 6]], [[5, 6], [7, 8], [9, 0]]])
     >>> _rotate(x)
-    array([[[1, 5],
-            [3, 7]],
-           [[2, 6],
-            [4, 8]]])
+    array([
+        [[1, 5],[2, 6]],
+        [[3, 7],[4, 8]],
+        [[5, 9],[6, 0]]
+    ])
+
+    References
+    ----------
+    ..[1] Currie, I. D., Durban, M., Eilers, P. H. C. (2006), Generalized Linear Array
+        Models with Applications to Multidimensional Smoothing. Journal of the Royal
+        Statistical Society. Series B (Statistical Methodology) 68, pp.259--280.
 
     """
     return np.moveaxis(x, 0, -1)
@@ -135,32 +172,43 @@ def _rotated_h_transform(
     x: npt.NDArray[np.float64], y: npt.NDArray[np.float64]
 ) -> npt.NDArray[np.float64]:
     """
-    Compute the rotated H-transform of a 2D array `y` with respect to a 1D array `x`.
+    Compute the rotated H-transform of a nD array `y` with respect to a 2D array `x`.
 
-    The rotated H-transform of a 2D array `y` with respect to a 1D array `x` is a 2D
-    array `z` such that `z[i, j, ...] = x @ y[:, j, ...]` for all `j` in
-    `range(y.shape[1])`, `...` in `range(y.shape[2:])`. The resulting array has its
-    first and last axes rotated to the right.
+    The rotated H-transform of a nD array `y` with respect to a 2D array `x` is a nD
+    array `z`. This function performed a H-transform of `x` and `y`, and then rotate
+    the results.
 
     Parameters
     ----------
-    x : npt.NDArray[np.float64]
-        A 1D array of shape `(m,)`.
-    y : npt.NDArray[np.float64]
-        A 2D array of shape `(m, n1, n2, ..., nk)`.
+    x: npt.NDArray[np.float64]
+        A 2D array of shape `(n, m)`.
+    y: npt.NDArray[np.float64]
+        A nD array of shape `(m, n1, n2, ..., nk)`.
+
+    Notes
+    -----
+    This function is adapted from [1]_.
 
     Returns
     -------
     npt.NDArray[np.float64]
-        A 2D array of shape `(n1, n2, ..., nk, m)`.
+        A nD array of shape `(n1, n2, ..., nk, m)`.
 
     Examples
     --------
-    >>> x = np.array([1, 2, 3])
+    >>> x = np.array([[1, 2, 3]])
     >>> y = np.array([[1, 2], [3, 4], [5, 6]])
     >>> _rotated_h_transform(x, y)
-    array([[[14.,  20.,  26.],
-            [32.,  46.,  60.]]])
+    array([
+        [22],
+        [28]
+    ])
+
+    References
+    ----------
+    ..[1] Currie, I. D., Durban, M., Eilers, P. H. C. (2006), Generalized Linear Array
+        Models with Applications to Multidimensional Smoothing. Journal of the Royal
+        Statistical Society. Series B (Statistical Methodology) 68, pp.259--280.
 
     """
     return _rotate(_h_transform(x, y))
@@ -170,33 +218,33 @@ def _create_permutation(p: int, k: int) -> npt.NDArray[np.float64]:
     """
     Create a permutation array for a given number of factors and levels.
 
-    The `_create_permutation` function creates a permutation array for a given number of
-    factors `p` and levels `k`. The resulting array is a 1D array of shape `(k**p,)`
-    that contains the indices of all possible combinations of `p` factors with `k`
-    levels each. The permutation is generated by taking the outer sum of two arrays:
-    `a * p` and `b`, where `a` is an array of `k` integers ranging from 0 to `k-1`, and
-    `b` is an array of `p` integers ranging from 0 to `p-1`. The resulting 2D array is
-    then flattened in Fortran order to obtain the permutation array.
+    This function creates a permutation array for a given number of factors `p` and
+    levels `k`. The resulting array is a 1D array of shape `(k*p,)` that contains the
+    indices of all possible combinations of `p` factors with `k` levels each.
 
     Parameters
     ----------
-    p : int
+    p: int
         The number of factors.
-    k : int
+    k: int
         The number of levels.
 
     Returns
     -------
     npt.NDArray[np.float64]
-        A 1D array of shape `(k**p,)` that contains the indices of all possible
+        A 1D array of shape `(k*p,)` that contains the indices of all possible
         combinations of `p` factors with `k` levels each.
 
     Examples
     --------
-    >>> _create_permutation(2, 3)
-    array([0., 1., 2., 3., 4., 5., 6., 7., 8.])
+    >>> np.tile(np.arange(3), 2)
+    array([0, 1, 2, 0, 1, 2])
     >>> _create_permutation(3, 2)
-    array([0., 2., 4., 6., 1., 3., 5., 7.])
+    array([0, 3, 1, 4, 2, 5])
+    >>> np.repeat(np.arange(3), 2)
+    array([0, 0, 1, 1, 2, 2])
+    >>> _create_permutation(2, 3)
+    array([0, 2, 4, 1, 3, 5])
 
     """
     a = np.arange(0, k)
@@ -219,7 +267,7 @@ def _tensor_product_penalties(
 
     Parameters
     ----------
-    penalties : list[npt.NDArray[np.float64]]
+    penalties: list[npt.NDArray[np.float64]]
         A list of penalty matrices.
 
     Returns
@@ -227,33 +275,66 @@ def _tensor_product_penalties(
     list[npt.NDArray[np.float64]]
         A list of tensor product matrices.
 
+    Notes
+    -----
+    This function is adapted from the function `tensor.prod.penalties` in [1]_.
+
     Examples
     --------
-    >>> penalties = [np.array([[1, 2], [3, 4]]), np.array([[5, 6], [7, 8]])]
+    >>> penalties = [
+        np.array([
+            [ 1., -1.,  0.],
+            [-1.,  2., -1.],
+            [ 0., -1.,  2.]
+        ]),
+        np.array([
+            [ 1., -1.],
+            [-1.,  2.]
+        ])
+    ]
     >>> _tensor_product_penalties(penalties)
-    [array([[ 5.,  6., 15., 18.],
-           [ 7.,  8., 21., 24.],
-           [25., 30., 45., 54.],
-           [35., 42., 55., 66.]]), array([[ 5.,  6., 15., 18.],
-           [ 7.,  8., 21., 24.],
-           [25., 30., 45., 54.],
-           [35., 42., 55., 66.]])]
+    [
+         array([
+             [ 1.,  0., -1., -0.,  0.,  0.],
+             [ 0.,  1., -0., -1.,  0.,  0.],
+             [-1., -0.,  2.,  0., -1., -0.],
+             [-0., -1.,  0.,  2., -0., -1.],
+             [ 0.,  0., -1., -0.,  2.,  0.],
+             [ 0.,  0., -0., -1.,  0.,  2.]
+         ]),
+         array([
+             [ 1., -1.,  0., -0.,  0., -0.],
+             [-1.,  2., -0.,  0., -0.,  0.],
+             [ 0., -0.,  1., -1.,  0., -0.],
+             [-0.,  0., -1.,  2., -0.,  0.],
+             [ 0., -0.,  0., -0.,  1., -1.],
+             [-0.,  0., -0.,  0., -1.,  2.]
+         ]
+     )]
+
+    References
+    ----------
+    .. [1] Wood, S. (2023). mgcv: Mixed GAM Computation Vehicle with Automatic
+        Smoothness Estimation.
 
     """
     n_penalties = len(penalties)
-    I = [np.eye(n) for n in [s.shape[1] for s in penalties]]
+    eyes = [np.eye(penalty.shape[1]) for penalty in penalties]
 
-    TS = []
     if n_penalties == 1:
-        TS.append(penalties[0])
+        return penalties[0]
     else:
-        for i in range(n_penalties):
-            M0 = penalties[i] if i == 0 else I[0]
+        tensors_list = []
+        for idx in range(n_penalties):
+            left = penalties[0] if idx == 0 else eyes[0]
             for j in range(1, n_penalties):
-                M1 = penalties[j] if i == j else I[j]
-                M0 = np.kron(M0, M1)
-            TS.append(np.mean([M0, M0.T], axis=0) if M0.shape[0] == M0.shape[1] else M0)
-    return TS
+                right = penalties[j] if idx == j else eyes[j]
+                left = np.kron(left, right)
+            # Make sure the matrix is symmetric
+            if left.shape[0] == left.shape[1]:
+                left = (left + left.T) / 2
+            tensors_list.append(left)
+        return tensors_list
 
 
 ########################################################################################
@@ -527,7 +608,7 @@ class PSplines:
                 basis=basis_mat,
                 sample_weights=sample_weights,
                 penalty=penalty,
-                order_penalty=2
+                order_penalty=2,
             )
         else:
             res = _fit_n_dimensional(
@@ -535,11 +616,12 @@ class PSplines:
                 basis_list=basis_mat,
                 sample_weights=sample_weights,
                 penalty=penalty,
-                order_penalty=2
+                order_penalty=2,
             )
 
-        beta_hat = res['beta_hat']
-        hat_mat = res['hat_matrix']
+        y_hat = res["y_hat"]
+        beta_hat = res["beta_hat"]
+        hat_mat = res["hat_matrix"]
         # Cross-validation and dispersion
         r = (y - y_hat) / (1 - hat_mat)
         cv = np.sqrt(np.mean(np.power(r, 2)))
@@ -563,12 +645,7 @@ class PSplines:
         # Export results
         self.y_hat = y_hat
         self.beta_hat = beta_hat
-        self.parameters = {
-            "sigma": sigma,
-            "cv": cv,
-            "effdim": ed,
-            "ed_resid": ed_resid
-        }
+        self.parameters = {"sigma": sigma, "cv": cv, "effdim": ed, "ed_resid": ed_resid}
         return self
 
     def predict(self, x: Optional[npt.NDArray[np.float64]] = None) -> None:
