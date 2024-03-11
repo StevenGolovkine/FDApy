@@ -684,40 +684,10 @@ class PSplines:
                 order_penalty=self.order_penalty,
             )
 
-        y_hat = res["y_hat"]
-        beta_hat = res["beta_hat"]
-        hat_matrix = res["hat_matrix"]
-
-        # # Cross-validation and dispersion
-        # r = (y - y_hat) / (1 - hat_mat)
-        # cv = np.sqrt(np.mean(np.power(r, 2)))
-        # ed = np.sum(hat_mat)
-        # sigma = np.sqrt(np.sum(np.power(y - y_hat, 2)) / (m - ed))
-        # ed_resid = m - ed
-
-        # if self.order_derivative > 0:
-        #     basis_mat_der = _basis_bsplines(
-        #         argvals=x,
-        #         n_functions=self.n_segments + self.degree - self.order_derivative,
-        #         degree=self.degree - self.order_derivative,
-        #         domain_min=np.min(x),
-        #         domain_max=np.max(x),
-        #     ).T
-        #     num = np.diff(beta_hat, n=self.order_derivative)
-        #     deno = ((np.max(x) - np.min(x)) / self.n_segments) ** self.order_derivative
-        #     alpha_der = num / deno
-        #     y_hat = basis_mat_der @ alpha_der
-
         # Export results
-        self.y_hat = y_hat
-        self.beta_hat = beta_hat
-        self.diagnostics = {
-            "hat_matrix": hat_matrix
-            #     "sigma": sigma,
-            #     "cv": cv,
-            #     "effdim": ed,
-            #     "ed_resid": ed_resid,
-        }
+        self.y_hat = res["y_hat"]
+        self.beta_hat = res["beta_hat"]
+        self.diagnostics = {"hat_matrix": res["hat_matrix"]}
         return self
 
     def predict(self, x: Optional[npt.NDArray[np.float64]] = None) -> None:
@@ -758,8 +728,4 @@ class PSplines:
             for idx in np.arange(1, len(basis_list)):
                 y_pred = _rotated_h_transform(basis_list[idx].T, y_pred)
 
-        # # SE bands on a grid using QR
-        # l_mat = solve_triangular(self.parameters["R"].T, basis_mat.T, lower=True)
-        # v2 = self.parameters["sigma"] ** 2 * np.sum(l_mat * l_mat, axis=0)
-        # se_eta = np.sqrt(v2)
         return y_pred
