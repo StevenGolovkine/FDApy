@@ -62,7 +62,7 @@ def _row_tensor(
 
     References
     ----------
-    ..[1] Currie, I. D., Durban, M., Eilers, P. H. C. (2006), Generalized Linear Array
+    .. [1] Currie, I. D., Durban, M., Eilers, P. H. C. (2006), Generalized Linear Array
         Models with Applications to Multidimensional Smoothing. Journal of the Royal
         Statistical Society. Series B (Statistical Methodology) 68, pp.259--280.
 
@@ -111,7 +111,7 @@ def _h_transform(
 
     References
     ----------
-    ..[1] Currie, I. D., Durban, M., Eilers, P. H. C. (2006), Generalized Linear Array
+    .. [1] Currie, I. D., Durban, M., Eilers, P. H. C. (2006), Generalized Linear Array
         Models with Applications to Multidimensional Smoothing. Journal of the Royal
         Statistical Society. Series B (Statistical Methodology) 68, pp.259--280.
 
@@ -160,7 +160,7 @@ def _rotate(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
 
     References
     ----------
-    ..[1] Currie, I. D., Durban, M., Eilers, P. H. C. (2006), Generalized Linear Array
+    .. [1] Currie, I. D., Durban, M., Eilers, P. H. C. (2006), Generalized Linear Array
         Models with Applications to Multidimensional Smoothing. Journal of the Royal
         Statistical Society. Series B (Statistical Methodology) 68, pp.259--280.
 
@@ -206,7 +206,7 @@ def _rotated_h_transform(
 
     References
     ----------
-    ..[1] Currie, I. D., Durban, M., Eilers, P. H. C. (2006), Generalized Linear Array
+    .. [1] Currie, I. D., Durban, M., Eilers, P. H. C. (2006), Generalized Linear Array
         Models with Applications to Multidimensional Smoothing. Journal of the Royal
         Statistical Society. Series B (Statistical Methodology) 68, pp.259--280.
 
@@ -349,36 +349,39 @@ def _fit_one_dimensional(
     """
     Fit a one-dimensional P-splines model to the given data.
 
-    The `_fit_one_dimensional` function fits a one-dimensional P-splines model to the
-    given data using a basis matrix and an optional penalty matrix. The function returns
-    a dictionary containing the fitted values, the estimated coefficients, and the hat
-    matrix.
+    The function fits a one-dimensional P-splines model to the given data using a basis
+    matrix and an optional weight matrix. The function returns a dictionary containing
+    the fitted values, the estimated coefficients, and the hat matrix.
 
     Parameters
     ----------
-    data : npt.NDArray[np.float64]
+    data: npt.NDArray[np.float64]
         A one-dimensional array of shape `(n_obs,)` containing the response variable
         values.
-    basis : npt.NDArray[np.float64]
-        A two-dimensional array of shape `(n_obs, n_basis)` containing the basis matrix.
-    sample_weights : Optional[npt.NDArray[np.float64]], optional
+    basis: npt.NDArray[np.float64]
+        A two-dimensional array of shape `(n_basis, n_obs)` containing the basis matrix.
+    sample_weights: Optional[npt.NDArray[np.float64]], default=None
         A one-dimensional array of shape `(n_obs,)` containing the weights for each
         observation. If not provided, all observations are assumed to have equal weight.
-    penalty : float, optional
+    penalty: float, default=1.0
         The penalty parameter for the P-splines model.
-    order_penalty : int, optional
+    order_penalty: int, default=2
         The order of the penalty difference matrix.
 
     Returns
     -------
     Dict[str, npt.NDArray[np.float64]]
         A dictionary containing the following keys:
-        - 'y_hat': A one-dimensional array of shape `(n_obs,)` containing the fitted
+        - `y_hat`: A one-dimensional array of shape `(n_obs,)` containing the fitted
         values.
-        - 'beta_hat': A one-dimensional array of shape `(n_basis,)` containing the
+        - `beta_hat`: A one-dimensional array of shape `(n_basis,)` containing the
         estimated coefficients.
-        - 'hat_matrix': A one-dimensional array of shape `(n_obs,)` containing the
+        - `hat_matrix`: A one-dimensional array of shape `(n_obs,)` containing the
         diagonal of the hat matrix.
+
+    Notes
+    -----
+    The implementation of adapted from [2]_. See [1]_ for more details.
 
     Examples
     --------
@@ -386,15 +389,21 @@ def _fit_one_dimensional(
     >>> basis = np.array([[1, 1, 1, 1, 1], [1, 2, 3, 4, 5], [1, 4, 9, 16, 25]])
     >>> _fit_one_dimensional(data, basis)
     {
-        'y_hat': array([1., 2., 3., 4., 5.]),
-        'beta_hat': array([1., 1., 1.]),
-        'hat_matrix': array([0.2, 0.2, 0.2, 0.2, 0.2])
+        'y_hat': array([1.25143869, 1.95484728, 2.83532537, 3.89287295, 5.12749004]),
+        'beta_hat': array([0.7250996 , 0.43780434, 0.08853475]),
+        'hat_matrix': array([0.3756529, 0.3549800, 0.2669322, 0.2788401, 0.7545816])
     }
+
+    References
+    ----------
+    .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
+        P-splines. Cambridge University Press, Cambridge.
+    .. [2] Eilers, P., Marx, B., Li, B., Gampe, J., Rodriguez-Alvarez, M.X. (2023).
+        JOPS: Practical Smoothing with P-Splines.
 
     """
     # Get parameters.
-    n_obs = len(data)
-    n_basis = basis.shape[1]
+    n_basis, n_obs = basis.shape
 
     # Construct the penalty.
     pen_mat = np.diff(np.eye(n_basis), n=order_penalty, axis=0)
@@ -404,17 +413,17 @@ def _fit_one_dimensional(
         sample_weights = np.ones(n_obs)
     weight_mat = np.diag(sample_weights)
 
-    bwb_mat = basis.T @ weight_mat @ basis
+    bwb_mat = basis @ weight_mat @ basis.T
     pen_mat = penalty * pen_mat.T @ pen_mat
-    bwy_mat = basis.T @ weight_mat @ data
+    bwy_mat = basis @ weight_mat @ data
 
     # Fit the model
     inv_mat = np.linalg.pinv(bwb_mat + pen_mat)
     beta_hat = inv_mat @ bwy_mat
-    y_hat = basis @ beta_hat
+    y_hat = basis.T @ beta_hat
 
     # Compute the hat matrix
-    hat_matrix = np.diag(basis @ inv_mat @ basis.T @ weight_mat)
+    hat_matrix = np.diag(basis.T @ inv_mat @ basis @ weight_mat)
 
     return {"y_hat": y_hat, "beta_hat": beta_hat, "hat_matrix": hat_matrix}
 
@@ -423,43 +432,47 @@ def _fit_n_dimensional(
     data: npt.NDArray[np.float64],
     basis_list: List[npt.NDArray[np.float64]],
     sample_weights: Optional[npt.NDArray[np.float64]] = None,
-    penalty: tuple[float, ...] = 1.0,
+    penalties: Optional[tuple[float, ...]] = None,
     order_penalty: int = 2,
 ) -> Dict[str, npt.NDArray[np.float64]]:
     """
-    Fit an N-dimensional P-splines model to the given data.
+    Fit an nD P-splines model to the given data.
 
-    The `_fit_n_dimensional` function fits an N-dimensional P-splines model to the given
-    data using a list of basis matrices and an optional penalty matrix. The function
-    returns a dictionary containing the fitted values, the estimated coefficients, and
-    the hat matrix.
+    The function fits an nD P-splines model to the given data using a list of basis
+    matrices and an optional weights matrix. The function returns a dictionary
+    containing the fitted values, the estimated coefficients, and the hat matrix.
 
     Parameters
     ----------
-    data : npt.NDArray[np.float64]
-        An N-dimensional array of shape `(n1, n2, ..., nk)` containing the response
-        variable values.
-    basis_list : List[npt.NDArray[np.float64]]
-        A list of two-dimensional arrays of shape `(n1, m1), (n2, m2), ..., (nk, mk)`
+    data: npt.NDArray[np.float64]
+        An nD array of shape `(n1, n2, ..., nk)` containing the response variable
+        values.
+    basis_list: List[npt.NDArray[np.float64]]
+        A list of two-dimensional arrays of shape `(m1, n1), (m2, n2), ..., (mk, nk)`
         containing the basis matrices for each dimension.
-    sample_weights : Optional[npt.NDArray[np.float64]], optional
-        An N-dimensional array of shape `(n1, n2, ..., nk)` containing the weights for
-        each observation. If not provided, all observations are assumed to have equal
-        weight.
-    penalty : tuple[float, ...], optional
-        A tuple of penalty parameters for each dimension.
-    order_penalty : int, optional
+    sample_weights: Optional[npt.NDArray[np.float64]], default=None
+        An nD array of shape `(n1, n2, ..., nk)` containing the weights for each
+        observation. If not provided, all observations are assumed to have equal weight.
+    penalties: Optional[tuple[float, ...]], default=None
+        A tuple of penalty parameters for each dimension. If not provided, the penalty
+        is assumed to be the same for each dimension and equal to 1.
+    order_penalty: int, default=2
         The order of the penalty difference matrix.
 
     Returns
     -------
     Dict[str, npt.NDArray[np.float64]]
         A dictionary containing the following keys:
-        - 'y_hat': An N-dimensional array of shape `(n1, n2, ..., nk)` containing the
-        fitted values.
-        - 'beta_hat': An N-dimensional array of shape `(m1, m2, ..., mk)` containing the
+        - `y_hat`: An nD array of shape `(n1, n2, ..., nk)` containing the fitted
+        values.
+        - `beta_hat`: An nD array of shape `(m1, m2, ..., mk)` containing the
         estimated coefficients.
-        - 'hat_matrix': A zero value.
+        - `hat_matrix`: A nD array of shape `(n1, n2, ..., nk)` containing the hat
+        matrix.
+
+    Notes
+    -----
+    The implementation of adapted from [2]_. See [1]_ for more details.
 
     Examples
     --------
@@ -472,43 +485,71 @@ def _fit_n_dimensional(
         'hat_matrix': 0
     }
 
-    """
-    n = tuple(basis.shape[1] for basis in basis_list)
-    RT = [_row_tensor(basis) for basis in basis_list]
+    References
+    ----------
+    .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
+        P-splines. Cambridge University Press, Cambridge.
+    .. [2] Eilers, P., Marx, B., Li, B., Gampe, J., Rodriguez-Alvarez, M.X. (2023).
+        JOPS: Practical Smoothing with P-Splines.
 
-    XWX = _rotated_h_transform(RT[0].T, sample_weights)
-    for idx in np.arange(1, len(RT)):
-        XWX = _rotated_h_transform(RT[idx].T, XWX)
-    XWX = (
-        XWX.reshape(np.repeat(n, 2))
-        .transpose(_create_permutation(2, len(n)))
-        .reshape((np.prod(n), np.prod(n)))
+    """
+    if sample_weights is None:
+        sample_weights = np.ones_like(data)
+    if penalties is None:
+        penalties = np.ones(len(data.shape))
+
+    n_basis = tuple(basis.shape[0] for basis in basis_list)
+    tensor_list = [_row_tensor(basis.T) for basis in basis_list]
+
+    bwb_mat = _rotated_h_transform(tensor_list[0].T, sample_weights)
+    for idx in np.arange(1, len(tensor_list)):
+        bwb_mat = _rotated_h_transform(tensor_list[idx].T, bwb_mat)
+    bwb_mat = (
+        bwb_mat.reshape(np.repeat(n_basis, 2))
+        .transpose(_create_permutation(2, len(n_basis)))
+        .reshape((np.prod(n_basis), np.prod(n_basis)))
     )
 
     # Penalty
-    E = [np.eye(i) for i in n]
-    D = [np.diff(i, n=1, axis=0) for i in E]
-    DD = [d.T @ d for d in D]
-    PP = _tensor_product_penalties(DD)
+    eyes_mats = [np.eye(n) for n in n_basis]
+    diff_mats = [np.diff(eyes_mat, n=order_penalty, axis=0) for eyes_mat in eyes_mats]
+    prod_diff_mats = [diff_mat.T @ diff_mat for diff_mat in diff_mats]
+    pen_mats = _tensor_product_penalties(prod_diff_mats)
 
-    P = np.sum([l * P for (l, P) in zip(penalty, PP)], axis=0)
+    penalty_mat = np.sum(
+        [penalty * pen_mat for (penalty, pen_mat) in zip(penalties, pen_mats)], axis=0
+    )
 
     # Last part of the equation
-    R = _rotated_h_transform(basis_list[0].T, data * sample_weights)
+    bwy_mat = _rotated_h_transform(basis_list[0], data * sample_weights)
     for idx in np.arange(1, len(basis_list)):
-        R = _rotated_h_transform(basis_list[idx].T, R)
-    R = R.reshape(np.prod(n))
+        bwy_mat = _rotated_h_transform(basis_list[idx], bwy_mat)
+    bwy_mat = bwy_mat.reshape(np.prod(n_basis))
 
     # Fit
-    fit = np.linalg.lstsq(XWX + P, R, rcond=None)
-    A = fit[0].reshape(n)
-    Zhat = _rotated_h_transform(basis_list[0], A)
+    fit = np.linalg.lstsq(bwb_mat + penalty_mat, bwy_mat, rcond=None)
+    y_hat = _rotated_h_transform(basis_list[0].T, fit[0].reshape(n_basis))
     for idx in np.arange(1, len(basis_list)):
-        Zhat = _rotated_h_transform(basis_list[idx], Zhat)
+        y_hat = _rotated_h_transform(basis_list[idx].T, y_hat)
 
     # Compute the H matrix
-    hat_matrix = 0
-    return {"y_hat": Zhat, "beta_hat": A, "hat_matrix": hat_matrix}
+    rot_hat_mat = np.linalg.pinv(bwb_mat + penalty_mat)
+    rot_hat_mat = (
+        rot_hat_mat.reshape(np.repeat(n_basis, 2))
+        .transpose(_create_permutation(2, len(n_basis)))
+        .reshape(tuple(n**2 for n in n_basis))
+    )
+
+    hat_matrix = _rotated_h_transform(tensor_list[0], rot_hat_mat)
+    for idx in np.arange(1, len(tensor_list)):
+        hat_matrix = _rotated_h_transform(tensor_list[idx], hat_matrix)
+    hat_matrix = sample_weights * hat_matrix
+
+    return {
+        "y_hat": y_hat,
+        "beta_hat": fit[0].reshape(n_basis),
+        "hat_matrix": hat_matrix,
+    }
 
 
 ########################################################################################
