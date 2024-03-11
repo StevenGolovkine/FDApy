@@ -568,11 +568,14 @@ def _fit_n_dimensional(
 class PSplines:
     r"""P-Splines Smoothing.
 
+    The class fits a P-splines model to the given data using a B-splines basis and an
+    optional weights matrix.
+
     Parameters
     ----------
-    n_segments: int, defualt=10
+    n_segments: Union[int, npt.NDArray[np.int64]], default=10
         The number of evenly spaced segments.
-    degree: int, default=3
+    degree: Union[int, npt.NDArray[np.int64]], default=3
         The number of the degree of the basis.
     order_penalty: int, default=2
         The number of the order of the difference penalty.
@@ -582,8 +585,11 @@ class PSplines:
     Attributes
     ----------
     y_hat: npt.NDArray[np.float64]
+        The fitted response variable values.
     beta_hat: npt.NDArray[np.float64]
-    parameters: dict
+        The estimated coefficients for the basis functions.
+    diagnostics: dict
+        A dictionary containing diagnostic information about the fit.
 
     Notes
     -----
@@ -614,33 +620,53 @@ class PSplines:
     def fit(
         self,
         y: npt.NDArray[np.float64],
-        x: npt.NDArray[np.float64],
+        x: Union[List[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
         sample_weights: npt.NDArray[np.float64] = None,
         penalty: Optional[tuple[float, ...]] = None,
     ) -> None:
-        """Fit the model.
+        """Fit a P-splines model to the given data.
+
+        The method fits a P-splines model to the given data using a B-splines basis and
+        an optional weights matrix.
 
         Parameters
         ----------
-        y: npt.NDArray[np.float64], shape = (n_samples,)
-            Target values.
-        x: npt.NDArray[np.float64], shape = (n_samples,)
-            Training data.
-        sample_weights: npt.NDArray[np.float64], shape = (n_samples,)
-            Indiviudal weights for each sample.
-        penalty: float, default=1.0
-            The (positive) number for the tuning parameter for the penalty.
+        y: npt.NDArray[np.float64]
+            An nD array of shape `(n1, n2, ..., nk)` containing the response variable
+            values.
+        x: Union[List[npt.NDArray[np.float64]], npt.NDArray[np.float64]]
+            A 1D or a list of 1D arrays of shape `(n1,), (n2,), ..., (nk,)` containing
+            the predictor variable values.
+        sample_weights: npt.NDArray[np.float64], default=None
+            An N-dimensional array of shape `(n1, n2, ..., nk)` containing the weights
+            for each observation. If not provided, all observations are assumed to have
+            equal weight.
+        penalty : Optional[tuple[float, ...]], optional
+            A tuple of penalty parameters for each dimension.
 
         Returns
         -------
-        self: object
-            Fitted estimator.
+        self
+
+        Notes
+        -----
+        The implementation of adapted from [2]_. See [1]_ for more details.
 
         Examples
         --------
-        >>> x = np.linspace(0, 4, 100)
-        >>> y = 0.5 * np.sin(x**2) + np.random.normal(loc=0, scale=0.05, size=len(x))
-        >>> PSplines(n_segments=50).fit(y, x, penalty=0.05)
+        >>> x = np.array([1, 2, 3, 4, 5])
+        >>> y = np.array([1, 2, 3, 4, 5])
+        >>> ps = P_splines(n_segments=3, degree=2)
+        >>> ps.fit(y, x)
+        >>> ps.y_hat
+        array([1., 2., 3., 4., 5.])
+
+        References
+        ----------
+        .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
+            P-splines. Cambridge University Press, Cambridge.
+        .. [2] Eilers, P., Marx, B., Li, B., Gampe, J., Rodriguez-Alvarez, M.X. (2023).
+            JOPS: Practical Smoothing with P-Splines.
 
         """
         # Check parameters
@@ -691,17 +717,44 @@ class PSplines:
         return self
 
     def predict(self, x: Optional[npt.NDArray[np.float64]] = None) -> None:
-        """Predict using the model.
+        """Predict the response variable values for the given predictor variable values.
+
+        The method predicts the response variable values for the given predictor
+        variable values using the fitted P-splines model. If `x` is not provided, the
+        method returns the fitted values.
 
         Parameters
         ----------
-        x: npt.NDArray[np.float64], shape = (n_samples,)
-            New samples.
+        x: Optional[npt.NDArray[np.float64]], default=None
+            A 1D or a list of one-dimensional arrays of shape `(n1,), (n2,), ..., (nk,)`
+            containing the predictor variable values. If not provided, the method
+            returns the fitted values.
 
         Returns
         -------
-        npt.NDArray[np.float64], shape = (n_samples,)
-            Return predicted values.
+        npt.NDArray[np.float64]
+            An nD array of shape `(n1, n2, ..., nk)` containing the predicted response
+            variable values.
+
+        Notes
+        -----
+        The implementation of adapted from [2]_. See [1]_ for more details.
+
+        Examples
+        --------
+        >>> x = np.array([1, 2, 3, 4, 5])
+        >>> y = np.array([1, 2, 3, 4, 5])
+        >>> ps = P_splines(n_segments=3, degree=2)
+        >>> ps.fit(y, x)
+        >>> ps.predict(x)
+        array([1., 2., 3., 4., 5.])
+
+        References
+        ----------
+        .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
+            P-splines. Cambridge University Press, Cambridge.
+        .. [2] Eilers, P., Marx, B., Li, B., Gampe, J., Rodriguez-Alvarez, M.X. (2023).
+            JOPS: Practical Smoothing with P-Splines.
 
         """
         if x is None:
