@@ -11,7 +11,7 @@ import numpy.typing as npt
 
 from scipy.linalg import solve_triangular
 
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Union
 
 from ...representation.basis import _basis_bsplines
 
@@ -480,9 +480,18 @@ def _fit_n_dimensional(
     >>> basis_list = [np.array([[1, 1], [1, 2]]), np.array([[1, 1], [2, 3]])]
     >>> _fit_n_dimensional(data, basis_list)
     {
-        'y_hat': array([[1., 2.], [3., 4.]]),
-        'beta_hat': array([[1., 1.], [1., 1.]]),
-        'hat_matrix': 0
+        'y_hat': array([
+            [1., 2.],
+            [3., 4.]
+        ]),
+        'beta_hat': array([
+            [-3.,  1.],
+            [ 2.,  0.]
+        ]),
+        'hat_matrix': array([
+            [1., 1.],
+            [1., 1.]
+        ])
     }
 
     References
@@ -578,7 +587,7 @@ class PSplines:
 
     Notes
     -----
-    This code is adapted from _[2].
+    This code is adapted from _[2]. See [1]_ for more details.
 
     References
     ----------
@@ -591,8 +600,8 @@ class PSplines:
 
     def __init__(
         self,
-        n_segments: int = 10,
-        degree: int = 3,
+        n_segments: Union[int, npt.NDArray[np.int64]] = 10,
+        degree: Union[int, npt.NDArray[np.int64]] = 3,
         order_penalty: int = 2,
         order_derivative: int = 0,
     ) -> None:
@@ -607,7 +616,7 @@ class PSplines:
         y: npt.NDArray[np.float64],
         x: npt.NDArray[np.float64],
         sample_weights: npt.NDArray[np.float64] = None,
-        penalty: float = 1.0,
+        penalty: Optional[tuple[float, ...]] = None,
     ) -> None:
         """Fit the model.
 
@@ -629,64 +638,86 @@ class PSplines:
 
         Examples
         --------
-        x = np.linspace(0, 4, 100)
-        y = 0.5 * np.sin(x**2) + np.random.normal(loc=0, scale=0.05, size=len(x))
-        PSplines(n_segments=50).fit(y, x, penalty=0.05)
+        >>> x = np.linspace(0, 4, 100)
+        >>> y = 0.5 * np.sin(x**2) + np.random.normal(loc=0, scale=0.05, size=len(x))
+        >>> PSplines(n_segments=50).fit(y, x, penalty=0.05)
 
         """
-        m = len(x)
-        basis_mat = _basis_bsplines(
-            argvals=x,
-            n_functions=self.n_segments + self.degree,
-            degree=self.degree,
-            domain_min=np.min(x),
-            domain_max=np.max(x),
-        ).T
+        # Check parameters
+        self.dimension = len(y.shape)
+        if isinstance(self.n_segments, int):
+            self.n_segments = np.repeat(self.n_segments, self.dimension)
+        if isinstance(self.degree, int):
+            self.degree = np.repeat(self.degree, self.dimension)
+        if penalty is None:
+            penalty = tuple(self.dimension * [1])
 
-        if len(y.shape) == 1:
+        # Build the B-splines basis
+        if isinstance(x, np.ndarray):
+            x = [x]
+        n_obs = [len(argval) for argval in x]
+        basis_list = [
+            _basis_bsplines(
+                argvals=argvals,
+                n_functions=n_segments + degree,
+                degree=degree,
+                domain_min=np.min(argvals),
+                domain_max=np.max(argvals),
+            )
+            for argvals, n_segments, degree in zip(x, self.n_segments, self.degree)
+        ]
+
+        if self.dimension == 1:
             res = _fit_one_dimensional(
                 data=y,
-                basis=basis_mat,
+                basis=basis_list[0],
                 sample_weights=sample_weights,
                 penalty=penalty,
-                order_penalty=2,
+                order_penalty=self.order_penalty,
             )
         else:
             res = _fit_n_dimensional(
                 data=y,
-                basis_list=basis_mat,
+                basis_list=basis_list,
                 sample_weights=sample_weights,
-                penalty=penalty,
-                order_penalty=2,
+                penalties=penalty,
+                order_penalty=self.order_penalty,
             )
 
         y_hat = res["y_hat"]
         beta_hat = res["beta_hat"]
-        hat_mat = res["hat_matrix"]
-        # Cross-validation and dispersion
-        r = (y - y_hat) / (1 - hat_mat)
-        cv = np.sqrt(np.mean(np.power(r, 2)))
-        ed = np.sum(hat_mat)
-        sigma = np.sqrt(np.sum(np.power(y - y_hat, 2)) / (m - ed))
-        ed_resid = m - ed
+        hat_matrix = res["hat_matrix"]
 
-        if self.order_derivative > 0:
-            basis_mat_der = _basis_bsplines(
-                argvals=x,
-                n_functions=self.n_segments + self.degree - self.order_derivative,
-                degree=self.degree - self.order_derivative,
-                domain_min=np.min(x),
-                domain_max=np.max(x),
-            ).T
-            num = np.diff(beta_hat, n=self.order_derivative)
-            deno = ((np.max(x) - np.min(x)) / self.n_segments) ** self.order_derivative
-            alpha_der = num / deno
-            y_hat = basis_mat_der @ alpha_der
+        # # Cross-validation and dispersion
+        # r = (y - y_hat) / (1 - hat_mat)
+        # cv = np.sqrt(np.mean(np.power(r, 2)))
+        # ed = np.sum(hat_mat)
+        # sigma = np.sqrt(np.sum(np.power(y - y_hat, 2)) / (m - ed))
+        # ed_resid = m - ed
+
+        # if self.order_derivative > 0:
+        #     basis_mat_der = _basis_bsplines(
+        #         argvals=x,
+        #         n_functions=self.n_segments + self.degree - self.order_derivative,
+        #         degree=self.degree - self.order_derivative,
+        #         domain_min=np.min(x),
+        #         domain_max=np.max(x),
+        #     ).T
+        #     num = np.diff(beta_hat, n=self.order_derivative)
+        #     deno = ((np.max(x) - np.min(x)) / self.n_segments) ** self.order_derivative
+        #     alpha_der = num / deno
+        #     y_hat = basis_mat_der @ alpha_der
 
         # Export results
         self.y_hat = y_hat
         self.beta_hat = beta_hat
-        self.parameters = {"sigma": sigma, "cv": cv, "effdim": ed, "ed_resid": ed_resid}
+        self.diagnostics = {
+            "hat_matrix": hat_matrix
+            #     "sigma": sigma,
+            #     "cv": cv,
+            #     "effdim": ed,
+            #     "ed_resid": ed_resid,
+        }
         return self
 
     def predict(self, x: Optional[npt.NDArray[np.float64]] = None) -> None:
@@ -706,17 +737,29 @@ class PSplines:
         if x is None:
             return self.y_hat
 
-        basis_mat = _basis_bsplines(
-            argvals=x,
-            n_functions=self.n_segments + self.degree,
-            degree=self.degree,
-            domain_min=np.min(x),
-            domain_max=np.max(x),
-        ).T
-        y_estim = basis_mat @ self.beta_hat
+        # Build the B-splines basis
+        if isinstance(x, np.ndarray):
+            x = [x]
+        basis_list = [
+            _basis_bsplines(
+                argvals=argvals,
+                n_functions=n_segments + degree,
+                degree=degree,
+                domain_min=np.min(argvals),
+                domain_max=np.max(argvals),
+            )
+            for argvals, n_segments, degree in zip(x, self.n_segments, self.degree)
+        ]
 
-        # SE bands on a grid using QR
-        l_mat = solve_triangular(self.parameters["R"].T, basis_mat.T, lower=True)
-        v2 = self.parameters["sigma"] ** 2 * np.sum(l_mat * l_mat, axis=0)
-        se_eta = np.sqrt(v2)
-        return y_estim, se_eta
+        if self.dimension == 1:
+            y_pred = self.beta_hat @ basis_list[0]
+        else:
+            y_pred = _rotated_h_transform(basis_list[0].T, self.beta_hat)
+            for idx in np.arange(1, len(basis_list)):
+                y_pred = _rotated_h_transform(basis_list[idx].T, y_pred)
+
+        # # SE bands on a grid using QR
+        # l_mat = solve_triangular(self.parameters["R"].T, basis_mat.T, lower=True)
+        # v2 = self.parameters["sigma"] ** 2 * np.sum(l_mat * l_mat, axis=0)
+        # se_eta = np.sqrt(v2)
+        return y_pred
