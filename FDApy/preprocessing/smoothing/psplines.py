@@ -681,7 +681,6 @@ class PSplines:
         # Build the B-splines basis
         if isinstance(x, np.ndarray):
             x = [x]
-        n_obs = [len(argval) for argval in x]
         basis_list = [
             _basis_bsplines(
                 argvals=argvals,
