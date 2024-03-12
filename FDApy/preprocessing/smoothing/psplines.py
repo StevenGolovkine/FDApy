@@ -9,7 +9,6 @@ P-splines
 import numpy as np
 import numpy.typing as npt
 
-from scipy.linalg import solve_triangular
 
 from typing import Dict, Optional, List, Union
 

@@ -8,7 +8,6 @@ Basis
 """
 import numpy as np
 import numpy.typing as npt
-import warnings
 
 from scipy.integrate import simpson
 from scipy.special import gamma, eval_legendre
