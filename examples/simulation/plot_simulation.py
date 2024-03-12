@@ -17,7 +17,7 @@ rng = 42
 n_obs = 10
 
 # Parameters of the basis
-name = 'bsplines'
+name = "bsplines"
 n_functions = 5
 
 ###############################################################################
@@ -28,9 +28,7 @@ n_functions = 5
 # :math:`\{0, 0.01, 0.02, \cdots, 1\}`, based on the first
 # :math:`K = 5` B-splines basis functions on :math:`[0, 1]` and the variance of
 # the scores random variables equal to :math:`1`.
-kl = KarhunenLoeve(
-    basis_name=name, n_functions=n_functions, random_state=rng
-)
+kl = KarhunenLoeve(basis_name=name, n_functions=n_functions, random_state=rng)
 kl.new(n_obs=n_obs)
 
 _ = plot(kl.data)
@@ -75,7 +73,7 @@ _ = plot(kl.sparse_data)
 # the scores random variables equal to :math:`1`.
 
 kl = KarhunenLoeve(
-    basis_name=name, dimension='2D', n_functions=n_functions, random_state=rng
+    basis_name=name, dimension="2D", n_functions=n_functions, random_state=rng
 )
 kl.new(n_obs=1)
 

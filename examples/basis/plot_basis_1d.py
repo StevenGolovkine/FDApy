@@ -19,13 +19,12 @@ from FDApy.visualization import plot
 # Parameters
 n_functions = 5
 argvals = np.linspace(0, 1, 101)
-dimension = '1D'
+dimension = "1D"
 
 ###############################################################################
 # Fourier
 basis = Basis(
-    name='fourier', n_functions=n_functions,
-    argvals=argvals, dimension=dimension
+    name="fourier", n_functions=n_functions, argvals=argvals, dimension=dimension
 )
 
 _ = plot(basis)
@@ -33,8 +32,7 @@ _ = plot(basis)
 ###############################################################################
 # B-splines
 basis = Basis(
-    name='bsplines', n_functions=n_functions,
-    argvals=argvals, dimension=dimension
+    name="bsplines", n_functions=n_functions, argvals=argvals, dimension=dimension
 )
 
 _ = plot(basis)
@@ -42,8 +40,7 @@ _ = plot(basis)
 ###############################################################################
 # Wiener
 basis = Basis(
-    name='wiener', n_functions=n_functions,
-    argvals=argvals, dimension=dimension
+    name="wiener", n_functions=n_functions, argvals=argvals, dimension=dimension
 )
 
 _ = plot(basis)

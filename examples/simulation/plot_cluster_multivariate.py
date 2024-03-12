@@ -22,7 +22,7 @@ n_obs = 20
 random_state = np.random.default_rng(rng)
 
 # Parameters of the basis
-name = ['fourier', 'wiener']
+name = ["fourier", "wiener"]
 n_functions = 5  # Set an odd number of functions for Fourier basis
 
 # Parameters of the clusters
@@ -46,15 +46,8 @@ centers = random_state.multivariate_normal(mean, covariance, size=n_functions)
 # are defined through the coefficients in the Karhunen-Loève decomposition. The
 # centers of the clusters are generated as Gaussian random variables with
 # parameters defined by `mean` and `covariance`.
-kl = KarhunenLoeve(
-    basis_name=name, n_functions=n_functions, random_state=rng
-)
-kl.new(
-    n_obs=n_obs,
-    n_clusters=n_clusters,
-    centers=centers,
-    clusters_std='exponential'
-)
+kl = KarhunenLoeve(basis_name=name, n_functions=n_functions, random_state=rng)
+kl.new(n_obs=n_obs, n_clusters=n_clusters, centers=centers, clusters_std="exponential")
 
 _ = plot_multivariate(kl.data, kl.labels)
 
@@ -73,14 +66,7 @@ _ = plot_multivariate(kl.data, kl.labels)
 # are defined through the coefficients in the Karhunen-Loève decomposition. The
 # centers of the clusters are generated as Gaussian random variables with
 # parameters defined by `mean` and `covariance`.
-kl = KarhunenLoeve(
-    basis_name=name, n_functions=n_functions, random_state=rng
-)
-kl.new(
-    n_obs=n_obs,
-    n_clusters=n_clusters,
-    centers=centers,
-    clusters_std='linear'
-)
+kl = KarhunenLoeve(basis_name=name, n_functions=n_functions, random_state=rng)
+kl.new(n_obs=n_obs, n_clusters=n_clusters, centers=centers, clusters_std="linear")
 
 _ = plot_multivariate(kl.data, kl.labels)

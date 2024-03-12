@@ -22,7 +22,7 @@ n_obs = 20
 random_state = np.random.default_rng(rng)
 
 # Parameters of the basis
-name = 'fourier'
+name = "fourier"
 n_functions = 25
 
 # Parameters of the clusters
@@ -39,14 +39,7 @@ centers = random_state.multivariate_normal(mean, covariance, size=n_functions)
 # centers of the clusters are generated as Gaussian random variables with
 # parameters defined by `mean` and `covariance`. We also consider an
 # exponential decreasing of the eigenvalues.
-kl = KarhunenLoeve(
-    basis_name=name, n_functions=n_functions, random_state=rng
-)
-kl.new(
-    n_obs=n_obs,
-    n_clusters=n_clusters,
-    centers=centers,
-    cluster_std='exponential'
-)
+kl = KarhunenLoeve(basis_name=name, n_functions=n_functions, random_state=rng)
+kl.new(n_obs=n_obs, n_clusters=n_clusters, centers=centers, cluster_std="exponential")
 
 _ = plot(kl.data, kl.labels)

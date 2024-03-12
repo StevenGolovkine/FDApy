@@ -42,7 +42,7 @@ hurst = 0.8
 #
 # * The function :math:`t \rightarrow X_t` is continuous with probablity :math:`1`.
 #
-br = Brownian(name='standard', random_state=rng)
+br = Brownian(name="standard", random_state=rng)
 br.new(n_obs=n_obs, argvals=argvals, init_point=init_point)
 
 _ = plot(br.data)
@@ -65,7 +65,7 @@ _ = plot(br.data)
 # where :math:`\{W_t\}_{t \geq 0}` is a Brownian motion, :math:`\mu` is the
 # percentage drift and :math:`\sigma` is the percentage volatility.
 #
-br = Brownian(name='geometric', random_state=rng)
+br = Brownian(name="geometric", random_state=rng)
 br.new(n_obs=n_obs, argvals=argvals, init_point=init_point, mu=mu, sigma=sigma)
 
 _ = plot(br.data)
@@ -90,7 +90,7 @@ _ = plot(br.data)
 # _{t \geq 0}` is a Brownian motion. If :math:`H > 1/2`, the increments of
 # :math:`\{X_t\}_{t \geq 0}` are positively correlated. If :math:`H < 1/2`, the
 # increments of :math:`\{X_t\}_{t \geq 0}` are negatively correlated.
-br = Brownian(name='fractional', random_state=rng)
+br = Brownian(name="fractional", random_state=rng)
 br.new(n_obs=n_obs, argvals=argvals, hurst=hurst)
 
 _ = plot(br.data)

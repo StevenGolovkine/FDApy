@@ -36,19 +36,20 @@ from FDApy.visualization import plot
 # First, we will define unidimensional functional data. We consider twenty
 # sampling points for the first observations and fifteen sampling points for
 # the second observations.
-argvals = IrregularArgvals({
-    0: DenseArgvals({'input_dim_0': np.linspace(0, 1, num=20)}),
-    1: DenseArgvals({'input_dim_0': np.linspace(0.2, 0.8, num=15)})
-})
-X = IrregularValues({
-    0: np.sin(2 * np.pi * argvals[0]['input_dim_0']),
-    1: np.cos(2 * np.pi * argvals[1]['input_dim_0'])
-})
-
-fdata = IrregularFunctionalData(
-    argvals=argvals,
-    values=X
+argvals = IrregularArgvals(
+    {
+        0: DenseArgvals({"input_dim_0": np.linspace(0, 1, num=20)}),
+        1: DenseArgvals({"input_dim_0": np.linspace(0.2, 0.8, num=15)}),
+    }
 )
+X = IrregularValues(
+    {
+        0: np.sin(2 * np.pi * argvals[0]["input_dim_0"]),
+        1: np.cos(2 * np.pi * argvals[1]["input_dim_0"]),
+    }
+)
+
+fdata = IrregularFunctionalData(argvals=argvals, values=X)
 
 _ = plot(fdata)
 
@@ -59,31 +60,34 @@ _ = plot(fdata)
 # Second, we will defined two-dimensional functional data. We consider a grid
 # of :math:`20 \times 20` sampling points for the first observation and a grid
 # of :math:`15 \times 15` sampling points for the second observation.
-argvals = IrregularArgvals({
-    0: DenseArgvals({
-        'input_dim_0': np.linspace(0, 1, num=20),
-        'input_dim_1': np.linspace(0, 1, num=20)
-    }),
-    1: DenseArgvals({
-        'input_dim_0': np.linspace(0.2, 0.8, num=15),
-        'input_dim_1': np.linspace(0.2, 0.8, num=15)
-    })
-})
-X = IrregularValues({
-    0: np.outer(
-        np.sin(argvals[0]['input_dim_0']),
-        np.cos(argvals[0]['input_dim_1'])
-    ),
-    1: np.outer(
-        np.sin(-argvals[1]['input_dim_0']),
-        np.cos(argvals[1]['input_dim_1'])
-    )
-})
-
-fdata = IrregularFunctionalData(
-    argvals=argvals,
-    values=X
+argvals = IrregularArgvals(
+    {
+        0: DenseArgvals(
+            {
+                "input_dim_0": np.linspace(0, 1, num=20),
+                "input_dim_1": np.linspace(0, 1, num=20),
+            }
+        ),
+        1: DenseArgvals(
+            {
+                "input_dim_0": np.linspace(0.2, 0.8, num=15),
+                "input_dim_1": np.linspace(0.2, 0.8, num=15),
+            }
+        ),
+    }
 )
+X = IrregularValues(
+    {
+        0: np.outer(
+            np.sin(argvals[0]["input_dim_0"]), np.cos(argvals[0]["input_dim_1"])
+        ),
+        1: np.outer(
+            np.sin(-argvals[1]["input_dim_0"]), np.cos(argvals[1]["input_dim_1"])
+        ),
+    }
+)
+
+fdata = IrregularFunctionalData(argvals=argvals, values=X)
 
 # Note: Currently, two-dimensional irregular functional data plotting is not
 # implemented.

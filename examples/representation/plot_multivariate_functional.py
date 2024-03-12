@@ -14,7 +14,7 @@ import numpy as np
 from FDApy import (
     DenseFunctionalData,
     IrregularFunctionalData,
-    MultivariateFunctionalData
+    MultivariateFunctionalData,
 )
 from FDApy.representation import DenseArgvals, IrregularArgvals
 from FDApy.representation import DenseValues, IrregularValues
@@ -37,23 +37,15 @@ from FDApy.visualization import plot_multivariate
 # By putting them as a list, we can define a ``MultivariateFunctionalData``
 # object.
 argvals = np.linspace(0, np.pi, num=100)
-X = np.array([
-    np.sin(2 * np.pi * argvals),
-    np.cos(2 * np.pi * argvals)
-])
+X = np.array([np.sin(2 * np.pi * argvals), np.cos(2 * np.pi * argvals)])
 fdata_first = DenseFunctionalData(
-    argvals=DenseArgvals({'input_dim_0': argvals}),
-    values=DenseValues(X)
+    argvals=DenseArgvals({"input_dim_0": argvals}), values=DenseValues(X)
 )
 
 argvals = np.linspace(0, 1, num=50)
-X = np.array([
-    np.exp(-argvals),
-    np.log(1 + argvals)
-])
+X = np.array([np.exp(-argvals), np.log(1 + argvals)])
 fdata_second = DenseFunctionalData(
-    argvals=DenseArgvals({'input_dim_0': argvals}),
-    values=DenseValues(X)
+    argvals=DenseArgvals({"input_dim_0": argvals}), values=DenseValues(X)
 )
 
 fdata = MultivariateFunctionalData([fdata_first, fdata_second])
@@ -67,40 +59,45 @@ _ = plot_multivariate(fdata)
 # Second, we will define a univariate unidimensional irregular functional data
 # and a univariate two-dimensional dense functional data. By putting them as a
 # list, we can define a ``MultivariateFunctionalData`` object.
-argvals = IrregularArgvals({
-    0: DenseArgvals({
-        'input_dim_0': np.linspace(0, 1, num=20),
-        'input_dim_1': np.linspace(0, 1, num=20)
-    }),
-    1: DenseArgvals({
-        'input_dim_0': np.linspace(0.2, 0.8, num=15),
-        'input_dim_1': np.linspace(0.2, 0.8, num=15)
-    })
-})
-X = IrregularValues({
-    0: np.outer(
-        np.sin(argvals[0]['input_dim_0']),
-        np.cos(argvals[0]['input_dim_1'])
-    ),
-    1: np.outer(
-        np.sin(-argvals[1]['input_dim_0']),
-        np.cos(argvals[1]['input_dim_1'])
-    )
-})
-
-fdata_first = IrregularFunctionalData(
-    argvals=argvals,
-    values=X
+argvals = IrregularArgvals(
+    {
+        0: DenseArgvals(
+            {
+                "input_dim_0": np.linspace(0, 1, num=20),
+                "input_dim_1": np.linspace(0, 1, num=20),
+            }
+        ),
+        1: DenseArgvals(
+            {
+                "input_dim_0": np.linspace(0.2, 0.8, num=15),
+                "input_dim_1": np.linspace(0.2, 0.8, num=15),
+            }
+        ),
+    }
+)
+X = IrregularValues(
+    {
+        0: np.outer(
+            np.sin(argvals[0]["input_dim_0"]), np.cos(argvals[0]["input_dim_1"])
+        ),
+        1: np.outer(
+            np.sin(-argvals[1]["input_dim_0"]), np.cos(argvals[1]["input_dim_1"])
+        ),
+    }
 )
 
+fdata_first = IrregularFunctionalData(argvals=argvals, values=X)
+
 argvals = np.linspace(0, np.pi, num=100)
-X = np.array([
-    np.outer(np.sin(argvals), np.cos(argvals)),
-    np.outer(np.sin(-argvals), np.cos(argvals))
-])
+X = np.array(
+    [
+        np.outer(np.sin(argvals), np.cos(argvals)),
+        np.outer(np.sin(-argvals), np.cos(argvals)),
+    ]
+)
 fdata_second = DenseFunctionalData(
-    argvals=DenseArgvals({'input_dim_0': argvals, 'input_dim_1': argvals}),
-    values=DenseValues(X)
+    argvals=DenseArgvals({"input_dim_0": argvals, "input_dim_1": argvals}),
+    values=DenseValues(X),
 )
 
 fdata = MultivariateFunctionalData([fdata_first, fdata_second])

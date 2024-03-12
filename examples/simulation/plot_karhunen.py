@@ -40,7 +40,7 @@ n_obs = 10
 
 
 # Parameters of the basis
-name = 'fourier'
+name = "fourier"
 n_functions = 25
 argvals = np.arange(0, 10.01, 0.01)
 
@@ -54,9 +54,7 @@ argvals = np.arange(0, 10.01, 0.01)
 # :math:`\{0, 0.01, 0.02, \cdots, 1\}` (default), based on the first
 # :math:`K = 25` Fourier basis functions on :math:`[0, 1]` and the variance of
 # the scores random variables equal to :math:`1` (default).
-kl = KarhunenLoeve(
-    basis_name=name, n_functions=n_functions, random_state=rng
-)
+kl = KarhunenLoeve(basis_name=name, n_functions=n_functions, random_state=rng)
 kl.new(n_obs=n_obs)
 
 _ = plot(kl.data)
@@ -82,10 +80,8 @@ _ = plot(kl.data)
 # :math:`\{0, 0.01, 0.02, \cdots, 1\}` (default), based on the first
 # :math:`K = 25` Fourier basis functions on :math:`[0, 1]` and the decreasing
 # of the variance of the scores is exponential.
-kl = KarhunenLoeve(
-    basis_name=name, n_functions=n_functions, random_state=rng
-)
-kl.new(n_obs=n_obs, clusters_std='exponential')
+kl = KarhunenLoeve(basis_name=name, n_functions=n_functions, random_state=rng)
+kl.new(n_obs=n_obs, clusters_std="exponential")
 
 _ = plot(kl.data)
 
@@ -104,7 +100,7 @@ _ = plot(kl.data)
 # basis functions on :math:`[0, 1] \times [0, 1]` and the variance of
 # the scores random variables equal to :math:`1` (default).
 kl = KarhunenLoeve(
-    basis_name=name, dimension='2D', n_functions=n_functions, random_state=rng
+    basis_name=name, dimension="2D", n_functions=n_functions, random_state=rng
 )
 kl.new(n_obs=1)
 
@@ -119,8 +115,8 @@ _ = plot(kl.data)
 # basis functions on :math:`[0, 1] \times [0, 1]` and the decreasing
 # of the variance of the scores is linear.
 kl = KarhunenLoeve(
-    basis_name=name, dimension='2D', n_functions=n_functions, random_state=rng
+    basis_name=name, dimension="2D", n_functions=n_functions, random_state=rng
 )
-kl.new(n_obs=1, clusters_std='linear')
+kl.new(n_obs=1, clusters_std="linear")
 
 _ = plot(kl.data)

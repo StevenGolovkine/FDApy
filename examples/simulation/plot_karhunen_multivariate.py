@@ -44,13 +44,10 @@ n_obs = 10
 
 
 # Parameters of the basis
-name = ['fourier', 'bsplines']
+name = ["fourier", "bsplines"]
 n_functions = 5
-dimensions = ['2D', '1D']
-argvals = [
-    np.arange(0, 10.01, 0.01),
-    np.arange(-0.5, 0.51, 0.01)
-]
+dimensions = ["2D", "1D"]
+argvals = [np.arange(0, 10.01, 0.01), np.arange(-0.5, 0.51, 0.01)]
 
 ###############################################################################
 # Simulation for one-dimensional curve
@@ -67,9 +64,7 @@ argvals = [
 # :math:`\{0, 0.01, 0.02, \cdots, 1\}` (default), based on the first
 # :math:`K = 5` B-splines basis functions on :math:`[0, 1]` and the variance of
 # the scores random variables equal to :math:`1` (default).
-kl = KarhunenLoeve(
-    basis_name=name, n_functions=n_functions, random_state=rng
-)
+kl = KarhunenLoeve(basis_name=name, n_functions=n_functions, random_state=rng)
 kl.new(n_obs=n_obs)
 
 _ = plot_multivariate(kl.data)
@@ -105,10 +100,8 @@ _ = plot_multivariate(kl.data)
 # :math:`\{0, 0.01, 0.02, \cdots, 1\}` (default), based on the first
 # :math:`K = 5` B-splines basis functions on :math:`[0, 1]` and the decreasing
 # of the variance of the scores is exponential.
-kl = KarhunenLoeve(
-    basis_name=name, n_functions=n_functions, random_state=rng
-)
-kl.new(n_obs=n_obs, clusters_std='exponential')
+kl = KarhunenLoeve(basis_name=name, n_functions=n_functions, random_state=rng)
+kl.new(n_obs=n_obs, clusters_std="exponential")
 
 _ = plot_multivariate(kl.data)
 
@@ -134,10 +127,7 @@ _ = plot_multivariate(kl.data)
 # :math:`[0, 1]` and the variance of the scores random variables equal to
 # :math:`1` (default).
 kl = KarhunenLoeve(
-    basis_name=name,
-    dimension=dimensions,
-    n_functions=n_functions,
-    random_state=rng
+    basis_name=name, dimension=dimensions, n_functions=n_functions, random_state=rng
 )
 kl.new(n_obs=1)
 
@@ -156,11 +146,8 @@ _ = plot_multivariate(kl.data)
 # (default), based on the first :math:`K = 25` B-splines basis functions on
 # :math:`[0, 1]` and the decreasing of the variance of the scores is linear.
 kl = KarhunenLoeve(
-    basis_name=name,
-    dimension=dimensions,
-    n_functions=n_functions,
-    random_state=rng
+    basis_name=name, dimension=dimensions, n_functions=n_functions, random_state=rng
 )
-kl.new(n_obs=1, clusters_std='linear')
+kl.new(n_obs=1, clusters_std="linear")
 
 _ = plot_multivariate(kl.data)

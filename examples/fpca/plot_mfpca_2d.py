@@ -27,9 +27,9 @@ idx = 5
 
 
 # Parameters of the basis
-name = ['bsplines', 'fourier']
+name = ["bsplines", "fourier"]
 n_functions = 5
-dimension = ['2D', '2D']
+dimension = ["2D", "2D"]
 argvals = [np.linspace(0, 1, 21), np.linspace(0, 1, 21)]
 
 
@@ -51,7 +51,7 @@ kl = KarhunenLoeve(
     argvals=argvals,
     dimension=dimension,
     add_intercept=False,
-    random_state=rng
+    random_state=rng,
 )
 kl.new(n_obs=50)
 data = kl.data
@@ -60,13 +60,13 @@ data = kl.data
 # Plot of the data
 fig = plt.figure(figsize=plt.figaspect(0.5))
 
-ax = fig.add_subplot(1, 2, 1, projection='3d')
+ax = fig.add_subplot(1, 2, 1, projection="3d")
 ax = plot(data.data[0], ax=ax)
-ax.set_title('First component')
-  
-ax = fig.add_subplot(1, 2, 2, projection='3d')
+ax.set_title("First component")
+
+ax = fig.add_subplot(1, 2, 2, projection="3d")
 ax = plot(data.data[1], ax=ax)
-ax.set_title('Second component')
+ax.set_title("Second component")
 
 plt.show()
 
@@ -79,14 +79,14 @@ plt.show()
 # decomposition of the covariance operator. The decomposition of the covariance
 # operator is based on the FCP-TPA algorithm, which is an iterative algorithm.
 # The number of components has thus to be prespecified.
-mfpca_cov = MFPCA(n_components=[5, 5], method='covariance')
+mfpca_cov = MFPCA(n_components=[5, 5], method="covariance")
 mfpca_cov.fit(data)
 
 
 ###############################################################################
 # Estimate the scores -- projection of the curves onto the eigenfunctions -- by
 # numerical integration.
-scores_cov = mfpca_cov.transform(data, method='NumInt')
+scores_cov = mfpca_cov.transform(data, method="NumInt")
 
 # Plot of the scores
 _ = plt.scatter(scores_cov[:, 0], scores_cov[:, 1])
@@ -104,14 +104,14 @@ data_recons_cov = mfpca_cov.inverse_transform(scores_cov)
 # Perform multivariate FPCA with an estimation of the number of components by
 # the percentage of variance explained using a decomposition of the
 # inner-product matrix.
-mfpca_innpro = MFPCA(n_components=5, method='inner-product')
+mfpca_innpro = MFPCA(n_components=5, method="inner-product")
 mfpca_innpro.fit(data)
 
 
 ###############################################################################
 # Estimate the scores -- projection of the curves onto the eigenfunctions --
 # using the eigenvectors from the decomposition of the inner-product matrix.
-scores_innpro = mfpca_innpro.transform(method='InnPro')
+scores_innpro = mfpca_innpro.transform(method="InnPro")
 
 # Plot of the scores
 _ = plt.scatter(scores_innpro[:, 0], scores_innpro[:, 1])
@@ -128,31 +128,30 @@ data_recons_innpro = mfpca_innpro.inverse_transform(scores_innpro)
 indexes = np.random.choice(n_obs, 5)
 
 # For the first component
-fig, axes = plt.subplots(nrows=5, ncols=3, figsize=(16,16))
+fig, axes = plt.subplots(nrows=5, ncols=3, figsize=(16, 16))
 for idx_plot, idx in enumerate(indexes):
     axes[idx_plot, 0] = plot(data.data[0][idx], ax=axes[idx_plot, 0])
-    axes[idx_plot, 0].set_title('True')
-    
+    axes[idx_plot, 0].set_title("True")
+
     axes[idx_plot, 1] = plot(data_recons_cov.data[0][idx], ax=axes[idx_plot, 1])
-    axes[idx_plot, 1].set_title('FCPTPA')
-    
+    axes[idx_plot, 1].set_title("FCPTPA")
+
     axes[idx_plot, 2] = plot(data_recons_innpro.data[0][idx], ax=axes[idx_plot, 2])
-    axes[idx_plot, 2].set_title('InnPro')
-    
+    axes[idx_plot, 2].set_title("InnPro")
+
 plt.show()
 
 
 # For the second component
-fig, axes = plt.subplots(nrows=5, ncols=3, figsize=(16,16))
+fig, axes = plt.subplots(nrows=5, ncols=3, figsize=(16, 16))
 for idx_plot, idx in enumerate(indexes):
     axes[idx_plot, 0] = plot(data.data[1][idx], ax=axes[idx_plot, 0])
-    axes[idx_plot, 0].set_title('True')
-    
-    axes[idx_plot, 1] = plot(data_recons_cov.data[1][idx], ax=axes[idx_plot, 1])
-    axes[idx_plot, 1].set_title('FCPTPA')
-    
-    axes[idx_plot, 2] = plot(data_recons_innpro.data[1][idx], ax=axes[idx_plot, 2])
-    axes[idx_plot, 2].set_title('InnPro')
-    
-plt.show()
+    axes[idx_plot, 0].set_title("True")
 
+    axes[idx_plot, 1] = plot(data_recons_cov.data[1][idx], ax=axes[idx_plot, 1])
+    axes[idx_plot, 1].set_title("FCPTPA")
+
+    axes[idx_plot, 2] = plot(data_recons_innpro.data[1][idx], ax=axes[idx_plot, 2])
+    axes[idx_plot, 2].set_title("InnPro")
+
+plt.show()

@@ -13,31 +13,34 @@ from FDApy.representation.values import DenseValues, IrregularValues
 from FDApy.representation.functional_data import (
     FunctionalData,
     DenseFunctionalData,
-    IrregularFunctionalData
+    IrregularFunctionalData,
 )
 
 THIS_DIR = Path(__file__)
 
+
 class TestIrregularFunctionalData(unittest.TestCase):
     def setUp(self):
-        self.argvals = IrregularArgvals({
-            0: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4])}),
-            1: DenseArgvals({'input_dim_0': np.array([0, 2, 4])}),
-            2: DenseArgvals({'input_dim_0': np.array([2, 4])}),
-        })
-        self.values = IrregularValues({
-            0: np.array([1, 2, 3, 4, 5]),
-            1: np.array([2, 5, 6]),
-            2: np.array([4, 7]),
-        })
+        self.argvals = IrregularArgvals(
+            {
+                0: DenseArgvals({"input_dim_0": np.array([0, 1, 2, 3, 4])}),
+                1: DenseArgvals({"input_dim_0": np.array([0, 2, 4])}),
+                2: DenseArgvals({"input_dim_0": np.array([2, 4])}),
+            }
+        )
+        self.values = IrregularValues(
+            {
+                0: np.array([1, 2, 3, 4, 5]),
+                1: np.array([2, 5, 6]),
+                2: np.array([4, 7]),
+            }
+        )
         self.fdata = IrregularFunctionalData(self.argvals, self.values)
 
-        self.dense_argvals = DenseArgvals({'input_dim_0': np.array([1, 2, 3, 4, 5])})
-        self.dense_values = DenseValues(np.array([
-            [1, 2, 3, 4, 5],
-            [6, 7, 8, 9, 10],
-            [11, 12, 13, 14, 15]
-        ]))
+        self.dense_argvals = DenseArgvals({"input_dim_0": np.array([1, 2, 3, 4, 5])})
+        self.dense_values = DenseValues(
+            np.array([[1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [11, 12, 13, 14, 15]])
+        )
         self.dense_data = DenseFunctionalData(self.dense_argvals, self.dense_values)
 
     def test_get_item_slice(self):
@@ -45,8 +48,12 @@ class TestIrregularFunctionalData(unittest.TestCase):
         self.assertIsInstance(fdata, IrregularFunctionalData)
         self.assertEqual(fdata.n_obs, 2)
         self.assertEqual(fdata.n_dimension, 1)
-        np.testing.assert_equal(fdata.argvals[1]['input_dim_0'], self.argvals[1]['input_dim_0'])
-        np.testing.assert_equal(fdata.argvals[2]['input_dim_0'], self.argvals[2]['input_dim_0'])
+        np.testing.assert_equal(
+            fdata.argvals[1]["input_dim_0"], self.argvals[1]["input_dim_0"]
+        )
+        np.testing.assert_equal(
+            fdata.argvals[2]["input_dim_0"], self.argvals[2]["input_dim_0"]
+        )
         np.testing.assert_equal(fdata.values[1], self.values[1])
 
     def test_get_item_index(self):
@@ -54,7 +61,9 @@ class TestIrregularFunctionalData(unittest.TestCase):
         self.assertIsInstance(fdata, IrregularFunctionalData)
         self.assertEqual(fdata.n_obs, 1)
         self.assertEqual(fdata.n_dimension, 1)
-        np.testing.assert_equal(fdata.argvals[1]['input_dim_0'], self.argvals[1]['input_dim_0'])
+        np.testing.assert_equal(
+            fdata.argvals[1]["input_dim_0"], self.argvals[1]["input_dim_0"]
+        )
         np.testing.assert_equal(fdata.values[1], self.values[1])
 
     def test_argvals_getter(self):
@@ -62,19 +71,23 @@ class TestIrregularFunctionalData(unittest.TestCase):
         np.testing.assert_equal(argvals, self.argvals)
 
     def test_argvals_setter(self):
-        new_argvals = IrregularArgvals({
-            0: DenseArgvals({'input_dim_0': np.array([5, 6, 7, 8, 9])}),
-            1: DenseArgvals({'input_dim_0': np.array([6, 8, 10])}),
-            2: DenseArgvals({'input_dim_0': np.array([6, 8])}),
-        })
+        new_argvals = IrregularArgvals(
+            {
+                0: DenseArgvals({"input_dim_0": np.array([5, 6, 7, 8, 9])}),
+                1: DenseArgvals({"input_dim_0": np.array([6, 8, 10])}),
+                2: DenseArgvals({"input_dim_0": np.array([6, 8])}),
+            }
+        )
         self.fdata.argvals = new_argvals
         np.testing.assert_equal(self.fdata._argvals, new_argvals)
 
-        expected_argvals_stand = IrregularArgvals({
-            0: DenseArgvals({'input_dim_0': np.array([0, 0.2, 0.4, 0.6, 0.8])}),
-            1: DenseArgvals({'input_dim_0': np.array([0.2, 0.6, 1])}),
-            2: DenseArgvals({'input_dim_0': np.array([0.2, 0.6])}),
-        })
+        expected_argvals_stand = IrregularArgvals(
+            {
+                0: DenseArgvals({"input_dim_0": np.array([0, 0.2, 0.4, 0.6, 0.8])}),
+                1: DenseArgvals({"input_dim_0": np.array([0.2, 0.6, 1])}),
+                2: DenseArgvals({"input_dim_0": np.array([0.2, 0.6])}),
+            }
+        )
         np.testing.assert_equal(self.fdata.argvals_stand, expected_argvals_stand)
 
         with self.assertRaises(TypeError):
@@ -85,11 +98,13 @@ class TestIrregularFunctionalData(unittest.TestCase):
         np.testing.assert_array_equal(values, self.values)
 
     def test_values_setter(self):
-        new_values = IrregularValues({
-            0: np.array([1, 4, 3, 4, 9]),
-            1: np.array([1, 5, 3]),
-            2: np.array([7, 7]),
-        })
+        new_values = IrregularValues(
+            {
+                0: np.array([1, 4, 3, 4, 9]),
+                1: np.array([1, 5, 3]),
+                2: np.array([7, 7]),
+            }
+        )
         self.fdata.values = new_values
         np.testing.assert_array_equal(self.fdata.values, new_values)
 
@@ -97,7 +112,7 @@ class TestIrregularFunctionalData(unittest.TestCase):
             self.fdata.values = 0
 
     def test_n_points(self):
-        expected_n_points = {0: (5,), 1: (3, ), 2: (2, )}
+        expected_n_points = {0: (5,), 1: (3,), 2: (2,)}
         self.assertDictEqual(self.fdata.n_points, expected_n_points)
 
     def test_is_compatible(self):
@@ -109,29 +124,49 @@ class TestIrregularFunctionalData(unittest.TestCase):
             IrregularFunctionalData._is_compatible(self.fdata, self.dense_data)
 
     def test_non_compatible_nobs(self):
-        argvals = IrregularArgvals({
-            0: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4])}),
-            1: DenseArgvals({'input_dim_0': np.array([0, 2, 4])}),
-        })
-        values = IrregularValues({
-            0: np.array([1, 2, 3, 4, 5]),
-            1: np.array([2, 5, 6]),
-        })
+        argvals = IrregularArgvals(
+            {
+                0: DenseArgvals({"input_dim_0": np.array([0, 1, 2, 3, 4])}),
+                1: DenseArgvals({"input_dim_0": np.array([0, 2, 4])}),
+            }
+        )
+        values = IrregularValues(
+            {
+                0: np.array([1, 2, 3, 4, 5]),
+                1: np.array([2, 5, 6]),
+            }
+        )
         func_data = IrregularFunctionalData(argvals, values)
         with self.assertRaises(ValueError):
             IrregularFunctionalData._is_compatible(self.fdata, func_data)
 
     def test_non_compatible_ndim(self):
-        argvals = IrregularArgvals({
-            0: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4]), 'input_dim_1': np.array([5, 6, 7])}),
-            1: DenseArgvals({'input_dim_0': np.array([0, 2, 4]), 'input_dim_1': np.array([1, 2, 3])}),
-            2: DenseArgvals({'input_dim_0': np.array([2, 4]), 'input_dim_1': np.array([1, 2])})
-        })
-        values = IrregularValues({
-            0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4], [1, 2, 4]]),
-            1: np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]]),
-            2: np.array([[1, 2], [3, 4]])
-        })
+        argvals = IrregularArgvals(
+            {
+                0: DenseArgvals(
+                    {
+                        "input_dim_0": np.array([0, 1, 2, 3, 4]),
+                        "input_dim_1": np.array([5, 6, 7]),
+                    }
+                ),
+                1: DenseArgvals(
+                    {
+                        "input_dim_0": np.array([0, 2, 4]),
+                        "input_dim_1": np.array([1, 2, 3]),
+                    }
+                ),
+                2: DenseArgvals(
+                    {"input_dim_0": np.array([2, 4]), "input_dim_1": np.array([1, 2])}
+                ),
+            }
+        )
+        values = IrregularValues(
+            {
+                0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4], [1, 2, 4]]),
+                1: np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]]),
+                2: np.array([[1, 2], [3, 4]]),
+            }
+        )
         func_data = IrregularFunctionalData(argvals, values)
         with self.assertRaises(ValueError):
             IrregularFunctionalData._is_compatible(self.fdata, func_data)
@@ -139,22 +174,26 @@ class TestIrregularFunctionalData(unittest.TestCase):
     def test_concatenate(self):
         fdata = IrregularFunctionalData.concatenate(self.fdata, self.fdata)
 
-        expected_argvals = IrregularArgvals({
-            0: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4])}),
-            1: DenseArgvals({'input_dim_0': np.array([0, 2, 4])}),
-            2: DenseArgvals({'input_dim_0': np.array([2, 4])}),
-            3: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4])}),
-            4: DenseArgvals({'input_dim_0': np.array([0, 2, 4])}),
-            5: DenseArgvals({'input_dim_0': np.array([2, 4])}),
-        })
-        expected_values = IrregularValues({
-            0: np.array([1, 2, 3, 4, 5]),
-            1: np.array([2, 5, 6]),
-            2: np.array([4, 7]),
-            3: np.array([1, 2, 3, 4, 5]),
-            4: np.array([2, 5, 6]),
-            5: np.array([4, 7]),
-        })
+        expected_argvals = IrregularArgvals(
+            {
+                0: DenseArgvals({"input_dim_0": np.array([0, 1, 2, 3, 4])}),
+                1: DenseArgvals({"input_dim_0": np.array([0, 2, 4])}),
+                2: DenseArgvals({"input_dim_0": np.array([2, 4])}),
+                3: DenseArgvals({"input_dim_0": np.array([0, 1, 2, 3, 4])}),
+                4: DenseArgvals({"input_dim_0": np.array([0, 2, 4])}),
+                5: DenseArgvals({"input_dim_0": np.array([2, 4])}),
+            }
+        )
+        expected_values = IrregularValues(
+            {
+                0: np.array([1, 2, 3, 4, 5]),
+                1: np.array([2, 5, 6]),
+                2: np.array([4, 7]),
+                3: np.array([1, 2, 3, 4, 5]),
+                4: np.array([2, 5, 6]),
+                5: np.array([4, 7]),
+            }
+        )
 
         self.assertIsInstance(fdata, IrregularFunctionalData)
         np.testing.assert_allclose(fdata.argvals, expected_argvals)
@@ -168,9 +207,9 @@ class TestIrregularFunctionalData(unittest.TestCase):
         expected_values = DenseValues(np.array([1, 2, 3, 4, 5, 2, 5, 6, 4, 7]))
 
         self.assertTrue(isinstance(result, pd.DataFrame))
-        np.testing.assert_array_equal(result['input_dim_0'].values, expected_dim)
-        np.testing.assert_array_equal(result['id'].values, expected_id)
-        np.testing.assert_array_equal(result['values'].values, expected_values)
+        np.testing.assert_array_equal(result["input_dim_0"].values, expected_dim)
+        np.testing.assert_array_equal(result["id"].values, expected_id)
+        np.testing.assert_array_equal(result["values"].values, expected_values)
 
 
 class TestIrregularFunctionalData1D(unittest.TestCase):
@@ -178,9 +217,9 @@ class TestIrregularFunctionalData1D(unittest.TestCase):
 
     def setUp(self):
         self.argvals = {
-            0: DenseArgvals({'input_dim_0': np.array([1, 2, 3, 4])}),
-            1: DenseArgvals({'input_dim_0': np.array([2, 4])}),
-            2: DenseArgvals({'input_dim_0': np.array([0, 2, 3])}),
+            0: DenseArgvals({"input_dim_0": np.array([1, 2, 3, 4])}),
+            1: DenseArgvals({"input_dim_0": np.array([2, 4])}),
+            2: DenseArgvals({"input_dim_0": np.array([0, 2, 3])}),
         }
         self.values = {
             0: np.array([1, 2, 3, 4]),
@@ -194,17 +233,16 @@ class TestIrregularFunctionalData1D(unittest.TestCase):
     def test_argvals_stand(self):
         is_equal = [
             np.allclose(
-                self.irregu_fd.argvals_stand[0]['input_dim_0'],
-                np.array([0.25, 0.5, 0.75, 1.])
+                self.irregu_fd.argvals_stand[0]["input_dim_0"],
+                np.array([0.25, 0.5, 0.75, 1.0]),
             ),
             np.allclose(
-                self.irregu_fd.argvals_stand[1]['input_dim_0'],
-                np.array([0.5, 1.])
+                self.irregu_fd.argvals_stand[1]["input_dim_0"], np.array([0.5, 1.0])
             ),
             np.allclose(
-                self.irregu_fd.argvals_stand[2]['input_dim_0'],
-                np.array([0., 0.5, 0.75])
-            )
+                self.irregu_fd.argvals_stand[2]["input_dim_0"],
+                np.array([0.0, 0.5, 0.75]),
+            ),
         ]
         self.assertTrue(np.all(is_equal))
 
@@ -228,8 +266,9 @@ class TestIrregularFunctionalData1D(unittest.TestCase):
 
     def test_mean(self):
         mean_fd = self.irregu_fd.mean()
-        is_equal = np.allclose(mean_fd.values,
-                               np.array([[8., 1., 5.33333333, 5., 5.]]))
+        is_equal = np.allclose(
+            mean_fd.values, np.array([[8.0, 1.0, 5.33333333, 5.0, 5.0]])
+        )
         self.assertTrue(is_equal)
 
 
@@ -238,23 +277,23 @@ class TestIrregularFunctionalData2D(unittest.TestCase):
 
     def setUp(self):
         argvals = {
-            0: DenseArgvals({
-                'input_dim_0': np.array([1, 2, 3, 4]),
-                'input_dim_1': np.array([5, 6, 7])
-            }),
-            1: DenseArgvals({
-                'input_dim_0': np.array([2, 4]),
-                'input_dim_1': np.array([1, 2, 3])
-            }),
-            2: DenseArgvals({
-                'input_dim_0': np.array([4, 5, 6]),
-                'input_dim_1': np.array([8, 9])
-            })
+            0: DenseArgvals(
+                {
+                    "input_dim_0": np.array([1, 2, 3, 4]),
+                    "input_dim_1": np.array([5, 6, 7]),
+                }
+            ),
+            1: DenseArgvals(
+                {"input_dim_0": np.array([2, 4]), "input_dim_1": np.array([1, 2, 3])}
+            ),
+            2: DenseArgvals(
+                {"input_dim_0": np.array([4, 5, 6]), "input_dim_1": np.array([8, 9])}
+            ),
         }
         values = {
             0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
             1: np.array([[1, 2, 3], [1, 2, 3]]),
-            2: np.array([[8, 9], [8, 9], [8, 9]])
+            2: np.array([[8, 9], [8, 9], [8, 9]]),
         }
         self.irregu_fd = IrregularFunctionalData(
             IrregularArgvals(argvals), IrregularValues(values)
@@ -263,29 +302,27 @@ class TestIrregularFunctionalData2D(unittest.TestCase):
     def test_argvals_stand(self):
         is_equal = [
             np.allclose(
-                self.irregu_fd.argvals_stand[0]['input_dim_0'],
-                np.array([0., 0.2, 0.4, 0.6])
+                self.irregu_fd.argvals_stand[0]["input_dim_0"],
+                np.array([0.0, 0.2, 0.4, 0.6]),
             ),
             np.allclose(
-                self.irregu_fd.argvals_stand[1]['input_dim_0'],
-                np.array([0.2, 0.6])
+                self.irregu_fd.argvals_stand[1]["input_dim_0"], np.array([0.2, 0.6])
             ),
             np.allclose(
-                self.irregu_fd.argvals_stand[2]['input_dim_0'],
-                np.array([0.6, 0.8, 1.])
+                self.irregu_fd.argvals_stand[2]["input_dim_0"],
+                np.array([0.6, 0.8, 1.0]),
             ),
             np.allclose(
-                self.irregu_fd.argvals_stand[0]['input_dim_1'],
-                np.array([0.5, 0.625, 0.75])
+                self.irregu_fd.argvals_stand[0]["input_dim_1"],
+                np.array([0.5, 0.625, 0.75]),
             ),
             np.allclose(
-                self.irregu_fd.argvals_stand[1]['input_dim_1'],
-                np.array([0., 0.125, 0.25])
+                self.irregu_fd.argvals_stand[1]["input_dim_1"],
+                np.array([0.0, 0.125, 0.25]),
             ),
             np.allclose(
-                self.irregu_fd.argvals_stand[2]['input_dim_1'],
-                np.array([0.875, 1.])
-            )
+                self.irregu_fd.argvals_stand[2]["input_dim_1"], np.array([0.875, 1.0])
+            ),
         ]
         self.assertTrue(np.all(is_equal))
 
@@ -310,101 +347,146 @@ class TestIrregularFunctionalData2D(unittest.TestCase):
     def test_to_long(self):
         result = self.irregu_fd.to_long()
 
-        expected_dim_0 = np.array([1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 2, 2, 2, 4, 4, 4, 4, 4, 5, 5, 6, 6])
-        expected_dim_1 = np.array([5, 6, 7, 5, 6, 7, 5, 6, 7, 5, 6, 7, 1, 2, 3, 1, 2, 3, 8, 9, 8, 9, 8, 9])
-        expected_id = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2])
-        expected_values = np.array([1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 1, 2, 3, 8, 9, 8, 9, 8, 9])
+        expected_dim_0 = np.array(
+            [1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 2, 2, 2, 4, 4, 4, 4, 4, 5, 5, 6, 6]
+        )
+        expected_dim_1 = np.array(
+            [5, 6, 7, 5, 6, 7, 5, 6, 7, 5, 6, 7, 1, 2, 3, 1, 2, 3, 8, 9, 8, 9, 8, 9]
+        )
+        expected_id = np.array(
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2]
+        )
+        expected_values = np.array(
+            [1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 1, 2, 3, 8, 9, 8, 9, 8, 9]
+        )
 
         self.assertTrue(isinstance(result, pd.DataFrame))
-        np.testing.assert_array_equal(result['input_dim_0'].values, expected_dim_0)
-        np.testing.assert_array_equal(result['input_dim_1'].values, expected_dim_1)
-        np.testing.assert_array_equal(result['id'].values, expected_id)
-        np.testing.assert_array_equal(result['values'].values, expected_values)
+        np.testing.assert_array_equal(result["input_dim_0"].values, expected_dim_0)
+        np.testing.assert_array_equal(result["input_dim_1"].values, expected_dim_1)
+        np.testing.assert_array_equal(result["id"].values, expected_id)
+        np.testing.assert_array_equal(result["values"].values, expected_values)
 
     def test_mean(self):
         N = np.nan
         mean_fd = self.irregu_fd.mean()
-        expected_mean = DenseValues(np.array([[
-            [0., 0., 0., 1., 2., 3., 0., 0.],
-            [1., 2., 3., 4., 1., 2., 0., 0.],
-            [0., 0., 0., 3., 4., 1., 0., 0.],
-            [1., 2., 3., 2., 3., 4., 8., 9.],
-            [0., 0., 0., 0., 0., 0., 8., 9.],
-            [0., 0., 0., 0., 0., 0., 8., 9.]
-        ]]))
+        expected_mean = DenseValues(
+            np.array(
+                [
+                    [
+                        [0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 0.0, 0.0],
+                        [1.0, 2.0, 3.0, 4.0, 1.0, 2.0, 0.0, 0.0],
+                        [0.0, 0.0, 0.0, 3.0, 4.0, 1.0, 0.0, 0.0],
+                        [1.0, 2.0, 3.0, 2.0, 3.0, 4.0, 8.0, 9.0],
+                        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0, 9.0],
+                        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0, 9.0],
+                    ]
+                ]
+            )
+        )
         np.testing.assert_allclose(mean_fd.values, expected_mean)
 
 
 class TestPerformComputation(unittest.TestCase):
     def setUp(self):
         self.argvals = {
-            0: DenseArgvals({'input_dim_0': np.array([0, 1, 2, 3, 4])}),
-            1: DenseArgvals({'input_dim_0': np.array([0, 2, 4])}),
-            2: DenseArgvals({'input_dim_0': np.array([2, 4])})
+            0: DenseArgvals({"input_dim_0": np.array([0, 1, 2, 3, 4])}),
+            1: DenseArgvals({"input_dim_0": np.array([0, 2, 4])}),
+            2: DenseArgvals({"input_dim_0": np.array([2, 4])}),
         }
         self.values1 = {
             0: np.array([1, 2, 3, 4, 5]),
             1: np.array([2, 5, 6]),
-            2: np.array([4, 7])
+            2: np.array([4, 7]),
         }
-        self.func_data1 = IrregularFunctionalData(IrregularArgvals(self.argvals), IrregularValues(self.values1))
+        self.func_data1 = IrregularFunctionalData(
+            IrregularArgvals(self.argvals), IrregularValues(self.values1)
+        )
 
         self.values2 = {
             0: np.array([5, 4, 3, 2, 1]),
             1: np.array([5, 3, 1]),
-            2: np.array([5, 3])
+            2: np.array([5, 3]),
         }
-        self.func_data2 = IrregularFunctionalData(IrregularArgvals(self.argvals), IrregularValues(self.values2))
+        self.func_data2 = IrregularFunctionalData(
+            IrregularArgvals(self.argvals), IrregularValues(self.values2)
+        )
 
     def test_addition(self):
         result = self.func_data1 + self.func_data2
 
-        expected_values = IrregularValues({0: np.array([6, 6, 6, 6, 6]), 1: np.array([7, 8, 7]), 2: np.array([ 9, 10])})
+        expected_values = IrregularValues(
+            {0: np.array([6, 6, 6, 6, 6]), 1: np.array([7, 8, 7]), 2: np.array([9, 10])}
+        )
         np.testing.assert_equal(result.argvals, IrregularArgvals(self.argvals))
         np.testing.assert_array_equal(result.values, expected_values)
 
     def test_substraction(self):
         result = self.func_data1 - self.func_data2
 
-        expected_values = IrregularValues({0: np.array([-4, -2,  0,  2,  4]), 1: np.array([-3,  2,  5]), 2: np.array([-1,  4])})
+        expected_values = IrregularValues(
+            {
+                0: np.array([-4, -2, 0, 2, 4]),
+                1: np.array([-3, 2, 5]),
+                2: np.array([-1, 4]),
+            }
+        )
         self.assertEqual(result.argvals, IrregularArgvals(self.argvals))
         np.testing.assert_array_equal(result.values, expected_values)
 
     def test_multiplication(self):
         result = self.func_data1 * self.func_data2
 
-        expected_values = IrregularValues({0: np.array([5, 8, 9, 8, 5]), 1: np.array([10, 15,  6]), 2: np.array([20, 21])})
+        expected_values = IrregularValues(
+            {
+                0: np.array([5, 8, 9, 8, 5]),
+                1: np.array([10, 15, 6]),
+                2: np.array([20, 21]),
+            }
+        )
         self.assertEqual(result.argvals, IrregularArgvals(self.argvals))
         np.testing.assert_array_equal(result.values, expected_values)
 
     def test_right_multiplication(self):
         result = FunctionalData.__rmul__(self.func_data1, self.func_data2)
 
-        expected_values = IrregularValues({0: np.array([5, 8, 9, 8, 5]), 1: np.array([10, 15,  6]), 2: np.array([20, 21])})
+        expected_values = IrregularValues(
+            {
+                0: np.array([5, 8, 9, 8, 5]),
+                1: np.array([10, 15, 6]),
+                2: np.array([20, 21]),
+            }
+        )
         self.assertEqual(result.argvals, IrregularArgvals(self.argvals))
         np.testing.assert_array_equal(result.values, expected_values)
 
     def test_true_divide(self):
         result = self.func_data1 / self.func_data2
 
-        expected_values = IrregularValues({0: np.array([0.2, 0.5, 1. , 2. , 5. ]), 1: np.array([0.4, 1.66666667, 6.]), 2: np.array([0.8, 2.33333333])})
+        expected_values = IrregularValues(
+            {
+                0: np.array([0.2, 0.5, 1.0, 2.0, 5.0]),
+                1: np.array([0.4, 1.66666667, 6.0]),
+                2: np.array([0.8, 2.33333333]),
+            }
+        )
         self.assertEqual(result.argvals, IrregularArgvals(self.argvals))
         np.testing.assert_array_almost_equal(result.values, expected_values)
 
     def test_floor_divide(self):
         result = self.func_data1 // self.func_data2
 
-        expected_values = IrregularValues({0: np.array([0, 0, 1, 2, 5]), 1: np.array([0, 1, 6]), 2: np.array([0, 2])})
+        expected_values = IrregularValues(
+            {0: np.array([0, 0, 1, 2, 5]), 1: np.array([0, 1, 6]), 2: np.array([0, 2])}
+        )
         self.assertEqual(result.argvals, IrregularArgvals(self.argvals))
         np.testing.assert_array_almost_equal(result.values, expected_values)
 
 
 class TestNoisevariance(unittest.TestCase):
     def setUp(self) -> None:
-        fname = THIS_DIR.parent / 'data/data_sparse_5_100_08.pickle'
-        with open(fname, 'rb') as handle:
+        fname = THIS_DIR.parent / "data/data_sparse_5_100_08.pickle"
+        with open(fname, "rb") as handle:
             self.fdata_sparse = pickle.load(handle)
-
 
     def test_noise_variance(self):
         res = self.fdata_sparse.noise_variance(order=2)
@@ -413,23 +495,23 @@ class TestNoisevariance(unittest.TestCase):
 
     def test_noise_variance_error(self):
         argvals = {
-            0: DenseArgvals({
-                'input_dim_0': np.array([1, 2, 3, 4]),
-                'input_dim_1': np.array([5, 6, 7])
-            }),
-            1: DenseArgvals({
-                'input_dim_0': np.array([2, 4]),
-                'input_dim_1': np.array([1, 2, 3])
-            }),
-            2: DenseArgvals({
-                'input_dim_0': np.array([4, 5, 6]),
-                'input_dim_1': np.array([8, 9])
-            })
+            0: DenseArgvals(
+                {
+                    "input_dim_0": np.array([1, 2, 3, 4]),
+                    "input_dim_1": np.array([5, 6, 7]),
+                }
+            ),
+            1: DenseArgvals(
+                {"input_dim_0": np.array([2, 4]), "input_dim_1": np.array([1, 2, 3])}
+            ),
+            2: DenseArgvals(
+                {"input_dim_0": np.array([4, 5, 6]), "input_dim_1": np.array([8, 9])}
+            ),
         }
         values = {
             0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
             1: np.array([[1, 2, 3], [1, 2, 3]]),
-            2: np.array([[8, 9], [8, 9], [8, 9]])
+            2: np.array([[8, 9], [8, 9], [8, 9]]),
         }
         irregu_fd = IrregularFunctionalData(
             IrregularArgvals(argvals), IrregularValues(values)
@@ -441,143 +523,462 @@ class TestNoisevariance(unittest.TestCase):
 
 class TestSmoothIrregular(unittest.TestCase):
     def setUp(self):
-        fname = THIS_DIR.parent / 'data/data_sparse_5_1_08.pickle'
-        with open(fname, 'rb') as handle:
+        fname = THIS_DIR.parent / "data/data_sparse_5_1_08.pickle"
+        with open(fname, "rb") as handle:
             self.fdata_sparse = pickle.load(handle)
 
     def test_smooth_1d(self):
         fdata_smooth = self.fdata_sparse.smooth()
-        expected_values = DenseValues([
-            [-0.56326329, -0.54494478, -0.52641978, -0.50764072,
-             -0.46922041, -0.44956399, -0.42961677, -0.40938993,
-             -0.38884672, -0.36810284, -0.34716776, -0.32605597,
-             -0.30478539, -0.28337458, -0.26185082, -0.24023413,
-             -0.19680983, -0.17503878, -0.15325514, -0.13148416,
-             -0.1097493, -0.0880272, -0.06637831, -0.04482937,
-             -0.02340539, -0.00212955,  0.01898122,  0.04004811,
-             0.06090899,  0.08154169,  0.10192679,  0.12204756,
-             0.16144216,  0.18069549,  0.21828335,  0.23661482,
-             0.27275286,  0.29054899,  0.30839357,  0.32583092,
-             0.34283442,  0.35946872,  0.37610682,  0.3922227,
-             0.42281379,  0.43725521,  0.45110589,  0.46435006,
-             0.48895389,  0.5002791,  0.51092835,  0.52089975,
-             0.54112228,  0.55092278,  0.56042424,  0.57831341,
-             0.58660713,  0.59441184,  0.60169115,  0.60841245,
-             0.62007098,  0.62496515,  0.6292169,  0.63282094,
-             0.63578081,  0.63811047,  0.64004341,  0.64134317,
-             0.64202213,  0.64220011,  0.64172507,  0.63883052,
-             0.63306105,  0.62907168,  0.62436033,  0.61288891,
-             0.60622996,  0.59905879,  0.59080173,  0.58186235,
-             0.57232521,  0.56228659,  0.5518756,  0.54009588,
-             0.52769149,  0.51479854]
-        ])
+        expected_values = DenseValues(
+            [
+                [
+                    -0.56326329,
+                    -0.54494478,
+                    -0.52641978,
+                    -0.50764072,
+                    -0.46922041,
+                    -0.44956399,
+                    -0.42961677,
+                    -0.40938993,
+                    -0.38884672,
+                    -0.36810284,
+                    -0.34716776,
+                    -0.32605597,
+                    -0.30478539,
+                    -0.28337458,
+                    -0.26185082,
+                    -0.24023413,
+                    -0.19680983,
+                    -0.17503878,
+                    -0.15325514,
+                    -0.13148416,
+                    -0.1097493,
+                    -0.0880272,
+                    -0.06637831,
+                    -0.04482937,
+                    -0.02340539,
+                    -0.00212955,
+                    0.01898122,
+                    0.04004811,
+                    0.06090899,
+                    0.08154169,
+                    0.10192679,
+                    0.12204756,
+                    0.16144216,
+                    0.18069549,
+                    0.21828335,
+                    0.23661482,
+                    0.27275286,
+                    0.29054899,
+                    0.30839357,
+                    0.32583092,
+                    0.34283442,
+                    0.35946872,
+                    0.37610682,
+                    0.3922227,
+                    0.42281379,
+                    0.43725521,
+                    0.45110589,
+                    0.46435006,
+                    0.48895389,
+                    0.5002791,
+                    0.51092835,
+                    0.52089975,
+                    0.54112228,
+                    0.55092278,
+                    0.56042424,
+                    0.57831341,
+                    0.58660713,
+                    0.59441184,
+                    0.60169115,
+                    0.60841245,
+                    0.62007098,
+                    0.62496515,
+                    0.6292169,
+                    0.63282094,
+                    0.63578081,
+                    0.63811047,
+                    0.64004341,
+                    0.64134317,
+                    0.64202213,
+                    0.64220011,
+                    0.64172507,
+                    0.63883052,
+                    0.63306105,
+                    0.62907168,
+                    0.62436033,
+                    0.61288891,
+                    0.60622996,
+                    0.59905879,
+                    0.59080173,
+                    0.58186235,
+                    0.57232521,
+                    0.56228659,
+                    0.5518756,
+                    0.54009588,
+                    0.52769149,
+                    0.51479854,
+                ]
+            ]
+        )
         np.testing.assert_array_almost_equal(fdata_smooth.values, expected_values)
 
     def test_smooth_2d(self):
-        argvals = IrregularArgvals({
-            0: DenseArgvals({
-                'input_dim_0': np.array([1, 2, 3, 4]),
-                'input_dim_1': np.array([5, 6, 7])
-            }),
-            1: DenseArgvals({
-                'input_dim_0': np.array([2, 4]),
-                'input_dim_1': np.array([1, 2, 3])
-            }),
-            2: DenseArgvals({
-                'input_dim_0': np.array([4, 5, 6]),
-                'input_dim_1': np.array([8, 9])
-            })
-        })
-        values = IrregularValues({
-            0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
-            1: np.array([[1, 2, 3], [1, 2, 3]]),
-            2: np.array([[8, 9], [8, 9], [8, 9]])
-        })
+        argvals = IrregularArgvals(
+            {
+                0: DenseArgvals(
+                    {
+                        "input_dim_0": np.array([1, 2, 3, 4]),
+                        "input_dim_1": np.array([5, 6, 7]),
+                    }
+                ),
+                1: DenseArgvals(
+                    {
+                        "input_dim_0": np.array([2, 4]),
+                        "input_dim_1": np.array([1, 2, 3]),
+                    }
+                ),
+                2: DenseArgvals(
+                    {
+                        "input_dim_0": np.array([4, 5, 6]),
+                        "input_dim_1": np.array([8, 9]),
+                    }
+                ),
+            }
+        )
+        values = IrregularValues(
+            {
+                0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
+                1: np.array([[1, 2, 3], [1, 2, 3]]),
+                2: np.array([[8, 9], [8, 9], [8, 9]]),
+            }
+        )
         data = IrregularFunctionalData(argvals, values)
         fdata_smooth = data.smooth()
 
-        expected_values = DenseValues([[[0., 0., 0., 1., 2., 3., 0., 0.],[0., 0., 0., 4., 1., 2., 0., 0.],[0., 0., 0., 3., 4., 1., 0., 0.],[0., 0., 0., 2., 3., 4., 0., 0.],[0., 0., 0., 0., 0., 0., 0., 0.],[0., 0., 0., 0., 0., 0., 0., 0.]],[[0., 0., 0., 0., 0., 0., 0., 0.],[1., 2., 3., 0., 0., 0., 0., 0.],[0., 0., 0., 0., 0., 0., 0., 0.],[1., 2., 3., 0., 0., 0., 0., 0.],[0., 0., 0., 0., 0., 0., 0., 0.],[0., 0., 0., 0., 0., 0., 0., 0.]],[[0., 0., 0., 0., 0., 0., 0., 0.],[0., 0., 0., 0., 0., 0., 0., 0.],[0., 0., 0., 0., 0., 0., 0., 0.],[0., 0., 0., 0., 0., 0., 8., 9.],[0., 0., 0., 0., 0., 0., 8., 9.],[0., 0., 0., 0., 0., 0., 8., 9.]]])
+        expected_values = DenseValues(
+            [
+                [
+                    [0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0, 4.0, 1.0, 2.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0, 3.0, 4.0, 1.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0, 2.0, 3.0, 4.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                ],
+                [
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                    [1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                    [1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                ],
+                [
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0, 9.0],
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0, 9.0],
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0, 9.0],
+                ],
+            ]
+        )
         np.testing.assert_array_almost_equal(fdata_smooth.values, expected_values)
 
 
 class TestInnerProductIrregular(unittest.TestCase):
     def setUp(self):
-        fname = THIS_DIR.parent / 'data/data_sparse_5_10_08.pickle'
-        with open(fname, 'rb') as handle:
+        fname = THIS_DIR.parent / "data/data_sparse_5_10_08.pickle"
+        with open(fname, "rb") as handle:
             self.fdata_sparse = pickle.load(handle)
 
     def test_inner_product(self):
         res = self.fdata_sparse.inner_product()
-        expected_res = np.array([
-            [0.22636266, -0.06234383,  0.10046015, -0.03593221,  0.14898807,
-             0.06813972, -0.18749396, -0.23422354, -0.10364864,  0.06047887],
-            [-0.06234383,  0.05483396, -0.11108121,  0.04113089, -0.06076609,
-                -0.07554775,  0.13083561,  0.1550066,  0.03874369, -0.09572387],
-            [0.10046015, -0.11108121,  0.23160987, -0.07609313,  0.10190474,
-                0.15408974, -0.25949068, -0.3035836, -0.06552028,  0.20095325],
-            [-0.03593221,  0.04113089, -0.07609313,  0.09146516, -0.09715676,
-                -0.08043607,  0.10614226,  0.13120885,  0.04660015, -0.09387536],
-            [0.14898807, -0.06076609,  0.10190474, -0.09715676,  0.16324452,
-                0.09708997, -0.17700088, -0.22127505, -0.09489279,  0.09977995],
-            [0.06813972, -0.07554775,  0.15408974, -0.08043607,  0.09708997,
-                0.11622581, -0.18322661, -0.21695296, -0.05542746,  0.14637079],
-            [-0.18749396,  0.13083561, -0.25949068,  0.10614226, -0.17700088,
-                -0.18322661,  0.32941795,  0.392712,  0.11252274, -0.22297387],
-            [-0.23422354,  0.1550066, -0.3035836,  0.13120885, -0.22127505,
-                -0.21695296,  0.392712,  0.46982432,  0.13972652, -0.26130702],
-            [-0.10364864,  0.03874369, -0.06552028,  0.04660015, -0.09489279,
-                -0.05542746,  0.11252274,  0.13972652,  0.05851095, -0.05612788],
-            [0.06047887, -0.09572387,  0.20095325, -0.09387536,  0.09977995,
-                0.14637079, -0.22297387, -0.26130702, -0.05612788,  0.19011974]
-        ])
+        expected_res = np.array(
+            [
+                [
+                    0.22636266,
+                    -0.06234383,
+                    0.10046015,
+                    -0.03593221,
+                    0.14898807,
+                    0.06813972,
+                    -0.18749396,
+                    -0.23422354,
+                    -0.10364864,
+                    0.06047887,
+                ],
+                [
+                    -0.06234383,
+                    0.05483396,
+                    -0.11108121,
+                    0.04113089,
+                    -0.06076609,
+                    -0.07554775,
+                    0.13083561,
+                    0.1550066,
+                    0.03874369,
+                    -0.09572387,
+                ],
+                [
+                    0.10046015,
+                    -0.11108121,
+                    0.23160987,
+                    -0.07609313,
+                    0.10190474,
+                    0.15408974,
+                    -0.25949068,
+                    -0.3035836,
+                    -0.06552028,
+                    0.20095325,
+                ],
+                [
+                    -0.03593221,
+                    0.04113089,
+                    -0.07609313,
+                    0.09146516,
+                    -0.09715676,
+                    -0.08043607,
+                    0.10614226,
+                    0.13120885,
+                    0.04660015,
+                    -0.09387536,
+                ],
+                [
+                    0.14898807,
+                    -0.06076609,
+                    0.10190474,
+                    -0.09715676,
+                    0.16324452,
+                    0.09708997,
+                    -0.17700088,
+                    -0.22127505,
+                    -0.09489279,
+                    0.09977995,
+                ],
+                [
+                    0.06813972,
+                    -0.07554775,
+                    0.15408974,
+                    -0.08043607,
+                    0.09708997,
+                    0.11622581,
+                    -0.18322661,
+                    -0.21695296,
+                    -0.05542746,
+                    0.14637079,
+                ],
+                [
+                    -0.18749396,
+                    0.13083561,
+                    -0.25949068,
+                    0.10614226,
+                    -0.17700088,
+                    -0.18322661,
+                    0.32941795,
+                    0.392712,
+                    0.11252274,
+                    -0.22297387,
+                ],
+                [
+                    -0.23422354,
+                    0.1550066,
+                    -0.3035836,
+                    0.13120885,
+                    -0.22127505,
+                    -0.21695296,
+                    0.392712,
+                    0.46982432,
+                    0.13972652,
+                    -0.26130702,
+                ],
+                [
+                    -0.10364864,
+                    0.03874369,
+                    -0.06552028,
+                    0.04660015,
+                    -0.09489279,
+                    -0.05542746,
+                    0.11252274,
+                    0.13972652,
+                    0.05851095,
+                    -0.05612788,
+                ],
+                [
+                    0.06047887,
+                    -0.09572387,
+                    0.20095325,
+                    -0.09387536,
+                    0.09977995,
+                    0.14637079,
+                    -0.22297387,
+                    -0.26130702,
+                    -0.05612788,
+                    0.19011974,
+                ],
+            ]
+        )
         np.testing.assert_array_almost_equal(res, expected_res)
 
     def test_inner_product_with_unkwon_noise_variance(self):
         res = self.fdata_sparse.inner_product(noise_variance=0)
-        expected_res = np.array([
-            [0.22663017, -0.06234383,  0.10046015, -0.03593221,  0.14898807,
-             0.06813972, -0.18749396, -0.23422354, -0.10364864,  0.06047887],
-            [-0.06234383,  0.05510147, -0.11108121,  0.04113089, -0.06076609,
-                -0.07554775,  0.13083561,  0.1550066,  0.03874369, -0.09572387],
-            [0.10046015, -0.11108121,  0.23187738, -0.07609313,  0.10190474,
-                0.15408974, -0.25949068, -0.3035836, -0.06552028,  0.20095325],
-            [-0.03593221,  0.04113089, -0.07609313,  0.09173267, -0.09715676,
-                -0.08043607,  0.10614226,  0.13120885,  0.04660015, -0.09387536],
-            [0.14898807, -0.06076609,  0.10190474, -0.09715676,  0.16351203,
-                0.09708997, -0.17700088, -0.22127505, -0.09489279,  0.09977995],
-            [0.06813972, -0.07554775,  0.15408974, -0.08043607,  0.09708997,
-                0.11649332, -0.18322661, -0.21695296, -0.05542746,  0.14637079],
-            [-0.18749396,  0.13083561, -0.25949068,  0.10614226, -0.17700088,
-                -0.18322661,  0.32968546,  0.392712,  0.11252274, -0.22297387],
-            [-0.23422354,  0.1550066, -0.3035836,  0.13120885, -0.22127505,
-                -0.21695296,  0.392712,  0.47009183,  0.13972652, -0.26130702],
-            [-0.10364864,  0.03874369, -0.06552028,  0.04660015, -0.09489279,
-                -0.05542746,  0.11252274,  0.13972652,  0.05877846, -0.05612788],
-            [0.06047887, -0.09572387,  0.20095325, -0.09387536,  0.09977995,
-                0.14637079, -0.22297387, -0.26130702, -0.05612788,  0.19038725]
-        ])
+        expected_res = np.array(
+            [
+                [
+                    0.22663017,
+                    -0.06234383,
+                    0.10046015,
+                    -0.03593221,
+                    0.14898807,
+                    0.06813972,
+                    -0.18749396,
+                    -0.23422354,
+                    -0.10364864,
+                    0.06047887,
+                ],
+                [
+                    -0.06234383,
+                    0.05510147,
+                    -0.11108121,
+                    0.04113089,
+                    -0.06076609,
+                    -0.07554775,
+                    0.13083561,
+                    0.1550066,
+                    0.03874369,
+                    -0.09572387,
+                ],
+                [
+                    0.10046015,
+                    -0.11108121,
+                    0.23187738,
+                    -0.07609313,
+                    0.10190474,
+                    0.15408974,
+                    -0.25949068,
+                    -0.3035836,
+                    -0.06552028,
+                    0.20095325,
+                ],
+                [
+                    -0.03593221,
+                    0.04113089,
+                    -0.07609313,
+                    0.09173267,
+                    -0.09715676,
+                    -0.08043607,
+                    0.10614226,
+                    0.13120885,
+                    0.04660015,
+                    -0.09387536,
+                ],
+                [
+                    0.14898807,
+                    -0.06076609,
+                    0.10190474,
+                    -0.09715676,
+                    0.16351203,
+                    0.09708997,
+                    -0.17700088,
+                    -0.22127505,
+                    -0.09489279,
+                    0.09977995,
+                ],
+                [
+                    0.06813972,
+                    -0.07554775,
+                    0.15408974,
+                    -0.08043607,
+                    0.09708997,
+                    0.11649332,
+                    -0.18322661,
+                    -0.21695296,
+                    -0.05542746,
+                    0.14637079,
+                ],
+                [
+                    -0.18749396,
+                    0.13083561,
+                    -0.25949068,
+                    0.10614226,
+                    -0.17700088,
+                    -0.18322661,
+                    0.32968546,
+                    0.392712,
+                    0.11252274,
+                    -0.22297387,
+                ],
+                [
+                    -0.23422354,
+                    0.1550066,
+                    -0.3035836,
+                    0.13120885,
+                    -0.22127505,
+                    -0.21695296,
+                    0.392712,
+                    0.47009183,
+                    0.13972652,
+                    -0.26130702,
+                ],
+                [
+                    -0.10364864,
+                    0.03874369,
+                    -0.06552028,
+                    0.04660015,
+                    -0.09489279,
+                    -0.05542746,
+                    0.11252274,
+                    0.13972652,
+                    0.05877846,
+                    -0.05612788,
+                ],
+                [
+                    0.06047887,
+                    -0.09572387,
+                    0.20095325,
+                    -0.09387536,
+                    0.09977995,
+                    0.14637079,
+                    -0.22297387,
+                    -0.26130702,
+                    -0.05612788,
+                    0.19038725,
+                ],
+            ]
+        )
         np.testing.assert_array_almost_equal(res, expected_res)
 
     def test_inner_product_2d(self):
-        argvals = IrregularArgvals({
-            0: DenseArgvals({
-                'input_dim_0': np.array([1, 2, 3, 4]),
-                'input_dim_1': np.array([5, 6, 7])
-            }),
-            1: DenseArgvals({
-                'input_dim_0': np.array([2, 4]),
-                'input_dim_1': np.array([1, 2, 3])
-            }),
-            2: DenseArgvals({
-                'input_dim_0': np.array([4, 5, 6]),
-                'input_dim_1': np.array([8, 9])
-            })
-        })
-        values = IrregularValues({
-            0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
-            1: np.array([[1, 2, 3], [1, 2, 3]]),
-            2: np.array([[8, 9], [8, 9], [8, 9]])
-        })
+        argvals = IrregularArgvals(
+            {
+                0: DenseArgvals(
+                    {
+                        "input_dim_0": np.array([1, 2, 3, 4]),
+                        "input_dim_1": np.array([5, 6, 7]),
+                    }
+                ),
+                1: DenseArgvals(
+                    {
+                        "input_dim_0": np.array([2, 4]),
+                        "input_dim_1": np.array([1, 2, 3]),
+                    }
+                ),
+                2: DenseArgvals(
+                    {
+                        "input_dim_0": np.array([4, 5, 6]),
+                        "input_dim_1": np.array([8, 9]),
+                    }
+                ),
+            }
+        )
+        values = IrregularValues(
+            {
+                0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
+                1: np.array([[1, 2, 3], [1, 2, 3]]),
+                2: np.array([[8, 9], [8, 9], [8, 9]]),
+            }
+        )
         data = IrregularFunctionalData(argvals, values)
 
         with self.assertRaises(NotImplementedError):
@@ -586,8 +987,8 @@ class TestInnerProductIrregular(unittest.TestCase):
 
 class TestCenterDense(unittest.TestCase):
     def setUp(self):
-        fname = THIS_DIR.parent / 'data/data_sparse_5_10_08.pickle'
-        with open(fname, 'rb') as handle:
+        fname = THIS_DIR.parent / "data/data_sparse_5_10_08.pickle"
+        with open(fname, "rb") as handle:
             self.fdata_sparse = pickle.load(handle)
 
     def test_center_1d(self):
@@ -596,48 +997,179 @@ class TestCenterDense(unittest.TestCase):
         self.assertIsInstance(fdata_center, IrregularFunctionalData)
 
         expected_values = DenseValues(
-            [-0.64181022, -0.63146583, -0.62030816, -0.58099734,
-             -0.5661533, -0.55023599, -0.53335645, -0.51568341,
-             -0.49725285, -0.47817533, -0.4584701, -0.43808277,
-             -0.41707468, -0.39550758, -0.37344991, -0.32797614,
-             -0.30460999, -0.28085438, -0.23229342, -0.20755938,
-             -0.18253189, -0.15721873, -0.13167712, -0.08011008,
-             -0.02812959, -0.00209584,  0.02391934,  0.04985519,
-             0.07569925,  0.10142703,  0.12699214,  0.15241893,
-             0.17770677,  0.20280282,  0.22762609,  0.25217087,
-             0.27630286,  0.29990463,  0.32303646,  0.34559645,
-             0.36748365,  0.38869127,  0.40925719,  0.4484441,
-             0.46704345,  0.4849944,  0.50221202,  0.51858717,
-             0.53414597,  0.56261616,  0.57543936,  0.59844251,
-             0.60873782,  0.61824492,  0.62695713,  0.63479877,
-             0.64783359,  0.65298429,  0.66061823,  0.66304938,
-             0.66518197,  0.66484485,  0.66357081,  0.66133763,
-             0.65814578,  0.65395601,  0.64244274,  0.62658196,
-             0.60625719,  0.5944127,  0.56724056,  0.55188592,
-             0.53523524,  0.51726329,  0.49803127,  0.47757039,
-             0.45583332,  0.43281069,  0.4083933,  0.38243443,
-             0.32665841,  0.2970316,  0.2661739,  0.23397908]
+            [
+                -0.64181022,
+                -0.63146583,
+                -0.62030816,
+                -0.58099734,
+                -0.5661533,
+                -0.55023599,
+                -0.53335645,
+                -0.51568341,
+                -0.49725285,
+                -0.47817533,
+                -0.4584701,
+                -0.43808277,
+                -0.41707468,
+                -0.39550758,
+                -0.37344991,
+                -0.32797614,
+                -0.30460999,
+                -0.28085438,
+                -0.23229342,
+                -0.20755938,
+                -0.18253189,
+                -0.15721873,
+                -0.13167712,
+                -0.08011008,
+                -0.02812959,
+                -0.00209584,
+                0.02391934,
+                0.04985519,
+                0.07569925,
+                0.10142703,
+                0.12699214,
+                0.15241893,
+                0.17770677,
+                0.20280282,
+                0.22762609,
+                0.25217087,
+                0.27630286,
+                0.29990463,
+                0.32303646,
+                0.34559645,
+                0.36748365,
+                0.38869127,
+                0.40925719,
+                0.4484441,
+                0.46704345,
+                0.4849944,
+                0.50221202,
+                0.51858717,
+                0.53414597,
+                0.56261616,
+                0.57543936,
+                0.59844251,
+                0.60873782,
+                0.61824492,
+                0.62695713,
+                0.63479877,
+                0.64783359,
+                0.65298429,
+                0.66061823,
+                0.66304938,
+                0.66518197,
+                0.66484485,
+                0.66357081,
+                0.66133763,
+                0.65814578,
+                0.65395601,
+                0.64244274,
+                0.62658196,
+                0.60625719,
+                0.5944127,
+                0.56724056,
+                0.55188592,
+                0.53523524,
+                0.51726329,
+                0.49803127,
+                0.47757039,
+                0.45583332,
+                0.43281069,
+                0.4083933,
+                0.38243443,
+                0.32665841,
+                0.2970316,
+                0.2661739,
+                0.23397908,
+            ]
         )
         np.testing.assert_array_almost_equal(fdata_center.values[0], expected_values)
 
         expected_values = DenseValues(
-            [0.53031768, 0.53537618, 0.53953078, 0.54308738, 0.54601671,
-             0.54810052, 0.54964395, 0.55082904, 0.55185083, 0.55159705,
-             0.55078707, 0.54945877, 0.54772366, 0.54557748, 0.54301563,
-             0.54002675, 0.53663784, 0.51483315, 0.50439313, 0.49897162,
-             0.49343211, 0.48777439, 0.47621104, 0.47033297, 0.45846482,
-             0.4524936, 0.44063979, 0.43480054, 0.42910479, 0.423609,
-             0.41831743, 0.41320623, 0.4083268, 0.40360195, 0.39897135,
-             0.39455242, 0.38221562, 0.37852829, 0.37517351, 0.37216729,
-             0.36957577, 0.36741174, 0.36558475, 0.36398017, 0.36261859,
-             0.36147656, 0.36040407, 0.35864729, 0.35801088, 0.35762631,
-             0.35747435, 0.3575428, 0.35775047, 0.35807932, 0.35903777,
-             0.35965966, 0.36109454, 0.36190745, 0.36275365, 0.36362288,
-             0.36450991, 0.36538702, 0.36624917, 0.36705159, 0.3677494,
-             0.36831528, 0.36871124, 0.36891816, 0.36869972, 0.36826062,
-             0.36657616, 0.36529282, 0.36359104, 0.36144011, 0.35889571,
-             0.35598355, 0.34888256, 0.34456414, 0.33954331, 0.32193393,
-             0.30817141]
+            [
+                0.53031768,
+                0.53537618,
+                0.53953078,
+                0.54308738,
+                0.54601671,
+                0.54810052,
+                0.54964395,
+                0.55082904,
+                0.55185083,
+                0.55159705,
+                0.55078707,
+                0.54945877,
+                0.54772366,
+                0.54557748,
+                0.54301563,
+                0.54002675,
+                0.53663784,
+                0.51483315,
+                0.50439313,
+                0.49897162,
+                0.49343211,
+                0.48777439,
+                0.47621104,
+                0.47033297,
+                0.45846482,
+                0.4524936,
+                0.44063979,
+                0.43480054,
+                0.42910479,
+                0.423609,
+                0.41831743,
+                0.41320623,
+                0.4083268,
+                0.40360195,
+                0.39897135,
+                0.39455242,
+                0.38221562,
+                0.37852829,
+                0.37517351,
+                0.37216729,
+                0.36957577,
+                0.36741174,
+                0.36558475,
+                0.36398017,
+                0.36261859,
+                0.36147656,
+                0.36040407,
+                0.35864729,
+                0.35801088,
+                0.35762631,
+                0.35747435,
+                0.3575428,
+                0.35775047,
+                0.35807932,
+                0.35903777,
+                0.35965966,
+                0.36109454,
+                0.36190745,
+                0.36275365,
+                0.36362288,
+                0.36450991,
+                0.36538702,
+                0.36624917,
+                0.36705159,
+                0.3677494,
+                0.36831528,
+                0.36871124,
+                0.36891816,
+                0.36869972,
+                0.36826062,
+                0.36657616,
+                0.36529282,
+                0.36359104,
+                0.36144011,
+                0.35889571,
+                0.35598355,
+                0.34888256,
+                0.34456414,
+                0.33954331,
+                0.32193393,
+                0.30817141,
+            ]
         )
         np.testing.assert_array_almost_equal(fdata_center.values[9], expected_values)
 
@@ -648,102 +1180,282 @@ class TestCenterDense(unittest.TestCase):
         self.assertIsInstance(fdata_center, IrregularFunctionalData)
 
         expected_values = DenseValues(
-            [-0.64181022, -0.63146583, -0.62030816, -0.58099734,
-             -0.5661533, -0.55023599, -0.53335645, -0.51568341,
-             -0.49725285, -0.47817533, -0.4584701, -0.43808277,
-             -0.41707468, -0.39550758, -0.37344991, -0.32797614,
-             -0.30460999, -0.28085438, -0.23229342, -0.20755938,
-             -0.18253189, -0.15721873, -0.13167712, -0.08011008,
-             -0.02812959, -0.00209584,  0.02391934,  0.04985519,
-             0.07569925,  0.10142703,  0.12699214,  0.15241893,
-             0.17770677,  0.20280282,  0.22762609,  0.25217087,
-             0.27630286,  0.29990463,  0.32303646,  0.34559645,
-             0.36748365,  0.38869127,  0.40925719,  0.4484441,
-             0.46704345,  0.4849944,  0.50221202,  0.51858717,
-             0.53414597,  0.56261616,  0.57543936,  0.59844251,
-             0.60873782,  0.61824492,  0.62695713,  0.63479877,
-             0.64783359,  0.65298429,  0.66061823,  0.66304938,
-             0.66518197,  0.66484485,  0.66357081,  0.66133763,
-             0.65814578,  0.65395601,  0.64244274,  0.62658196,
-             0.60625719,  0.5944127,  0.56724056,  0.55188592,
-             0.53523524,  0.51726329,  0.49803127,  0.47757039,
-             0.45583332,  0.43281069,  0.4083933,  0.38243443,
-             0.32665841,  0.2970316,  0.2661739,  0.23397908]
+            [
+                -0.64181022,
+                -0.63146583,
+                -0.62030816,
+                -0.58099734,
+                -0.5661533,
+                -0.55023599,
+                -0.53335645,
+                -0.51568341,
+                -0.49725285,
+                -0.47817533,
+                -0.4584701,
+                -0.43808277,
+                -0.41707468,
+                -0.39550758,
+                -0.37344991,
+                -0.32797614,
+                -0.30460999,
+                -0.28085438,
+                -0.23229342,
+                -0.20755938,
+                -0.18253189,
+                -0.15721873,
+                -0.13167712,
+                -0.08011008,
+                -0.02812959,
+                -0.00209584,
+                0.02391934,
+                0.04985519,
+                0.07569925,
+                0.10142703,
+                0.12699214,
+                0.15241893,
+                0.17770677,
+                0.20280282,
+                0.22762609,
+                0.25217087,
+                0.27630286,
+                0.29990463,
+                0.32303646,
+                0.34559645,
+                0.36748365,
+                0.38869127,
+                0.40925719,
+                0.4484441,
+                0.46704345,
+                0.4849944,
+                0.50221202,
+                0.51858717,
+                0.53414597,
+                0.56261616,
+                0.57543936,
+                0.59844251,
+                0.60873782,
+                0.61824492,
+                0.62695713,
+                0.63479877,
+                0.64783359,
+                0.65298429,
+                0.66061823,
+                0.66304938,
+                0.66518197,
+                0.66484485,
+                0.66357081,
+                0.66133763,
+                0.65814578,
+                0.65395601,
+                0.64244274,
+                0.62658196,
+                0.60625719,
+                0.5944127,
+                0.56724056,
+                0.55188592,
+                0.53523524,
+                0.51726329,
+                0.49803127,
+                0.47757039,
+                0.45583332,
+                0.43281069,
+                0.4083933,
+                0.38243443,
+                0.32665841,
+                0.2970316,
+                0.2661739,
+                0.23397908,
+            ]
         )
         np.testing.assert_array_almost_equal(fdata_center.values[0], expected_values)
 
         expected_values = DenseValues(
-            [0.53031768, 0.53537618, 0.53953078, 0.54308738, 0.54601671,
-             0.54810052, 0.54964395, 0.55082904, 0.55185083, 0.55159705,
-             0.55078707, 0.54945877, 0.54772366, 0.54557748, 0.54301563,
-             0.54002675, 0.53663784, 0.51483315, 0.50439313, 0.49897162,
-             0.49343211, 0.48777439, 0.47621104, 0.47033297, 0.45846482,
-             0.4524936, 0.44063979, 0.43480054, 0.42910479, 0.423609,
-             0.41831743, 0.41320623, 0.4083268, 0.40360195, 0.39897135,
-             0.39455242, 0.38221562, 0.37852829, 0.37517351, 0.37216729,
-             0.36957577, 0.36741174, 0.36558475, 0.36398017, 0.36261859,
-             0.36147656, 0.36040407, 0.35864729, 0.35801088, 0.35762631,
-             0.35747435, 0.3575428, 0.35775047, 0.35807932, 0.35903777,
-             0.35965966, 0.36109454, 0.36190745, 0.36275365, 0.36362288,
-             0.36450991, 0.36538702, 0.36624917, 0.36705159, 0.3677494,
-             0.36831528, 0.36871124, 0.36891816, 0.36869972, 0.36826062,
-             0.36657616, 0.36529282, 0.36359104, 0.36144011, 0.35889571,
-             0.35598355, 0.34888256, 0.34456414, 0.33954331, 0.32193393,
-             0.30817141]
+            [
+                0.53031768,
+                0.53537618,
+                0.53953078,
+                0.54308738,
+                0.54601671,
+                0.54810052,
+                0.54964395,
+                0.55082904,
+                0.55185083,
+                0.55159705,
+                0.55078707,
+                0.54945877,
+                0.54772366,
+                0.54557748,
+                0.54301563,
+                0.54002675,
+                0.53663784,
+                0.51483315,
+                0.50439313,
+                0.49897162,
+                0.49343211,
+                0.48777439,
+                0.47621104,
+                0.47033297,
+                0.45846482,
+                0.4524936,
+                0.44063979,
+                0.43480054,
+                0.42910479,
+                0.423609,
+                0.41831743,
+                0.41320623,
+                0.4083268,
+                0.40360195,
+                0.39897135,
+                0.39455242,
+                0.38221562,
+                0.37852829,
+                0.37517351,
+                0.37216729,
+                0.36957577,
+                0.36741174,
+                0.36558475,
+                0.36398017,
+                0.36261859,
+                0.36147656,
+                0.36040407,
+                0.35864729,
+                0.35801088,
+                0.35762631,
+                0.35747435,
+                0.3575428,
+                0.35775047,
+                0.35807932,
+                0.35903777,
+                0.35965966,
+                0.36109454,
+                0.36190745,
+                0.36275365,
+                0.36362288,
+                0.36450991,
+                0.36538702,
+                0.36624917,
+                0.36705159,
+                0.3677494,
+                0.36831528,
+                0.36871124,
+                0.36891816,
+                0.36869972,
+                0.36826062,
+                0.36657616,
+                0.36529282,
+                0.36359104,
+                0.36144011,
+                0.35889571,
+                0.35598355,
+                0.34888256,
+                0.34456414,
+                0.33954331,
+                0.32193393,
+                0.30817141,
+            ]
         )
         np.testing.assert_array_almost_equal(fdata_center.values[9], expected_values)
 
 
 class TestNormIrregular(unittest.TestCase):
     def setUp(self):
-        fname = THIS_DIR.parent / 'data/data_sparse_5_10_08.pickle'
-        with open(fname, 'rb') as handle:
+        fname = THIS_DIR.parent / "data/data_sparse_5_10_08.pickle"
+        with open(fname, "rb") as handle:
             self.fdata_sparse = pickle.load(handle)
 
     def test_norm(self):
         res = self.fdata_sparse.norm()
-        expected_res = np.array([0.51741242, 0.16471413, 0.55454657, 0.28921687, 0.44108366, 0.40407708, 0.50525297, 0.62136466, 0.21417883, 0.50210074])
+        expected_res = np.array(
+            [
+                0.51741242,
+                0.16471413,
+                0.55454657,
+                0.28921687,
+                0.44108366,
+                0.40407708,
+                0.50525297,
+                0.62136466,
+                0.21417883,
+                0.50210074,
+            ]
+        )
         np.testing.assert_array_almost_equal(res, expected_res)
 
         res = self.fdata_sparse.norm(squared=True)
-        expected_res = np.array([0.26771562, 0.02713074, 0.3075219 , 0.0836464 , 0.1945548 , 0.16327828, 0.25528056, 0.38609404, 0.04587257, 0.25210515])
+        expected_res = np.array(
+            [
+                0.26771562,
+                0.02713074,
+                0.3075219,
+                0.0836464,
+                0.1945548,
+                0.16327828,
+                0.25528056,
+                0.38609404,
+                0.04587257,
+                0.25210515,
+            ]
+        )
         np.testing.assert_array_almost_equal(res, expected_res)
 
         res = self.fdata_sparse.norm(use_argvals_stand=True)
-        expected_res = np.array([0.51741242, 0.16471413, 0.55454657, 0.29215315, 0.44108366, 0.40611274, 0.50779834, 0.62136466, 0.21417883, 0.50210074])
+        expected_res = np.array(
+            [
+                0.51741242,
+                0.16471413,
+                0.55454657,
+                0.29215315,
+                0.44108366,
+                0.40611274,
+                0.50779834,
+                0.62136466,
+                0.21417883,
+                0.50210074,
+            ]
+        )
         np.testing.assert_array_almost_equal(res, expected_res)
 
     def test_norm_2d(self):
-        argvals = IrregularArgvals({
-            0: DenseArgvals({
-                'input_dim_0': np.array([1, 2, 3, 4]),
-                'input_dim_1': np.array([5, 6, 7])
-            }),
-            1: DenseArgvals({
-                'input_dim_0': np.array([2, 4]),
-                'input_dim_1': np.array([1, 2, 3])
-            }),
-            2: DenseArgvals({
-                'input_dim_0': np.array([4, 5, 6]),
-                'input_dim_1': np.array([8, 9])
-            })
-        })
-        values = IrregularValues({
-            0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
-            1: np.array([[1, 2, 3], [1, 2, 3]]),
-            2: np.array([[8, 9], [8, 9], [8, 9]])
-        })
+        argvals = IrregularArgvals(
+            {
+                0: DenseArgvals(
+                    {
+                        "input_dim_0": np.array([1, 2, 3, 4]),
+                        "input_dim_1": np.array([5, 6, 7]),
+                    }
+                ),
+                1: DenseArgvals(
+                    {
+                        "input_dim_0": np.array([2, 4]),
+                        "input_dim_1": np.array([1, 2, 3]),
+                    }
+                ),
+                2: DenseArgvals(
+                    {
+                        "input_dim_0": np.array([4, 5, 6]),
+                        "input_dim_1": np.array([8, 9]),
+                    }
+                ),
+            }
+        )
+        values = IrregularValues(
+            {
+                0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
+                1: np.array([[1, 2, 3], [1, 2, 3]]),
+                2: np.array([[8, 9], [8, 9], [8, 9]]),
+            }
+        )
         data = IrregularFunctionalData(argvals, values)
 
         res = data.norm()
-        expected_res = np.array([ 6.78232998,  4.24264069, 12.04159458])
+        expected_res = np.array([6.78232998, 4.24264069, 12.04159458])
         np.testing.assert_array_almost_equal(res, expected_res)
 
 
 class TestNormalizeIrregular(unittest.TestCase):
     def setUp(self):
-        fname = THIS_DIR.parent / 'data/data_sparse_5_10_08.pickle'
-        with open(fname, 'rb') as handle:
+        fname = THIS_DIR.parent / "data/data_sparse_5_10_08.pickle"
+        with open(fname, "rb") as handle:
             self.fdata_sparse = pickle.load(handle)
 
     def test_norm(self):
@@ -753,48 +1465,179 @@ class TestNormalizeIrregular(unittest.TestCase):
         self.assertIsInstance(res, IrregularFunctionalData)
 
         expected_values = np.array(
-            [-2.97411046, -2.94492433, -2.90874826, -2.76045772,
-             -2.69849922, -2.63063947, -2.55709618, -2.47808711,
-             -2.39382998, -2.30454254, -2.21044251, -2.11174764,
-             -2.00867566, -1.90144431, -1.79027133, -1.5569714,
-             -1.43527993, -1.31051777, -1.05265233, -0.91998452,
-             -0.78511697, -0.64826741, -0.50965358, -0.22800406,
-             0.0580897,  0.20225883,  0.34688582,  0.49175292,
-             0.6366424,  0.78133652,  0.92561754,  1.06926774,
-             1.21206936,  1.35380469,  1.49425597,  1.63320548,
-             1.77043547,  1.90572821,  2.03886597,  2.169631,
-             2.29780558,  2.42317196,  2.54551241,  2.78024456,
-             2.89222573,  3.00045965,  3.10487819,  3.20541325,
-             3.30199671,  3.48303638,  3.56735636,  3.72325603,
-             3.79469949,  3.86171455,  3.9242331,  3.98218702,
-             4.08412852,  4.12797987,  4.20110319,  4.23023893,
-             4.27331802,  4.28712513,  4.29568647,  4.29893392,
-             4.29679937,  4.28921471,  4.25742257,  4.20301259,
-             4.12543986,  4.07779718,  3.9644586,  3.89862648,
-             3.82659498,  3.74829599,  3.66366141,  3.5726231,
-             3.47511296,  3.37106287,  3.26040472,  3.1430704,
-             2.88810076,  2.75032923,  2.60560905,  2.45387213]
+            [
+                -2.97411046,
+                -2.94492433,
+                -2.90874826,
+                -2.76045772,
+                -2.69849922,
+                -2.63063947,
+                -2.55709618,
+                -2.47808711,
+                -2.39382998,
+                -2.30454254,
+                -2.21044251,
+                -2.11174764,
+                -2.00867566,
+                -1.90144431,
+                -1.79027133,
+                -1.5569714,
+                -1.43527993,
+                -1.31051777,
+                -1.05265233,
+                -0.91998452,
+                -0.78511697,
+                -0.64826741,
+                -0.50965358,
+                -0.22800406,
+                0.0580897,
+                0.20225883,
+                0.34688582,
+                0.49175292,
+                0.6366424,
+                0.78133652,
+                0.92561754,
+                1.06926774,
+                1.21206936,
+                1.35380469,
+                1.49425597,
+                1.63320548,
+                1.77043547,
+                1.90572821,
+                2.03886597,
+                2.169631,
+                2.29780558,
+                2.42317196,
+                2.54551241,
+                2.78024456,
+                2.89222573,
+                3.00045965,
+                3.10487819,
+                3.20541325,
+                3.30199671,
+                3.48303638,
+                3.56735636,
+                3.72325603,
+                3.79469949,
+                3.86171455,
+                3.9242331,
+                3.98218702,
+                4.08412852,
+                4.12797987,
+                4.20110319,
+                4.23023893,
+                4.27331802,
+                4.28712513,
+                4.29568647,
+                4.29893392,
+                4.29679937,
+                4.28921471,
+                4.25742257,
+                4.20301259,
+                4.12543986,
+                4.07779718,
+                3.9644586,
+                3.89862648,
+                3.82659498,
+                3.74829599,
+                3.66366141,
+                3.5726231,
+                3.47511296,
+                3.37106287,
+                3.26040472,
+                3.1430704,
+                2.88810076,
+                2.75032923,
+                2.60560905,
+                2.45387213,
+            ]
         )
         np.testing.assert_array_almost_equal(res.values[0], expected_values)
 
         expected_values = np.array(
-            [3.76269761, 3.76150305, 3.75742899, 3.75058596, 3.74108448,
-             3.72903507, 3.71454826, 3.69773457, 3.65756864, 3.63443745,
-             3.60942148, 3.58263124, 3.55417726, 3.52417006, 3.49272018,
-             3.45993812, 3.42593441, 3.2414595, 3.16298632, 3.12318828,
-             3.08316331, 3.04302192, 2.96283199, 2.9230045, 2.84443708,
-             2.8059182, 2.73096271, 2.69474714, 2.6595204, 2.625393,
-             2.59247546, 2.56087832, 2.53071208, 2.50208729, 2.47511445,
-             2.4499041, 2.38595316, 2.36889797, 2.35415788, 2.34184341,
-             2.33203004, 2.32465304, 2.31961266, 2.31680912, 2.31614265,
-             2.3175135, 2.32082188, 2.3328522, 2.34137459, 2.35143546,
-             2.36293503, 2.37577353, 2.3898512, 2.40506827, 2.43852154,
-             2.4565582, 2.49475274, 2.51471109, 2.53511046, 2.55585109,
-             2.5768332, 2.59795705, 2.61912284, 2.64023083, 2.66118123,
-             2.68187429, 2.70221023, 2.72208929, 2.76007769, 2.7779875,
-             2.81113948, 2.82618212, 2.84006951, 2.85270187, 2.86397944,
-             2.87380246, 2.88868573, 2.89354646, 2.89655356, 2.89345541,
-             2.88029276]
+            [
+                3.76269761,
+                3.76150305,
+                3.75742899,
+                3.75058596,
+                3.74108448,
+                3.72903507,
+                3.71454826,
+                3.69773457,
+                3.65756864,
+                3.63443745,
+                3.60942148,
+                3.58263124,
+                3.55417726,
+                3.52417006,
+                3.49272018,
+                3.45993812,
+                3.42593441,
+                3.2414595,
+                3.16298632,
+                3.12318828,
+                3.08316331,
+                3.04302192,
+                2.96283199,
+                2.9230045,
+                2.84443708,
+                2.8059182,
+                2.73096271,
+                2.69474714,
+                2.6595204,
+                2.625393,
+                2.59247546,
+                2.56087832,
+                2.53071208,
+                2.50208729,
+                2.47511445,
+                2.4499041,
+                2.38595316,
+                2.36889797,
+                2.35415788,
+                2.34184341,
+                2.33203004,
+                2.32465304,
+                2.31961266,
+                2.31680912,
+                2.31614265,
+                2.3175135,
+                2.32082188,
+                2.3328522,
+                2.34137459,
+                2.35143546,
+                2.36293503,
+                2.37577353,
+                2.3898512,
+                2.40506827,
+                2.43852154,
+                2.4565582,
+                2.49475274,
+                2.51471109,
+                2.53511046,
+                2.55585109,
+                2.5768332,
+                2.59795705,
+                2.61912284,
+                2.64023083,
+                2.66118123,
+                2.68187429,
+                2.70221023,
+                2.72208929,
+                2.76007769,
+                2.7779875,
+                2.81113948,
+                2.82618212,
+                2.84006951,
+                2.85270187,
+                2.86397944,
+                2.87380246,
+                2.88868573,
+                2.89354646,
+                2.89655356,
+                2.89345541,
+                2.88029276,
+            ]
         )
         np.testing.assert_array_almost_equal(res.values[9], expected_values)
 
@@ -810,25 +1653,35 @@ class TestNormalizeIrregular(unittest.TestCase):
         self.assertIsInstance(res, IrregularFunctionalData)
 
     def test_norm_2d(self):
-        argvals = IrregularArgvals({
-            0: DenseArgvals({
-                'input_dim_0': np.array([1, 2, 3, 4]),
-                'input_dim_1': np.array([5, 6, 7])
-            }),
-            1: DenseArgvals({
-                'input_dim_0': np.array([2, 4]),
-                'input_dim_1': np.array([1, 2, 3])
-            }),
-            2: DenseArgvals({
-                'input_dim_0': np.array([4, 5, 6]),
-                'input_dim_1': np.array([8, 9])
-            })
-        })
-        values = IrregularValues({
-            0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
-            1: np.array([[1, 2, 3], [1, 2, 3]]),
-            2: np.array([[8, 9], [8, 9], [8, 9]])
-        })
+        argvals = IrregularArgvals(
+            {
+                0: DenseArgvals(
+                    {
+                        "input_dim_0": np.array([1, 2, 3, 4]),
+                        "input_dim_1": np.array([5, 6, 7]),
+                    }
+                ),
+                1: DenseArgvals(
+                    {
+                        "input_dim_0": np.array([2, 4]),
+                        "input_dim_1": np.array([1, 2, 3]),
+                    }
+                ),
+                2: DenseArgvals(
+                    {
+                        "input_dim_0": np.array([4, 5, 6]),
+                        "input_dim_1": np.array([8, 9]),
+                    }
+                ),
+            }
+        )
+        values = IrregularValues(
+            {
+                0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
+                1: np.array([[1, 2, 3], [1, 2, 3]]),
+                2: np.array([[8, 9], [8, 9], [8, 9]]),
+            }
+        )
         data = IrregularFunctionalData(argvals, values)
 
         res, weight = data.normalize()
@@ -837,25 +1690,35 @@ class TestNormalizeIrregular(unittest.TestCase):
         self.assertIsInstance(res, IrregularFunctionalData)
 
     def test_norm_2d_with_given_weights(self):
-        argvals = IrregularArgvals({
-            0: DenseArgvals({
-                'input_dim_0': np.array([1, 2, 3, 4]),
-                'input_dim_1': np.array([5, 6, 7])
-            }),
-            1: DenseArgvals({
-                'input_dim_0': np.array([2, 4]),
-                'input_dim_1': np.array([1, 2, 3])
-            }),
-            2: DenseArgvals({
-                'input_dim_0': np.array([4, 5, 6]),
-                'input_dim_1': np.array([8, 9])
-            })
-        })
-        values = IrregularValues({
-            0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
-            1: np.array([[1, 2, 3], [1, 2, 3]]),
-            2: np.array([[8, 9], [8, 9], [8, 9]])
-        })
+        argvals = IrregularArgvals(
+            {
+                0: DenseArgvals(
+                    {
+                        "input_dim_0": np.array([1, 2, 3, 4]),
+                        "input_dim_1": np.array([5, 6, 7]),
+                    }
+                ),
+                1: DenseArgvals(
+                    {
+                        "input_dim_0": np.array([2, 4]),
+                        "input_dim_1": np.array([1, 2, 3]),
+                    }
+                ),
+                2: DenseArgvals(
+                    {
+                        "input_dim_0": np.array([4, 5, 6]),
+                        "input_dim_1": np.array([8, 9]),
+                    }
+                ),
+            }
+        )
+        values = IrregularValues(
+            {
+                0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
+                1: np.array([[1, 2, 3], [1, 2, 3]]),
+                2: np.array([[8, 9], [8, 9], [8, 9]]),
+            }
+        )
         data = IrregularFunctionalData(argvals, values)
 
         res, weight = data.normalize(weights=1)
@@ -866,75 +1729,185 @@ class TestNormalizeIrregular(unittest.TestCase):
 
 class TestCovariance(unittest.TestCase):
     def setUp(self):
-        fname = THIS_DIR.parent / 'data/data_sparse_5_10_08.pickle'
-        with open(fname, 'rb') as handle:
+        fname = THIS_DIR.parent / "data/data_sparse_5_10_08.pickle"
+        with open(fname, "rb") as handle:
             self.fdata_sparse = pickle.load(handle)
 
     def test_covariance_1d(self):
         self.fdata_sparse.covariance()
 
         expected_cov = np.array(
-            [0.15472411, 0.14855848, 0.14454352, 0.14209262, 0.14081867,
-             0.14034563, 0.14044741, 0.14034013, 0.13951657, 0.13789322,
-             0.13548868, 0.13251866, 0.12893286, 0.12500313, 0.12101261,
-             0.11667988, 0.11198565, 0.10703057, 0.10208075, 0.0975719,
-             0.09360273, 0.08994467, 0.08667802, 0.08362184, 0.08077714,
-             0.07843426, 0.07657831, 0.07482117, 0.07291144, 0.07111405,
-             0.0694995, 0.06761433, 0.06512602, 0.062037, 0.0584792,
-             0.05452101, 0.05044692, 0.04647898, 0.04252055, 0.03854402,
-             0.03455831, 0.030547, 0.02653045, 0.02278495, 0.01977571,
-             0.01759656, 0.01629781, 0.01568603, 0.01537593, 0.01534242,
-             0.01569544, 0.01656671, 0.017817, 0.01895484, 0.01990127,
-             0.02071034, 0.02116685, 0.02107946, 0.02070206, 0.02007342,
-             0.01925561, 0.01868937, 0.01840727, 0.01824926, 0.01840311,
-             0.01893859, 0.01984927, 0.02123337, 0.02314564, 0.02542681,
-             0.02801345, 0.03065551, 0.03299675, 0.03504692, 0.03696051,
-             0.03897061, 0.04105642, 0.04323314, 0.04541497, 0.04720705,
-             0.04856793, 0.04933011, 0.04969371, 0.05008922, 0.05043764,
-             0.0509771, 0.05164393, 0.05219735, 0.05266391, 0.05313121,
-             0.05371643, 0.05442826, 0.05535529, 0.05640362, 0.0574211,
-             0.05865464, 0.06027855, 0.06191592, 0.06363343, 0.06521477,
-             0.06644915]
+            [
+                0.15472411,
+                0.14855848,
+                0.14454352,
+                0.14209262,
+                0.14081867,
+                0.14034563,
+                0.14044741,
+                0.14034013,
+                0.13951657,
+                0.13789322,
+                0.13548868,
+                0.13251866,
+                0.12893286,
+                0.12500313,
+                0.12101261,
+                0.11667988,
+                0.11198565,
+                0.10703057,
+                0.10208075,
+                0.0975719,
+                0.09360273,
+                0.08994467,
+                0.08667802,
+                0.08362184,
+                0.08077714,
+                0.07843426,
+                0.07657831,
+                0.07482117,
+                0.07291144,
+                0.07111405,
+                0.0694995,
+                0.06761433,
+                0.06512602,
+                0.062037,
+                0.0584792,
+                0.05452101,
+                0.05044692,
+                0.04647898,
+                0.04252055,
+                0.03854402,
+                0.03455831,
+                0.030547,
+                0.02653045,
+                0.02278495,
+                0.01977571,
+                0.01759656,
+                0.01629781,
+                0.01568603,
+                0.01537593,
+                0.01534242,
+                0.01569544,
+                0.01656671,
+                0.017817,
+                0.01895484,
+                0.01990127,
+                0.02071034,
+                0.02116685,
+                0.02107946,
+                0.02070206,
+                0.02007342,
+                0.01925561,
+                0.01868937,
+                0.01840727,
+                0.01824926,
+                0.01840311,
+                0.01893859,
+                0.01984927,
+                0.02123337,
+                0.02314564,
+                0.02542681,
+                0.02801345,
+                0.03065551,
+                0.03299675,
+                0.03504692,
+                0.03696051,
+                0.03897061,
+                0.04105642,
+                0.04323314,
+                0.04541497,
+                0.04720705,
+                0.04856793,
+                0.04933011,
+                0.04969371,
+                0.05008922,
+                0.05043764,
+                0.0509771,
+                0.05164393,
+                0.05219735,
+                0.05266391,
+                0.05313121,
+                0.05371643,
+                0.05442826,
+                0.05535529,
+                0.05640362,
+                0.0574211,
+                0.05865464,
+                0.06027855,
+                0.06191592,
+                0.06363343,
+                0.06521477,
+                0.06644915,
+            ]
         )
-        np.testing.assert_array_almost_equal(self.fdata_sparse._covariance.values[0, 1], expected_cov)
+        np.testing.assert_array_almost_equal(
+            self.fdata_sparse._covariance.values[0, 1], expected_cov
+        )
 
         expected_noise = 0.0
-        np.testing.assert_almost_equal(self.fdata_sparse._noise_variance_cov, expected_noise)
+        np.testing.assert_almost_equal(
+            self.fdata_sparse._noise_variance_cov, expected_noise
+        )
 
     def test_covariance_1d_points(self):
-        points = DenseArgvals({'input_dim_0': np.linspace(0, 1, 11)})
+        points = DenseArgvals({"input_dim_0": np.linspace(0, 1, 11)})
         self.fdata_sparse.covariance(points=points)
 
         expected_cov = np.array(
-            [0.1385776, 0.13040424, 0.10086206, 0.08711904, 0.06104903,
-             0.04737855, 0.04940163, 0.05046211, 0.06321718, 0.05957814,
-             0.0524317]
+            [
+                0.1385776,
+                0.13040424,
+                0.10086206,
+                0.08711904,
+                0.06104903,
+                0.04737855,
+                0.04940163,
+                0.05046211,
+                0.06321718,
+                0.05957814,
+                0.0524317,
+            ]
         )
-        np.testing.assert_array_almost_equal(self.fdata_sparse._covariance.values[0, 1], expected_cov)
+        np.testing.assert_array_almost_equal(
+            self.fdata_sparse._covariance.values[0, 1], expected_cov
+        )
 
         expected_noise = 0.0
-        np.testing.assert_almost_equal(self.fdata_sparse._noise_variance_cov, expected_noise)
+        np.testing.assert_almost_equal(
+            self.fdata_sparse._noise_variance_cov, expected_noise
+        )
 
     def test_covariance_2d(self):
-        argvals = IrregularArgvals({
-            0: DenseArgvals({
-                'input_dim_0': np.array([1, 2, 3, 4]),
-                'input_dim_1': np.array([5, 6, 7])
-            }),
-            1: DenseArgvals({
-                'input_dim_0': np.array([2, 4]),
-                'input_dim_1': np.array([1, 2, 3])
-            }),
-            2: DenseArgvals({
-                'input_dim_0': np.array([4, 5, 6]),
-                'input_dim_1': np.array([8, 9])
-            })
-        })
-        values = IrregularValues({
-            0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
-            1: np.array([[1, 2, 3], [1, 2, 3]]),
-            2: np.array([[8, 9], [8, 9], [8, 9]])
-        })
+        argvals = IrregularArgvals(
+            {
+                0: DenseArgvals(
+                    {
+                        "input_dim_0": np.array([1, 2, 3, 4]),
+                        "input_dim_1": np.array([5, 6, 7]),
+                    }
+                ),
+                1: DenseArgvals(
+                    {
+                        "input_dim_0": np.array([2, 4]),
+                        "input_dim_1": np.array([1, 2, 3]),
+                    }
+                ),
+                2: DenseArgvals(
+                    {
+                        "input_dim_0": np.array([4, 5, 6]),
+                        "input_dim_1": np.array([8, 9]),
+                    }
+                ),
+            }
+        )
+        values = IrregularValues(
+            {
+                0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
+                1: np.array([[1, 2, 3], [1, 2, 3]]),
+                2: np.array([[8, 9], [8, 9], [8, 9]]),
+            }
+        )
         data = IrregularFunctionalData(argvals, values)
 
         with self.assertRaises(NotImplementedError):

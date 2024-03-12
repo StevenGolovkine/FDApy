@@ -1,4 +1,3 @@
-
 """
 Representation of univariate and dense functional data
 ======================================================
@@ -39,14 +38,10 @@ from FDApy.visualization import plot
 # First, we will define unidimensional functional data. We consider a hundred
 # sampling points and two observations.
 argvals = np.linspace(0, np.pi, num=100)
-X = np.array([
-    np.sin(2 * np.pi * argvals),
-    np.cos(2 * np.pi * argvals)
-])
+X = np.array([np.sin(2 * np.pi * argvals), np.cos(2 * np.pi * argvals)])
 
 fdata = DenseFunctionalData(
-    argvals=DenseArgvals({'input_dim_0': argvals}),
-    values=DenseValues(X)
+    argvals=DenseArgvals({"input_dim_0": argvals}), values=DenseValues(X)
 )
 
 _ = plot(fdata)
@@ -58,14 +53,16 @@ _ = plot(fdata)
 # Second, we will defined two-dimensional functional data. We consider a
 # hundred sampling points from both dimensions and two observations.
 argvals = np.linspace(0, np.pi, num=100)
-X = np.array([
-    np.outer(np.sin(argvals), np.cos(argvals)),
-    np.outer(np.sin(-argvals), np.cos(argvals))
-])
+X = np.array(
+    [
+        np.outer(np.sin(argvals), np.cos(argvals)),
+        np.outer(np.sin(-argvals), np.cos(argvals)),
+    ]
+)
 
 fdata = DenseFunctionalData(
-    argvals=DenseArgvals({'input_dim_0': argvals, 'input_dim_1': argvals}),
-    values=DenseValues(X)
+    argvals=DenseArgvals({"input_dim_0": argvals, "input_dim_1": argvals}),
+    values=DenseValues(X),
 )
 
 _ = plot(fdata)
