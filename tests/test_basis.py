@@ -46,8 +46,8 @@ class TestBasis(unittest.TestCase):
         np.testing.assert_allclose(X.values, np.array([[-1.41421356, 1.41421356, -1.41421356], [-1.731912e-16, 0.000000e00, 1.731912e-16]]))
 
     def test_basis_bsplines(self):
-        X = Basis(name="bsplines", n_functions=2, argvals=self.argvals, degree=0)
-        np.testing.assert_allclose(X.values, np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 1.0]]))
+        X = Basis(name="bsplines", n_functions=2, argvals=self.argvals, degree=1)
+        np.testing.assert_allclose(X.values, np.array([[1. , 0.5, 0. ], [0. , 0.5, 1. ]]))
 
     def test_multibasis(self):
         X = Basis(name="legendre", n_functions=2, dimension="2D", argvals=self.argvals)
@@ -75,11 +75,6 @@ class TestBasisFails(unittest.TestCase):
         with self.assertRaises(ValueError) as cm:
             Basis(name="legendre", n_functions=2, argvals=self.argvals_1d, dimension="3D")
         self.assertTrue("dimension" in str(cm.exception))
-
-    def test_basis_bsplines_fail(self):
-        with self.assertRaises(ValueError) as cm:
-            Basis(name="bsplines", n_functions=2, argvals=self.argvals_1d, degree=2)
-        self.assertTrue("small" in str(cm.exception))
 
 
 class TestSimulateBasisMultivariateWeighted(unittest.TestCase):

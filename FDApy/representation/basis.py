@@ -8,7 +8,10 @@ Basis
 """
 import numpy as np
 import numpy.typing as npt
-import scipy
+import warnings
+
+from scipy.integrate import simpson
+from scipy.special import gamma, eval_legendre
 
 from typing import Callable, Optional, List, Union
 
@@ -62,7 +65,7 @@ def _basis_legendre(
     """
     values = np.empty((n_functions, len(argvals)))
     for degree in np.arange(0, n_functions):
-        legendre = scipy.special.eval_legendre(degree, argvals)
+        legendre = eval_legendre(degree, argvals)
         values[degree, :] = legendre
     return values
 
@@ -127,8 +130,8 @@ def _basis_fourier(
     Returns
     -------
     values: npt.NDArray[np.float64], shape=(n_functions, len(argvals))
-        An array containing the evaluation of `n_functions` functions of
-        Wiener basis.
+        An array containing the evaluation of `n_functions` functions of Wiener
+        basis.
 
     Notes
     -----
@@ -159,48 +162,81 @@ def _basis_fourier(
 
 def _basis_bsplines(
     argvals: npt.NDArray[np.float64],
-    n_functions: int = 5,
+    n_functions: int = 10,
     degree: int = 3,
+    domain_min: Optional[float] = None,
+    domain_max: Optional[float] = None,
 ) -> npt.NDArray[np.float64]:
     """Define B-splines basis of function.
 
     Build a basis of :math:`n_functions` functions using B-splines basis on the
-    interval defined by ``argvals``. We assume that the knots are not given,
-    and we compute them from the quantiles of the ``argvals``.
+    interval defined by ``argvals``. We assume that the knots are regularly spaced. The
+    number of knots is equal to ``n_functions - degree``.
 
     Parameters
     ----------
     argvals: npt.NDArray[np.float64]
         The values on which evaluated the B-splines.
-    n_functions: int, default=5
+    n_functions: int, default=10
         Number of considered B-splines.
     degree: int, default=3
         Degree of the B-splines. The default gives cubic splines.
+    domain_min: float, default=None
+        Minimum number for the argvals.
+    domain_max: float, default=None
+        Maximum number for hte argvals.
 
     Returns
     -------
     values: npt.NDArray[np.float64], shape=(n_functions, len(argvals))
-        An array containing the evaluation of `n_functions` functions of
-        Wiener basis.
+        An array containing the evaluation of `n_functions` functions of a B-splines
+        basis.
+
+    Notes
+    -----
+    This function is adapted from the `bbase` function in the R package `JOPS` _[2]. It
+    computes a proper B-splines basis function (see _[1], Section 8.1).
 
     Examples
     --------
-    >>> _basis_bsplines(argvals=np.arange(0, 1, 0.01), n_functions=5)
+    >>> _basis_bsplines(argvals=np.arange(0, 1, 0.01), n_functions=10)
+
+    References
+    ----------
+    .. [1] Eilers, P., Marx, B.D., (2021) Practical Smoothing: The Joys of
+        P-splines. Cambridge University Press, Cambridge.
+    .. [2] Eilers, P., Marx, B., Li, B., Gampe, J., Rodriguez-Alvarez, M.X., (2023)
+        JOPS: Practical Smoothing with P-Splines.
 
     """
-    n_inner_knots = n_functions - degree - 1
-    if n_inner_knots < 0:
-        raise ValueError(
-            f"n_functions={n_functions} is too small for degree={degree}; "
-            f"must be >= {degree + 1}."
-        )
 
-    inner_knots = np.linspace(0, 1, n_inner_knots + 2)
-    inner_knots = np.quantile(argvals, inner_knots)
-    knots = np.pad(inner_knots, (degree, degree), "edge")
-    coefs = np.eye(n_functions)
-    basis = scipy.interpolate.splev(argvals, (knots, coefs, degree))
-    return np.vstack(basis)
+    def _tpower(x, knots, p):
+        res = np.zeros((len(x), len(knots)))
+        for idx, knot in enumerate(knots):
+            res[:, idx] = np.power(x - knot, p) * (x >= knot)
+        return res
+
+    # Compute the B-splines
+    n_segments = n_functions - degree
+    dx = (domain_max - domain_min) / n_segments
+    knots = np.linspace(
+        domain_min - degree * dx,
+        domain_max + degree * dx,
+        num=int(n_segments + 2 * degree) + 1,
+        endpoint=True,
+    )
+    p_mat = _tpower(argvals, knots, degree)
+    d_mat = np.diff(np.eye(p_mat.shape[1]), n=degree + 1, axis=0) / (
+        gamma(degree + 1) * np.power(dx, degree)
+    )
+    basis_mat = np.power(-1, degree + 1) * p_mat @ d_mat.T
+
+    # Make B-splines exactly zero beyond their end knots
+    sk = knots[np.arange(basis_mat.shape[1]) + degree + 1]
+    mask = np.zeros((len(argvals), len(sk)))
+    for idx, val in enumerate(argvals):
+        mask[idx, :] = val < sk
+    return (basis_mat * mask).T
 
 
 def _simulate_basis(
@@ -254,12 +290,18 @@ def _simulate_basis(
     elif name == "fourier":
         values = _basis_fourier(argvals, n_functions)
     elif name == "bsplines":
-        values = _basis_bsplines(argvals, n_functions, kwargs.get("degree", 3))
+        values = _basis_bsplines(
+            argvals,
+            n_functions,
+            degree=kwargs.get("degree", 3),
+            domain_min=kwargs.get("domain_min", np.min(argvals)),
+            domain_max=kwargs.get("domain_max", np.max(argvals)),
+        )
     else:
         raise NotImplementedError(f"Basis {name!r} not implemented!")
 
     if is_normalized:
-        norm2 = np.sqrt(scipy.integrate.simpson(values * values, argvals))
+        norm2 = np.sqrt(simpson(values * values, argvals))
         values = np.divide(values, norm2[:, np.newaxis])
 
     if add_intercept:
