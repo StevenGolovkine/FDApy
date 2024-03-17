@@ -23,6 +23,8 @@ from .argvals import Argvals, DenseArgvals, IrregularArgvals
 from .values import Values, DenseValues, IrregularValues
 
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
+from ..preprocessing.smoothing.psplines import PSplines
+
 from ..misc.utils import _cartesian_product
 from ..misc.utils import _estimate_noise_variance
 from ..misc.utils import _inner_product
@@ -433,7 +435,7 @@ class FunctionalData(ABC):
 
     @abstractmethod
     def mean(
-        self, points: Optional[DenseArgvals] = None, smooth: bool = True, **kwargs
+        self, points: Optional[DenseArgvals] = None, method: str = "PS", **kwargs
     ) -> DenseFunctionalData:
         """Compute an estimate of the mean."""
 
@@ -753,11 +755,7 @@ class DenseFunctionalData(FunctionalData):
         return np.mean([_estimate_noise_variance(obs.values[0], order) for obs in self])
 
     def smooth(
-        self,
-        points: Optional[DenseArgvals] = None,
-        kernel_name: str = "epanechnikov",
-        bandwidth: Optional[float] = None,
-        degree: int = 1,
+        self, points: Optional[DenseArgvals] = None, method: str = "PS", **kwargs
     ) -> DenseFunctionalData:
         """Smooth the data.
 
@@ -813,22 +811,49 @@ class DenseFunctionalData(FunctionalData):
         """
         if points is None:
             points = self.argvals
-        if bandwidth is None:
-            bandwidth = np.prod(self.n_points) ** (-1 / 5)
 
-        argvals_mat = _cartesian_product(*self.argvals.values())
-        points_mat = _cartesian_product(*points.values())
+        if method == "LP":
+            bandwidth = kwargs.get("bandwidth", None)
+            kernel = kwargs.get("kernel", "epanechnikov")
+            degree = kwargs.get("degree", 2)
+            if bandwidth is None:
+                bandwidth = np.product(self.n_points) ** (-1 / 5)
 
-        lp = LocalPolynomial(
-            kernel_name=kernel_name, bandwidth=bandwidth, degree=degree
-        )
+            argvals_mat = _cartesian_product(*self.argvals.values())
+            points_mat = _cartesian_product(*points.values())
 
-        smooth = np.zeros((self.n_obs, *points.n_points))
-        for idx, obs in enumerate(self):
-            smooth[idx, :] = lp.predict(
-                y=obs.values.flatten(), x=argvals_mat, x_new=points_mat
-            ).reshape(smooth.shape[1:])
-        return DenseFunctionalData(points, DenseValues(smooth))
+            lp = LocalPolynomial(
+                kernel_name="epanechnikov", bandwidth=bandwidth, degree=2
+            )
+
+            smooth = np.zeros((self.n_obs, *points.n_points))
+            for idx, obs in enumerate(self):
+                smooth[idx, :] = lp.predict(
+                    y=obs.values.flatten(), x=argvals_mat, x_new=points_mat
+                ).reshape(smooth.shape[1:])
+        elif method == "PS":
+            n_segments = kwargs.get("n_segments", 30)
+            degree = kwargs.get("degree", 3)
+            order_penalty = kwargs.get("order_penalty", 2)
+            order_derivative = kwargs.get("order_derivative", 0)
+            penalty = kwargs.get("penalty", self.n_dimension * [1])
+
+            ps = PSplines(
+                n_segments=n_segments,
+                degree=degree,
+                order_penalty=order_penalty,
+                order_derivative=order_derivative,
+            )
+
+            x = list(self.argvals.values())
+
+            smooth = np.zeros((self.n_obs, *self.argvals.n_points))
+            for idx, obs in enumerate(self):
+                ps.fit(x=x, y=self.values[idx, :], penalty=penalty)
+                smooth[idx, :] = ps.predict()
+        else:
+            raise NotImplementedError("Method not implemented.")
+        return DenseFunctionalData(self.argvals, DenseValues(smooth))
 
     def mean(
         self, points: Optional[DenseArgvals] = None, smooth: bool = True, **kwargs
@@ -1576,11 +1601,7 @@ class IrregularFunctionalData(FunctionalData):
         )
 
     def smooth(
-        self,
-        points: Optional[DenseArgvals] = None,
-        kernel_name: str = "epanechnikov",
-        bandwidth: Optional[float] = None,
-        degree: int = 1,
+        self, points: Optional[DenseArgvals] = None, method: str = "PS", **kwargs
     ) -> DenseFunctionalData:
         """Smooth the data.
 
@@ -1640,24 +1661,48 @@ class IrregularFunctionalData(FunctionalData):
         Functional data object with 3 observations on a 1-dimensional support.
 
         """
+
         if points is None:
             points = self.argvals.to_dense()
-        if bandwidth is None:
-            n_points = np.mean([obs for obs in self.n_points.values()])
-            bandwidth = n_points ** (-1 / 5)
 
-        points_mat = _cartesian_product(*points.values())
+        if method == "LP":
+            bandwidth = kwargs.get("bandwidth", None)
+            kernel = kwargs.get("kernel", "epanechnikov")
+            degree = kwargs.get("degree", 2)
+            if bandwidth is None:
+                n_points = np.mean([obs for obs in self.n_points.values()])
+                bandwidth = n_points ** (-1 / 5)
 
-        lp = LocalPolynomial(
-            kernel_name=kernel_name, bandwidth=bandwidth, degree=degree
-        )
+            points_mat = _cartesian_product(*points.values())
 
-        smooth = np.zeros((self.n_obs, *points.n_points))
-        for idx, obs in enumerate(self):
-            argvals_mat = _cartesian_product(*obs.argvals[idx].values())
-            smooth[idx, :] = lp.predict(
-                y=obs.values[idx].flatten(), x=argvals_mat, x_new=points_mat
-            ).reshape(smooth.shape[1:])
+            lp = LocalPolynomial(kernel_name=kernel, bandwidth=bandwidth, degree=degree)
+
+            smooth = np.zeros((self.n_obs, *points.n_points))
+            for idx, obs in enumerate(self):
+                argvals_mat = _cartesian_product(*obs.argvals[idx].values())
+                smooth[idx, :] = lp.predict(
+                    y=obs.values[idx].flatten(), x=argvals_mat, x_new=points_mat
+                ).reshape(smooth.shape[1:])
+        elif method == "PS":
+            n_segments = kwargs.get("n_segments", 30)
+            degree = kwargs.get("degree", 3)
+            order_penalty = kwargs.get("order_penalty", 2)
+            order_derivative = kwargs.get("order_derivative", 0)
+            penalty = kwargs.get("penalty", self.n_dimension * [1])
+
+            ps = PSplines(
+                n_segments=n_segments,
+                degree=degree,
+                order_penalty=order_penalty,
+                order_derivative=order_derivative,
+            )
+            smooth = np.zeros((self.n_obs, *points.n_points))
+            for idx, obs in enumerate(self):
+                x = obs.argvals[idx]["input_dim_0"]
+                ps.fit(x=x, y=obs.values[idx], penalty=penalty)
+                smooth[idx, :] = ps.predict(points["input_dim_0"])
+        else:
+            raise NotImplementedError("Method not implemented.")
         return DenseFunctionalData(points, DenseValues(smooth))
 
     def mean(
