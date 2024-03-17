@@ -12,7 +12,7 @@ import numpy.typing as npt
 
 from typing import Dict, Optional, List, Union
 
-from ...representation.basis import _basis_bsplines
+from ...misc.basis import _basis_bsplines
 
 
 ########################################################################################
