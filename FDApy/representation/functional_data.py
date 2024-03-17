@@ -109,7 +109,7 @@ def _smooth_covariance(
     lp = LocalPolynomial(
         kernel_name=kwargs.get("kernel_name", "epanechnikov"),
         bandwidth=kwargs.get(
-            "bandwidth", np.product(covariance_fd.n_points) ** (-1 / 5)
+            "bandwidth", np.prod(covariance_fd.n_points) ** (-1 / 5)
         ),
         degree=kwargs.get("degree", 2),
     )
@@ -814,7 +814,7 @@ class DenseFunctionalData(FunctionalData):
         if points is None:
             points = self.argvals
         if bandwidth is None:
-            bandwidth = np.product(self.n_points) ** (-1 / 5)
+            bandwidth = np.prod(self.n_points) ** (-1 / 5)
 
         argvals_mat = _cartesian_product(*self.argvals.values())
         points_mat = _cartesian_product(*points.values())
@@ -899,7 +899,7 @@ class DenseFunctionalData(FunctionalData):
                 points=points,
                 kernel_name=kwargs.get("kernel_name", "epanechnikov"),
                 bandwidth=kwargs.get(
-                    "bandwidth", np.product(self.n_points) ** (-1 / 5)
+                    "bandwidth", np.prod(self.n_points) ** (-1 / 5)
                 ),
                 degree=kwargs.get("degree", 1),
             )
