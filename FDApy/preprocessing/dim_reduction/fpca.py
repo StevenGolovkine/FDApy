@@ -251,7 +251,7 @@ def _fit_inner_product(
     eigenvalues, eigenvectors = _compute_eigen(in_prod, n_components)
 
     # Compute the eigenfunctions
-    data_smooth = data.smooth(points, bandwidth=4 / np.prod(points.n_points))
+    data_smooth = data.smooth(points, method='LP', degree=1, bandwidth=4 / np.prod(points.n_points))
     eigenfunctions = np.matmul(data_smooth.values.T, eigenvectors)
     eigenfunctions = eigenfunctions / np.sqrt(eigenvalues)
 
@@ -316,7 +316,9 @@ def _fit_inner_product_multivariate(
 
     # Compute the eigenfunctions
     data_smooth = data.smooth(
-        points, bandwidth=[4 / np.prod(pp.n_points) for pp in points]
+        points, method='LP',
+        degree=data.n_functional * [1],
+        bandwidth=[4 / np.prod(pp.n_points) for pp in points]
     )
     temp = [
         np.matmul(data_uni.values.T, eigenvectors) / np.sqrt(eigenvalues)
@@ -400,7 +402,8 @@ def _transform_numerical_integration_irregular(
     scores = np.zeros((data.n_obs, eigenfunctions.n_obs))
     for idx, obs in enumerate(data):
         eigen_sampled = eigenfunctions.smooth(
-            points=obs.argvals[idx], bandwidth=4 / np.prod(obs.argvals[idx].n_points)
+            points=obs.argvals[idx], method='LP',
+            degree=1, bandwidth=4 / np.prod(obs.argvals[idx].n_points)
         )
         temp = eigen_sampled.values * obs.values[idx]
         for idx_eigen, curve in enumerate(temp):
@@ -519,8 +522,12 @@ def _transform_pace_irregular(
         }
     )
     bandwidth = 1 / points.n_points[0]
-    covariance_sampled = covariance.smooth(points=argvals_cov, bandwidth=bandwidth)
-    eigenfunctions_sampled = eigenfunctions.smooth(points=points, bandwidth=bandwidth)
+    covariance_sampled = covariance.smooth(
+        points=argvals_cov, method='LP', bandwidth=bandwidth
+    )
+    eigenfunctions_sampled = eigenfunctions.smooth(
+        points=points, method='LP', bandwidth=bandwidth
+    )
 
     scores = np.zeros((data.n_obs, eigenfunctions.n_obs))
     for idx, fdata in enumerate(data):

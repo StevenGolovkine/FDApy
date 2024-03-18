@@ -425,17 +425,13 @@ class FunctionalData(ABC):
 
     @abstractmethod
     def smooth(
-        self,
-        points: Optional[DenseArgvals] = None,
-        kernel_name: Optional[str] = "epanechnikov",
-        bandwidth: Optional[float] = None,
-        degree: Optional[int] = 1,
+        self, points: Optional[DenseArgvals] = None, method: str = "PS", **kwargs
     ) -> Type[FunctionalData]:
         """Smooth the data."""
 
     @abstractmethod
     def mean(
-        self, points: Optional[DenseArgvals] = None, method: str = "PS", **kwargs
+        self, points: Optional[DenseArgvals] = None, smooth: bool = True, **kwargs
     ) -> DenseFunctionalData:
         """Compute an estimate of the mean."""
 
@@ -815,15 +811,15 @@ class DenseFunctionalData(FunctionalData):
         if method == "LP":
             bandwidth = kwargs.get("bandwidth", None)
             kernel = kwargs.get("kernel", "epanechnikov")
-            degree = kwargs.get("degree", 2)
+            degree = kwargs.get("degree", 1)
             if bandwidth is None:
-                bandwidth = np.product(self.n_points) ** (-1 / 5)
+                bandwidth = np.prod(self.n_points) ** (-1 / 5)
 
             argvals_mat = _cartesian_product(*self.argvals.values())
             points_mat = _cartesian_product(*points.values())
 
             lp = LocalPolynomial(
-                kernel_name="epanechnikov", bandwidth=bandwidth, degree=2
+                kernel_name=kernel, bandwidth=bandwidth, degree=degree
             )
 
             smooth = np.zeros((self.n_obs, *points.n_points))
@@ -853,7 +849,7 @@ class DenseFunctionalData(FunctionalData):
                 smooth[idx, :] = ps.predict()
         else:
             raise NotImplementedError("Method not implemented.")
-        return DenseFunctionalData(self.argvals, DenseValues(smooth))
+        return DenseFunctionalData(points, DenseValues(smooth))
 
     def mean(
         self, points: Optional[DenseArgvals] = None, smooth: bool = True, **kwargs
@@ -922,11 +918,8 @@ class DenseFunctionalData(FunctionalData):
         if smooth:
             self._mean = self._mean.smooth(
                 points=points,
-                kernel_name=kwargs.get("kernel_name", "epanechnikov"),
-                bandwidth=kwargs.get(
-                    "bandwidth", np.prod(self.n_points) ** (-1 / 5)
-                ),
-                degree=kwargs.get("degree", 1),
+                method='LP',
+                **kwargs
             )
         return self._mean
 
@@ -972,7 +965,7 @@ class DenseFunctionalData(FunctionalData):
             data_mean = self.mean(smooth=smooth, **kwargs)
         else:
             data_mean = mean.smooth(
-                points=self.argvals, bandwidth=1 / np.prod(self.n_points)
+                points=self.argvals, method='LP', bandwidth=1 / np.prod(self.n_points)
             )
         return DenseFunctionalData(
             DenseArgvals(self.argvals), DenseValues(self.values - data_mean.values)
@@ -1831,7 +1824,7 @@ class IrregularFunctionalData(FunctionalData):
             data_mean = self.mean(points=new_argvals, smooth=smooth, **kwargs)
         else:
             data_mean = mean.smooth(
-                new_argvals, bandwidth=1 / np.prod(new_argvals.n_points)
+                new_argvals, method='LP', bandwidth=1 / np.prod(new_argvals.n_points)
             )
 
         obs_centered = {}
@@ -1958,7 +1951,7 @@ class IrregularFunctionalData(FunctionalData):
 
         """
         if weights == 0.0:
-            data_smooth = self.smooth(**kwargs)
+            data_smooth = self.smooth(method='LP', degree=1, **kwargs)
             if use_argvals_stand:
                 argvals_stand = data_smooth.argvals_stand.values()
                 axis = [argvals for argvals in argvals_stand]
@@ -2522,11 +2515,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         return [fdata.noise_variance(order=order) for fdata in self.data]
 
     def smooth(
-        self,
-        points: Optional[List[DenseArgvals]] = None,
-        kernel_name: Optional[List[str]] = None,
-        bandwidth: Optional[List[float]] = None,
-        degree: Optional[List[int]] = None,
+        self, points: Optional[DenseArgvals] = None, method: str = "PS", **kwargs
     ):
         """Smooth the data.
 
@@ -2592,38 +2581,46 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         """
         if points is None:
             points = self.n_functional * [None]
-        if kernel_name is None:
-            kernel_name = self.n_functional * ["epanechnikov"]
-        if bandwidth is None:
-            bandwidth = self.n_functional * [None]
-        if degree is None:
-            degree = self.n_functional * [1]
+        if method == 'LP':
+            bandwidth = kwargs.get("bandwidth", None)
+            kernel_name = kwargs.get("kernel", None)
+            degree = kwargs.get("degree", None)
+            if kernel_name is None:
+                kernel_name = self.n_functional * ["epanechnikov"]
+            if bandwidth is None:
+                bandwidth = self.n_functional * [None]
+            if degree is None:
+                degree = self.n_functional * [1]
 
-        if (
-            not isinstance(points, list)
-            or not isinstance(kernel_name, list)
-            or not isinstance(bandwidth, list)
-            or not isinstance(degree, list)
-        ):
-            raise TypeError("Each parameter has to be a list.")
-        if (
-            len(points) != self.n_functional
-            or len(kernel_name) != self.n_functional
-            or len(bandwidth) != self.n_functional
-            or len(degree) != self.n_functional
-        ):
-            raise ValueError(
-                "Each parameter has to be a list of length " f"{self.n_functional}."
-            )
-
-        return MultivariateFunctionalData(
-            [
-                fdata.smooth(pp, kernel, bb, dd)
-                for (fdata, pp, kernel, bb, dd) in zip(
-                    self.data, points, kernel_name, bandwidth, degree
+            if (
+                not isinstance(points, list)
+                or not isinstance(kernel_name, list)
+                or not isinstance(bandwidth, list)
+                or not isinstance(degree, list)
+            ):
+                raise TypeError("Each parameter has to be a list.")
+            if (
+                len(points) != self.n_functional
+                or len(kernel_name) != self.n_functional
+                or len(bandwidth) != self.n_functional
+                or len(degree) != self.n_functional
+            ):
+                raise ValueError(
+                    "Each parameter has to be a list of length " f"{self.n_functional}."
                 )
-            ]
-        )
+
+            return MultivariateFunctionalData(
+                [
+                    fdata.smooth(
+                        pp, method='LP', kernel_name=kernel, bandwidth=bb, degree=dd
+                    )
+                    for (fdata, pp, kernel, bb, dd) in zip(
+                        self.data, points, kernel_name, bandwidth, degree
+                    )
+                ]
+            )
+        else:
+            raise ValueError("Method not implemented.")
 
     def mean(
         self, points: Optional[List[DenseArgvals]] = None, smooth: bool = True, **kwargs

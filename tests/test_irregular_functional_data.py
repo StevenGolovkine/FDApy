@@ -528,7 +528,7 @@ class TestSmoothIrregular(unittest.TestCase):
             self.fdata_sparse = pickle.load(handle)
 
     def test_smooth_1d(self):
-        fdata_smooth = self.fdata_sparse.smooth()
+        fdata_smooth = self.fdata_sparse.smooth(method='LP', degree=1)
         expected_values = DenseValues(
             [
                 [
@@ -654,7 +654,7 @@ class TestSmoothIrregular(unittest.TestCase):
             }
         )
         data = IrregularFunctionalData(argvals, values)
-        fdata_smooth = data.smooth()
+        fdata_smooth = data.smooth(method='LP')
 
         expected_values = DenseValues(
             [
@@ -985,7 +985,7 @@ class TestInnerProductIrregular(unittest.TestCase):
             data.inner_product()
 
 
-class TestCenterDense(unittest.TestCase):
+class TestCenterIrregular(unittest.TestCase):
     def setUp(self):
         fname = THIS_DIR.parent / "data/data_sparse_5_10_08.pickle"
         with open(fname, "rb") as handle:

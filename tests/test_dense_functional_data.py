@@ -506,7 +506,7 @@ class TestSmoothDense(unittest.TestCase):
             self.fdata_2D = pickle.load(handle)
 
     def test_smooth_1d(self):
-        fdata_smooth = self.fdata.smooth(bandwidth=0.39)
+        fdata_smooth = self.fdata.smooth(method='LP', bandwidth=0.39)
 
         expected_values = DenseValues(
             [
@@ -618,7 +618,7 @@ class TestSmoothDense(unittest.TestCase):
         np.testing.assert_array_almost_equal(fdata_smooth.values, expected_values)
 
     def test_smooth_default(self):
-        fdata_smooth = self.fdata.smooth()
+        fdata_smooth = self.fdata.smooth(method='LP')
 
         expected_values = DenseValues(
             [
@@ -730,7 +730,7 @@ class TestSmoothDense(unittest.TestCase):
         np.testing.assert_array_almost_equal(fdata_smooth.values, expected_values)
 
     def test_smooth_2d(self):
-        fdata_smooth = self.fdata_2D.smooth(bandwidth=0.38321537573562725)
+        fdata_smooth = self.fdata_2D.smooth(method='LP', bandwidth=0.38321537573562725)
 
         expected_values = DenseValues(
             [
