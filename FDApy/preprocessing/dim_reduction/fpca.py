@@ -761,7 +761,7 @@ class UFPCA:
                 points = data.argvals.to_dense()
 
         # Compute the mean and center the data.
-        self._mean = data.mean(points=points, smooth=smooth, **kwargs)
+        self._mean = data.mean(points=points, method_smoothing='LP', **kwargs)
         data = data.center(mean=self._mean, smooth=smooth, **kwargs)
 
         # Normalize the data

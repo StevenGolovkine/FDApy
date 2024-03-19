@@ -895,7 +895,7 @@ class TestMeanDense(unittest.TestCase):
             self.fdata_2D = pickle.load(handle)
 
     def test_mean_1d(self):
-        mean_estim = self.fdata.mean(smooth=True)
+        mean_estim = self.fdata.mean(method_smoothing='LP')
 
         expected_values = DenseValues(
             [
@@ -1010,7 +1010,7 @@ class TestMeanDense(unittest.TestCase):
         new_argvals = DenseArgvals(
             {"input_dim_0": np.linspace(0, 1, 21), "input_dim_1": np.linspace(0, 1, 21)}
         )
-        fdata_smooth = self.fdata_2D.mean(points=new_argvals, smooth=True)
+        fdata_smooth = self.fdata_2D.mean(points=new_argvals, method_smoothing='LP')
 
         expected_values = DenseValues(
             [
@@ -1955,7 +1955,7 @@ class TestCenterDense(unittest.TestCase):
         np.testing.assert_array_almost_equal(fdata_center.values[9], expected_values)
 
     def test_center_1d_with_given_mean(self):
-        precomputed_mean = self.fdata.mean()
+        precomputed_mean = self.fdata.mean(method_smoothing='LP')
 
         fdata_center = self.fdata.center(mean=precomputed_mean)
         expected_values = DenseValues(
@@ -2095,7 +2095,7 @@ class TestCenterDense(unittest.TestCase):
         np.testing.assert_array_almost_equal(fdata_center.values, expected_values)
 
     def test_center_2d_with_given_mean(self):
-        precomputed_mean = self.fdata_2D.mean()
+        precomputed_mean = self.fdata_2D.mean(method_smoothing='LP')
 
         fdata_center = self.fdata_2D.center(mean=precomputed_mean)
         expected_values = DenseValues(

@@ -110,9 +110,7 @@ def _smooth_covariance(
 
     lp = LocalPolynomial(
         kernel_name=kwargs.get("kernel_name", "epanechnikov"),
-        bandwidth=kwargs.get(
-            "bandwidth", np.prod(covariance_fd.n_points) ** (-1 / 5)
-        ),
+        bandwidth=kwargs.get("bandwidth", np.prod(covariance_fd.n_points) ** (-1 / 5)),
         degree=kwargs.get("degree", 2),
     )
     covariance = lp.predict(y=y, x=x, x_new=points_mat)
@@ -818,9 +816,7 @@ class DenseFunctionalData(FunctionalData):
             argvals_mat = _cartesian_product(*self.argvals.values())
             points_mat = _cartesian_product(*points.values())
 
-            lp = LocalPolynomial(
-                kernel_name=kernel, bandwidth=bandwidth, degree=degree
-            )
+            lp = LocalPolynomial(kernel_name=kernel, bandwidth=bandwidth, degree=degree)
 
             smooth = np.zeros((self.n_obs, *points.n_points))
             for idx, obs in enumerate(self):
@@ -852,7 +848,7 @@ class DenseFunctionalData(FunctionalData):
         return DenseFunctionalData(points, DenseValues(smooth))
 
     def mean(
-        self, points: Optional[DenseArgvals] = None, smooth: bool = True, **kwargs
+        self, points=None, method_smoothing: int = None, **kwargs
     ) -> DenseFunctionalData:
         """Compute an estimate of the mean.
 
@@ -915,11 +911,9 @@ class DenseFunctionalData(FunctionalData):
         mean_estim = self.values.mean(axis=0)
         self._mean = DenseFunctionalData(self.argvals, mean_estim[np.newaxis])
 
-        if smooth:
+        if method_smoothing:
             self._mean = self._mean.smooth(
-                points=points,
-                method='LP',
-                **kwargs
+                points=points, method=method_smoothing, **kwargs
             )
         return self._mean
 
@@ -962,10 +956,10 @@ class DenseFunctionalData(FunctionalData):
 
         """
         if mean is None:
-            data_mean = self.mean(smooth=smooth, **kwargs)
+            data_mean = self.mean(method_smoothing="LP", **kwargs)
         else:
             data_mean = mean.smooth(
-                points=self.argvals, method='LP', bandwidth=1 / np.prod(self.n_points)
+                points=self.argvals, method="LP", bandwidth=1 / np.prod(self.n_points)
             )
         return DenseFunctionalData(
             DenseArgvals(self.argvals), DenseValues(self.values - data_mean.values)
@@ -1824,7 +1818,7 @@ class IrregularFunctionalData(FunctionalData):
             data_mean = self.mean(points=new_argvals, smooth=smooth, **kwargs)
         else:
             data_mean = mean.smooth(
-                new_argvals, method='LP', bandwidth=1 / np.prod(new_argvals.n_points)
+                new_argvals, method="LP", bandwidth=1 / np.prod(new_argvals.n_points)
             )
 
         obs_centered = {}
@@ -1951,7 +1945,7 @@ class IrregularFunctionalData(FunctionalData):
 
         """
         if weights == 0.0:
-            data_smooth = self.smooth(method='LP', degree=1, **kwargs)
+            data_smooth = self.smooth(method="LP", degree=1, **kwargs)
             if use_argvals_stand:
                 argvals_stand = data_smooth.argvals_stand.values()
                 axis = [argvals for argvals in argvals_stand]
@@ -2581,7 +2575,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         """
         if points is None:
             points = self.n_functional * [None]
-        if method == 'LP':
+        if method == "LP":
             bandwidth = kwargs.get("bandwidth", None)
             kernel_name = kwargs.get("kernel", None)
             degree = kwargs.get("degree", None)
@@ -2612,7 +2606,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             return MultivariateFunctionalData(
                 [
                     fdata.smooth(
-                        pp, method='LP', kernel_name=kernel, bandwidth=bb, degree=dd
+                        pp, method="LP", kernel_name=kernel, bandwidth=bb, degree=dd
                     )
                     for (fdata, pp, kernel, bb, dd) in zip(
                         self.data, points, kernel_name, bandwidth, degree
@@ -2686,7 +2680,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             )
         self._mean = MultivariateFunctionalData(
             [
-                fdata.mean(points=pp, smooth=smooth, **kwargs)
+                fdata.mean(points=pp, method_smoothing="LP", smooth=smooth, **kwargs)
                 for (fdata, pp) in zip(self.data, points)
             ]
         )
