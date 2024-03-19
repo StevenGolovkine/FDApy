@@ -69,6 +69,7 @@ def _smooth_covariance(
     covariance_matrix: npt.NDArray[np.float64],
     argvals: DenseArgvals,
     points: DenseArgvals,
+    method_smoothing: str = "LP",
     **kwargs,
 ):
     """Smooth the covariance.
@@ -95,26 +96,42 @@ def _smooth_covariance(
         The smooth covariance.
 
     """
-    # Remove covariance diagnonal because of measurements errors.
-    np.fill_diagonal(covariance_matrix, np.nan)
+    if method_smoothing == "LP":
+        # Remove covariance diagnonal because of measurements errors.
+        np.fill_diagonal(covariance_matrix, np.nan)
+        covariance_fd = DenseFunctionalData(
+            argvals, DenseValues(covariance_matrix[np.newaxis])
+        )
+        fdata_long = covariance_fd.to_long()
+        fdata_long = fdata_long.dropna()
 
-    covariance_fd = DenseFunctionalData(
-        argvals, DenseValues(covariance_matrix[np.newaxis])
-    )
-    fdata_long = covariance_fd.to_long()
-    fdata_long = fdata_long.dropna()
+        x = fdata_long.drop(["id", "values"], axis=1, inplace=False).values
+        y = fdata_long["values"].values
+        points_mat = _cartesian_product(*points.values())
 
-    x = fdata_long.drop(["id", "values"], axis=1, inplace=False).values
-    y = fdata_long["values"].values
-    points_mat = _cartesian_product(*points.values())
+        lp = LocalPolynomial(
+            kernel_name=kwargs.get("kernel_name", "epanechnikov"),
+            bandwidth=kwargs.get(
+                "bandwidth", np.prod(covariance_fd.n_points) ** (-1 / 5)
+            ),
+            degree=kwargs.get("degree", 2),
+        )
+        covariance = lp.predict(y=y, x=x, x_new=points_mat)
+        covariance = covariance.reshape(points.n_points)
+    elif method_smoothing == "PS":
+        # Remove covariance diagnonal because of measurements errors.
+        np.fill_diagonal(covariance_matrix, 0)
+        ps = PSplines(n_segments=30, degree=3, order_penalty=2, order_derivative=0)
 
-    lp = LocalPolynomial(
-        kernel_name=kwargs.get("kernel_name", "epanechnikov"),
-        bandwidth=kwargs.get("bandwidth", np.prod(covariance_fd.n_points) ** (-1 / 5)),
-        degree=kwargs.get("degree", 2),
-    )
-    covariance = lp.predict(y=y, x=x, x_new=points_mat)
-    covariance = covariance.reshape(points.n_points)
+        x = argvals["input_dim_0"]
+        y = argvals["input_dim_1"]
+        weights = np.ones_like(covariance_matrix)
+        np.fill_diagonal(weights, 0)
+
+        ps.fit(x=[x, y], y=covariance_matrix, penalty=(1, 1), sample_weights=weights)
+        covariance = ps.predict([points["input_dim_0"], points["input_dim_1"]])
+    else:
+        raise ValueError("Method not implemented.")
     return covariance
 
 
@@ -1200,7 +1217,10 @@ class DenseFunctionalData(FunctionalData):
         return self._inner_product_matrix
 
     def covariance(
-        self, points: Optional[DenseArgvals] = None, smooth: bool = True, **kwargs
+        self,
+        points: Optional[DenseArgvals] = None,
+        method_smoothing: str = "LP",
+        **kwargs,
     ) -> DenseFunctionalData:
         r"""Compute an estimate of the covariance function.
 
@@ -1278,13 +1298,15 @@ class DenseFunctionalData(FunctionalData):
         )
 
         # Center the data
-        data = self.center(smooth=smooth, **kwargs)
+        data = self.center(smooth=True, **kwargs)
 
         # Estimate the covariance
         cov = np.dot(data.values.T, data.values) / (self.n_obs - 1)
         raw_diag_cov = np.diag(cov).copy()
-        if smooth:
-            cov = _smooth_covariance(cov, argvals_cov, points_cov)
+        if method_smoothing:
+            cov = _smooth_covariance(
+                cov, argvals_cov, points_cov, method_smoothing=method_smoothing
+            )
 
         # Ensure the covariance is symmetric.
         cov = (cov + cov.T) / 2
@@ -3004,7 +3026,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             )
         self._covariance = MultivariateFunctionalData(
             [
-                fdata.covariance(pp, smooth, **kwargs)
+                fdata.covariance(pp, method_smoothing="LP", **kwargs)
                 for fdata, pp in zip(self.data, points)
             ]
         )

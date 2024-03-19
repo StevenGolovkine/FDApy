@@ -79,7 +79,7 @@ def _fit_covariance(
 
     """
     # Compute the covariance
-    covariance = data.covariance(points=points, smooth=smooth, **kwargs)
+    covariance = data.covariance(points=points, **kwargs)
 
     # Choose the W_j's and the S_j's (Ramsey and Silverman, 2005)
     argvals = points["input_dim_0"]
