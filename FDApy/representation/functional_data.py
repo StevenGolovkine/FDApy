@@ -1693,7 +1693,10 @@ class IrregularFunctionalData(FunctionalData):
         return DenseFunctionalData(points, DenseValues(smooth))
 
     def mean(
-        self, points: Optional[DenseArgvals] = None, smooth: bool = True, **kwargs
+        self,
+        points: Optional[DenseArgvals] = None,
+        method_smoothing: str = "LP",
+        **kwargs,
     ) -> DenseFunctionalData:
         """Compute an estimate of the mean.
 
@@ -1754,22 +1757,30 @@ class IrregularFunctionalData(FunctionalData):
         """
         if points is None:
             points = self.argvals.to_dense()
-        bandwidth = kwargs.get("bandwidth", None)
-        if bandwidth is None:
-            n_points = np.mean([obs for obs in self.n_points.values()])
-            bandwidth = n_points ** (-1 / 5)
-
         fdata_long = self.to_long()
         x = fdata_long.drop(["id", "values"], axis=1, inplace=False).values
         y = fdata_long["values"].values
-        points_mat = _cartesian_product(*points.values())
+        if method_smoothing == "LP":
+            bandwidth = kwargs.get("bandwidth", None)
+            if bandwidth is None:
+                n_points = np.mean([obs for obs in self.n_points.values()])
+                bandwidth = n_points ** (-1 / 5)
+            points_mat = _cartesian_product(*points.values())
 
-        lp = LocalPolynomial(
-            kernel_name=kwargs.get("kernel_name", "epanechnikov"),
-            bandwidth=bandwidth,
-            degree=kwargs.get("degree", 1),
-        )
-        pred = lp.predict(y=y, x=x, x_new=points_mat).reshape(points.n_points)
+            lp = LocalPolynomial(
+                kernel_name=kwargs.get("kernel_name", "epanechnikov"),
+                bandwidth=bandwidth,
+                degree=kwargs.get("degree", 1),
+            )
+            pred = lp.predict(y=y, x=x, x_new=points_mat).reshape(points.n_points)
+        elif method_smoothing == "PS":
+            x = x.flatten()
+            ps = PSplines(n_segments=30, degree=3, order_penalty=2, order_derivative=0)
+
+            ps.fit(x=x, y=y, penalty=1)
+            pred = ps.predict(points["input_dim_0"])
+        else:
+            raise ValueError("Method not implemented.")
 
         self._mean = DenseFunctionalData(points, DenseValues(pred[np.newaxis]))
         return self._mean
