@@ -70,6 +70,7 @@ def _smooth_covariance(
     argvals: DenseArgvals,
     points: DenseArgvals,
     method_smoothing: str = "LP",
+    weights: Optional[npt.NDArray[np.float64]] = None,
     **kwargs,
 ):
     """Smooth the covariance.
@@ -96,6 +97,8 @@ def _smooth_covariance(
         The smooth covariance.
 
     """
+    if weights is None:
+        weights = np.ones_like(covariance_matrix)
     if method_smoothing == "LP":
         # Remove covariance diagnonal because of measurements errors.
         np.fill_diagonal(covariance_matrix, np.nan)
@@ -125,8 +128,6 @@ def _smooth_covariance(
 
         x = argvals["input_dim_0"]
         y = argvals["input_dim_1"]
-        weights = np.ones_like(covariance_matrix)
-        np.fill_diagonal(weights, 0)
 
         ps.fit(x=[x, y], y=covariance_matrix, penalty=(1, 1), sample_weights=weights)
         covariance = ps.predict([points["input_dim_0"], points["input_dim_1"]])
@@ -1304,8 +1305,15 @@ class DenseFunctionalData(FunctionalData):
         cov = np.dot(data.values.T, data.values) / (self.n_obs - 1)
         raw_diag_cov = np.diag(cov).copy()
         if method_smoothing:
+            weights = np.ones_like(cov)
+            weights[cov == 0] = 0
+
             cov = _smooth_covariance(
-                cov, argvals_cov, points_cov, method_smoothing=method_smoothing
+                cov,
+                argvals_cov,
+                points_cov,
+                method_smoothing=method_smoothing,
+                weights=weights,
             )
 
         # Ensure the covariance is symmetric.
@@ -2091,7 +2099,10 @@ class IrregularFunctionalData(FunctionalData):
         )
 
     def covariance(
-        self, points: Optional[DenseArgvals] = None, smooth: bool = True, **kwargs
+        self,
+        points: Optional[DenseArgvals] = None,
+        method_smoothing: str = "LP",
+        **kwargs,
     ) -> IrregularFunctionalData:
         """Compute an estimate of the covariance function.
 
@@ -2176,7 +2187,7 @@ class IrregularFunctionalData(FunctionalData):
         n_points = self.argvals.to_dense().n_points
 
         # Center the data
-        data = self.center(smooth=smooth, **kwargs)
+        data = self.center(smooth=True, **kwargs)
 
         # Compute the covariance
         cov_sum = np.zeros(np.power(n_points, 2))
@@ -2195,7 +2206,16 @@ class IrregularFunctionalData(FunctionalData):
         raw_diag_cov = np.diag(cov).copy()
 
         # Smooth the covariance
-        cov = _smooth_covariance(cov, argvals_cov, points_cov)
+        weights = np.ones_like(cov)
+        weights[cov == 0] = 0
+
+        cov = _smooth_covariance(
+            cov,
+            argvals_cov,
+            points_cov,
+            method_smoothing=method_smoothing,
+            weights=weights,
+        )
 
         # Ensure the covariance is symmetric.
         cov = (cov + cov.T) / 2
