@@ -295,7 +295,7 @@ class LocalPolynomial:
 
     Parameters
     ----------
-    kernel_name: np.str_, default="gaussian"
+    kernel_name: np.str_, default="epanechnikov"
         Kernel name used as weight (`gaussian`, `epanechnikov`, `tricube`,
         `bisquare`).
     bandwidth: float, default=0.05
@@ -341,7 +341,7 @@ class LocalPolynomial:
 
     def __init__(
         self,
-        kernel_name: np.str_ = "gaussian",
+        kernel_name: str = "epanechnikov",
         bandwidth: float = 0.05,
         degree: int = 1,
         robust: bool = False,
@@ -353,12 +353,12 @@ class LocalPolynomial:
         self.robust = robust
 
     @property
-    def kernel_name(self) -> np.str_:
+    def kernel_name(self) -> str:
         """Getter for `kernel_name`."""
         return self._kernel_name
 
     @kernel_name.setter
-    def kernel_name(self, new_kernel_name: np.str_) -> None:
+    def kernel_name(self, new_kernel_name: str) -> None:
         self._kernel_name = new_kernel_name
         self._kernel = _kernel(new_kernel_name)
 

@@ -447,7 +447,10 @@ class FunctionalData(ABC):
 
     @abstractmethod
     def mean(
-        self, points: Optional[DenseArgvals] = None, smooth: bool = True, **kwargs
+        self,
+        points: Optional[DenseArgvals] = None,
+        method_smoothing: str = None,
+        **kwargs,
     ) -> DenseFunctionalData:
         """Compute an estimate of the mean."""
 
@@ -767,34 +770,42 @@ class DenseFunctionalData(FunctionalData):
         return np.mean([_estimate_noise_variance(obs.values[0], order) for obs in self])
 
     def smooth(
-        self, points: Optional[DenseArgvals] = None, method: str = "PS", **kwargs
+        self,
+        points: Optional[DenseArgvals] = None,
+        method: str = "PS",
+        bandwidth: Optional[float] = None,
+        penalty: Optional[float] = None,
+        **kwargs,
     ) -> DenseFunctionalData:
         """Smooth the data.
 
-        This function smooths each curves individually. Based on [1]_, it fits
-        a local smoother to the data (the argument ``degree`` controls the
-        degree of the local fits).
+        This function smooths each curves individually. Based on [3]_, it fits
+        a local polynomial smoother to the data. Based on [1]_, it fits P-splines to
+        the data.
 
         Parameters
         ----------
         points: Optional[DenseArgvals], default=None
             Points at which the curves are estimated. The default is None,
             meaning we use the argvals as estimation points.
-        kernel_name: str, default="epanechnikov"
-            Kernel name used as weight (`gaussian`, `epanechnikov`, `tricube`,
-            `bisquare`).
-        bandwidth: float, default=None
+        method: str, default='PS'
+            The method to used to the smoothing. If 'PS', the method is P-splines [1]_.
+            If 'LP', the method is local polynomials [3]_. Otherwise, it raises an
+            error.
+        bandwidth: Optional[float], default=None
             Strictly positive. Control the size of the associated neighborhood.
-            If ``bandwidth == None``, it is assumed that the curves are twice
+            If ``bandwidth=None``, it is assumed that the curves are twice
             differentiable and the bandwidth is set to :math:`n^{-1/5}` [2]_
             where :math:`n` is the number of sampling points per curve. Be
             careful that it will not work if the curves are not sampled on
             :math:`[0, 1]`.
-        degree: int, default=1
-            Degree of the local polynomial to fit. If ``degree=0``, we fit
-            the local constant estimator (equivalent to the Nadaraya-Watson
-            estimator). If ``degree=1``, we fit the local linear estimator.
-            If ``degree=2``, we fit the local quadratic estimator.
+        penalty: Optional[float], default=None
+            Strictly positive. Penalty used in the P-splined fitting of the data.
+        kwargs
+            Other keyword arguments are passed to one of the following functions:
+
+            - :meth:`preprocessing.smoothing.PSplines` (``method='PS'``),
+            - :meth:`preprocessing.smoothing.LocalPolynomial` (``method='LP'``).
 
         Returns
         -------
@@ -803,10 +814,12 @@ class DenseFunctionalData(FunctionalData):
 
         References
         ----------
-        .. [1] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
-            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
+        .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
+            P-splines. Cambridge University Press, Cambridge.
         .. [2] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
             Springer Series in Statistics.
+        .. [3] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
+            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
 
         Examples
         --------
@@ -825,16 +838,13 @@ class DenseFunctionalData(FunctionalData):
             points = self.argvals
 
         if method == "LP":
-            bandwidth = kwargs.get("bandwidth", None)
-            kernel = kwargs.get("kernel", "epanechnikov")
-            degree = kwargs.get("degree", 1)
             if bandwidth is None:
                 bandwidth = np.prod(self.n_points) ** (-1 / 5)
 
             argvals_mat = _cartesian_product(*self.argvals.values())
             points_mat = _cartesian_product(*points.values())
 
-            lp = LocalPolynomial(kernel_name=kernel, bandwidth=bandwidth, degree=degree)
+            lp = LocalPolynomial(bandwidth=bandwidth, **kwargs)
 
             smooth = np.zeros((self.n_obs, *points.n_points))
             for idx, obs in enumerate(self):
@@ -842,18 +852,10 @@ class DenseFunctionalData(FunctionalData):
                     y=obs.values.flatten(), x=argvals_mat, x_new=points_mat
                 ).reshape(smooth.shape[1:])
         elif method == "PS":
-            n_segments = kwargs.get("n_segments", 30)
-            degree = kwargs.get("degree", 3)
-            order_penalty = kwargs.get("order_penalty", 2)
-            order_derivative = kwargs.get("order_derivative", 0)
-            penalty = kwargs.get("penalty", self.n_dimension * [1])
+            if penalty is None:
+                penalty = self.n_dimension * [1]
 
-            ps = PSplines(
-                n_segments=n_segments,
-                degree=degree,
-                order_penalty=order_penalty,
-                order_derivative=order_derivative,
-            )
+            ps = PSplines(**kwargs)
 
             x = list(self.argvals.values())
 
@@ -866,7 +868,10 @@ class DenseFunctionalData(FunctionalData):
         return DenseFunctionalData(points, DenseValues(smooth))
 
     def mean(
-        self, points=None, method_smoothing: int = None, **kwargs
+        self,
+        points: Optional[DenseArgvals] = None,
+        method_smoothing: str = None,
+        **kwargs,
     ) -> DenseFunctionalData:
         """Compute an estimate of the mean.
 
@@ -874,7 +879,7 @@ class DenseFunctionalData(FunctionalData):
         DenseFunctionalData object. As the curves are sampled on a common grid,
         we consider the sample mean, as defined in [1]_. The sampled mean is
         rate optimal [2]_. We included some smoothing using Local Polynonial
-        Estimators.
+        Estimators or P-Splines.
 
         Parameters
         ----------
@@ -2733,7 +2738,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             )
         self._mean = MultivariateFunctionalData(
             [
-                fdata.mean(points=pp, method_smoothing="LP", smooth=smooth, **kwargs)
+                fdata.mean(points=pp, method_smoothing="LP", **kwargs)
                 for (fdata, pp) in zip(self.data, points)
             ]
         )

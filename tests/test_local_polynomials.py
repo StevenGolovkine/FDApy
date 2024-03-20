@@ -571,7 +571,7 @@ class LocalPolynomialTest(unittest.TestCase):
     def test_init(self):
         # Test default initialization
         lp = LocalPolynomial()
-        self.assertEqual(lp.kernel_name, "gaussian")
+        self.assertEqual(lp.kernel_name, "epanechnikov")
         self.assertEqual(lp.bandwidth, 0.05)
         self.assertEqual(lp.degree, 1)
         self.assertTrue(callable(lp.kernel))

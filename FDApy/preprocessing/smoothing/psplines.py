@@ -611,10 +611,50 @@ class PSplines:
         order_derivative: int = 0,
     ) -> None:
         """Initializa PSplines object."""
-        self.n_segments = n_segments
-        self.degree = degree
-        self.order_penalty = order_penalty
-        self.order_derivative = order_derivative
+        self._n_segments = n_segments
+        self._degree = degree
+        self._order_penalty = order_penalty
+        self._order_derivative = order_derivative
+
+    @property
+    def n_segments(self) -> Union[int, npt.NDArray[np.int64]]:
+        """Getter for `n_segments`."""
+        return self._n_segments
+
+    @n_segments.setter
+    def n_segments(self, new_n_segments: Union[int, npt.NDArray[np.int64]]) -> None:
+        self._n_segments = new_n_segments
+
+    @property
+    def degree(self) -> Union[int, npt.NDArray[np.int64]]:
+        """Getter for `degree`."""
+        return self._degree
+
+    @degree.setter
+    def degree(self, new_degree: Union[int, npt.NDArray[np.int64]]) -> None:
+        self._degree = new_degree
+
+    @property
+    def order_penalty(self) -> int:
+        """Getter for `order_penalty`."""
+        return self._order_penalty
+
+    @order_penalty.setter
+    def order_penalty(self, new_order_penalty: int) -> None:
+        if new_order_penalty < 0:
+            raise ValueError("The order of the penalty must be positive.")
+        self._order_penalty = new_order_penalty
+
+    @property
+    def order_derivative(self) -> int:
+        """Getter for `order_derivatives`."""
+        return self._order_derivative
+
+    @order_derivative.setter
+    def order_derivative(self, new_order_derivative: int) -> None:
+        if new_order_derivative < 0:
+            raise ValueError("The order of the derivative must be positive.")
+        self._order_derivative = new_order_derivative
 
     def fit(
         self,

@@ -11,6 +11,6 @@ __getattr__, __dir__, __all__ = lazy.attach(
             "UFPCA",
             "MFPCA",
         ],
-        "smoothing": ["LocalPolynomial"],
+        "smoothing": ["LocalPolynomial", "PSplines"],
     },
 )
