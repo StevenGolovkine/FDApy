@@ -456,7 +456,10 @@ class FunctionalData(ABC):
 
     @abstractmethod
     def center(
-        self, mean: Optional[FunctionalData] = None, smooth: bool = True, **kwargs
+        self,
+        mean: Optional[DenseFunctionalData] = None,
+        method_smoothing: Optional[str] = None,
+        **kwargs,
     ) -> FunctionalData:
         """Center the data."""
 
@@ -464,7 +467,7 @@ class FunctionalData(ABC):
     def norm(
         self,
         squared: bool = False,
-        method: str = "trapz",
+        method_integration: str = "trapz",
         use_argvals_stand: bool = False,
     ) -> npt.NDArray[np.float64]:
         """Norm of each observation of the data."""
@@ -473,7 +476,7 @@ class FunctionalData(ABC):
     def normalize(
         self,
         weights: float = 0.0,
-        method: str = "trapz",
+        method_integration: str = "trapz",
         use_argvals_stand: bool = False,
         **kwargs,
     ) -> Tuple[FunctionalData, float]:
@@ -482,8 +485,8 @@ class FunctionalData(ABC):
     @abstractmethod
     def inner_product(
         self,
-        method: str = "trapz",
-        smooth: bool = True,
+        method_integration: str = "trapz",
+        method_smoothing: Optional[str] = None,
         noise_variance: Optional[float] = None,
         **kwargs,
     ) -> npt.NDArray[np.float64]:
@@ -493,7 +496,7 @@ class FunctionalData(ABC):
     def covariance(
         self,
         points: Optional[DenseArgvals] = None,
-        smooth: Optional[str] = None,
+        method_smoothing: Optional[str] = None,
         **kwargs,
     ) -> Type[FunctionalData]:
         """Compute an estimate of the covariance."""
@@ -789,7 +792,7 @@ class DenseFunctionalData(FunctionalData):
             Points at which the curves are estimated. The default is None,
             meaning we use the argvals as estimation points.
         method: str, default='PS'
-            The method to used to the smoothing. If 'PS', the method is P-splines [1]_.
+            The method to used for the smoothing. If 'PS', the method is P-splines [1]_.
             If 'LP', the method is local polynomials [3]_. Otherwise, it raises an
             error.
         bandwidth: Optional[float], default=None
@@ -870,16 +873,15 @@ class DenseFunctionalData(FunctionalData):
     def mean(
         self,
         points: Optional[DenseArgvals] = None,
-        method_smoothing: str = None,
+        method_smoothing: Optional[str] = None,
         **kwargs,
     ) -> DenseFunctionalData:
         """Compute an estimate of the mean.
 
-        This function computes an estimate of the mean curve of a
-        DenseFunctionalData object. As the curves are sampled on a common grid,
-        we consider the sample mean, as defined in [1]_. The sampled mean is
-        rate optimal [2]_. We included some smoothing using Local Polynonial
-        Estimators or P-Splines.
+        This function computes an estimate of the mean curve of a DenseFunctionalData
+        object. As the curves are sampled on a common grid, we consider the sample mean,
+        as defined in [3]_. The sampled mean is rate optimal [1]_. We included some
+        smoothing using Local Polynonial Estimators or P-Splines.
 
         Parameters
         ----------
@@ -887,17 +889,14 @@ class DenseFunctionalData(FunctionalData):
             The sampling points at which the mean is estimated. If `None`, the
             DenseArgvals of the DenseFunctionalData is used. If `smooth` is
             False, the DenseArgvals of the DenseFunctionalData is used.
-        smooth: bool, default=True
-            Should the mean be smoothed?
-        **kwargs:
-            kernel_name: str, default='epanechnikov'
-                Name of the kernel used for local polynomial smoothing.
-            degree: int, default=1
-                Degree used for local polynomial smoothing.
-            bandwidth: float
-                Bandwidth used for local polynomial smoothing. The default
-                bandwitdth is set to be the number of sampling points to the
-                power :math:`-1/5` [3]_.
+        method_smoothing: Optional[str], default=None
+            The method to used for the smoothing. If 'None', no smoothing is performed.
+            If 'PS', the method is P-splines [2]_. If 'LP', the method is local
+            polynomials [4]_.
+        kwargs
+            Other keyword arguments are passed to the following function:
+
+            - :meth:`DenseFunctionalData.smooth`.
 
         Returns
         -------
@@ -906,13 +905,15 @@ class DenseFunctionalData(FunctionalData):
 
         References
         ----------
-        .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
-            Analysis, Springer Science, Chapter 8.
-        .. [2] Cai, T.T., Yuan, M., (2011), Optimal estimation of the mean
+        .. [1] Cai, T.T., Yuan, M., (2011), Optimal estimation of the mean
             function based on discretely sampled functional data: Phase
             transition. The Annals of Statistics 39, 2330-2355.
-        .. [3] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
-            Springer Series in Statistics.
+        .. [2] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
+            P-splines. Cambridge University Press, Cambridge.
+        .. [3] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+            Analysis, Springer Science, Chapter 8.
+        .. [4] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
+            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
 
         Examples
         --------
@@ -941,7 +942,10 @@ class DenseFunctionalData(FunctionalData):
         return self._mean
 
     def center(
-        self, mean: Optional[DenseFunctionalData] = None, smooth: bool = True, **kwargs
+        self,
+        mean: Optional[DenseFunctionalData] = None,
+        method_smoothing: Optional[str] = None,
+        **kwargs,
     ) -> DenseFunctionalData:
         """Center the data.
 
@@ -949,22 +953,27 @@ class DenseFunctionalData(FunctionalData):
         ----------
         mean: Optional[DenseFunctionalData], default=None
             A precomputed mean as a DenseFunctionalData object.
-        smooth: bool, default=True
-            Should the mean be smoothed? Not used if `mean` is not `None`.
-        **kwargs:
-            kernel_name: str, default='epanechnikov'
-                Name of the kernel used for local polynomial smoothing.
-            degree: int, default=1
-                Degree used for local polynomial smoothing.
-            bandwidth: float
-                Bandwidth used for local polynomial smoothing. The default
-                bandwitdth is set to be the number of sampling points to the
-                power :math:`-1/5`.
+        method_smoothing: Optional[str], default=None
+            The method to used for the smoothing of the mean. If 'None', no smoothing
+            is performed. If 'PS', the method is P-splines [1]_. If 'LP', the method
+            is local polynomials [2]_.
+        kwargs
+            Other keyword arguments are passed to one of the following functions:
+
+            - :meth:`DenseFunctionalData.mean` (``mean=None``),
+            - :meth:`DenseFunctionalData.smooth`.
 
         Returns
         -------
         DenseFunctionalData
             The centered version of the data.
+
+        References
+        ----------
+        .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
+            P-splines. Cambridge University Press, Cambridge.
+        .. [2] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
+            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
 
         Examples
         --------
@@ -979,10 +988,10 @@ class DenseFunctionalData(FunctionalData):
 
         """
         if mean is None:
-            data_mean = self.mean(method_smoothing="LP", **kwargs)
+            data_mean = self.mean(method_smoothing=method_smoothing, **kwargs)
         else:
             data_mean = mean.smooth(
-                points=self.argvals, method="LP", bandwidth=1 / np.prod(self.n_points)
+                points=self.argvals, method=method_smoothing, **kwargs
             )
         return DenseFunctionalData(
             DenseArgvals(self.argvals), DenseValues(self.values - data_mean.values)
@@ -991,7 +1000,7 @@ class DenseFunctionalData(FunctionalData):
     def norm(
         self,
         squared: bool = False,
-        method: str = "trapz",
+        method_integration: str = "trapz",
         use_argvals_stand: bool = False,
     ) -> npt.NDArray[np.float64]:
         r"""Norm of each observation of the data.
@@ -1007,7 +1016,7 @@ class DenseFunctionalData(FunctionalData):
         squared: bool, default=False
             If `True`, the function calculates the squared norm, otherwise it
             returns the norm.
-        method: str, {'simpson', 'trapz'}, default = 'trapz'
+        method_integration: str, {'simpson', 'trapz'}, default='trapz'
             The method used to integrated.
         use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
@@ -1048,7 +1057,7 @@ class DenseFunctionalData(FunctionalData):
 
         norm_fd = np.zeros(n_obs)
         for idx in np.arange(n_obs):
-            norm_fd[idx] = _integrate(sq_values[idx], *axis, method=method)
+            norm_fd[idx] = _integrate(sq_values[idx], *axis, method=method_integration)
 
         if squared:
             return np.array(norm_fd)
@@ -1058,7 +1067,7 @@ class DenseFunctionalData(FunctionalData):
     def normalize(
         self,
         weights: float = 0.0,
-        method: str = "trapz",
+        method_integration: str = "trapz",
         use_argvals_stand: bool = False,
         **kwargs,
     ) -> Tuple[DenseFunctionalData, float]:
@@ -1072,7 +1081,7 @@ class DenseFunctionalData(FunctionalData):
         weights: float, default=0.0
             The weights used to normalize the data. If `weights = 0.0`, the
             weights are estimated by integrating the variance function [1]_.
-        method: str, {'simpson', 'trapz'}, default = 'trapz'
+        method_integration: str, {'simpson', 'trapz'}, default='trapz'
             The method used to integrated.
         use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
@@ -1110,14 +1119,14 @@ class DenseFunctionalData(FunctionalData):
             else:
                 axis = [argvals for argvals in self.argvals.values()]
             variance = np.var(self.values, axis=0)
-            weights = _integrate(variance, *axis, method=method)
+            weights = _integrate(variance, *axis, method=method_integration)
         new_values = self.values / weights
         return DenseFunctionalData(self.argvals, new_values), weights
 
     def inner_product(
         self,
-        method: str = "trapz",
-        smooth: bool = True,
+        method_integration: str = "trapz",
+        method_smoothing: Optional[str] = None,
         noise_variance: Optional[float] = None,
         **kwargs,
     ) -> npt.NDArray[np.float64]:
@@ -1130,26 +1139,23 @@ class DenseFunctionalData(FunctionalData):
             \langle x, y \rangle = \int_{\mathcal{T}} x(t)y(t)dt,
             t \in \mathcal{T},
 
-        where :math:`\mathcal{T}` is a one- or multi-dimensional domain [2]_.
+        where :math:`\mathcal{T}` is a one- or multi-dimensional domain [3]_.
 
         Parameters
         ----------
-        method: str, {'simpson', 'trapz'}, default = 'trapz'
+        method_integration: str, {'simpson', 'trapz'}, default='trapz'
             The method used to integrated.
-        smooth: bool, default=True
-            Should the mean be smoothed?
+        method_smoothing: Optional[str], default=None
+            The method to used for the smoothing of the mean. If 'None', no smoothing
+            is performed. If 'PS', the method is P-splines [2]_. If 'LP', the method
+            is local polynomials [4]_.
         noise_variance: Optional[float], default=None
             An estimation of the variance of the noise. If `None`, an
             estimation is computed using the methodology in [1]_.
-        **kwargs:
-            kernel_name: str, default='epanechnikov'
-                Name of the kernel used for local polynomial smoothing.
-            degree: int, default=1
-                Degree used for local polynomial smoothing.
-            bandwidth: float
-                Bandwidth used for local polynomial smoothing. The default
-                bandwitdth is set to be the number of sampling points to the
-                power :math:`-1/5`.
+        kwargs
+            Other keyword arguments are passed to the following function:
+
+            - :meth:`DenseFunctionalData.center`.
 
         Returns
         -------
@@ -1160,9 +1166,12 @@ class DenseFunctionalData(FunctionalData):
         ----------
         .. [1] Benko, M., Härdle, W. and Kneip, A. (2009). Common functional
             principal components. The Annals of Statistics 37, 1--34.
-        .. [2] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+        .. [2] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
+            P-splines. Cambridge University Press, Cambridge.
+        .. [3] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
             Analysis, Springer Science, Chapter 2.
-
+        .. [4] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
+            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
 
         Examples
         --------
@@ -1195,7 +1204,7 @@ class DenseFunctionalData(FunctionalData):
 
         """
         # Center the data
-        data = self.center(smooth=smooth, **kwargs)
+        data = self.center(method_smoothing=method_smoothing, **kwargs)
 
         # Estimate the noise of the variance
         if noise_variance is None:
@@ -1211,7 +1220,7 @@ class DenseFunctionalData(FunctionalData):
         for i, j in itertools.product(np.arange(n_obs), repeat=2):
             if i <= j:
                 inner_mat[i, j] = _inner_product(
-                    data.values[i], data.values[j], *axis, method=method
+                    data.values[i], data.values[j], *axis, method=method_integration
                 )
         inner_mat = inner_mat - np.diag(np.repeat(self._noise_variance, n_obs))
 
@@ -1225,14 +1234,14 @@ class DenseFunctionalData(FunctionalData):
     def covariance(
         self,
         points: Optional[DenseArgvals] = None,
-        method_smoothing: str = "LP",
+        method_smoothing: Optional[str] = None,
         **kwargs,
     ) -> DenseFunctionalData:
         r"""Compute an estimate of the covariance function.
 
         This function computes an estimate of the covariance surface of a
         DenseFunctionalData object. As the curves are sampled on a common grid,
-        we consider the sample covariance [1]_.
+        we consider the sample covariance [2]_.
 
         Parameters
         ----------
@@ -1240,18 +1249,15 @@ class DenseFunctionalData(FunctionalData):
             The sampling points at which the covariance is estimated. If
             `None`, the DenseArgvals of the DenseFunctionalData is used. If
             `smooth` is False, the DenseArgvals of the DenseFunctionalData is
-            used.p
-        smooth: bool, default=True
-            Should the mean be smoothed?
-        **kwargs:
-            kernel_name: str, default='epanechnikov'
-                Name of the kernel used for local polynomial smoothing.
-            degree: int, default=1
-                Degree used for local polynomial smoothing.
-            bandwidth: float
-                Bandwidth used for local polynomial smoothing. The default
-                bandwitdth is set to be the number of sampling points to the
-                power :math:`-1/5` [3]_.
+            used.
+        method_smoothing: Optional[str], default=None
+            The method to used for the smoothing of the mean. If 'None', no smoothing
+            is performed. If 'PS', the method is P-splines [1]_. If 'LP', the method
+            is local polynomials [4]_.
+        kwargs
+            Other keyword arguments are passed to the following function:
+
+            - :meth:`DenseFunctionalData.center`.
 
         Returns
         -------
@@ -1261,16 +1267,12 @@ class DenseFunctionalData(FunctionalData):
 
         References
         ----------
-        .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
-            Analysis, Springer Science, Chapter 8.
-        .. [2] Yao, F., Müller, H.-G., Wang, J.-L. (2005). Functional Data
-            Analysis for Sparse Longitudinal Data. Journal of the American
-            Statistical Association 100, pp. 577--590.
-        .. [3] Staniswalis and Lee (1998), Nonparametric Regression Analysis of
-            Longitudinal Data, Journal of the American Statistical Association,
-            93, pp. 1403--1418.
-        .. [4] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
-            Springer Series in Statistics.
+        .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
+            P-splines. Cambridge University Press, Cambridge.
+        .. [2] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+            Analysis, Springer Science, Chapter 2.
+        .. [3] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
+            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
 
         Examples
         --------
@@ -1304,7 +1306,7 @@ class DenseFunctionalData(FunctionalData):
         )
 
         # Center the data
-        data = self.center(smooth=True, **kwargs)
+        data = self.center(method_smoothing=method_smoothing, **kwargs)
 
         # Estimate the covariance
         cov = np.dot(data.values.T, data.values) / (self.n_obs - 1)
@@ -1683,7 +1685,6 @@ class IrregularFunctionalData(FunctionalData):
         Functional data object with 3 observations on a 1-dimensional support.
 
         """
-
         if points is None:
             points = self.argvals.to_dense()
 

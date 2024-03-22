@@ -157,7 +157,7 @@ class TestSmoothMultivariateFunctionalData(unittest.TestCase):
         self.fdata = MultivariateFunctionalData([self.fdata_uni, self.fdata_uni])
 
     def test_smooth(self):
-        fdata_smooth = self.fdata.smooth(method='LP')
+        fdata_smooth = self.fdata.smooth(method="LP")
 
         self.assertIsInstance(fdata_smooth, MultivariateFunctionalData)
         self.assertIsInstance(fdata_smooth.data[0], DenseFunctionalData)
@@ -169,7 +169,7 @@ class TestSmoothMultivariateFunctionalData(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.fdata.smooth(
                 points=points,
-                method='LP',
+                method="LP",
                 kernel_name=["epanechnikov", "epanechnikov"],
                 bandwidth=[0.05, 0.05],
                 degree=[1, 1],

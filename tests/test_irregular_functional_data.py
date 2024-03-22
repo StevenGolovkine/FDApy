@@ -528,7 +528,7 @@ class TestSmoothIrregular(unittest.TestCase):
             self.fdata_sparse = pickle.load(handle)
 
     def test_smooth_1d(self):
-        fdata_smooth = self.fdata_sparse.smooth(method='LP', degree=1)
+        fdata_smooth = self.fdata_sparse.smooth(method="LP", degree=1)
         expected_values = DenseValues(
             [
                 [
@@ -654,7 +654,7 @@ class TestSmoothIrregular(unittest.TestCase):
             }
         )
         data = IrregularFunctionalData(argvals, values)
-        fdata_smooth = data.smooth(method='LP')
+        fdata_smooth = data.smooth(method="LP")
 
         expected_values = DenseValues(
             [

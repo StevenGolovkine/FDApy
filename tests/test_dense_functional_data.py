@@ -506,7 +506,7 @@ class TestSmoothDense(unittest.TestCase):
             self.fdata_2D = pickle.load(handle)
 
     def test_smooth_1d(self):
-        fdata_smooth = self.fdata.smooth(method='LP', bandwidth=0.39)
+        fdata_smooth = self.fdata.smooth(method="LP", bandwidth=0.39)
 
         expected_values = DenseValues(
             [
@@ -618,7 +618,7 @@ class TestSmoothDense(unittest.TestCase):
         np.testing.assert_array_almost_equal(fdata_smooth.values, expected_values)
 
     def test_smooth_default(self):
-        fdata_smooth = self.fdata.smooth(method='LP')
+        fdata_smooth = self.fdata.smooth(method="LP")
 
         expected_values = DenseValues(
             [
@@ -730,7 +730,7 @@ class TestSmoothDense(unittest.TestCase):
         np.testing.assert_array_almost_equal(fdata_smooth.values, expected_values)
 
     def test_smooth_2d(self):
-        fdata_smooth = self.fdata_2D.smooth(method='LP', bandwidth=0.38321537573562725)
+        fdata_smooth = self.fdata_2D.smooth(method="LP", bandwidth=0.38321537573562725)
 
         expected_values = DenseValues(
             [
@@ -895,7 +895,7 @@ class TestMeanDense(unittest.TestCase):
             self.fdata_2D = pickle.load(handle)
 
     def test_mean_1d(self):
-        mean_estim = self.fdata.mean(method_smoothing='LP')
+        mean_estim = self.fdata.mean(method_smoothing="LP")
 
         expected_values = DenseValues(
             [
@@ -1010,7 +1010,7 @@ class TestMeanDense(unittest.TestCase):
         new_argvals = DenseArgvals(
             {"input_dim_0": np.linspace(0, 1, 21), "input_dim_1": np.linspace(0, 1, 21)}
         )
-        fdata_smooth = self.fdata_2D.mean(points=new_argvals, method_smoothing='LP')
+        fdata_smooth = self.fdata_2D.mean(points=new_argvals, method_smoothing="LP")
 
         expected_values = DenseValues(
             [
@@ -1515,7 +1515,7 @@ class TestCenterDense(unittest.TestCase):
             self.fdata_2D = pickle.load(handle)
 
     def test_center_1d(self):
-        fdata_center = self.fdata.center()
+        fdata_center = self.fdata.center(method_smoothing="LP")
 
         expected_values = DenseValues(
             [
@@ -1654,7 +1654,7 @@ class TestCenterDense(unittest.TestCase):
         np.testing.assert_array_almost_equal(fdata_center.values, expected_values)
 
     def test_center_2d(self):
-        fdata_center = self.fdata_2D.center()
+        fdata_center = self.fdata_2D.center(method_smoothing="LP")
 
         expected_values = DenseValues(
             [
@@ -1955,9 +1955,12 @@ class TestCenterDense(unittest.TestCase):
         np.testing.assert_array_almost_equal(fdata_center.values[9], expected_values)
 
     def test_center_1d_with_given_mean(self):
-        precomputed_mean = self.fdata.mean(method_smoothing='LP')
+        precomputed_mean = self.fdata.mean(method_smoothing="LP")
 
-        fdata_center = self.fdata.center(mean=precomputed_mean)
+        bb = 1 / np.prod(self.fdata.n_points)
+        fdata_center = self.fdata.center(
+            mean=precomputed_mean, method_smoothing="LP", bandwidth=bb
+        )
         expected_values = DenseValues(
             [
                 [
@@ -2095,9 +2098,12 @@ class TestCenterDense(unittest.TestCase):
         np.testing.assert_array_almost_equal(fdata_center.values, expected_values)
 
     def test_center_2d_with_given_mean(self):
-        precomputed_mean = self.fdata_2D.mean(method_smoothing='LP')
+        precomputed_mean = self.fdata_2D.mean(method_smoothing="LP")
 
-        fdata_center = self.fdata_2D.center(mean=precomputed_mean)
+        bb = 1 / np.prod(self.fdata.n_points)
+        fdata_center = self.fdata_2D.center(
+            mean=precomputed_mean, method_smoothing="LP", bandwidth=bb
+        )
         expected_values = DenseValues(
             [
                 [
@@ -2963,7 +2969,7 @@ class TestInnerProductDense(unittest.TestCase):
             self.fdata_2D = pickle.load(handle)
 
     def test_inner_product_1d(self):
-        inn_pro = self.fdata.inner_product(noise_variance=0)
+        inn_pro = self.fdata.inner_product(method_smoothing="LP", noise_variance=0)
         expected_inn_pro = np.array(
             [
                 [
@@ -3091,7 +3097,7 @@ class TestInnerProductDense(unittest.TestCase):
         np.testing.assert_array_almost_equal(inn_pro, expected_inn_pro)
 
     def test_inner_product_1d_unknow_noise_variance(self):
-        inn_pro = self.fdata.inner_product()
+        inn_pro = self.fdata.inner_product(method_smoothing="LP")
         expected_inn_pro = np.array(
             [
                 [
@@ -3219,7 +3225,7 @@ class TestInnerProductDense(unittest.TestCase):
         np.testing.assert_array_almost_equal(inn_pro, expected_inn_pro)
 
     def test_inner_prodct_2d(self):
-        inn_pro = self.fdata_2D.inner_product(noise_variance=0)
+        inn_pro = self.fdata_2D.inner_product(method_smoothing="LP", noise_variance=0)
         expected_inn_pro = np.array(
             [
                 [
@@ -3358,7 +3364,7 @@ class TestCovarianceDense(unittest.TestCase):
             self.fdata_2D = pickle.load(handle)
 
     def test_default(self):
-        self.fdata.covariance()
+        self.fdata.covariance(method_smoothing="LP")
         results = self.fdata._covariance
         expected_results = DenseValues(
             [
@@ -3516,7 +3522,7 @@ class TestCovarianceDense(unittest.TestCase):
 
     def test_points(self):
         points = DenseArgvals({"input_dim_0": np.linspace(0, 1, 6)})
-        self.fdata.covariance(points=points)
+        self.fdata.covariance(points=points, method_smoothing="LP")
 
         results = self.fdata._covariance
         expected_results = DenseValues(
