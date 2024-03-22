@@ -83,18 +83,28 @@ def _smooth_covariance(
         The sampling points at which the raw covariance is estimated.
     points: DenseArgvals
         The sampling points at which the smoothed covariance will be estimated.
-    **kwargs:
-        kernel_name: str, default='epanechnikov'
-            Name of the kernel used for local polynomial smoothing.
-        degree: int, default=1
-            Degree used for local polynomial smoothing.
-        bandwidth: float
-            Bandwidth used for local polynomial smoothing.
+    method_smoothing: str, default='LP'
+        The method to used for the smoothing of the mean. If 'PS', the method is
+        P-splines [1]_. If 'LP', the method is local polynomials [2]_.
+    weights: Optional[npt.NDArray[np.float64]], default=None
+        Matrix of weights.
+    kwargs
+        Other keyword arguments are passed to one of the following functions:
+
+        - :meth:`preprocessing.smoothing.PSplines` (``method='PS'``),
+        - :meth:`preprocessing.smoothing.LocalPolynomial` (``method='LP'``).
 
     Returns
     -------
     npt.NDArray
         The smooth covariance.
+
+    References
+    ----------
+    .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
+        P-splines. Cambridge University Press, Cambridge.
+    .. [2] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
+        Functional Data, The Annals of Statistics, Vol. 35, No. 3.
 
     """
     if weights is None:
@@ -887,8 +897,7 @@ class DenseFunctionalData(FunctionalData):
         ----------
         points: Optional[DenseArgvals], default=None
             The sampling points at which the mean is estimated. If `None`, the
-            DenseArgvals of the DenseFunctionalData is used. If `smooth` is
-            False, the DenseArgvals of the DenseFunctionalData is used.
+            DenseArgvals of the DenseFunctionalData is used.
         method_smoothing: Optional[str], default=None
             The method to used for the smoothing. If 'None', no smoothing is performed.
             If 'PS', the method is P-splines [2]_. If 'LP', the method is local
@@ -990,9 +999,7 @@ class DenseFunctionalData(FunctionalData):
         if mean is None:
             data_mean = self.mean(method_smoothing=method_smoothing, **kwargs)
         else:
-            data_mean = mean.smooth(
-                points=self.argvals, method=method_smoothing, **kwargs
-            )
+            data_mean = mean.smooth(self.argvals, method=method_smoothing, **kwargs)
         return DenseFunctionalData(
             DenseArgvals(self.argvals), DenseValues(self.values - data_mean.values)
         )
@@ -1253,7 +1260,7 @@ class DenseFunctionalData(FunctionalData):
         method_smoothing: Optional[str], default=None
             The method to used for the smoothing of the mean. If 'None', no smoothing
             is performed. If 'PS', the method is P-splines [1]_. If 'LP', the method
-            is local polynomials [4]_.
+            is local polynomials [3]_.
         kwargs
             Other keyword arguments are passed to the following function:
 
@@ -1625,46 +1632,56 @@ class IrregularFunctionalData(FunctionalData):
         )
 
     def smooth(
-        self, points: Optional[DenseArgvals] = None, method: str = "PS", **kwargs
+        self,
+        points: Optional[DenseArgvals] = None,
+        method: str = "PS",
+        bandwidth: Optional[float] = None,
+        penalty: Optional[float] = None,
+        **kwargs,
     ) -> DenseFunctionalData:
         """Smooth the data.
 
-        This function smooths each curves individually. Based on [1]_, it fits
-        a local smoother to the data (the argument ``degree`` controls the
-        degree of the local fits).
+        This function smooths each curves individually. Based on [3]_, it fits
+        a local polynomial smoother to the data. Based on [1]_, it fits P-splines to
+        the data.
 
         Parameters
         ----------
         points: Optional[DenseArgvals], default=None
             Points at which the curves are estimated. The default is None,
             meaning we use the argvals as estimation points.
-        kernel_name: str, default="epanechnikov"
-            Kernel name used as weight (`gaussian`, `epanechnikov`, `tricube`,
-            `bisquare`).
-        bandwidth: float, default=None
+        method: str, default='PS'
+            The method to used for the smoothing. If 'PS', the method is P-splines [1]_.
+            If 'LP', the method is local polynomials [3]_. Otherwise, it raises an
+            error.
+        bandwidth: Optional[float], default=None
             Strictly positive. Control the size of the associated neighborhood.
-            If ``bandwidth == None``, it is assumed that the curves are twice
-            differentiable and the bandwidth is set to :math:`n^{-1/5}` where
-            :math:`n` is the number of sampling points per curve [2]_. Be
+            If ``bandwidth=None``, it is assumed that the curves are twice
+            differentiable and the bandwidth is set to :math:`n^{-1/5}` [2]_
+            where :math:`n` is the number of sampling points per curve. Be
             careful that it will not work if the curves are not sampled on
             :math:`[0, 1]`.
-        degree: int, default=1
-            Degree of the local polynomial to fit. If ``degree = 0``, we fit
-            the local constant estimator (equivalent to the Nadaraya-Watson
-            estimator). If ``degree = 1``, we fit the local linear estimator.
-            If ``degree = 2``, we fit the local quadratic estimator.
+        penalty: Optional[float], default=None
+            Strictly positive. Penalty used in the P-splined fitting of the data.
+        kwargs
+            Other keyword arguments are passed to one of the following functions:
+
+            - :meth:`preprocessing.smoothing.PSplines` (``method='PS'``),
+            - :meth:`preprocessing.smoothing.LocalPolynomial` (``method='LP'``).
 
         Returns
         -------
         DenseFunctionalData
-            A smoothed version of the data.
+            Smoothed data.
 
         References
         ----------
-        .. [1] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
-            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
+        .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
+            P-splines. Cambridge University Press, Cambridge.
         .. [2] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
             Springer Series in Statistics.
+        .. [3] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
+            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
 
         Examples
         --------
@@ -1689,16 +1706,13 @@ class IrregularFunctionalData(FunctionalData):
             points = self.argvals.to_dense()
 
         if method == "LP":
-            bandwidth = kwargs.get("bandwidth", None)
-            kernel = kwargs.get("kernel", "epanechnikov")
-            degree = kwargs.get("degree", 2)
             if bandwidth is None:
                 n_points = np.mean([obs for obs in self.n_points.values()])
                 bandwidth = n_points ** (-1 / 5)
 
             points_mat = _cartesian_product(*points.values())
 
-            lp = LocalPolynomial(kernel_name=kernel, bandwidth=bandwidth, degree=degree)
+            lp = LocalPolynomial(bandwidth=bandwidth, **kwargs)
 
             smooth = np.zeros((self.n_obs, *points.n_points))
             for idx, obs in enumerate(self):
@@ -1707,18 +1721,10 @@ class IrregularFunctionalData(FunctionalData):
                     y=obs.values[idx].flatten(), x=argvals_mat, x_new=points_mat
                 ).reshape(smooth.shape[1:])
         elif method == "PS":
-            n_segments = kwargs.get("n_segments", 30)
-            degree = kwargs.get("degree", 3)
-            order_penalty = kwargs.get("order_penalty", 2)
-            order_derivative = kwargs.get("order_derivative", 0)
-            penalty = kwargs.get("penalty", self.n_dimension * [1])
+            if penalty is None:
+                penalty = self.n_dimension * [1]
 
-            ps = PSplines(
-                n_segments=n_segments,
-                degree=degree,
-                order_penalty=order_penalty,
-                order_derivative=order_derivative,
-            )
+            ps = PSplines(**kwargs)
             smooth = np.zeros((self.n_obs, *points.n_points))
             for idx, obs in enumerate(self):
                 x = obs.argvals[idx]["input_dim_0"]
@@ -1744,20 +1750,14 @@ class IrregularFunctionalData(FunctionalData):
         ----------
         points: Optional[DenseArgvals], default=None
             The sampling points at which the mean is estimated. If `None`, the
-            DenseArgvals of the DenseFunctionalData is used. If `smooth` is
-            False, the DenseArgvals of the DenseFunctionalData is used.
-        smooth: bool, default=True
-            Not used in this context. The mean curve is always smoothed for
-            IrregularFunctionalData.
-        **kwargs:
-            kernel_name: str, default='epanechnikov'
-                Name of the kernel used for local polynomial smoothing.
-            degree: int, default=1
-                Degree used for local polynomial smoothing.
-            bandwidth: float
-                Bandwidth used for local polynomial smoothing. The default
-                bandwitdth is set to be the number of sampling points to the
-                power :math:`-1/5` [2]_.
+            concatenation of the argvals of the IrregularFunctionalData is used.
+        method_smoothing: str, default='LP'
+            The method to used for the smoothing. If 'PS', the method is P-splines [2]_.
+            If 'LP', the method is local polynomials [1]_.
+        kwargs
+            Other keyword arguments are passed to the following function:
+
+            - :meth:`IrregularFunctionalData.smooth`.
 
         Returns
         -------
@@ -1769,8 +1769,8 @@ class IrregularFunctionalData(FunctionalData):
         .. [1] Cai, T.T., Yuan, M., (2011), Optimal estimation of the mean
             function based on discretely sampled functional data: Phase
             transition. The Annals of Statistics 39, 2330-2355.
-        .. [2] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
-            Springer Series in Statistics.
+        .. [2] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
+            P-splines. Cambridge University Press, Cambridge.
 
         Examples
         --------
@@ -1797,21 +1797,17 @@ class IrregularFunctionalData(FunctionalData):
         x = fdata_long.drop(["id", "values"], axis=1, inplace=False).values
         y = fdata_long["values"].values
         if method_smoothing == "LP":
-            bandwidth = kwargs.get("bandwidth", None)
+            bandwidth = kwargs.pop("bandwidth", None)
             if bandwidth is None:
                 n_points = np.mean([obs for obs in self.n_points.values()])
                 bandwidth = n_points ** (-1 / 5)
             points_mat = _cartesian_product(*points.values())
 
-            lp = LocalPolynomial(
-                kernel_name=kwargs.get("kernel_name", "epanechnikov"),
-                bandwidth=bandwidth,
-                degree=kwargs.get("degree", 1),
-            )
+            lp = LocalPolynomial(bandwidth=bandwidth, **kwargs)
             pred = lp.predict(y=y, x=x, x_new=points_mat).reshape(points.n_points)
         elif method_smoothing == "PS":
             x = x.flatten()
-            ps = PSplines(n_segments=30, degree=3, order_penalty=2, order_derivative=0)
+            ps = PSplines(**kwargs)
 
             ps.fit(x=x, y=y, penalty=1)
             pred = ps.predict(points["input_dim_0"])
@@ -1822,7 +1818,10 @@ class IrregularFunctionalData(FunctionalData):
         return self._mean
 
     def center(
-        self, mean: Optional[DenseFunctionalData] = None, smooth: bool = True, **kwargs
+        self,
+        mean: Optional[DenseFunctionalData] = None,
+        method_smoothing: str = "LP",
+        **kwargs,
     ) -> IrregularFunctionalData:
         """Center the data.
 
@@ -1830,22 +1829,26 @@ class IrregularFunctionalData(FunctionalData):
         ----------
         mean: Optional[DenseFunctionalData], default=None
             A precomputed mean as a DenseFunctionalData object.
-        smooth: bool, default=True
-            Should the mean be smoothed?
-        **kwargs:
-            kernel_name: str, default='epanechnikov'
-                Name of the kernel used for local polynomial smoothing.
-            degree: int, default=1
-                Degree used for local polynomial smoothing.
-            bandwidth: float
-                Bandwidth used for local polynomial smoothing. The default
-                bandwitdth is set to be the number of sampling points to the
-                power :math:`-1/5`.
+        method_smoothing: str, default='LP'
+            The method to used for the smoothing of the mean. If 'PS', the method is
+            P-splines [1]_. If 'LP', the method is local polynomials [2]_.
+        kwargs
+            Other keyword arguments are passed to one of the following functions:
+
+            - :meth:`IrregularFunctionalData.mean` (``mean=None``),
+            - :meth:`IrregularFunctionalData.smooth`.
 
         Returns
         -------
         IrregularFunctionalData
             The centered version of the data.
+
+        References
+        ----------
+        .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
+            P-splines. Cambridge University Press, Cambridge.
+        .. [2] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
+            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
 
         Examples
         --------
@@ -1862,11 +1865,11 @@ class IrregularFunctionalData(FunctionalData):
         """
         new_argvals = self.argvals.to_dense()
         if mean is None:
-            data_mean = self.mean(points=new_argvals, smooth=smooth, **kwargs)
-        else:
-            data_mean = mean.smooth(
-                new_argvals, method="LP", bandwidth=1 / np.prod(new_argvals.n_points)
+            data_mean = self.mean(
+                points=new_argvals, method_smoothing=method_smoothing, **kwargs
             )
+        else:
+            data_mean = mean.smooth(new_argvals, method=method_smoothing, **kwargs)
 
         obs_centered = {}
         for idx, obs in enumerate(self):
@@ -1880,7 +1883,7 @@ class IrregularFunctionalData(FunctionalData):
     def norm(
         self,
         squared: bool = False,
-        method: str = "trapz",
+        method_integration: str = "trapz",
         use_argvals_stand: bool = False,
     ) -> npt.NDArray[np.float64]:
         r"""Norm of each observation of the data.
@@ -1896,7 +1899,7 @@ class IrregularFunctionalData(FunctionalData):
         squared: bool, default=False
             If `True`, the function calculates the squared norm, otherwise the
             result is not squared.
-        method: str, {'simpson', 'trapz'}, default = 'trapz'
+        method_integration: str, {'simpson', 'trapz'}, default = 'trapz'
             The method used to integrated.
         use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
@@ -1934,7 +1937,7 @@ class IrregularFunctionalData(FunctionalData):
             else:
                 axis = [argvals for argvals in obs.argvals[idx].values()]
             sq_values = np.power(obs.values[idx], 2)
-            norm_fd[idx] = _integrate(sq_values, *axis, method=method)
+            norm_fd[idx] = _integrate(sq_values, *axis, method=method_integration)
 
         if squared:
             return np.array(norm_fd)
@@ -1944,7 +1947,7 @@ class IrregularFunctionalData(FunctionalData):
     def normalize(
         self,
         weights: float = 0.0,
-        method: str = "trapz",
+        method_integration: str = "trapz",
         use_argvals_stand: bool = False,
         **kwargs,
     ) -> Tuple[FunctionalData, float]:
@@ -1958,12 +1961,14 @@ class IrregularFunctionalData(FunctionalData):
         weights: float, default=0.0
             The weights used to normalize the data. If `weights = 0.0`, the
             weights are estimated by integrating the variance function [1]_.
-        method: str, {'simpson', 'trapz'}, default = 'trapz'
+        method_integration: str, {'simpson', 'trapz'}, default = 'trapz'
             The method used to integrated.
         use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
-        **kwargs:
-            Keyword parameters for the smoothing of the observations.
+        kwargs
+            Other keyword arguments are passed to the following function:
+
+            - :meth:`IrregularFunctionalData.smooth`.
 
         Returns
         -------
@@ -1999,7 +2004,7 @@ class IrregularFunctionalData(FunctionalData):
             else:
                 axis = [argvals for argvals in data_smooth.argvals.values()]
             variance = np.var(data_smooth.values, axis=0)
-            weights = _integrate(variance, *axis, method=method)
+            weights = _integrate(variance, *axis, method=method_integration)
 
         new_values = IrregularValues()
         for idx, obs in enumerate(self):
@@ -2008,8 +2013,8 @@ class IrregularFunctionalData(FunctionalData):
 
     def inner_product(
         self,
-        method: str = "trapz",
-        smooth: bool = True,
+        method_integration: str = "trapz",
+        method_smoothing: str = "LP",
         noise_variance: Optional[float] = None,
         **kwargs,
     ) -> npt.NDArray[np.float64]:
@@ -2026,22 +2031,17 @@ class IrregularFunctionalData(FunctionalData):
 
         Parameters
         ----------
-        method: str, {'simpson', 'trapz'}, default = 'trapz'
+        method_integration: str, {'simpson', 'trapz'}, default = 'trapz'
             The method used to integrated.
-        smooth: bool, default=True
+        method_smoothing: bool, default=True
             Should the mean be smoothed?
         noise_variance: Optional[float], default=None
             An estimation of the variance of the noise. If `None`, an
             estimation is computed using the methodology in [1]_.
-        **kwargs:
-            kernel_name: str, default='epanechnikov'
-                Name of the kernel used for local polynomial smoothing.
-            degree: int, default=1
-                Degree used for local polynomial smoothing.
-            bandwidth: float
-                Bandwidth used for local polynomial smoothing. The default
-                bandwitdth is set to be the number of sampling points to the
-                power :math:`-1/5`.
+        kwargs
+            Other keyword arguments are passed to the following function:
+
+            - :meth:`IrregularFunctionalData.center`.
 
         Returns
         -------
@@ -2077,11 +2077,11 @@ class IrregularFunctionalData(FunctionalData):
         """
         if self.n_dimension > 1:
             raise NotImplementedError(
-                "Only implemented for one-dimensional irregular ", "functional data."
+                "Only implemented for one-dimensional irregular functional data."
             )
 
         # Center the data
-        data = self.center(smooth=smooth, **kwargs)
+        data = self.center(method_smoothing=method_smoothing, **kwargs)
 
         # Estimate the noise of the variance
         if noise_variance is None:
@@ -2101,7 +2101,9 @@ class IrregularFunctionalData(FunctionalData):
             DenseArgvals({"input_dim_0": dense_argvals}), DenseValues(new_values)
         )
         return self._data_inpro.inner_product(
-            method=method, noise_variance=self._noise_variance
+            method_integration=method_integration,
+            method_smoothing=method_smoothing,
+            noise_variance=self._noise_variance,
         )
 
     def covariance(
@@ -2114,7 +2116,7 @@ class IrregularFunctionalData(FunctionalData):
 
         This function computes an estimate of the covariance surface of a
         IrregularFunctionalData object. As the curves are not sampled on a
-        common grid, we consider the method in [1]_.
+        common grid, we consider the method in [2]_.
 
         Parameters
         ----------
@@ -2122,20 +2124,13 @@ class IrregularFunctionalData(FunctionalData):
             The sampling points at which the covariance is estimated. If
             `None`, the concatenation of the IrregularArgvals of the
             IrregularFunctionalData is used.
-        mean: Optional[DenseFunctionalData], default=None
-            An estimate of the mean of self. If None, an estimate is computed.
-        smooth: bool, default=True
-            Not used here. Smoothing is always performed for
-            IrregularFunctionalData.
-        **kwargs:
-            kernel_name: str, default='epanechnikov'
-                Name of the kernel used for local polynomial smoothing.
-            degree: int, default=1
-                Degree used for local polynomial smoothing.
-            bandwidth: float
-                Bandwidth used for local polynomial smoothing. The default
-                bandwitdth is set to be the number of sampling points to the
-                power :math:`-1/5` [3]_.
+        method_smoothing: Optional[str], default=None
+            The method to used for the smoothing of the mean. If 'PS', the method is
+            P-splines [1]_. If 'LP', the method is local polynomials [2]_.
+        kwargs
+            Other keyword arguments are passed to the following function:
+
+            - :meth:`DenseFunctionalData.center`.
 
         Returns
         -------
@@ -2145,14 +2140,11 @@ class IrregularFunctionalData(FunctionalData):
 
         References
         ----------
-        .. [1] Yao, F., Müller, H.-G., Wang, J.-L. (2005). Functional Data
+        .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
+            P-splines. Cambridge University Press, Cambridge.
+        .. [2] Yao, F., Müller, H.-G., Wang, J.-L. (2005). Functional Data
             Analysis for Sparse Longitudinal Data. Journal of the American
             Statistical Association 100, pp. 577--590.
-        .. [2] Staniswalis and Lee (1998), Nonparametric Regression Analysis of
-            Longitudinal Data, Journal of the American Statistical Association,
-            93, pp. 1403--1418.
-        .. [3] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
-            Springer Series in Statistics.
 
         Raises
         ------
@@ -2193,7 +2185,7 @@ class IrregularFunctionalData(FunctionalData):
         n_points = self.argvals.to_dense().n_points
 
         # Center the data
-        data = self.center(smooth=True, **kwargs)
+        data = self.center(method_smoothing=method_smoothing, **kwargs)
 
         # Compute the covariance
         cov_sum = np.zeros(np.power(n_points, 2))

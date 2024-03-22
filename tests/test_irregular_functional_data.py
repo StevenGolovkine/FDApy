@@ -992,7 +992,7 @@ class TestCenterIrregular(unittest.TestCase):
             self.fdata_sparse = pickle.load(handle)
 
     def test_center_1d(self):
-        fdata_center = self.fdata_sparse.center()
+        fdata_center = self.fdata_sparse.center(method_smoothing="LP")
 
         self.assertIsInstance(fdata_center, IrregularFunctionalData)
 
@@ -1176,7 +1176,9 @@ class TestCenterIrregular(unittest.TestCase):
     def test_center_1d_with_given_mean(self):
         precomputed_mean = self.fdata_sparse.mean()
 
-        fdata_center = self.fdata_sparse.center(mean=precomputed_mean)
+        new_argvals = self.fdata_sparse.argvals.to_dense()
+        bb = 1 / np.prod(new_argvals.n_points)
+        fdata_center = self.fdata_sparse.center(mean=precomputed_mean, bandwidth=bb)
         self.assertIsInstance(fdata_center, IrregularFunctionalData)
 
         expected_values = DenseValues(
