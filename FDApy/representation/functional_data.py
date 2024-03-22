@@ -451,7 +451,12 @@ class FunctionalData(ABC):
 
     @abstractmethod
     def smooth(
-        self, points: Optional[DenseArgvals] = None, method: str = "PS", **kwargs
+        self,
+        points: Optional[DenseArgvals] = None,
+        method: str = "PS",
+        bandwidth: Optional[float] = None,
+        penalty: Optional[float] = None,
+        **kwargs,
     ) -> Type[FunctionalData]:
         """Smooth the data."""
 
@@ -2560,7 +2565,12 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         return [fdata.noise_variance(order=order) for fdata in self.data]
 
     def smooth(
-        self, points: Optional[DenseArgvals] = None, method: str = "PS", **kwargs
+        self,
+        points: Optional[DenseArgvals] = None,
+        method: str = "PS",
+        bandwidth: Optional[float] = None,
+        penalty: Optional[float] = None,
+        **kwargs,
     ):
         """Smooth the data.
 
@@ -2574,9 +2584,10 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         points: Optional[List[DenseArgvals]], default=None
             Points at which the curves are estimated. The default is None,
             meaning we use the argvals as estimation points.
-        kernel_name: Optional[List[str]], default="epanechnikov"
-            Kernel name used as weight (`gaussian`, `epanechnikov`, `tricube`,
-            `bisquare`).
+        method: str, default='PS'
+            The method to used for the smoothing. If 'PS', the method is P-splines [1]_.
+            If 'LP', the method is local polynomials [3]_. Otherwise, it raises an
+            error.
         bandwidth: Optional[List[float]], default=None
             Strictly positive. Control the size of the associated neighborhood.
             If ``bandwidth == None``, it is assumed that the curves are twice
@@ -2584,11 +2595,14 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             where :math:`n` is the number of sampling points per curve. Be
             careful that it will not work if the curves are not sampled on
             :math:`[0, 1]`.
-        degree: Optional[List[int]], default=1
-            Degree of the local polynomial to fit. If ``degree=0``, we fit
-            the local constant estimator (equivalent to the Nadaraya-Watson
-            estimator). If ``degree=1``, we fit the local linear estimator.
-            If ``degree=2``, we fit the local quadratic estimator.
+        penalty: Optional[float], default=None
+            Strictly positive. Penalty used in the P-splined fitting of the data.
+        kwargs
+            Other keyword arguments are passed to one of the following functions:
+
+            - :meth:`DenseFunctionalData.smooth`,
+            - :meth:`IrregularFunctionalData.smooth`.
+
 
         Returns
         -------
@@ -2597,10 +2611,12 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         References
         ----------
-        .. [1] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
-            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
+        .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
+            P-splines. Cambridge University Press, Cambridge.
         .. [2] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
             Springer Series in Statistics.
+        .. [3] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
+            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
 
         Examples
         --------
@@ -2626,49 +2642,44 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         """
         if points is None:
             points = self.n_functional * [None]
-        if method == "LP":
-            bandwidth = kwargs.get("bandwidth", None)
-            kernel_name = kwargs.get("kernel", None)
-            degree = kwargs.get("degree", None)
-            if kernel_name is None:
-                kernel_name = self.n_functional * ["epanechnikov"]
-            if bandwidth is None:
-                bandwidth = self.n_functional * [None]
-            if degree is None:
-                degree = self.n_functional * [1]
 
-            if (
-                not isinstance(points, list)
-                or not isinstance(kernel_name, list)
-                or not isinstance(bandwidth, list)
-                or not isinstance(degree, list)
-            ):
-                raise TypeError("Each parameter has to be a list.")
-            if (
-                len(points) != self.n_functional
-                or len(kernel_name) != self.n_functional
-                or len(bandwidth) != self.n_functional
-                or len(degree) != self.n_functional
-            ):
-                raise ValueError(
-                    "Each parameter has to be a list of length " f"{self.n_functional}."
-                )
-
-            return MultivariateFunctionalData(
-                [
-                    fdata.smooth(
-                        pp, method="LP", kernel_name=kernel, bandwidth=bb, degree=dd
-                    )
-                    for (fdata, pp, kernel, bb, dd) in zip(
-                        self.data, points, kernel_name, bandwidth, degree
-                    )
-                ]
+        bandwidth = kwargs.get("bandwidth", None)
+        kernel_name = kwargs.get("kernel", None)
+        degree = kwargs.get("degree", None)
+        if kernel_name is None:
+            kernel_name = self.n_functional * ["epanechnikov"]
+        if bandwidth is None:
+            bandwidth = self.n_functional * [None]
+        if degree is None:
+            degree = self.n_functional * [1]
+        if (
+            not isinstance(points, list)
+            or not isinstance(kernel_name, list)
+            or not isinstance(bandwidth, list)
+            or not isinstance(degree, list)
+        ):
+            raise TypeError("Each parameter has to be a list.")
+        if (
+            len(points) != self.n_functional
+            or len(kernel_name) != self.n_functional
+            or len(bandwidth) != self.n_functional
+            or len(degree) != self.n_functional
+        ):
+            raise ValueError(
+                "Each parameter has to be a list of length " f"{self.n_functional}."
             )
-        else:
-            raise ValueError("Method not implemented.")
+        return MultivariateFunctionalData(
+            [
+                fdata.smooth(pp, method=method, **kwargs)
+                for (fdata, pp) in zip(self.data, points)
+            ]
+        )
 
     def mean(
-        self, points: Optional[List[DenseArgvals]] = None, smooth: bool = True, **kwargs
+        self,
+        points: Optional[List[DenseArgvals]] = None,
+        method_smoothing: Optional[str] = True,
+        **kwargs,
     ) -> MultivariateFunctionalData:
         """Compute an estimate of the mean.
 
@@ -2680,17 +2691,14 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         points: Optional[List[DenseArgvals]], default=None
             Points at which the mean is estimated. The default is None,
             meaning we use the argvals as estimation points.
-        smooth: bool, default=True
-            Should the mean be smoothed?
-        **kwargs:
-            kernel_name: str, default='epanechnikov'
-                Name of the kernel used for local polynomial smoothing.
-            degree: int, default=1
-                Degree used for local polynomial smoothing.
-            bandwidth: float
-                Bandwidth used for local polynomial smoothing. The default
-                bandwitdth is set to be the number of sampling points to the
-                power :math:`-1/5`.s
+        method_smoothing: Optional[str], default=None
+            The method to used for the smoothing. If 'None', no smoothing is performed.
+            If 'PS', the method is P-splines [2]_. If 'LP', the method is local
+            polynomials [4]_.
+        kwargs
+            Other keyword arguments are passed to the following function:
+
+            - :meth:`MultivariateFunctionalData.smooth`.
 
         Returns
         -------
@@ -2731,7 +2739,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             )
         self._mean = MultivariateFunctionalData(
             [
-                fdata.mean(points=pp, method_smoothing="LP", **kwargs)
+                fdata.mean(points=pp, method_smoothing=method_smoothing, **kwargs)
                 for (fdata, pp) in zip(self.data, points)
             ]
         )
@@ -2740,7 +2748,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     def center(
         self,
         mean: Optional[MultivariateFunctionalData] = None,
-        smooth: bool = True,
+        method_smoothing: Optional[str] = None,
         **kwargs,
     ) -> MultivariateFunctionalData:
         """Center the data.
@@ -2749,17 +2757,15 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         ----------
         mean: Optional[MultivariateFunctionalData], default=None
             A precomputed mean as a MultivariateFunctionalData object.
-        smooth: bool, default=True
-            Should the mean be smoothed?
-        **kwargs:
-            kernel_name: str, default='epanechnikov'
-                Name of the kernel used for local polynomial smoothing.
-            degree: int, default=1
-                Degree used for local polynomial smoothing.
-            bandwidth: float
-                Bandwidth used for local polynomial smoothing. The default
-                bandwitdth is set to be the number of sampling points to the
-                power :math:`-1/5`.
+        method_smoothing: Optional[str], default=None
+            The method to used for the smoothing of the mean. If 'None', no smoothing
+            is performed. If 'PS', the method is P-splines [1]_. If 'LP', the method
+            is local polynomials [2]_.
+        kwargs
+            Other keyword arguments are passed to one of the following functions:
+
+            - :meth:`DenseFunctionalData.mean` (``mean=None``),
+            - :meth:`DenseFunctionalData.smooth`.
 
         Returns
         -------
@@ -2783,12 +2789,15 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         """
         if mean is None:
             return MultivariateFunctionalData(
-                [fdata.center(smooth=smooth, **kwargs) for fdata in self.data]
+                [
+                    fdata.center(method_smoothing=method_smoothing, **kwargs)
+                    for fdata in self.data
+                ]
             )
         else:
             return MultivariateFunctionalData(
                 [
-                    fdata.center(mean=mean, smooth=smooth, **kwargs)
+                    fdata.center(mean=mean, method_smoothing=method_smoothing, **kwargs)
                     for (fdata, mean) in zip(self.data, mean.data)
                 ]
             )
@@ -2796,7 +2805,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     def norm(
         self,
         squared: bool = False,
-        method: str = "trapz",
+        method_integration: str = "trapz",
         use_argvals_stand: bool = False,
     ) -> npt.NDArray[np.float64]:
         r"""Norm of each observation of the data.
@@ -2812,7 +2821,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         squared: bool, default=False
             If `True`, the function calculates the squared norm, otherwise it
             returns the norm.
-        method: str, {'simpson', 'trapz'}, default = 'trapz'
+        method_integration: str, {'simpson', 'trapz'}, default = 'trapz'
             The method used to integrated.
         use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
@@ -2838,14 +2847,17 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         """
         norm_uni = np.array(
-            [fdata.norm(squared, method, use_argvals_stand) for fdata in self.data]
+            [
+                fdata.norm(squared, method_integration, use_argvals_stand)
+                for fdata in self.data
+            ]
         )
         return np.sum(norm_uni, axis=0)
 
     def normalize(
         self,
         weights: Optional[npt.NDArray[np.float64]] = None,
-        method: str = "trapz",
+        method_integration: str = "trapz",
         use_argvals_stand: bool = False,
         **kwargs,
     ) -> Tuple[MultivariateFunctionalData, npt.NDArray[np.float64]]:
@@ -2859,7 +2871,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         weights: Optional[npt.NDArray[np.float64]], default=None
             The weights used to normalize the data. If `weights = None`, the
             weights are estimated by integrating the variance function [1]_.
-        method: str, {'simpson', 'trapz'}, default = 'trapz'
+        method_integration: str, {'simpson', 'trapz'}, default = 'trapz'
             The method used to integrated.
         use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
@@ -2898,7 +2910,10 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             weights = np.zeros(self.n_functional)
         normalization = [
             fdata.normalize(
-                weights=ww, method=method, use_argvals_stand=use_argvals_stand, **kwargs
+                weights=ww,
+                method=method_integration,
+                use_argvals_stand=use_argvals_stand,
+                **kwargs,
             )
             for (fdata, ww) in zip(self.data, weights)
         ]
@@ -2908,8 +2923,8 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     def inner_product(
         self,
-        method: str = "trapz",
-        smooth: bool = True,
+        method_integration: str = "trapz",
+        method_smoothing: Optional[str] = None,
         noise_variance: Optional[npt.NDArray[np.float64]] = None,
         **kwargs,
     ) -> npt.NDArray[np.float64]:
@@ -2927,22 +2942,18 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Parameters
         ----------
-        method: str, {'simpson', 'trapz'}, default = 'trapz'
+        method_integration: str, {'simpson', 'trapz'}, default='trapz'
             The method used to integrated.
-        smooth: bool, default=True
+        method_smoothing: Optional[str], default=None
             Should the mean be smoothed?
         noise_variance: Optional[npt.NDArray[np.float64]], default=None
             An estimation of the variance of the noise. If `None`, an
             estimation is computed using the methodology in [1]_.
-        **kwargs:
-            kernel_name: str, default='epanechnikov'
-                Name of the kernel used for local polynomial smoothing.
-            degree: int, default=1
-                Degree used for local polynomial smoothing.
-            bandwidth: float
-                Bandwidth used for local polynomial smoothing. The default
-                bandwitdth is set to be the number of sampling points to the
-                power :math:`-1/5`.
+        kwargs
+            Other keyword arguments are passed to the following function:
+
+            - :meth:`DenseFunctionalData.inner_product()`.
+            - :meth:`IrregularFunctionalData.inner_product()`.
 
         Returns
         -------
@@ -2980,14 +2991,19 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             self._noise_variance = noise_variance
         return np.sum(
             [
-                data.inner_product(method, smooth, noise_variance, **kwargs)
+                data.inner_product(
+                    method_integration, method_smoothing, noise_variance, **kwargs
+                )
                 for (data, noise_variance) in zip(self.data, self._noise_variance)
             ],
             axis=0,
         )
 
     def covariance(
-        self, points: Optional[List[DenseArgvals]] = None, smooth: bool = True, **kwargs
+        self,
+        points: Optional[List[DenseArgvals]] = None,
+        method_smoothing: Optional[str] = None,
+        **kwargs,
     ) -> MultivariateFunctionalData:
         """Compute an estimate of the covariance.
 
@@ -2999,17 +3015,13 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         points: Optional[List[DenseArgvals]], default=None
             Points at which the mean is estimated. The default is None,
             meaning we use the argvals as estimation points.
-        smooth: bool, default=True
+        method_smoothing: Optional[str], default=None
             Should the mean be smoothed?
-        **kwargs:
-            kernel_name: str, default='epanechnikov'
-                Name of the kernel used for local polynomial smoothing.
-            degree: int, default=1
-                Degree used for local polynomial smoothing.
-            bandwidth: float
-                Bandwidth used for local polynomial smoothing. The default
-                bandwitdth is set to be the number of sampling points to the
-                power :math:`-1/5`.
+        kwargs
+            Other keyword arguments are passed to the following function:
+
+            - :meth:`DenseFunctionalData.covariance()`.
+            - :meth:`IrregularFunctionalData.covariance()`.
 
         Returns
         -------
@@ -3044,7 +3056,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             )
         self._covariance = MultivariateFunctionalData(
             [
-                fdata.covariance(pp, method_smoothing="LP", **kwargs)
+                fdata.covariance(pp, method_smoothing=method_smoothing, **kwargs)
                 for fdata, pp in zip(self.data, points)
             ]
         )

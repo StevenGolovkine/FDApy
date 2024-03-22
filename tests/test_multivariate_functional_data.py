@@ -186,7 +186,7 @@ class TestSmoothMultivariateFunctionalData(unittest.TestCase):
             )
 
 
-class TestMeanhMultivariateFunctionalData(unittest.TestCase):
+class TestMeanMultivariateFunctionalData(unittest.TestCase):
     def setUp(self):
         fname = THIS_DIR.parent / "data/data_noisy_5_10_001.pickle"
         with open(fname, "rb") as handle:
@@ -194,7 +194,7 @@ class TestMeanhMultivariateFunctionalData(unittest.TestCase):
         self.fdata = MultivariateFunctionalData([self.fdata_uni, self.fdata_uni])
 
     def test_mean(self):
-        fdata_smooth = self.fdata.mean()
+        fdata_smooth = self.fdata.mean(method_smoothing="LP")
 
         self.assertIsInstance(fdata_smooth, MultivariateFunctionalData)
         self.assertIsInstance(fdata_smooth.data[0], DenseFunctionalData)
@@ -226,8 +226,8 @@ class TestCenterMultivariateFunctionalData(unittest.TestCase):
         np.testing.assert_equal(fdata_center.n_functional, 2)
 
     def test_center_1d_with_given_mean(self):
-        precomputed_mean = self.fdata.mean()
-        fdata_center = self.fdata.center(mean=precomputed_mean)
+        precomputed_mean = self.fdata.mean(method_smoothing="LP")
+        fdata_center = self.fdata.center(mean=precomputed_mean, method_smoothing="LP")
 
         self.assertIsInstance(fdata_center, MultivariateFunctionalData)
         np.testing.assert_equal(fdata_center.n_functional, 2)
@@ -562,7 +562,9 @@ class TestInnerProductMultivariateFunctionalData(unittest.TestCase):
         self.fdata = MultivariateFunctionalData([self.fdata_uni, self.fdata_uni])
 
     def test_inner_prod(self):
-        res = self.fdata.inner_product(noise_variance=np.array([0, 0]))
+        res = self.fdata.inner_product(
+            method_smoothing="LP", noise_variance=np.array([0, 0])
+        )
         expected_res = np.array(
             [
                 [
@@ -690,7 +692,7 @@ class TestInnerProductMultivariateFunctionalData(unittest.TestCase):
         np.testing.assert_array_almost_equal(res, expected_res)
 
     def test_inner_prod_with_unknow_variance(self):
-        res = self.fdata.inner_product()
+        res = self.fdata.inner_product(method_smoothing="LP")
         expected_res = np.array(
             [
                 [
@@ -836,7 +838,7 @@ class TestCovarianceMultivariateFunctionalData(unittest.TestCase):
             self.fdata.covariance(points=[points, points, points])
 
     def test_covariance(self):
-        res = self.fdata.covariance()
+        res = self.fdata.covariance(method_smoothing="LP")
 
         np.testing.assert_equal(res.n_functional, 2)
 
@@ -882,7 +884,7 @@ class TestCovarianceMultivariateFunctionalData(unittest.TestCase):
 
     def test_covariance_points(self):
         points = DenseArgvals({"input_dim_0": np.linspace(0, 1, 11)})
-        res = self.fdata.covariance(points=[points, points])
+        res = self.fdata.covariance(points=[points, points], method_smoothing="LP")
 
         np.testing.assert_equal(res.n_functional, 2)
 
