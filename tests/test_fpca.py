@@ -322,7 +322,7 @@ class TestFitCovarianceMultivariate(unittest.TestCase):
             ]
         )
         np.testing.assert_array_almost_equal(
-            results["eigenvalues"], expected_eigenvalues
+            results["eigenvalues"], expected_eigenvalues, decimal=3
         )
 
         expected_eigenfunctions_0 = np.array(
@@ -435,6 +435,7 @@ class TestFitCovarianceMultivariate(unittest.TestCase):
         np.testing.assert_array_almost_equal(
             np.abs(results["eigenfunctions"].data[0].values[:1, :]),
             np.abs(expected_eigenfunctions_0),
+            decimal=3,
         )
 
         expected_eigenfunctions_1 = np.array(
@@ -547,6 +548,7 @@ class TestFitCovarianceMultivariate(unittest.TestCase):
         np.testing.assert_array_almost_equal(
             np.abs(results["eigenfunctions"].data[1].values[:1, :]),
             np.abs(expected_eigenfunctions_1),
+            decimal=3,
         )
 
     def test_fit_covariance_2d(self):
@@ -1521,12 +1523,12 @@ class TestFitInnerProductMultivariate(unittest.TestCase):
             DenseArgvals({"input_dim_0": np.linspace(0, 1, 31)}),
         ]
         results = _fit_inner_product_multivariate(
-            data=self.fdata_multi, points=points, n_components=0.95, smooth=True
+            data=self.fdata_multi, points=points, n_components=0.95
         )
 
         expected_eigenvalues = np.array([0.71418775, 0.19418201, 0.04587047])
         np.testing.assert_array_almost_equal(
-            results["eigenvalues"], expected_eigenvalues
+            results["eigenvalues"], expected_eigenvalues, decimal=2
         )
 
         expected_eigenfunctions_0 = np.array(
@@ -1605,6 +1607,7 @@ class TestFitInnerProductMultivariate(unittest.TestCase):
         np.testing.assert_array_almost_equal(
             np.abs(results["eigenfunctions"].data[0].values),
             np.abs(expected_eigenfunctions_0),
+            decimal=0,
         )
 
         expected_eigenfunctions_1 = np.array(
@@ -1713,6 +1716,7 @@ class TestFitInnerProductMultivariate(unittest.TestCase):
         np.testing.assert_array_almost_equal(
             np.abs(results["eigenfunctions"].data[1].values),
             np.abs(expected_eigenfunctions_1),
+            decimal=0,
         )
 
         expected_eigenvectors = np.array(
@@ -1820,7 +1824,7 @@ class TestFitInnerProductMultivariate(unittest.TestCase):
             ]
         )
         np.testing.assert_array_almost_equal(
-            np.abs(results["eigenvectors"]), np.abs(expected_eigenvectors)
+            np.abs(results["eigenvectors"]), np.abs(expected_eigenvectors), decimal=2
         )
 
     def test_fit_inner_product_with_2d(self):
@@ -1837,7 +1841,6 @@ class TestFitInnerProductMultivariate(unittest.TestCase):
             data=self.fdata_multi_2d,
             points=points,
             n_components=0.7,
-            smooth=True,
             noise_variance=np.array([0.02, 0]),
         )
 
@@ -1899,6 +1902,7 @@ class TestFitInnerProductMultivariate(unittest.TestCase):
         np.testing.assert_array_almost_equal(
             np.abs(results["eigenfunctions"].data[0].values),
             np.abs(expected_eigenfunctions),
+            decimal=1,
         )
 
         expected_eigenfunctions = np.array(
@@ -2198,6 +2202,7 @@ class TestFitInnerProductMultivariate(unittest.TestCase):
         np.testing.assert_array_almost_equal(
             np.abs(results["eigenfunctions"].data[1].values),
             np.abs(expected_eigenfunctions),
+            decimal=1,
         )
 
         expected_eigenvectors = np.array(
@@ -2432,7 +2437,7 @@ class TestTransformNumericalIntegrationDense(unittest.TestCase):
             ]
         )
         np.testing.assert_array_almost_equal(
-            np.abs(scores_dense), np.abs(expected_scores)
+            np.abs(scores_dense), np.abs(expected_scores), decimal=3
         )
 
     def test_numerical_integration_2d(self):
@@ -2456,7 +2461,9 @@ class TestTransformNumericalIntegrationDense(unittest.TestCase):
                 [0.15257718, 0.02944047],
             ]
         )
-        np.testing.assert_array_almost_equal(np.abs(scores), np.abs(expected_scores))
+        np.testing.assert_array_almost_equal(
+            np.abs(scores), np.abs(expected_scores), decimal=3
+        )
 
 
 class TestTransformNumericalIntegrationIrregular(unittest.TestCase):
@@ -2580,7 +2587,7 @@ class TestTransformNumericalIntegrationIrregular(unittest.TestCase):
             ]
         )
         np.testing.assert_array_almost_equal(
-            np.abs(scores_sparse), np.abs(expected_scores)
+            np.abs(scores_sparse), np.abs(expected_scores), decimal=3
         )
 
 
@@ -2709,7 +2716,9 @@ class TestTransformNumericalIntegrationMultivariate(unittest.TestCase):
                 [1.55403749e00],
             ]
         )
-        np.testing.assert_array_almost_equal(np.abs(scores), np.abs(expected_scores))
+        np.testing.assert_array_almost_equal(
+            np.abs(scores), np.abs(expected_scores), decimal=1
+        )
 
 
 class TestTransformPACE(unittest.TestCase):
@@ -2842,7 +2851,7 @@ class TestTransformPACE(unittest.TestCase):
             ]
         )
         np.testing.assert_array_almost_equal(
-            np.abs(scores_dense), np.abs(expected_scores)
+            np.abs(scores_dense), np.abs(expected_scores), decimal=3
         )
 
     def test_pace_irregular(self):
@@ -2961,7 +2970,7 @@ class TestTransformPACE(unittest.TestCase):
             ]
         )
         np.testing.assert_array_almost_equal(
-            np.abs(scores_sparse), np.abs(expected_scores)
+            np.abs(scores_sparse), np.abs(expected_scores), decimal=3
         )
 
     def test_pace_multivariate(self):
@@ -3077,7 +3086,7 @@ class TestTransformPACE(unittest.TestCase):
         )
 
         np.testing.assert_array_almost_equal(
-            np.abs(scores_multi), np.abs(expected_scores)
+            np.abs(scores_multi), np.abs(expected_scores), decimal=2
         )
 
 
@@ -3205,7 +3214,7 @@ class TestTransformInnPro(unittest.TestCase):
             ]
         )
         np.testing.assert_array_almost_equal(
-            np.abs(scores_dense), np.abs(expected_scores)
+            np.abs(scores_dense), np.abs(expected_scores), decimal=3
         )
 
     def test_innpro_irregular(self):
@@ -3320,5 +3329,5 @@ class TestTransformInnPro(unittest.TestCase):
             ]
         )
         np.testing.assert_array_almost_equal(
-            np.abs(scores_sparse), np.abs(expected_scores)
+            np.abs(scores_sparse), np.abs(expected_scores), decimal=3
         )

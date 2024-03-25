@@ -37,7 +37,7 @@ def _fit_covariance(
     data: FunctionalData,
     points: DenseArgvals,
     n_components: Union[int, float] = 1,
-    smooth: bool = True,
+    method_smoothing: str = "LP",
     **kwargs,
 ) -> Dict[str, object]:
     """Univariate Functional PCA using the covariance operator.
@@ -51,17 +51,12 @@ def _fit_covariance(
         will be estimated.
     n_components: Union[int, float], default=1
         Number of components to be estimated.
-    smooth: bool, default=True
+    method_smoothing: str, default="LP"
         Should the mean and covariance be smoothed?
-    **kwargs:
-        kernel_name: str, default='epanechnikov'
-            Name of the kernel used for local polynomial smoothing.
-        degree: int, default=1
-            Degree used for local polynomial smoothing.
-        bandwidth: float
-            Bandwidth used for local polynomial smoothing. The default
-            bandwitdth is set to be the number of sampling points to the
-            power :math:`-1/5`.
+    kwargs
+            Other keyword arguments are passed to the following function:
+
+            - :meth:`FunctionalData.covariance`.
 
     Returns
     -------
@@ -79,7 +74,9 @@ def _fit_covariance(
 
     """
     # Compute the covariance
-    covariance = data.covariance(points=points, **kwargs)
+    covariance = data.covariance(
+        points=points, method_smoothing=method_smoothing, **kwargs
+    )
 
     # Choose the W_j's and the S_j's (Ramsey and Silverman, 2005)
     argvals = points["input_dim_0"]
@@ -106,7 +103,7 @@ def _fit_covariance_multivariate(
     data: MultivariateFunctionalData,
     points: DenseArgvals,
     n_components: List[Union[int, float]],
-    smooth: bool = True,
+    method_smoothing: str = "LP",
     scores_method: str = "NumInt",
     **kwargs,
 ) -> Dict[str, object]:
@@ -121,7 +118,7 @@ def _fit_covariance_multivariate(
         will be estimated.
     n_components: List[Union[int, float]]
         Number of components to be estimated.
-    smooth: bool, default=True
+    method_smoothing: str, default='LP'
         Should the mean and covariance be smoothed?
     scores_method: str, {'NumInt', 'PACE'}, default='NumInt'
         Method for the estimation of the univariate scores.
@@ -141,8 +138,10 @@ def _fit_covariance_multivariate(
     for fdata_uni, n_comp in zip(data.data, n_components):
         if fdata_uni.n_dimension == 1:
             ufpca = UFPCA(n_components=n_comp, normalize=True)
-            ufpca.fit(data=fdata_uni, points=None, smooth=True)
-            scores_uni = ufpca.transform(method=scores_method)
+            ufpca.fit(data=fdata_uni, points=None, method_smoothing=method_smoothing)
+            scores_uni = ufpca.transform(
+                method=scores_method, method_smoothing=method_smoothing
+            )
         elif fdata_uni.n_dimension == 2:
             n_points = fdata_uni.n_points
             mat_v = np.diff(np.identity(n_points[0]))
@@ -203,7 +202,7 @@ def _fit_inner_product(
     data: FunctionalData,
     points: DenseArgvals,
     n_components: Union[int, float] = 1,
-    smooth: bool = True,
+    method_smoothing: str = "LP",
     noise_variance: Optional[float] = None,
     **kwargs,
 ) -> Dict[str, object]:
@@ -220,20 +219,15 @@ def _fit_inner_product(
         will be estimated.
     n_components: Union[int, float], default=1
         Number of components to be estimated.
-    smooth: bool, default=True
+    method_smoothing: str, default='LP'
         Should the mean and covariance be smoothed?
     noise_variance: Optional[float], default=None
             An estimation of the variance of the noise. If `None`, an
             estimation is computed using the methodology in [1]_.
-    **kwargs:
-        kernel_name: str, default='epanechnikov'
-            Name of the kernel used for local polynomial smoothing.
-        degree: int, default=1
-            Degree used for local polynomial smoothing.
-        bandwidth: float
-            Bandwidth used for local polynomial smoothing. The default
-            bandwitdth is set to be the number of sampling points to the
-            power :math:`-1/5`.
+    kwargs
+            Other keyword arguments are passed to the following function:
+
+            - :meth:`FunctionalData.inner_product`.
 
     Returns
     -------
@@ -246,7 +240,10 @@ def _fit_inner_product(
     """
     # Compute inner product matrix and its eigendecomposition
     in_prod = data.inner_product(
-        method="trapz", smooth=smooth, noise_variance=noise_variance, **kwargs
+        method_integration="trapz",
+        method_smoothing=method_smoothing,
+        noise_variance=noise_variance,
+        **kwargs,
     )
     eigenvalues, eigenvectors = _compute_eigen(in_prod, n_components)
 
@@ -271,7 +268,7 @@ def _fit_inner_product_multivariate(
     data: MultivariateFunctionalData,
     points: DenseArgvals,
     n_components: Union[int, float] = 1,
-    smooth: bool = True,
+    method_smoothing: str = "LP",
     noise_variance: Optional[npt.NDArray[np.float64]] = None,
     **kwargs,
 ) -> Dict[str, object]:
@@ -286,8 +283,8 @@ def _fit_inner_product_multivariate(
         will be estimated.
     n_components: Union[int, float], default=1
         Number of components to be estimated.
-    smooth: bool, default=True
-        Should the mean and covariance be smoothed?
+    method_smoothing: str = 'LP',
+            Should the mean and covariance be smoothed?
     noise_variance: Optional[npt.NDArray[np.float64]], default=None
             An estimation of the variance of the noise. If `None`, an
             estimation is computed using the methodology in [1]_.
@@ -312,17 +309,15 @@ def _fit_inner_product_multivariate(
     """
     # Compute inner product matrix and its eigendecomposition
     in_prod = data.inner_product(
-        method="trapz", smooth=smooth, noise_variance=noise_variance, **kwargs
+        method_integration="trapz",
+        method_smoothing=method_smoothing,
+        noise_variance=noise_variance,
+        **kwargs,
     )
     eigenvalues, eigenvectors = _compute_eigen(in_prod, n_components)
 
     # Compute the eigenfunctions
-    data_smooth = data.smooth(
-        points,
-        method="LP",
-        degree=data.n_functional * [1],
-        bandwidth=[4 / np.prod(pp.n_points) for pp in points],
-    )
+    data_smooth = data.smooth(points, method=method_smoothing)
     temp = [
         np.matmul(data_uni.values.T, eigenvectors) / np.sqrt(eigenvalues)
         for data_uni in data_smooth.data
@@ -717,7 +712,7 @@ class UFPCA:
         self,
         data: FunctionalData,
         points: Optional[DenseArgvals] = None,
-        smooth: bool = True,
+        method_smoothing: str = "LP",
         **kwargs,
     ) -> None:
         """Estimate the eigencomponents of the data.
@@ -732,17 +727,15 @@ class UFPCA:
         points: DenseArgvals
             The sampling points at which the covariance and the eigenfunctions
             will be estimated.
-        smooth: bool, default=True
+        method_smoothing: str, default='LP'
             Should the mean and covariance be smoothed?
-        **kwargs:
-            kernel_name: str, default='epanechnikov'
-                Name of the kernel used for local polynomial smoothing.
-            degree: int, default=1
-                Degree used for local polynomial smoothing.
-            bandwidth: float
-                Bandwidth used for local polynomial smoothing. The default
-                bandwitdth is set to be the number of sampling points to the
-                power :math:`-1/5`.
+        kwargs
+            Other keyword arguments are passed to the following function:
+
+            - :meth:`FunctionalData.mean`,
+            - :meth:`FunctionalData.center`,
+            - :meth:`preprocessing.fpca._fit_covariance`,
+            - :meth:`preprocessing.fpca._fit_inner_product`.
 
         References
         ----------
@@ -766,8 +759,10 @@ class UFPCA:
                 points = data.argvals.to_dense()
 
         # Compute the mean and center the data.
-        self._mean = data.mean(points=points, method_smoothing="LP", **kwargs)
-        data = data.center(mean=self._mean, smooth=smooth, **kwargs)
+        self._mean = data.mean(
+            points=points, method_smoothing=method_smoothing, **kwargs
+        )
+        data = data.center(mean=self._mean, method_smoothing=method_smoothing, **kwargs)
 
         # Normalize the data
         if self.normalize:
@@ -784,7 +779,7 @@ class UFPCA:
                 data=data,
                 points=points,
                 n_components=self._n_components,
-                smooth=smooth,
+                method_smoothing=method_smoothing,
                 **kwargs,
             )
         elif self.method == "inner-product":
@@ -792,7 +787,7 @@ class UFPCA:
                 data=data,
                 points=points,
                 n_components=self.n_components,
-                smooth=smooth,
+                method_smoothing=method_smoothing,
                 noise_variance=self._noise_variance,
                 **kwargs,
             )
@@ -832,6 +827,7 @@ class UFPCA:
         self,
         data: Optional[DenseFunctionalData] = None,
         method: str = "NumInt",
+        method_smoothing: str = "LP",
         **kwargs,
     ) -> npt.NDArray[np.float64]:
         r"""Apply dimensionality reduction to the data.
@@ -869,6 +865,8 @@ class UFPCA:
             inner product matrix of the data (can only be used if the
             eigencomponents have been estimated using the inner-product
             matrix.)
+        method_smoothing: str = 'LP',
+            Should the mean and covariance be smoothed?
         **kwargs:
             tol: float, default=1e-4
                 Tolerance parameter to prevent overflow to inverse a matrix,
@@ -905,7 +903,9 @@ class UFPCA:
             data_new = self._training_data
         else:
             # Center the data using the estimated mean in the fitting step.
-            data_new = data.center(mean=self._mean)
+            data_new = data.center(
+                mean=self._mean, method_smoothing=method_smoothing, **kwargs
+            )
             if self.normalize:
                 data_new, _ = data.normalize(weights=self.weights)
 
@@ -1098,7 +1098,7 @@ class MFPCA:
         self,
         data: MultivariateFunctionalData,
         points: Optional[List[DenseArgvals]] = None,
-        smooth: bool = True,
+        method_smoothing: str = "LP",
         scores_method: str = "NumInt",
         **kwargs,
     ) -> None:
@@ -1114,7 +1114,7 @@ class MFPCA:
         points: Optional[List[DenseArgvals]]
             The sampling points at which the covariance and the eigenfunctions
             will be estimated.
-        smooth: bool, default=True
+        method_smoothing: str = 'LP',
             Should the mean and covariance be smoothed?
         scores_method: str, {'NumInt', 'PACE', 'InnPro'}, default='NumInt'
             Method for the estimation of the univariate scores for the
@@ -1148,8 +1148,10 @@ class MFPCA:
             self.weights = np.repeat(1, data.n_functional)
 
         # Compute the mean and center the data.
-        self._mean = data.mean(points=points, smooth=smooth, **kwargs)
-        data = data.center(mean=self._mean, smooth=smooth, **kwargs)
+        self._mean = data.mean(
+            points=points, method_smoothing=method_smoothing, **kwargs
+        )
+        data = data.center(mean=self._mean, method_smoothing=method_smoothing, **kwargs)
 
         # Normalize the data
         if self.normalize:
@@ -1164,7 +1166,7 @@ class MFPCA:
                 data=data,
                 points=points,
                 n_components=self.n_components,
-                smooth=smooth,
+                method_smoothing=method_smoothing,
                 scores_method=scores_method,
                 **kwargs,
             )
@@ -1173,7 +1175,7 @@ class MFPCA:
                 data=data,
                 points=points,
                 n_components=self.n_components,
-                smooth=smooth,
+                method_smoothing=method_smoothing,
                 noise_variance=self._noise_variance,
                 **kwargs,
             )
@@ -1195,6 +1197,7 @@ class MFPCA:
         self,
         data: Optional[MultivariateFunctionalData] = None,
         method: str = "NumInt",
+        method_smoothing: str = "LP",
         **kwargs,
     ) -> npt.NDArray[np.float64]:
         r"""Apply dimensionality reduction to the data.
@@ -1231,6 +1234,8 @@ class MFPCA:
             inner product matrix of the data (can only be used if the
             eigencomponents have been estimated using the inner-product
             matrix.)
+        method_smoothing: str = 'LP',
+            Should the mean and covariance be smoothed?
         **kwargs:
             integration_method: str, {'trapz', 'simpson'}, default='trapz'
                 Method used to perform numerical integration, only used if
@@ -1273,7 +1278,9 @@ class MFPCA:
             data_new = self._training_data
         else:
             # Center the data using the estimated mean in the fitting step.
-            data_new = data.center(mean=self._mean)
+            data_new = data.center(
+                mean=self._mean, method_smoothing=method_smoothing, **kwargs
+            )
             if self.normalize:
                 data_new, _ = data.normalize(weights=self.weights)
 

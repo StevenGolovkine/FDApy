@@ -2911,7 +2911,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         normalization = [
             fdata.normalize(
                 weights=ww,
-                method=method_integration,
+                method_integration=method_integration,
                 use_argvals_stand=use_argvals_stand,
                 **kwargs,
             )

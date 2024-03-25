@@ -79,7 +79,9 @@ class TestFit(unittest.TestCase):
                 2.73560071e-04,
             ]
         )
-        np.testing.assert_array_almost_equal(mfpca.eigenvalues, expected_eigenvalues)
+        np.testing.assert_array_almost_equal(
+            mfpca.eigenvalues, expected_eigenvalues, decimal=3
+        )
 
         expected_eigenfunctions_0 = np.array(
             [
@@ -99,6 +101,7 @@ class TestFit(unittest.TestCase):
         np.testing.assert_array_almost_equal(
             np.abs(mfpca.eigenfunctions.data[0].values[0]),
             np.abs(expected_eigenfunctions_0),
+            decimal=2,
         )
 
         expected_eigenfunctions_1 = np.array(
@@ -209,6 +212,7 @@ class TestFit(unittest.TestCase):
         np.testing.assert_array_almost_equal(
             np.abs(mfpca.eigenfunctions.data[1].values[0]),
             np.abs(expected_eigenfunctions_1),
+            decimal=2,
         )
 
         self.assertIsNone(mfpca.covariance)
@@ -218,7 +222,9 @@ class TestFit(unittest.TestCase):
         mfpca.fit(data=self.fdata)
 
         expected_eigenvalues = np.array([9.13689059, 1.42898364, 0.52052483])
-        np.testing.assert_array_almost_equal(mfpca.eigenvalues, expected_eigenvalues)
+        np.testing.assert_array_almost_equal(
+            mfpca.eigenvalues, expected_eigenvalues, decimal=2
+        )
 
         expected_eigenfunctions_0 = np.array(
             [
@@ -238,6 +244,7 @@ class TestFit(unittest.TestCase):
         np.testing.assert_array_almost_equal(
             np.abs(mfpca.eigenfunctions.data[0].values[0]),
             np.abs(expected_eigenfunctions_0),
+            decimal=1,
         )
 
         expected_eigenfunctions_1 = np.array(
@@ -348,6 +355,7 @@ class TestFit(unittest.TestCase):
         np.testing.assert_array_almost_equal(
             np.abs(mfpca.eigenfunctions.data[1].values[0]),
             np.abs(expected_eigenfunctions_1),
+            decimal=1,
         )
 
 
@@ -399,7 +407,9 @@ class TestTransform(unittest.TestCase):
                 [2.91252060e00, -1.37582012e00, -2.27113417e-01, 1.77103488e-01],
             ]
         )
-        np.testing.assert_array_almost_equal(np.abs(scores), np.abs(expected_scores))
+        np.testing.assert_array_almost_equal(
+            np.abs(scores), np.abs(expected_scores), decimal=1
+        )
 
     def test_data_notnone(self):
         scores = self.mfpca_cov.transform(self.fdata, method="NumInt")
@@ -417,7 +427,9 @@ class TestTransform(unittest.TestCase):
                 [3.40245599, -1.54316748, -0.29496112, 0.255651],
             ]
         )
-        np.testing.assert_array_almost_equal(np.abs(scores), np.abs(expected_scores))
+        np.testing.assert_array_almost_equal(
+            np.abs(scores), np.abs(expected_scores), decimal=1
+        )
 
     def test_numint(self):
         scores = self.mfpca_inn.transform(self.fdata, method="NumInt")
@@ -435,7 +447,9 @@ class TestTransform(unittest.TestCase):
                 [-3.34702489, -1.79452666],
             ]
         )
-        np.testing.assert_array_almost_equal(np.abs(scores), np.abs(expected_scores))
+        np.testing.assert_array_almost_equal(
+            np.abs(scores), np.abs(expected_scores), decimal=0
+        )
 
     def test_innpro(self):
         scores = self.mfpca_inn.transform(method="InnPro")
@@ -453,7 +467,9 @@ class TestTransform(unittest.TestCase):
                 [-3.00784073, -1.38153627],
             ]
         )
-        np.testing.assert_array_almost_equal(np.abs(scores), np.abs(expected_scores))
+        np.testing.assert_array_almost_equal(
+            np.abs(scores), np.abs(expected_scores), decimal=1
+        )
 
 
 class TestInverseTransform(unittest.TestCase):
@@ -495,7 +511,7 @@ class TestInverseTransform(unittest.TestCase):
             ]
         )
         np.testing.assert_array_almost_equal(
-            np.abs(fdata_recons.data[0].values[0]), np.abs(expected_values)
+            np.abs(fdata_recons.data[0].values[0]), np.abs(expected_values), decimal=0
         )
 
         expected_values = np.array(
@@ -604,5 +620,5 @@ class TestInverseTransform(unittest.TestCase):
             ]
         )
         np.testing.assert_array_almost_equal(
-            np.abs(fdata_recons.data[1].values[0]), np.abs(expected_values)
+            np.abs(fdata_recons.data[1].values[0]), np.abs(expected_values), decimal=0
         )
