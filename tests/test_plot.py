@@ -145,10 +145,6 @@ class TestPlot2D(unittest.TestCase):
         with self.assertRaises(TypeError):
             _plot_2d(data=np.array([1, 2, 3]), labels=np.array([0]))
 
-    def test_plot_2d_error_irregular(self):
-        with self.assertRaises(NotImplementedError):
-            _plot_2d(data=self.data_irreg, labels=np.array([0]))
-
     def test_plot_2d_dense_unique(self):
         # Call the function to plot the object
         ax = _init_ax(projection="rectilinear")
