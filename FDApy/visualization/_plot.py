@@ -147,7 +147,7 @@ def _plot_2d(
             plt.colorbar(cs, ax=ax)
         else:
             data_long = data.to_long()
-            for n_obs, l in zip(np.arange(data.n_obs), labels):
+            for n_obs, l in zip(np.unique(data_long["id"].values), labels):
                 data_p = data_long.query(f"id == {n_obs}").dropna()
                 ax.plot_trisurf(
                     data_p["input_dim_0"].values,

@@ -335,7 +335,6 @@ class FunctionalData(ABC):
 
     def __iter__(self):
         """Initialize the iterator."""
-        return FunctionalDataIterator(self)
 
     @abstractmethod
     def __getitem__(self, index: int) -> Type[FunctionalData]:
@@ -442,7 +441,7 @@ class FunctionalData(ABC):
     ###########################################################################
     # Abstract methods
     @abstractmethod
-    def to_long(self) -> pd.DataFrame:
+    def to_long(self, reindex: bool = False) -> pd.DataFrame:
         """Convert the data to long format."""
 
     @abstractmethod
@@ -520,9 +519,9 @@ class FunctionalData(ABC):
 
 
 ###############################################################################
-# Class FunctionalDataIterator
-class FunctionalDataIterator(Iterator):
-    """Iterator for FunctionalData object."""
+# Class DenseFunctionalDataIterator
+class DenseFunctionalDataIterator(Iterator):
+    """Iterator for DenseFunctionalData object."""
 
     def __init__(self, fdata):
         """Initialize the Iterator object."""
@@ -641,6 +640,10 @@ class DenseFunctionalData(FunctionalData):
         """Initialize UnivariateFunctionalData object."""
         super().__init__(argvals, values)
 
+    def __iter__(self):
+        """Initialize the iterator."""
+        return DenseFunctionalDataIterator(self)
+
     def __getitem__(self, index: int) -> DenseFunctionalData:
         """Overrride getitem function, called when self[index].
 
@@ -687,7 +690,7 @@ class DenseFunctionalData(FunctionalData):
 
     ###########################################################################
     # Methods
-    def to_long(self) -> pd.DataFrame:
+    def to_long(self, reindex: bool = False) -> pd.DataFrame:
         """Convert the data to long format.
 
         This function transform a DenseFunctionalData object into pandas
@@ -1350,6 +1353,26 @@ class DenseFunctionalData(FunctionalData):
 
 
 ###############################################################################
+# Class IrregularFunctionalDataIterator
+class IrregularFunctionalDataIterator(Iterator):
+    """Iterator for IrregularFunctionalData object."""
+
+    def __init__(self, fdata):
+        """Initialize the Iterator object."""
+        self._fdata = fdata
+        self._index = list(fdata.argvals)
+
+    def __next__(self):
+        """Return the next item in the sequence."""
+        if len(self._index) > 0:
+            idx = self._index.pop(0)
+            item = self._fdata[idx]
+            return item
+        else:
+            raise StopIteration
+
+
+###############################################################################
 # Class IrregularFunctionalData
 class IrregularFunctionalData(FunctionalData):
     r"""A class for defining Irregular Functional Data.
@@ -1471,6 +1494,10 @@ class IrregularFunctionalData(FunctionalData):
         """Initialize IrregularFunctionalData object."""
         super().__init__(argvals, values)
 
+    def __iter__(self):
+        """Initialize the iterator."""
+        return IrregularFunctionalDataIterator(self)
+
     def __getitem__(self, index: int) -> IrregularFunctionalData:
         """Overrride getitem function, called when self[index].
 
@@ -1523,7 +1550,7 @@ class IrregularFunctionalData(FunctionalData):
 
     ###########################################################################
     # Methods
-    def to_long(self) -> pd.DataFrame:
+    def to_long(self, reindex: bool = False) -> pd.DataFrame:
         """Convert the data to long format.
 
         This function transform a IrregularFunctionalData object into pandas
@@ -1567,14 +1594,14 @@ class IrregularFunctionalData(FunctionalData):
 
         """
         temp_list = []
-        for idx, obs in enumerate(self):
-            cur_argvals = obs.argvals[idx]
+        for i, obs in enumerate(self):
+            idx, cur_argvals = obs.argvals.popitem()
             cur_values = obs.values[idx]
             sampling_points = list(itertools.product(*cur_argvals.values()))
 
             temp = pd.DataFrame(sampling_points)
             temp.columns = list(cur_argvals.keys())
-            temp["id"] = idx
+            temp["id"] = i if reindex else idx
             temp["values"] = cur_values.flatten()
             temp_list.append(temp)
         return pd.concat(temp_list, ignore_index=True)
@@ -2453,7 +2480,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     ###########################################################################
     # Methods
-    def to_long(self) -> List[pd.DataFrame]:
+    def to_long(self, reindex: bool = True) -> List[pd.DataFrame]:
         """Convert the data to long format.
 
         This function transform a MultivariateFunctionalData object into a list
@@ -2519,7 +2546,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         9            4   2       3]
 
         """
-        return [fdata.to_long() for fdata in self.data]
+        return [fdata.to_long(reindex) for fdata in self.data]
 
     def noise_variance(self, order: int = 2) -> float:
         """Estimate the variance of the noise.
