@@ -133,26 +133,28 @@ def _plot_2d(
         if data.n_obs == 1:
             data_p = data.to_long().dropna()
             ax.plot(
-                data_p['input_dim_0'].values,
-                data_p['input_dim_1'].values,
-                'o', markersize=2, color='grey'
+                data_p["input_dim_0"].values,
+                data_p["input_dim_1"].values,
+                "o",
+                markersize=2,
+                color="grey",
             )
             cs = ax.tricontourf(
-                data_p['input_dim_0'].values,
-                data_p['input_dim_1'].values,
-                data_p['values'].values
+                data_p["input_dim_0"].values,
+                data_p["input_dim_1"].values,
+                data_p["values"].values,
             )
             plt.colorbar(cs, ax=ax)
         else:
             data_long = data.to_long()
             for n_obs, l in zip(np.arange(data.n_obs), labels):
-                data_p = data_long.query(f'id == {n_obs}').dropna()
+                data_p = data_long.query(f"id == {n_obs}").dropna()
                 ax.plot_trisurf(
-                    data_p['input_dim_0'].values,
-                    data_p['input_dim_1'].values,
-                    data_p['values'].values,
+                    data_p["input_dim_0"].values,
+                    data_p["input_dim_1"].values,
+                    data_p["values"].values,
                     color=colors[l],
-                    **plt_kwargs
+                    **plt_kwargs,
                 )
     else:
         raise TypeError("Data type not recognized!")
