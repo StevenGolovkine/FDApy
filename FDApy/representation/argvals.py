@@ -245,7 +245,7 @@ class DenseArgvals(Argvals):
         return len(self)
 
     @property
-    def min_max(self) -> Dict(SyntaxWarning, Tuple[float, float]):
+    def min_max(self) -> Dict[str, Tuple[float, float]]:
         """Get the minimum and maximum sampling points for each dimension."""
         return {idx: (min(argval), max(argval)) for idx, argval in self.items()}
 
@@ -412,7 +412,7 @@ class IrregularArgvals(Argvals):
         return len(next(iter(self.values())))
 
     @property
-    def min_max(self) -> Dict(int, Tuple[float, float]):
+    def min_max(self) ->  Dict[str, Tuple[float, float]]:
         """Get the minimum and maximum sampling points for each dimension."""
         return self.to_dense().min_max
 
