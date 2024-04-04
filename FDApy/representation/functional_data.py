@@ -1138,6 +1138,22 @@ class DenseFunctionalData(FunctionalData):
 
         .. math::
             \widetilde{X} = w\{X - \mu\}.
+
+        Parameters
+        ----------
+        kwargs
+            Other keyword arguments are passed to the following function:
+
+            - :meth:``.
+
+        Returns
+        -------
+        DenseFunctionalData
+            The rescaled data.
+
+        Examples
+        --------
+
         """
         pass
 
