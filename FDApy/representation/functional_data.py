@@ -1020,19 +1020,18 @@ class DenseFunctionalData(FunctionalData):
     ) -> npt.NDArray[np.float64]:
         r"""Norm of each observation of the data.
 
-        For each observation in the data, it computes its norm [1]_ defined as
+        For each observation in the data, it computes its norm defined in [1]_ as
 
         .. math::
-            \lvert\lvert f \rvert\rvert = \left(\int_{\mathcal{T}}
-            f(t)^2dt\right)^{1\2}, t \in \mathcal{T},
+            \| f \| = \left\{\int_{\mathcal{T}} f(t)^2dt\right\}^{\frac12}.
 
         Parameters
         ----------
-        squared: bool, default=False
-            If `True`, the function calculates the squared norm, otherwise it
+        squared: bool, default=`False`
+            If ``True``, the function calculates the squared norm, otherwise it
             returns the norm.
         method_integration: str, {'simpson', 'trapz'}, default='trapz'
-            The method used to integrated.
+            The method used to estimate the integral.
         use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
 
@@ -1081,39 +1080,27 @@ class DenseFunctionalData(FunctionalData):
 
     def normalize(
         self,
-        weights: float = 0.0,
-        method_integration: str = "trapz",
-        use_argvals_stand: bool = False,
         **kwargs,
-    ) -> Tuple[DenseFunctionalData, float]:
+    ) -> DenseFunctionalData:
         r"""Normalize the data.
 
-        The normalization is performed by divising each functional datum by
-        :math:`w_j = \int_{T} Var(X(t))dt`.
+        The normalization is performed by divising each functional datum :math:`f` by
+        its norm :math:`\| f \|`. It results in 
+
+        .. math::
+            \widetilde{f} = \frac{f}{\| f \|}.
 
         Parameters
         ----------
-        weights: float, default=0.0
-            The weights used to normalize the data. If `weights = 0.0`, the
-            weights are estimated by integrating the variance function [1]_.
-        method_integration: str, {'simpson', 'trapz'}, default='trapz'
-            The method used to integrated.
-        use_argvals_stand: bool, default=False
-            Use standardized argvals to compute the normalization of the data.
-        **kwargs:
-            Not used here.
+        kwargs
+            Other keyword arguments are passed to the following function:
+
+            - :meth:`DenseFunctionalData.norm`.
 
         Returns
         -------
-        Tuple[DenseFunctionalData, float]
-            The normalized data and its weight.
-
-        References
-        ----------
-        .. [1] Happ and Greven (2018), Multivariate Functional Principal
-            Component Analysis for Data Observed on Different (Dimensional)
-            Domains. Journal of the American Statistical Association, 113,
-            pp. 649--659.
+        DenseFunctionalData
+            The normalized data.
 
         Examples
         --------
@@ -1124,19 +1111,35 @@ class DenseFunctionalData(FunctionalData):
         ... )
         >>> kl.new(n_obs=10)
         >>> kl.data.normalize()
-        (Functional data object with 10 observations on a 1-dimensional
-        support., DenseValues(0.21227413))
+        Functional data object with 10 observations on a 1-dimensional support.
 
         """
-        if weights == 0.0:
-            if use_argvals_stand:
-                axis = [argvals for argvals in self.argvals_stand.values()]
-            else:
-                axis = [argvals for argvals in self.argvals.values()]
-            variance = np.var(self.values, axis=0)
-            weights = _integrate(variance, *axis, method=method_integration)
-        new_values = self.values / weights
-        return DenseFunctionalData(self.argvals, new_values), weights
+        norm = np.moveaxis(self.values, 0, -1) / self.norm(**kwargs)
+        fdata_new = DenseFunctionalData(self.argvals, np.moveaxis(norm, -1, 0))
+        return fdata_new
+
+    def standardize(
+        self,
+        **kwargs
+    ) -> DenseFunctionalData:
+        r"""Standardize the data.
+        
+        The standardization is performed by first centering the data and then 
+        """
+        pass
+
+    def rescale(
+        self,
+        **kwargs
+    ) -> DenseFunctionalData:
+        r"""Rescale the data.
+        
+        The rescaling is performed by first centering the data and then 
+
+        .. math::
+            \widetilde{X} = w\{X - \mu\}.
+        """
+        pass
 
     def inner_product(
         self,
