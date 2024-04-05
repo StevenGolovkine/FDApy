@@ -38,8 +38,11 @@ bandwidth = 0.1
 degree = 1
 
 fdata_smooth = kl.noisy_data.smooth(
-    points=points, method='LP',
-    kernel_name=kernel_name, bandwidth=bandwidth, degree=degree
+    points=points,
+    method="LP",
+    kernel_name=kernel_name,
+    bandwidth=bandwidth,
+    degree=degree,
 )
 
 

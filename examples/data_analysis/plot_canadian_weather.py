@@ -36,8 +36,11 @@ bandwidth = 30
 degree = 1
 
 temp_smooth = temp_data.smooth(
-    points=points, method='LP',
-    kernel_name=kernel_name, bandwidth=bandwidth, degree=degree
+    points=points,
+    method="LP",
+    kernel_name=kernel_name,
+    bandwidth=bandwidth,
+    degree=degree,
 )
 
 

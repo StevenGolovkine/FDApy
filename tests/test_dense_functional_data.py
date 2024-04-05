@@ -2515,7 +2515,7 @@ class TestRescaleDense(unittest.TestCase):
         )
 
     def test_rescale_1d(self):
-        results = self.fdata.rescale()
+        results, _ = self.fdata.rescale()
 
         expected_results = np.array(
             [[0.0, 1.09383632, 4.37534529], [0.0, 1.09383632, 1.54691816]]
@@ -2523,13 +2523,16 @@ class TestRescaleDense(unittest.TestCase):
         np.testing.assert_almost_equal(results.values, expected_results)
 
     def test_rescale_1d_given_weights(self):
-        results = self.fdata.rescale(weights=1)
+        results, weights = self.fdata.rescale(weights=1)
 
         expected_results = np.array([[0, 1, 4], [0, 1, np.sqrt(2)]])
         np.testing.assert_almost_equal(results.values, expected_results)
 
+        expected_weights = 1
+        np.testing.assert_equal(weights, expected_weights)
+
     def test_rescale_1d_use_argvals_stand(self):
-        results = self.fdata.rescale(use_argvals_stand=True)
+        results, _ = self.fdata.rescale(use_argvals_stand=True)
 
         expected_results = np.array(
             [[0.0, 1.54691816, 6.18767264], [0.0, 1.54691816, 2.18767264]]
@@ -2537,7 +2540,7 @@ class TestRescaleDense(unittest.TestCase):
         np.testing.assert_almost_equal(results.values, expected_results)
 
     def test_rescale_2d(self):
-        results = self.fdata_2D.rescale()
+        results, _ = self.fdata_2D.rescale()
 
         expected_results = np.array(
             [

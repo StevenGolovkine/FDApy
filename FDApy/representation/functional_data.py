@@ -487,12 +487,19 @@ class FunctionalData(ABC):
         """Norm of each observation of the data."""
 
     @abstractmethod
-    def normalize(
+    def normalize(self, **kwargs) -> FunctionalData:
+        """Normalize the data."""
+
+    @abstractmethod
+    def standardize(self, **kwargs) -> FunctionalData:
+        """Standardize the data."""
+
+    @abstractmethod
+    def rescale(
         self,
         weights: float = 0.0,
         method_integration: str = "trapz",
         use_argvals_stand: bool = False,
-        **kwargs,
     ) -> Tuple[FunctionalData, float]:
         """Normalize the data."""
 
@@ -1243,7 +1250,7 @@ class DenseFunctionalData(FunctionalData):
             variance = np.var(self.values, axis=0)
             weights = _integrate(variance, *axis, method=method_integration)
         new_values = self.values / np.sqrt(weights)
-        return DenseFunctionalData(self.argvals, new_values)
+        return DenseFunctionalData(self.argvals, new_values), weights
 
     def inner_product(
         self,
