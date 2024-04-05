@@ -546,7 +546,24 @@ class DenseFunctionalData(FunctionalData):
     A class used to define dense functional data. We denote by :math:`n`, the
     number of observations and by :math:`p`, the number of input dimensions.
     Here, we are in the case of univariate functional data, and so the output
-    dimension will be :math:`\mathbb{R}`.
+    dimension will be :math:`\mathbb{R}`. We note by :math:`X` an observation, while
+    we use :math:`X_1, \dots, X_n` if we refer to a particular set of observations. The
+    observations are defined as:
+
+    .. math::
+        X(t): \mathcal{T} \longrightarrow \mathbb{R},
+
+    where :math:`\mathcal{T} \subset \mathbb{R}^p`. We denote the mean function by
+
+    .. math::
+        \mu(t): \mathcal{T} \longrightarrow \mathbb{R},
+
+    and the covariance function by:
+
+    .. math::
+        C(s, t): \mathcal{T} \times \mathcal{T} \longrightarrow \mathbb{R}.
+
+    We also note :math:`\mathbf{M}` the Gram matrix of the set of observations.
 
     Parameters
     ----------
@@ -899,7 +916,7 @@ class DenseFunctionalData(FunctionalData):
         This function computes an estimate of the mean curve of a DenseFunctionalData
         object. As the curves are sampled on a common grid, we consider the sample mean,
         as defined in [3]_. The sampled mean is rate optimal [1]_. We included some
-        smoothing using Local Polynonial Estimators or P-Splines.
+        smoothing using Local Polynonial Estimators [4]_ or P-Splines [2]_.
 
         Parameters
         ----------
@@ -964,7 +981,13 @@ class DenseFunctionalData(FunctionalData):
         method_smoothing: Optional[str] = None,
         **kwargs,
     ) -> DenseFunctionalData:
-        """Center the data.
+        r"""Center the data.
+
+        The centering is done by estimating the mean from the data and then substracting
+        it to the data. It results in
+
+        .. math::
+            \widetilde{X}(t) = X(t) - \mu(t).
 
         Parameters
         ----------
@@ -974,7 +997,7 @@ class DenseFunctionalData(FunctionalData):
             The method to used for the smoothing of the mean. If 'None', no smoothing
             is performed. If 'PS', the method is P-splines [1]_. If 'LP', the method
             is local polynomials [2]_.
-        kwargs
+        **kwargs
             Other keyword arguments are passed to one of the following functions:
 
             - :meth:`DenseFunctionalData.mean` (``mean=None``),
@@ -1023,7 +1046,7 @@ class DenseFunctionalData(FunctionalData):
         For each observation in the data, it computes its norm defined in [1]_ as
 
         .. math::
-            \| f \| = \left\{\int_{\mathcal{T}} f(t)^2dt\right\}^{\frac12}.
+            \| X \| = \left\{\int_{\mathcal{T}} X(t)^2dt\right\}^{\frac12}.
 
         Parameters
         ----------
@@ -1084,15 +1107,15 @@ class DenseFunctionalData(FunctionalData):
     ) -> DenseFunctionalData:
         r"""Normalize the data.
 
-        The normalization is performed by divising each functional datum :math:`f` by
-        its norm :math:`\| f \|`. It results in 
+        The normalization is performed by divising each functional datum :math:`X` by
+        its norm :math:`\| X \|`. It results in
 
         .. math::
-            \widetilde{f} = \frac{f}{\| f \|}.
+            \widetilde{X} = \frac{X}{\| X \|}.
 
         Parameters
         ----------
-        kwargs
+        **kwargs
             Other keyword arguments are passed to the following function:
 
             - :meth:`DenseFunctionalData.norm`.
@@ -1118,44 +1141,109 @@ class DenseFunctionalData(FunctionalData):
         fdata_new = DenseFunctionalData(self.argvals, np.moveaxis(norm, -1, 0))
         return fdata_new
 
-    def standardize(
-        self,
-        **kwargs
-    ) -> DenseFunctionalData:
+    def standardize(self, **kwargs) -> DenseFunctionalData:
         r"""Standardize the data.
-        
-        The standardization is performed by first centering the data and then 
-        """
-        pass
 
-    def rescale(
-        self,
-        **kwargs
-    ) -> DenseFunctionalData:
-        r"""Rescale the data.
-        
-        The rescaling is performed by first centering the data and then 
+        The standardization is performed by first centering the data and then dividing
+        by the standard deviation curve [1]_. It results in
 
         .. math::
-            \widetilde{X} = w\{X - \mu\}.
+            \widetilde{X}(t) = C(t, t)^{-\frac12}\{X(t) - \mu(t)\}, \quad
+            t \in \mathcal{T}.
 
         Parameters
         ----------
-        kwargs
+        **kwargs
             Other keyword arguments are passed to the following function:
 
-            - :meth:``.
+            - :meth:`DenseFunctionalData.center`.
+
+        Returns
+        -------
+        DenseFunctionalData
+            The standardized data.
+
+        References
+        ----------
+        .. [1] Chiou, J.-M., Chen, Y.-T., Yang, Y.-F. (2014). Multivariate Functional
+            Principal Component Analysis: A Normalization Approach. Statistica Sinica
+            24, 1571--1596.
+
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines',
+        ...     n_functions=5,
+        ...     random_state=42
+        ... )
+        >>> kl.new(n_obs=10)
+        >>> kl.data.standardize()
+        Functional data object with 10 observations on a 1-dimensional support.
+
+        """
+        fdata_center = self.center(**kwargs)
+        std = np.std(self.values, axis=0)
+        new_values = np.divide(fdata_center.values, std, where=(std != 0))
+        return DenseFunctionalData(self.argvals, new_values)
+
+    def rescale(
+        self,
+        weights: float = 0.0,
+        method_integration: str = "trapz",
+        use_argvals_stand: bool = False,
+    ) -> DenseFunctionalData:
+        r"""Rescale the data.
+
+        The rescaling is performed by first centering the data and then multiplying with
+        a common weight:
+
+        .. math::
+            \widetilde{X}(t) = w\{X(t) - \mu(t)\}.
+
+        The weights are defined in [1]_.
+
+        Parameters
+        ----------
+        weights: float, default=0.0
+            The weights used to normalize the data. If `weights = 0.0`, the
+            weights are estimated by integrating the variance function [1]_.
+        method_integration: str, {'simpson', 'trapz'}, default='trapz'
+            The method used to estimate the integral.
+        use_argvals_stand: bool, default=False
+            Use standardized argvals to compute the normalization of the data.
 
         Returns
         -------
         DenseFunctionalData
             The rescaled data.
 
+        References
+        ----------
+        .. [1] Happ, C., Greven, S. (2018). Multivariate Functional Principal Component
+            Analysis for Data Observed on Different (Dimensional) Domains. Journal of
+            the American Statistical Association 113, 649--659.
+
         Examples
         --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines',
+        ...     n_functions=5,
+        ...     random_state=42
+        ... )
+        >>> kl.new(n_obs=10)
+        >>> kl.data.rescale()
+        Functional data object with 10 observations on a 1-dimensional support.
 
         """
-        pass
+        if weights == 0.0:
+            if use_argvals_stand:
+                axis = [argvals for argvals in self.argvals_stand.values()]
+            else:
+                axis = [argvals for argvals in self.argvals.values()]
+            variance = np.var(self.values, axis=0)
+            weights = _integrate(variance, *axis, method=method_integration)
+        new_values = self.values / np.sqrt(weights)
+        return DenseFunctionalData(self.argvals, new_values)
 
     def inner_product(
         self,

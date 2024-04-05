@@ -2463,7 +2463,88 @@ class TestNormalizeDense(unittest.TestCase):
     def test_norm_2d(self):
         results = self.fdata_2D.normalize()
 
-        expected_results = np.array([[[0, 1 / np.sqrt(1.5)], [1 / np.sqrt(1.5), 2 / np.sqrt(1.5)]]])
+        expected_results = np.array(
+            [[[0, 1 / np.sqrt(1.5)], [1 / np.sqrt(1.5), 2 / np.sqrt(1.5)]]]
+        )
+        np.testing.assert_almost_equal(results.values, expected_results)
+
+
+class TestStandardizeDense(unittest.TestCase):
+    def setUp(self) -> None:
+        argvals = np.array([0, 1, 2])
+        X = np.array([[0, 1, 4], [0, 1, np.sqrt(2)]])
+        self.fdata = DenseFunctionalData(
+            DenseArgvals({"input_dim_0": argvals}), DenseValues(X)
+        )
+
+        argvals = np.array([0, 1])
+        X = np.array([[[0, 1], [1, 2]], [[-1, 3], [6, 2]]])
+        self.fdata_2D = DenseFunctionalData(
+            DenseArgvals({"input_dim_0": argvals, "input_dim_1": argvals}),
+            DenseValues(X),
+        )
+
+    def test_standardize_1d(self):
+        results = self.fdata.standardize()
+
+        expected_results = np.array([[0.0, 0.0, 1.0], [0.0, 0.0, -1.0]])
+        np.testing.assert_almost_equal(results.values, expected_results)
+
+    def test_standardize_2d(self):
+        results = self.fdata_2D.standardize()
+
+        expected_results = np.array(
+            [[[1.0, -1.0], [-1.0, 0.0]], [[-1.0, 1.0], [1.0, 0.0]]]
+        )
+        np.testing.assert_almost_equal(results.values, expected_results)
+
+
+class TestRescaleDense(unittest.TestCase):
+    def setUp(self) -> None:
+        argvals = np.array([0, 1, 2])
+        X = np.array([[0, 1, 4], [0, 1, np.sqrt(2)]])
+        self.fdata = DenseFunctionalData(
+            DenseArgvals({"input_dim_0": argvals}), DenseValues(X)
+        )
+
+        argvals = np.array([0, 1])
+        X = np.array([[[0, 1], [1, 2]], [[-1, 3], [6, 2]]])
+        self.fdata_2D = DenseFunctionalData(
+            DenseArgvals({"input_dim_0": argvals, "input_dim_1": argvals}),
+            DenseValues(X),
+        )
+
+    def test_rescale_1d(self):
+        results = self.fdata.rescale()
+
+        expected_results = np.array(
+            [[0.0, 1.09383632, 4.37534529], [0.0, 1.09383632, 1.54691816]]
+        )
+        np.testing.assert_almost_equal(results.values, expected_results)
+
+    def test_rescale_1d_given_weights(self):
+        results = self.fdata.rescale(weights=1)
+
+        expected_results = np.array([[0, 1, 4], [0, 1, np.sqrt(2)]])
+        np.testing.assert_almost_equal(results.values, expected_results)
+
+    def test_rescale_1d_use_argvals_stand(self):
+        results = self.fdata.rescale(use_argvals_stand=True)
+
+        expected_results = np.array(
+            [[0.0, 1.54691816, 6.18767264], [0.0, 1.54691816, 2.18767264]]
+        )
+        np.testing.assert_almost_equal(results.values, expected_results)
+
+    def test_rescale_2d(self):
+        results = self.fdata_2D.rescale()
+
+        expected_results = np.array(
+            [
+                [[0.0, 0.73029674], [0.73029674, 1.46059349]],
+                [[-0.73029674, 2.19089023], [4.38178046, 1.46059349]],
+            ]
+        )
         np.testing.assert_almost_equal(results.values, expected_results)
 
 
