@@ -500,8 +500,9 @@ class FunctionalData(ABC):
         weights: float = 0.0,
         method_integration: str = "trapz",
         use_argvals_stand: bool = False,
+        **kwargs,
     ) -> Tuple[FunctionalData, float]:
-        """Normalize the data."""
+        """Rescale the data."""
 
     @abstractmethod
     def inner_product(
@@ -1198,7 +1199,8 @@ class DenseFunctionalData(FunctionalData):
         weights: float = 0.0,
         method_integration: str = "trapz",
         use_argvals_stand: bool = False,
-    ) -> DenseFunctionalData:
+        **kwargs,
+    ) -> Tuple[DenseFunctionalData, float]:
         r"""Rescale the data.
 
         The rescaling is performed by first centering the data and then multiplying with
@@ -1221,8 +1223,8 @@ class DenseFunctionalData(FunctionalData):
 
         Returns
         -------
-        DenseFunctionalData
-            The rescaled data.
+        Tuple[DenseFunctionalData, float]
+            The rescaled data and the weight.
 
         References
         ----------
@@ -2090,17 +2092,30 @@ class IrregularFunctionalData(FunctionalData):
         else:
             return np.power(norm_fd, 0.5)
 
-    def normalize(
+    def normalize(self, **kwargs) -> IrregularFunctionalData:
+        """Normalize the data."""
+        return super().normalize(**kwargs)
+
+    def standardize(self, **kwargs) -> IrregularFunctionalData:
+        r"""Standardize the data."""
+        return super().standardize(**kwargs)
+
+    def rescale(
         self,
         weights: float = 0.0,
         method_integration: str = "trapz",
         use_argvals_stand: bool = False,
         **kwargs,
     ) -> Tuple[FunctionalData, float]:
-        r"""Normalize the data.
+        r"""Rescale the data.
 
-        The normalization is performed by divising each functional datum by
-        :math:`w_j = \int_{T} Var(X(t))dt`.
+        The rescaling is performed by first centering the data and then multiplying with
+        a common weight:
+
+        .. math::
+            \widetilde{X}(t) = w\{X(t) - \mu(t)\}.
+
+        The weights are defined in [1]_.
 
         Parameters
         ----------
@@ -2119,7 +2134,7 @@ class IrregularFunctionalData(FunctionalData):
         Returns
         -------
         Tuple[IrregularFunctionalData, float]
-            The normalized data and its weight.
+            The normalized data and the weight.
 
         References
         ----------
@@ -2154,7 +2169,7 @@ class IrregularFunctionalData(FunctionalData):
 
         new_values = IrregularValues()
         for idx, obs in enumerate(self):
-            new_values[idx] = obs.values[idx] / weights
+            new_values[idx] = obs.values[idx] / np.sqrt(weights)
         return IrregularFunctionalData(self.argvals, new_values), weights
 
     def inner_product(
@@ -2995,14 +3010,22 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         )
         return np.sum(norm_uni, axis=0)
 
-    def normalize(
+    def normalize(self, **kwargs) -> MultivariateFunctionalData:
+        """Normalize the data."""
+        pass
+
+    def standardize(self, **kwargs) -> MultivariateFunctionalData:
+        """Standardize the data."""
+        pass
+
+    def rescale(
         self,
         weights: Optional[npt.NDArray[np.float64]] = None,
         method_integration: str = "trapz",
         use_argvals_stand: bool = False,
         **kwargs,
     ) -> Tuple[MultivariateFunctionalData, npt.NDArray[np.float64]]:
-        r"""Normalize the data.
+        r"""Rescale the data.
 
         The normalization is performed by divising each functional datum by
         :math:`w_j = \int_{T} Var(X(t))dt`.
