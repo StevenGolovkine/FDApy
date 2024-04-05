@@ -438,7 +438,10 @@ class IrregularArgvals(Argvals):
                 min_x, max_x = min_max[in_key]
                 if out_key not in stand_dict:
                     stand_dict[out_key] = DenseArgvals({})
-                stand_dict[out_key][in_key] = (value - min_x) / (max_x - min_x)
+                if min_x == max_x:
+                    stand_dict[out_key][in_key] = np.array([0])
+                else:
+                    stand_dict[out_key][in_key] = (value - min_x) / (max_x - min_x)
         return IrregularArgvals(stand_dict)
 
     def switch(self) -> Dict[str, Dict[int, npt.NDArray[np.float64]]]:
