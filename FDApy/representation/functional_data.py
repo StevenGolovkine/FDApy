@@ -293,6 +293,13 @@ class FunctionalData(ABC):
 
     @staticmethod
     @abstractmethod
+    def _perform_computation_number(
+        fdata: Type[FunctionalData], number: float, func: Callable
+    ) -> Type[FunctionalData]:
+        """Perform computation with numbers."""
+
+    @staticmethod
+    @abstractmethod
     def concatenate(*fdata: Type[FunctionalData]) -> Type[FunctionalData]:
         """Concatenate FunctionalData objects.
 
@@ -340,29 +347,66 @@ class FunctionalData(ABC):
     def __getitem__(self, index: int) -> Type[FunctionalData]:
         """Override getitem function, called when self[index]."""
 
-    def __add__(self, obj: Type[FunctionalData]) -> Type[FunctionalData]:
+    def __add__(
+        self, obj: Union[Type[FunctionalData], float, int]
+    ) -> Type[FunctionalData]:
         """Override add function."""
-        return self._perform_computation(self, obj, np.add)
+        if isinstance(obj, FunctionalData):
+            return self._perform_computation(self, obj, np.add)
+        elif isinstance(obj, (float, int)):
+            return self._perform_computation_number(self, obj, np.add)
+        else:
+            raise ValueError("Error")
 
-    def __sub__(self, obj: Type[FunctionalData]) -> Type[FunctionalData]:
+    def __sub__(
+        self, obj: Union[Type[FunctionalData], float, int]
+    ) -> Type[FunctionalData]:
         """Override sub function."""
-        return self._perform_computation(self, obj, np.subtract)
+        if isinstance(obj, FunctionalData):
+            return self._perform_computation(self, obj, np.subtract)
+        elif isinstance(obj, (float, int)):
+            return self._perform_computation_number(self, obj, np.subtract)
+        else:
+            raise ValueError("Error")
 
-    def __mul__(self, obj: Type[FunctionalData]) -> Type[FunctionalData]:
+    def __mul__(
+        self, obj: Union[Type[FunctionalData], float, int]
+    ) -> Type[FunctionalData]:
         """Override mul function."""
-        return self._perform_computation(self, obj, np.multiply)
+        if isinstance(obj, FunctionalData):
+            return self._perform_computation(self, obj, np.multiply)
+        elif isinstance(obj, (float, int)):
+            return self._perform_computation_number(self, obj, np.multiply)
+        else:
+            raise ValueError("Error")
 
-    def __rmul__(self, obj: Type[FunctionalData]) -> Type[FunctionalData]:
+    def __rmul__(
+        self, obj: Union[Type[FunctionalData], float, int]
+    ) -> Type[FunctionalData]:
         """Override rmul function."""
         return self * obj
 
-    def __truediv__(self, obj: Type[FunctionalData]) -> Type[FunctionalData]:
+    def __truediv__(
+        self, obj: Union[Type[FunctionalData], float, int]
+    ) -> Type[FunctionalData]:
         """Override truediv function."""
-        return self._perform_computation(self, obj, np.true_divide)
+        if isinstance(obj, FunctionalData):
+            return self._perform_computation(self, obj, np.true_divide)
+        elif isinstance(obj, (float, int)):
+            return self._perform_computation_number(self, obj, np.true_divide)
+        else:
+            raise ValueError("Error")
 
-    def __floordiv__(self, obj: Type[FunctionalData]) -> Type[FunctionalData]:
+    def __floordiv__(
+        self, obj: Union[Type[FunctionalData], float, int]
+    ) -> Type[FunctionalData]:
         """Override floordiv function."""
-        return self._perform_computation(self, obj, np.floor_divide)
+        if isinstance(obj, FunctionalData):
+            return self._perform_computation(self, obj, np.floor_divide)
+        elif isinstance(obj, (float, int)):
+            return self._perform_computation_number(self, obj, np.floor_divide)
+        else:
+            raise ValueError("Error")
 
     ###########################################################################
 
@@ -641,6 +685,14 @@ class DenseFunctionalData(FunctionalData):
         DenseFunctionalData._is_compatible(fdata1, fdata2)
         new_values = func(fdata1.values, fdata2.values)
         return DenseFunctionalData(fdata1.argvals, new_values)
+
+    @staticmethod
+    def _perform_computation_number(
+        fdata: Type[FunctionalData], number: float, func: Callable
+    ) -> Type[FunctionalData]:
+        """Perform computation with numbers."""
+        new_values = func(fdata.values, number)
+        return DenseFunctionalData(fdata.argvals, DenseValues(new_values))
 
     @staticmethod
     def concatenate(*fdata: DenseFunctionalData) -> DenseFunctionalData:
@@ -1586,6 +1638,12 @@ class IrregularFunctionalData(FunctionalData):
             )
         }
         return IrregularFunctionalData(fdata1.argvals, IrregularValues(new_values))
+
+    @staticmethod
+    def _perform_computation_number(
+        fdata: Type[FunctionalData], number: float, func: Callable
+    ) -> Type[FunctionalData]:
+        """Perform computation with numbers."""
 
     @staticmethod
     def concatenate(*fdata: IrregularFunctionalData) -> IrregularFunctionalData:
