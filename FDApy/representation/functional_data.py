@@ -2036,11 +2036,10 @@ class IrregularFunctionalData(FunctionalData):
     ) -> npt.NDArray[np.float64]:
         r"""Norm of each observation of the data.
 
-        For each observation in the data, it computes its norm [1]_ defined as
+        For each observation in the data, it computes its norm defined in [1]_ as
 
         .. math::
-            \lvert\lvert f \rvert\rvert = \left(\int_{\mathcal{T}}
-            f(t)^2dt\right)^{1\2}, t \in \mathcal{T},
+            \| X \| = \left\{\int_{\mathcal{T}} X(t)^2dt\right\}^{\frac12}.
 
         Parameters
         ----------
@@ -2093,11 +2092,87 @@ class IrregularFunctionalData(FunctionalData):
             return np.power(norm_fd, 0.5)
 
     def normalize(self, **kwargs) -> IrregularFunctionalData:
-        """Normalize the data."""
-        return super().normalize(**kwargs)
+        r"""Normalize the data.
+
+        The normalization is performed by divising each functional datum :math:`X` by
+        its norm :math:`\| X \|`. It results in
+
+        .. math::
+            \widetilde{X} = \frac{X}{\| X \|}.
+
+        Parameters
+        ----------
+        **kwargs
+            Other keyword arguments are passed to the following function:
+
+            - :meth:`IrregularFunctionalData.norm`.
+
+        Returns
+        -------
+        IrregularFunctionalData
+            The normalized data.
+
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines',
+        ...     n_functions=5,
+        ...     random_state=42
+        ... )
+        >>> kl.new(n_obs=10)
+        >>> kl.sparsify(percentage=0.5, epsilon=0.05)
+        >>> kl.sparse_data.normalize()
+        Functional data object with 10 observations on a 1-dimensional support.
+
+        """
+        norm_val = self.norm(**kwargs)
+
+        new_values = IrregularValues()
+        for idx, (obs, norm) in enumerate(zip(self, norm_val)):
+            new_values[idx] = obs.values[idx] / norm
+        return IrregularFunctionalData(self.argvals, new_values)
 
     def standardize(self, **kwargs) -> IrregularFunctionalData:
-        r"""Standardize the data."""
+        r"""Standardize the data.
+
+        The standardization is performed by first centering the data and then dividing
+        by the standard deviation curve [1]_. It results in
+
+        .. math::
+            \widetilde{X}(t) = C(t, t)^{-\frac12}\{X(t) - \mu(t)\}, \quad
+            t \in \mathcal{T}.
+
+        Parameters
+        ----------
+        **kwargs
+            Other keyword arguments are passed to the following function:
+
+            - :meth:`IrregularFunctionalData.center`.
+
+        Returns
+        -------
+        IrregularFunctionalData
+            The standardized data.
+
+        References
+        ----------
+        .. [1] Chiou, J.-M., Chen, Y.-T., Yang, Y.-F. (2014). Multivariate Functional
+            Principal Component Analysis: A Normalization Approach. Statistica Sinica
+            24, 1571--1596.
+
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name='bsplines',
+        ...     n_functions=5,
+        ...     random_state=42
+        ... )
+        >>> kl.new(n_obs=10)
+        >>> kl.sparsify(percentage=0.5, epsilon=0.05)
+        >>> kl.sparse_data.standardize()
+        Functional data object with 10 observations on a 1-dimensional support.
+
+        """
         return super().standardize(**kwargs)
 
     def rescale(
@@ -2126,7 +2201,7 @@ class IrregularFunctionalData(FunctionalData):
             The method used to integrated.
         use_argvals_stand: bool, default=False
             Use standardized argvals to compute the normalization of the data.
-        kwargs
+        **kwargs
             Other keyword arguments are passed to the following function:
 
             - :meth:`IrregularFunctionalData.smooth`.
@@ -2134,7 +2209,7 @@ class IrregularFunctionalData(FunctionalData):
         Returns
         -------
         Tuple[IrregularFunctionalData, float]
-            The normalized data and the weight.
+            The rescaled data and the weight.
 
         References
         ----------
@@ -2158,7 +2233,7 @@ class IrregularFunctionalData(FunctionalData):
 
         """
         if weights == 0.0:
-            data_smooth = self.smooth(method="LP", degree=1, **kwargs)
+            data_smooth = self.smooth(**kwargs)
             if use_argvals_stand:
                 argvals_stand = data_smooth.argvals_stand.values()
                 axis = [argvals for argvals in argvals_stand]

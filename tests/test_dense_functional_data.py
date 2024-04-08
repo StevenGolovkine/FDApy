@@ -2460,7 +2460,7 @@ class TestNormalizeDense(unittest.TestCase):
         expected_results = np.array([[0, 1 / 3, 4 / 3], [0, 1 / np.sqrt(2), 1]])
         np.testing.assert_almost_equal(results.values, expected_results)
 
-    def test_norm_2d(self):
+    def test_normalize_2d(self):
         results = self.fdata_2D.normalize()
 
         expected_results = np.array(

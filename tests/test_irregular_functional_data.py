@@ -1361,372 +1361,151 @@ class TestCenterIrregular(unittest.TestCase):
 
 class TestNormIrregular(unittest.TestCase):
     def setUp(self):
-        fname = THIS_DIR.parent / "data/data_sparse_5_10_08.pickle"
-        with open(fname, "rb") as handle:
-            self.fdata_sparse = pickle.load(handle)
+        argvals = {
+            0: DenseArgvals({"input_dim_0": np.array([0, 1, 2])}),
+            1: DenseArgvals({"input_dim_0": np.array([0, 1, 2])}),
+        }
+        X = {0: np.array([0, 1, 4]), 1: np.array([0, 1, np.sqrt(2)])}
+        self.fdata_sparse = IrregularFunctionalData(
+            IrregularArgvals(argvals), IrregularValues(X)
+        )
 
-    def test_norm(self):
+        argvals = {
+            0: DenseArgvals(
+                {"input_dim_0": np.array([0, 1]), "input_dim_1": np.array([0, 1])}
+            )
+        }
+        X = {0: np.array([[0, 1], [1, 2]])}
+        self.fdata_sparse_2D = IrregularFunctionalData(
+            IrregularArgvals(argvals), IrregularValues(X)
+        )
+
+    def test_norm_1d(self):
         res = self.fdata_sparse.norm()
-        expected_res = np.array(
-            [
-                0.51741242,
-                0.16471413,
-                0.55454657,
-                0.28921687,
-                0.44108366,
-                0.40407708,
-                0.50525297,
-                0.62136466,
-                0.21417883,
-                0.50210074,
-            ]
-        )
-        np.testing.assert_array_almost_equal(res, expected_res)
+        expected_results = np.array([3, np.sqrt(2)])
+        np.testing.assert_array_almost_equal(res, expected_results)
 
-        res = self.fdata_sparse.norm(squared=True)
-        expected_res = np.array(
-            [
-                0.26771562,
-                0.02713074,
-                0.3075219,
-                0.0836464,
-                0.1945548,
-                0.16327828,
-                0.25528056,
-                0.38609404,
-                0.04587257,
-                0.25210515,
-            ]
-        )
-        np.testing.assert_array_almost_equal(res, expected_res)
+    def test_norm_1d_stand(self):
+        results = self.fdata_sparse.norm(use_argvals_stand=True)
+        expected_results = np.array([np.sqrt(4.5), 1])
+        np.testing.assert_almost_equal(results, expected_results)
 
-        res = self.fdata_sparse.norm(use_argvals_stand=True)
-        expected_res = np.array(
-            [
-                0.51741242,
-                0.16471413,
-                0.55454657,
-                0.29215315,
-                0.44108366,
-                0.40611274,
-                0.50779834,
-                0.62136466,
-                0.21417883,
-                0.50210074,
-            ]
-        )
-        np.testing.assert_array_almost_equal(res, expected_res)
+    def test_norm_1d_squared(self):
+        results = self.fdata_sparse.norm(squared=True)
+        expected_results = np.array([9, 2])
+        np.testing.assert_almost_equal(results, expected_results)
 
     def test_norm_2d(self):
-        argvals = IrregularArgvals(
-            {
-                0: DenseArgvals(
-                    {
-                        "input_dim_0": np.array([1, 2, 3, 4]),
-                        "input_dim_1": np.array([5, 6, 7]),
-                    }
-                ),
-                1: DenseArgvals(
-                    {
-                        "input_dim_0": np.array([2, 4]),
-                        "input_dim_1": np.array([1, 2, 3]),
-                    }
-                ),
-                2: DenseArgvals(
-                    {
-                        "input_dim_0": np.array([4, 5, 6]),
-                        "input_dim_1": np.array([8, 9]),
-                    }
-                ),
-            }
-        )
-        values = IrregularValues(
-            {
-                0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
-                1: np.array([[1, 2, 3], [1, 2, 3]]),
-                2: np.array([[8, 9], [8, 9], [8, 9]]),
-            }
-        )
-        data = IrregularFunctionalData(argvals, values)
-
-        res = data.norm()
-        expected_res = np.array([6.78232998, 4.24264069, 12.04159458])
-        np.testing.assert_array_almost_equal(res, expected_res)
+        results = self.fdata_sparse_2D.norm()
+        expected_results = np.array([np.sqrt(1.5)])
+        np.testing.assert_almost_equal(results, expected_results)
 
 
 class TestNormalizeIrregular(unittest.TestCase):
     def setUp(self):
-        fname = THIS_DIR.parent / "data/data_sparse_5_10_08.pickle"
-        with open(fname, "rb") as handle:
-            self.fdata_sparse = pickle.load(handle)
-
-    def test_norm(self):
-        res, weight = self.fdata_sparse.normalize()
-        expected_weight = 0.17398861
-        np.testing.assert_array_almost_equal(weight, expected_weight)
-        self.assertIsInstance(res, IrregularFunctionalData)
-
-        expected_values = np.array(
-            [
-                -2.97411046,
-                -2.94492433,
-                -2.90874826,
-                -2.76045772,
-                -2.69849922,
-                -2.63063947,
-                -2.55709618,
-                -2.47808711,
-                -2.39382998,
-                -2.30454254,
-                -2.21044251,
-                -2.11174764,
-                -2.00867566,
-                -1.90144431,
-                -1.79027133,
-                -1.5569714,
-                -1.43527993,
-                -1.31051777,
-                -1.05265233,
-                -0.91998452,
-                -0.78511697,
-                -0.64826741,
-                -0.50965358,
-                -0.22800406,
-                0.0580897,
-                0.20225883,
-                0.34688582,
-                0.49175292,
-                0.6366424,
-                0.78133652,
-                0.92561754,
-                1.06926774,
-                1.21206936,
-                1.35380469,
-                1.49425597,
-                1.63320548,
-                1.77043547,
-                1.90572821,
-                2.03886597,
-                2.169631,
-                2.29780558,
-                2.42317196,
-                2.54551241,
-                2.78024456,
-                2.89222573,
-                3.00045965,
-                3.10487819,
-                3.20541325,
-                3.30199671,
-                3.48303638,
-                3.56735636,
-                3.72325603,
-                3.79469949,
-                3.86171455,
-                3.9242331,
-                3.98218702,
-                4.08412852,
-                4.12797987,
-                4.20110319,
-                4.23023893,
-                4.27331802,
-                4.28712513,
-                4.29568647,
-                4.29893392,
-                4.29679937,
-                4.28921471,
-                4.25742257,
-                4.20301259,
-                4.12543986,
-                4.07779718,
-                3.9644586,
-                3.89862648,
-                3.82659498,
-                3.74829599,
-                3.66366141,
-                3.5726231,
-                3.47511296,
-                3.37106287,
-                3.26040472,
-                3.1430704,
-                2.88810076,
-                2.75032923,
-                2.60560905,
-                2.45387213,
-            ]
+        argvals = {
+            0: DenseArgvals({"input_dim_0": np.array([0, 1, 2])}),
+            1: DenseArgvals({"input_dim_0": np.array([0, 1, 2])}),
+        }
+        X = {0: np.array([0, 1, 4]), 1: np.array([0, 1, np.sqrt(2)])}
+        self.fdata_sparse = IrregularFunctionalData(
+            IrregularArgvals(argvals), IrregularValues(X)
         )
-        np.testing.assert_array_almost_equal(res.values[0], expected_values)
 
-        expected_values = np.array(
-            [
-                3.76269761,
-                3.76150305,
-                3.75742899,
-                3.75058596,
-                3.74108448,
-                3.72903507,
-                3.71454826,
-                3.69773457,
-                3.65756864,
-                3.63443745,
-                3.60942148,
-                3.58263124,
-                3.55417726,
-                3.52417006,
-                3.49272018,
-                3.45993812,
-                3.42593441,
-                3.2414595,
-                3.16298632,
-                3.12318828,
-                3.08316331,
-                3.04302192,
-                2.96283199,
-                2.9230045,
-                2.84443708,
-                2.8059182,
-                2.73096271,
-                2.69474714,
-                2.6595204,
-                2.625393,
-                2.59247546,
-                2.56087832,
-                2.53071208,
-                2.50208729,
-                2.47511445,
-                2.4499041,
-                2.38595316,
-                2.36889797,
-                2.35415788,
-                2.34184341,
-                2.33203004,
-                2.32465304,
-                2.31961266,
-                2.31680912,
-                2.31614265,
-                2.3175135,
-                2.32082188,
-                2.3328522,
-                2.34137459,
-                2.35143546,
-                2.36293503,
-                2.37577353,
-                2.3898512,
-                2.40506827,
-                2.43852154,
-                2.4565582,
-                2.49475274,
-                2.51471109,
-                2.53511046,
-                2.55585109,
-                2.5768332,
-                2.59795705,
-                2.61912284,
-                2.64023083,
-                2.66118123,
-                2.68187429,
-                2.70221023,
-                2.72208929,
-                2.76007769,
-                2.7779875,
-                2.81113948,
-                2.82618212,
-                2.84006951,
-                2.85270187,
-                2.86397944,
-                2.87380246,
-                2.88868573,
-                2.89354646,
-                2.89655356,
-                2.89345541,
-                2.88029276,
-            ]
+        argvals = {
+            0: DenseArgvals(
+                {"input_dim_0": np.array([0, 1]), "input_dim_1": np.array([0, 1])}
+            )
+        }
+        X = {0: np.array([[0, 1], [1, 2]])}
+        self.fdata_sparse_2D = IrregularFunctionalData(
+            IrregularArgvals(argvals), IrregularValues(X)
         )
-        np.testing.assert_array_almost_equal(res.values[9], expected_values)
 
-        res, weight = self.fdata_sparse.normalize(use_argvals_stand=True)
-        expected_weight = 0.17398861
-        np.testing.assert_array_almost_equal(weight, expected_weight)
-        self.assertIsInstance(res, IrregularFunctionalData)
+    def test_normalize_1d(self):
+        results = self.fdata_sparse.normalize()
 
-    def test_norm_with_given_weights(self):
-        res, weight = self.fdata_sparse.normalize(weights=1)
-        expected_weight = 1
-        np.testing.assert_array_almost_equal(weight, expected_weight)
-        self.assertIsInstance(res, IrregularFunctionalData)
+        expected_results = IrregularValues(
+            {0: np.array([0, 1 / 3, 4 / 3]), 1: np.array([0, 1 / np.sqrt(2), 1])}
+        )
+        np.testing.assert_allclose(results.values, expected_results)
 
-    def test_norm_2d(self):
-        argvals = IrregularArgvals(
+    def test_normalize_2d(self):
+        results = self.fdata_sparse_2D.normalize()
+
+        expected_results = IrregularValues(
+            {0: np.array([[0, 1 / np.sqrt(1.5)], [1 / np.sqrt(1.5), 2 / np.sqrt(1.5)]])}
+        )
+        np.testing.assert_allclose(results.values, expected_results)
+
+
+class TestRescaleIrregular(unittest.TestCase):
+    def setUp(self):
+        argvals = {
+            0: DenseArgvals({"input_dim_0": np.array([0, 1, 2])}),
+            1: DenseArgvals({"input_dim_0": np.array([0, 1, 2])}),
+        }
+        X = {0: np.array([0, 1, 4]), 1: np.array([0, 1, np.sqrt(2)])}
+        self.fdata_sparse = IrregularFunctionalData(
+            IrregularArgvals(argvals), IrregularValues(X)
+        )
+
+        argvals = {
+            0: DenseArgvals(
+                {"input_dim_0": np.array([0, 1]), "input_dim_1": np.array([0, 1])}
+            ),
+            1: DenseArgvals(
+                {"input_dim_0": np.array([0, 1]), "input_dim_1": np.array([0, 1])}
+            ),
+        }
+        X = {0: np.array([[0, 1], [1, 2]]), 1: np.array([[-1, 3], [6, 2]])}
+        self.fdata_sparse_2D = IrregularFunctionalData(
+            IrregularArgvals(argvals), IrregularValues(X)
+        )
+
+    def test_rescale_1d(self):
+        results, _ = self.fdata_sparse.rescale()
+
+        expected_results = IrregularValues(
             {
-                0: DenseArgvals(
-                    {
-                        "input_dim_0": np.array([1, 2, 3, 4]),
-                        "input_dim_1": np.array([5, 6, 7]),
-                    }
-                ),
-                1: DenseArgvals(
-                    {
-                        "input_dim_0": np.array([2, 4]),
-                        "input_dim_1": np.array([1, 2, 3]),
-                    }
-                ),
-                2: DenseArgvals(
-                    {
-                        "input_dim_0": np.array([4, 5, 6]),
-                        "input_dim_1": np.array([8, 9]),
-                    }
-                ),
+                0: np.array([0.0, 1.09383632, 4.37534529]),
+                1: np.array([0.0, 1.09383632, 1.54691816]),
             }
         )
-        values = IrregularValues(
+        np.testing.assert_allclose(results.values, expected_results)
+
+    def test_rescale_1d_given_weights(self):
+        results, weights = self.fdata_sparse.rescale(weights=1)
+
+        expected_results = expected_results = IrregularValues(
+            {0: np.array([0, 1, 4]), 1: np.array([0, 1, np.sqrt(2)])}
+        )
+        np.testing.assert_allclose(results.values, expected_results)
+
+        expected_weights = 1
+        np.testing.assert_equal(weights, expected_weights)
+
+    def test_rescale_1d_use_argvals_stand(self):
+        results, _ = self.fdata_sparse.rescale(use_argvals_stand=True)
+
+        expected_results = IrregularValues(
             {
-                0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
-                1: np.array([[1, 2, 3], [1, 2, 3]]),
-                2: np.array([[8, 9], [8, 9], [8, 9]]),
+                0: DenseValues([0.0, 1.54691816, 6.18767264]),
+                1: DenseValues([0.0, 1.54691816, 2.18767264]),
             }
         )
-        data = IrregularFunctionalData(argvals, values)
+        np.testing.assert_allclose(results.values, expected_results)
 
-        res, weight = data.normalize()
-        expected_weight = 87.77777778
-        np.testing.assert_array_almost_equal(weight, expected_weight)
-        self.assertIsInstance(res, IrregularFunctionalData)
+    def test_rescale_2d(self):
+        results, _ = self.fdata_sparse_2D.rescale(method="LP")
 
-    def test_norm_2d_with_given_weights(self):
-        argvals = IrregularArgvals(
+        expected_results = IrregularValues(
             {
-                0: DenseArgvals(
-                    {
-                        "input_dim_0": np.array([1, 2, 3, 4]),
-                        "input_dim_1": np.array([5, 6, 7]),
-                    }
-                ),
-                1: DenseArgvals(
-                    {
-                        "input_dim_0": np.array([2, 4]),
-                        "input_dim_1": np.array([1, 2, 3]),
-                    }
-                ),
-                2: DenseArgvals(
-                    {
-                        "input_dim_0": np.array([4, 5, 6]),
-                        "input_dim_1": np.array([8, 9]),
-                    }
-                ),
+                0: np.array([[0.0, 0.73029674], [0.73029674, 1.46059349]]),
+                1: np.array([[-0.73029674, 2.19089023], [4.38178046, 1.46059349]]),
             }
         )
-        values = IrregularValues(
-            {
-                0: np.array([[1, 2, 3], [4, 1, 2], [3, 4, 1], [2, 3, 4]]),
-                1: np.array([[1, 2, 3], [1, 2, 3]]),
-                2: np.array([[8, 9], [8, 9], [8, 9]]),
-            }
-        )
-        data = IrregularFunctionalData(argvals, values)
-
-        res, weight = data.normalize(weights=1)
-        expected_weight = 1
-        np.testing.assert_array_almost_equal(weight, expected_weight)
-        self.assertIsInstance(res, IrregularFunctionalData)
+        np.testing.assert_allclose(results.values, expected_results)
 
 
 class TestCovariance(unittest.TestCase):
