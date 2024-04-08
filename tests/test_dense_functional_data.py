@@ -197,6 +197,19 @@ class TestPerformComputation(unittest.TestCase):
         self.assertEqual(result.argvals, DenseArgvals(self.argvals1))
         np.testing.assert_array_equal(result.values, expected_values)
 
+    def test_addition_number(self):
+        result = self.func_data1 + 2
+
+        expected_values = np.array(
+            [[3, 4, 5, 6, 7], [8, 9, 10, 11, 12], [13, 14, 15, 16, 17]]
+        )
+        self.assertEqual(result.argvals, DenseArgvals(self.argvals1))
+        np.testing.assert_array_equal(result.values, expected_values)
+
+    def test_addition_error(self):
+        with self.assertRaises(TypeError):
+            self.func_data1 + [1, 2, 3]
+
     def test_substraction(self):
         result = self.func_data1 - self.func_data2
 
@@ -206,6 +219,19 @@ class TestPerformComputation(unittest.TestCase):
         self.assertEqual(result.argvals, DenseArgvals(self.argvals1))
         np.testing.assert_array_equal(result.values, expected_values)
 
+    def test_substraction_number(self):
+        result = self.func_data1 - 2
+
+        expected_values = np.array(
+            [[-1, 0, 1, 2, 3], [4, 5, 6, 7, 8], [9, 10, 11, 12, 13]]
+        )
+        self.assertEqual(result.argvals, DenseArgvals(self.argvals1))
+        np.testing.assert_array_equal(result.values, expected_values)
+
+    def test_substraction_error(self):
+        with self.assertRaises(TypeError):
+            self.func_data1 - [1, 2, 3]
+
     def test_multiplication(self):
         result = self.func_data1 * self.func_data2
 
@@ -214,6 +240,19 @@ class TestPerformComputation(unittest.TestCase):
         )
         self.assertEqual(result.argvals, DenseArgvals(self.argvals1))
         np.testing.assert_array_equal(result.values, expected_values)
+
+    def test_multiplication_number(self):
+        result = self.func_data1 * 2
+
+        expected_values = np.array(
+            [[2, 4, 6, 8, 10], [12, 14, 16, 18, 20], [22, 24, 26, 28, 30]]
+        )
+        self.assertEqual(result.argvals, DenseArgvals(self.argvals1))
+        np.testing.assert_array_equal(result.values, expected_values)
+
+    def test_multiplication_error(self):
+        with self.assertRaises(TypeError):
+            self.func_data1 * [1, 2, 3]
 
     def test_right_multiplication(self):
         result = FunctionalData.__rmul__(self.func_data1, self.func_data2)
@@ -237,12 +276,36 @@ class TestPerformComputation(unittest.TestCase):
         self.assertEqual(result.argvals, DenseArgvals(self.argvals1))
         np.testing.assert_array_almost_equal(result.values, expected_values)
 
+    def test_true_divide_number(self):
+        result = self.func_data1 / 2
+
+        expected_values = np.array(
+            [[0.5, 1, 1.5, 2, 2.5], [3, 3.5, 4, 4.5, 5], [5.5, 6, 6.5, 7, 7.5]]
+        )
+        self.assertEqual(result.argvals, DenseArgvals(self.argvals1))
+        np.testing.assert_array_equal(result.values, expected_values)
+
+    def test_true_divide_error(self):
+        with self.assertRaises(TypeError):
+            self.func_data1 / [1, 2, 3]
+
     def test_floor_divide(self):
         result = self.func_data1 // self.func_data2
 
         expected_values = np.array([[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [11, 6, 4, 3, 3]])
         self.assertEqual(result.argvals, DenseArgvals(self.argvals1))
         np.testing.assert_array_almost_equal(result.values, expected_values)
+
+    def test_floor_divide_number(self):
+        result = self.func_data1 // 2
+
+        expected_values = np.array([[0, 1, 1, 2, 2], [3, 3, 4, 4, 5], [5, 6, 6, 7, 7]])
+        self.assertEqual(result.argvals, DenseArgvals(self.argvals1))
+        np.testing.assert_array_equal(result.values, expected_values)
+
+    def test_floor_divide_error(self):
+        with self.assertRaises(TypeError):
+            self.func_data1 // [1, 2, 3]
 
 
 class TestDenseFunctionalData2D(unittest.TestCase):
