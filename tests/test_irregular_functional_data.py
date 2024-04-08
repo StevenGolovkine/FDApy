@@ -420,6 +420,19 @@ class TestPerformComputation(unittest.TestCase):
         np.testing.assert_equal(result.argvals, IrregularArgvals(self.argvals))
         np.testing.assert_array_equal(result.values, expected_values)
 
+    def test_addition_number(self):
+        result = self.func_data1 + 2
+
+        expected_values = IrregularValues(
+            {0: np.array([3, 4, 5, 6, 7]), 1: np.array([4, 7, 8]), 2: np.array([6, 8])}
+        )
+        np.testing.assert_equal(result.argvals, IrregularArgvals(self.argvals))
+        np.testing.assert_array_equal(result.values, expected_values)
+
+    def test_addition_error(self):
+        with self.assertRaises(TypeError):
+            self.func_data1 + [1, 2, 3]
+
     def test_substraction(self):
         result = self.func_data1 - self.func_data2
 
@@ -433,6 +446,19 @@ class TestPerformComputation(unittest.TestCase):
         self.assertEqual(result.argvals, IrregularArgvals(self.argvals))
         np.testing.assert_array_equal(result.values, expected_values)
 
+    def test_substraction_number(self):
+        result = self.func_data1 - 2
+
+        expected_values = IrregularValues(
+            {0: np.array([-1, 0, 1, 2, 3]), 1: np.array([0, 3, 4]), 2: np.array([2, 5])}
+        )
+        np.testing.assert_equal(result.argvals, IrregularArgvals(self.argvals))
+        np.testing.assert_array_equal(result.values, expected_values)
+
+    def test_substraction_error(self):
+        with self.assertRaises(TypeError):
+            self.func_data1 - [1, 2, 3]
+
     def test_multiplication(self):
         result = self.func_data1 * self.func_data2
 
@@ -445,6 +471,23 @@ class TestPerformComputation(unittest.TestCase):
         )
         self.assertEqual(result.argvals, IrregularArgvals(self.argvals))
         np.testing.assert_array_equal(result.values, expected_values)
+
+    def test_multiplication_number(self):
+        result = self.func_data1 - 2
+
+        expected_values = IrregularValues(
+            {
+                0: np.array([2, 4, 6, 8, 10]),
+                1: np.array([4, 10, 12]),
+                2: np.array([8, 14]),
+            }
+        )
+        np.testing.assert_equal(result.argvals, IrregularArgvals(self.argvals))
+        np.testing.assert_array_equal(result.values, expected_values)
+
+    def test_multiplication_error(self):
+        with self.assertRaises(TypeError):
+            self.func_data1 * [1, 2, 3]
 
     def test_right_multiplication(self):
         result = FunctionalData.__rmul__(self.func_data1, self.func_data2)
@@ -472,6 +515,23 @@ class TestPerformComputation(unittest.TestCase):
         self.assertEqual(result.argvals, IrregularArgvals(self.argvals))
         np.testing.assert_array_almost_equal(result.values, expected_values)
 
+    def test_true_divide_number(self):
+        result = self.func_data1 / 2
+
+        expected_values = IrregularValues(
+            {
+                0: np.array([0.5, 1, 1.5, 2, 2.5]),
+                1: np.array([1, 2.5, 3]),
+                2: np.array([2, 3.5]),
+            }
+        )
+        np.testing.assert_equal(result.argvals, IrregularArgvals(self.argvals))
+        np.testing.assert_array_equal(result.values, expected_values)
+
+    def test_true_divide_error(self):
+        with self.assertRaises(TypeError):
+            self.func_data1 / [1, 2, 3]
+
     def test_floor_divide(self):
         result = self.func_data1 // self.func_data2
 
@@ -480,6 +540,19 @@ class TestPerformComputation(unittest.TestCase):
         )
         self.assertEqual(result.argvals, IrregularArgvals(self.argvals))
         np.testing.assert_array_almost_equal(result.values, expected_values)
+
+    def test_floor_divide_number(self):
+        result = self.func_data1 // 2
+
+        expected_values = IrregularValues(
+            {0: np.array([0, 1, 1, 2, 2]), 1: np.array([1, 2, 3]), 2: np.array([2, 3])}
+        )
+        np.testing.assert_equal(result.argvals, IrregularArgvals(self.argvals))
+        np.testing.assert_array_equal(result.values, expected_values)
+
+    def test_floor_divide_error(self):
+        with self.assertRaises(TypeError):
+            self.func_data1 // [1, 2, 3]
 
 
 class TestNoisevariance(unittest.TestCase):
