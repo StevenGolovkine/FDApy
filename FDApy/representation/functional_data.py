@@ -3041,11 +3041,10 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     ) -> npt.NDArray[np.float64]:
         r"""Norm of each observation of the data.
 
-        For each observation in the data, it computes its norm defined as
+        For each observation in the data, it computes its norm defined in [1]_ as
 
         .. math::
-            \lvert\lvert\lvert f \rvert\rvert\rvert = \left(\sum_{p = 1}^P
-            \int_{\mathcal{T}}\{f(t)_p\}^2dt\right)^{1\2}, t \in \mathcal{T},
+            \| X \| = \left\{\int_{\mathcal{T}} X(t)^2dt\right\}^{\frac12}.
 
         Parameters
         ----------
@@ -3061,6 +3060,11 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         -------
         npt.NDArray[np.float64], shape=(n_obs,)
             The norm of each observations.
+
+        References
+        ----------
+        .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+            Analysis, Springer Science, Chapter 2.
 
         Examples
         --------
@@ -3086,7 +3090,40 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         return np.sum(norm_uni, axis=0)
 
     def normalize(self, **kwargs) -> MultivariateFunctionalData:
-        """Normalize the data."""
+        r"""Normalize the data.
+
+        The normalization is performed by divising each functional datum :math:`X` by
+        its norm :math:`\| X \|`. It results in
+
+        .. math::
+            \widetilde{X} = \frac{X}{\| X \|}.
+
+        Parameters
+        ----------
+        **kwargs
+            Other keyword arguments are passed to the following function:
+
+            - :meth:`MultivariateFunctionalData.norm`.
+
+        Returns
+        -------
+        MultivariateFunctionalData
+            The normalized data.
+
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name=name, n_functions=n_functions, random_state=42
+        ... )
+        >>> kl.new(n_obs=4)
+        >>> kl.add_noise_and_sparsify(0.05, 0.5)
+
+        >>> fdata_1 = kl.data
+        >>> fdata_2 = kl.sparse_data
+        >>> fdata = MultivariateFunctionalData([fdata_1, fdata_2])
+        Functional data object with 10 observations on a 1-dimensional support.
+
+        """
         pass
 
     def standardize(self, **kwargs) -> MultivariateFunctionalData:

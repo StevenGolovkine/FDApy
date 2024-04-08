@@ -12,8 +12,8 @@ import unittest
 
 from pathlib import Path
 
-from FDApy.representation.argvals import DenseArgvals
-from FDApy.representation.values import DenseValues
+from FDApy.representation.argvals import DenseArgvals, IrregularArgvals
+from FDApy.representation.values import DenseValues, IrregularValues
 from FDApy.representation.functional_data import (
     DenseFunctionalData,
     IrregularFunctionalData,
@@ -235,27 +235,26 @@ class TestCenterMultivariateFunctionalData(unittest.TestCase):
 
 class TestNormMultivariateFunctionalData(unittest.TestCase):
     def setUp(self) -> None:
-        fname = THIS_DIR.parent / "data/data_noisy_5_10_001.pickle"
-        with open(fname, "rb") as handle:
-            self.fdata_uni = pickle.load(handle)
-        self.fdata = MultivariateFunctionalData([self.fdata_uni, self.fdata_uni])
+        argvals = np.array([0, 1, 2])
+        X = np.array([[0, 1, 4], [0, 1, np.sqrt(2)]])
+        self.fdata = DenseFunctionalData(
+            DenseArgvals({"input_dim_0": argvals}), DenseValues(X)
+        )
+
+        argvals = {
+            0: DenseArgvals({"input_dim_0": np.array([0, 1, 2])}),
+            1: DenseArgvals({"input_dim_0": np.array([0, 1, 2])}),
+        }
+        X = {0: np.array([0, 1, 4]), 1: np.array([0, 1, np.sqrt(2)])}
+        self.fdata_sparse = IrregularFunctionalData(
+            IrregularArgvals(argvals), IrregularValues(X)
+        )
+
+        self.fdata_multi = MultivariateFunctionalData([self.fdata, self.fdata_sparse])
 
     def test_norm(self):
-        res = self.fdata.norm()
-        expected_res = np.array(
-            [
-                1.05258869,
-                0.3708455,
-                1.11546354,
-                0.5636047,
-                0.90327287,
-                0.75064308,
-                0.94101483,
-                1.33889354,
-                0.65137428,
-                0.9804458,
-            ]
-        )
+        res = self.fdata_multi.norm()
+        expected_res = np.array([2 * 3, 2 * np.sqrt(2)])
         np.testing.assert_array_almost_equal(res, expected_res)
 
 
