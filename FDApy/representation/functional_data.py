@@ -792,6 +792,11 @@ class DenseFunctionalData(FunctionalData):
         for some computation, e.g., smoothing of the mean and covariance
         functions to have a long format.
 
+        Parameters
+        ----------
+        reindex: bool, default=False
+            Not used here.
+
         Returns
         -------
         pd.DataFrame
