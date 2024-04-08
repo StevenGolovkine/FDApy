@@ -356,7 +356,7 @@ class FunctionalData(ABC):
         elif isinstance(obj, (float, int)):
             return self._perform_computation_number(self, obj, np.add)
         else:
-            raise ValueError("Error")
+            raise TypeError("Operations not available for this type.")
 
     def __sub__(
         self, obj: Union[Type[FunctionalData], float, int]
@@ -367,7 +367,7 @@ class FunctionalData(ABC):
         elif isinstance(obj, (float, int)):
             return self._perform_computation_number(self, obj, np.subtract)
         else:
-            raise ValueError("Error")
+            raise TypeError("Operations not available for this type.")
 
     def __mul__(
         self, obj: Union[Type[FunctionalData], float, int]
@@ -378,7 +378,7 @@ class FunctionalData(ABC):
         elif isinstance(obj, (float, int)):
             return self._perform_computation_number(self, obj, np.multiply)
         else:
-            raise ValueError("Error")
+            raise TypeError("Operations not available for this type.")
 
     def __rmul__(
         self, obj: Union[Type[FunctionalData], float, int]
@@ -395,7 +395,7 @@ class FunctionalData(ABC):
         elif isinstance(obj, (float, int)):
             return self._perform_computation_number(self, obj, np.true_divide)
         else:
-            raise ValueError("Error")
+            raise TypeError("Operations not available for this type.")
 
     def __floordiv__(
         self, obj: Union[Type[FunctionalData], float, int]
@@ -406,7 +406,7 @@ class FunctionalData(ABC):
         elif isinstance(obj, (float, int)):
             return self._perform_computation_number(self, obj, np.floor_divide)
         else:
-            raise ValueError("Error")
+            raise TypeError("Operations not available for this type.")
 
     ###########################################################################
 
@@ -688,9 +688,25 @@ class DenseFunctionalData(FunctionalData):
 
     @staticmethod
     def _perform_computation_number(
-        fdata: Type[FunctionalData], number: float, func: Callable
+        fdata: Type[FunctionalData], number: Union[int, float], func: Callable
     ) -> Type[FunctionalData]:
-        """Perform computation with numbers."""
+        """Perform computation with numbers.
+
+        Parameters
+        ----------
+        fdata: IrregularFunctionalData
+            Functional data to consider.
+        number: Union[int, float]
+            number to consider.
+        func: Callable
+            The function to apply to combine `fdata` and `number`.
+
+        Returns
+        -------
+        IrregularFunctionalData
+            The resulting functional data.
+
+        """
         new_values = func(fdata.values, number)
         return DenseFunctionalData(fdata.argvals, DenseValues(new_values))
 
@@ -1641,9 +1657,27 @@ class IrregularFunctionalData(FunctionalData):
 
     @staticmethod
     def _perform_computation_number(
-        fdata: Type[FunctionalData], number: float, func: Callable
+        fdata: Type[FunctionalData], number: Union[int, float], func: Callable
     ) -> Type[FunctionalData]:
-        """Perform computation with numbers."""
+        """Perform computation with numbers.
+
+        Parameters
+        ----------
+        fdata: IrregularFunctionalData
+            Functional data to consider.
+        number: Union[int, float]
+            number to consider.
+        func: Callable
+            The function to apply to combine `fdata` and `number`.
+
+        Returns
+        -------
+        IrregularFunctionalData
+            The resulting functional data.
+
+        """
+        new_values = {idx: func(obs, number) for (idx, obs) in fdata.values.items()}
+        return IrregularFunctionalData(fdata.argvals, IrregularValues(new_values))
 
     @staticmethod
     def concatenate(*fdata: IrregularFunctionalData) -> IrregularFunctionalData:
