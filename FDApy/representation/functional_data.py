@@ -1324,8 +1324,8 @@ class DenseFunctionalData(FunctionalData):
                 axis = [argvals for argvals in self.argvals.values()]
             variance = np.var(self.values, axis=0)
             weights = _integrate(variance, *axis, method=method_integration)
-        new_values = self.values / np.sqrt(weights)
-        return DenseFunctionalData(self.argvals, new_values), weights
+        new_data = self / np.sqrt(float(weights))
+        return new_data, weights
 
     def inner_product(
         self,
@@ -2338,11 +2338,7 @@ class IrregularFunctionalData(FunctionalData):
                 axis = [argvals for argvals in data_smooth.argvals.values()]
             variance = np.var(data_smooth.values, axis=0)
             weights = _integrate(variance, *axis, method=method_integration)
-
-        new_values = IrregularValues()
-        for idx, obs in enumerate(self):
-            new_values[idx] = obs.values[idx] / np.sqrt(weights)
-        return IrregularFunctionalData(self.argvals, new_values), weights
+        return self / np.sqrt(float(weights)), weights
 
     def inner_product(
         self,
