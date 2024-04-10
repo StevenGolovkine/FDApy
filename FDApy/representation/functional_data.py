@@ -2548,7 +2548,7 @@ class IrregularFunctionalData(FunctionalData):
             cov_sum[mask] += cov
         cov = np.divide(cov_sum, cov_count, where=(cov_count != 0))
         cov = cov.reshape(2 * n_points)
-        cov[cov < 1e-12] = 0
+        # cov[cov < 1e-12] = 0
         raw_diag_cov = np.diag(cov).copy()
 
         # Smooth the covariance

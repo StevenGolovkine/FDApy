@@ -766,7 +766,7 @@ class UFPCA:
 
         # Normalize the data
         if self.normalize:
-            data, self.weights = data.normalize(use_argvals_stand=True)
+            data, self.weights = data.rescale(use_argvals_stand=True)
 
         # Estimate the variance of the noise
         if data.n_dimension > 1:
@@ -907,7 +907,7 @@ class UFPCA:
                 mean=self._mean, method_smoothing=method_smoothing, **kwargs
             )
             if self.normalize:
-                data_new, _ = data.normalize(weights=self.weights)
+                data_new, _ = data.rescale(weights=self.weights)
 
         if method == "NumInt":
             if isinstance(data_new, DenseFunctionalData):
@@ -1155,7 +1155,7 @@ class MFPCA:
 
         # Normalize the data
         if self.normalize:
-            data, self.weights = data.normalize(use_argvals_stand=True)
+            data, self.weights = data.rescale(use_argvals_stand=True)
 
         # Estimate the variance of the noise
         self._noise_variance = data.noise_variance(order=2)
@@ -1282,7 +1282,7 @@ class MFPCA:
                 mean=self._mean, method_smoothing=method_smoothing, **kwargs
             )
             if self.normalize:
-                data_new, _ = data.normalize(weights=self.weights)
+                data_new, _ = data.rescale(weights=self.weights)
 
         if method == "NumInt":
             return _transform_numerical_integration_multivariate(
