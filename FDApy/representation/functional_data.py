@@ -70,6 +70,7 @@ def _smooth_covariance(
     argvals: DenseArgvals,
     points: DenseArgvals,
     method_smoothing: str = "LP",
+    remove_diagonal: bool = True,
     weights: Optional[npt.NDArray[np.float64]] = None,
     **kwargs,
 ):
@@ -86,6 +87,8 @@ def _smooth_covariance(
     method_smoothing: str, default='LP'
         The method to used for the smoothing of the mean. If 'PS', the method is
         P-splines [1]_. If 'LP', the method is local polynomials [2]_.
+    remove_diagonal: bool, default=True
+        Should the diagonal of the covariance be removed due to measurement errors.
     weights: Optional[npt.NDArray[np.float64]], default=None
         Matrix of weights.
     kwargs
@@ -111,7 +114,8 @@ def _smooth_covariance(
         weights = np.ones_like(covariance_matrix)
     if method_smoothing == "LP":
         # Remove covariance diagnonal because of measurements errors.
-        np.fill_diagonal(covariance_matrix, np.nan)
+        if remove_diagonal:
+            np.fill_diagonal(covariance_matrix, np.nan)
         covariance_fd = DenseFunctionalData(
             argvals, DenseValues(covariance_matrix[np.newaxis])
         )
@@ -133,7 +137,8 @@ def _smooth_covariance(
         covariance = covariance.reshape(points.n_points)
     elif method_smoothing == "PS":
         # Remove covariance diagnonal because of measurements errors.
-        np.fill_diagonal(covariance_matrix, 0)
+        if remove_diagonal:
+            np.fill_diagonal(covariance_matrix, 0)
         ps = PSplines(n_segments=30, degree=3, order_penalty=2, order_derivative=0)
 
         x = argvals["input_dim_0"]
@@ -2270,7 +2275,20 @@ class IrregularFunctionalData(FunctionalData):
         Functional data object with 10 observations on a 1-dimensional support.
 
         """
-        return super().standardize(**kwargs)
+        fdata_center = self.center(**kwargs)
+        covariance = fdata_center.covariance(**kwargs)
+        variance = np.diag(covariance.values.squeeze())
+
+        obs_standardized = {}
+        for idx, obs in enumerate(fdata_center):
+            obs_points = np.isin(
+                covariance.argvals["input_dim_0"], obs.argvals[idx]["input_dim_0"]
+            )
+            std_obs = np.sqrt(variance[obs_points])
+            obs_standardized[idx] = np.divide(
+                obs.values[idx], std_obs, where=(std_obs > 1e-12)
+            )
+        return IrregularFunctionalData(self.argvals, IrregularValues(obs_standardized))
 
     def rescale(
         self,
@@ -2336,7 +2354,7 @@ class IrregularFunctionalData(FunctionalData):
                 axis = [argvals for argvals in argvals_stand]
             else:
                 axis = [argvals for argvals in data_smooth.argvals.values()]
-            variance = np.var(data_smooth.values, axis=0)
+            variance = np.var(data_smooth.values, axis=0, ddof=1)
             weights = _integrate(variance, *axis, method=method_integration)
         return self / np.sqrt(float(weights)), weights
 
@@ -2530,6 +2548,7 @@ class IrregularFunctionalData(FunctionalData):
             cov_sum[mask] += cov
         cov = np.divide(cov_sum, cov_count, where=(cov_count != 0))
         cov = cov.reshape(2 * n_points)
+        cov[cov < 1e-12] = 0
         raw_diag_cov = np.diag(cov).copy()
 
         # Smooth the covariance
@@ -2542,6 +2561,7 @@ class IrregularFunctionalData(FunctionalData):
             points_cov,
             method_smoothing=method_smoothing,
             weights=weights,
+            **kwargs,
         )
 
         # Ensure the covariance is symmetric.

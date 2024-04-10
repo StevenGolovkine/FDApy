@@ -1512,6 +1512,26 @@ class TestNormalizeIrregular(unittest.TestCase):
         np.testing.assert_allclose(results.values, expected_results)
 
 
+class TestStandardizeIrregular(unittest.TestCase):
+    def setUp(self):
+        argvals = {
+            0: DenseArgvals({"input_dim_0": np.array([0, 1, 2])}),
+            1: DenseArgvals({"input_dim_0": np.array([0, 1, 2])}),
+        }
+        X = {0: np.array([0, 1, 4]), 1: np.array([0, 1, np.sqrt(2)])}
+        self.fdata_sparse = IrregularFunctionalData(
+            IrregularArgvals(argvals), IrregularValues(X)
+        )
+
+    def test_standardize_1d(self):
+        results = self.fdata_sparse.standardize(remove_diagonal=False)
+
+        expected_results = IrregularValues(
+            {0: np.array([0, 0, 1]), 1: np.array([0, 0, -1])}
+        )
+        np.testing.assert_allclose(results.values, expected_results)
+
+
 class TestRescaleIrregular(unittest.TestCase):
     def setUp(self):
         argvals = {

@@ -345,6 +345,7 @@ class LocalPolynomial:
         bandwidth: float = 0.05,
         degree: int = 1,
         robust: bool = False,
+        **kwargs,
     ) -> None:
         """Initialize LocalPolynomial object."""
         self.kernel_name = kernel_name
