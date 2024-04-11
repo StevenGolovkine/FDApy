@@ -540,7 +540,7 @@ class FunctionalData(ABC):
         """Normalize the data."""
 
     @abstractmethod
-    def standardize(self, **kwargs) -> FunctionalData:
+    def standardize(self, center: bool = True, **kwargs) -> FunctionalData:
         """Standardize the data."""
 
     @abstractmethod
@@ -1227,7 +1227,7 @@ class DenseFunctionalData(FunctionalData):
         fdata_new = DenseFunctionalData(self.argvals, np.moveaxis(norm, -1, 0))
         return fdata_new
 
-    def standardize(self, **kwargs) -> DenseFunctionalData:
+    def standardize(self, center: bool = True, **kwargs) -> DenseFunctionalData:
         r"""Standardize the data.
 
         The standardization is performed by first centering the data and then dividing
@@ -1239,6 +1239,8 @@ class DenseFunctionalData(FunctionalData):
 
         Parameters
         ----------
+        center: bool, default=True
+            Should the data be centered?
         **kwargs
             Other keyword arguments are passed to the following function:
 
@@ -1267,9 +1269,12 @@ class DenseFunctionalData(FunctionalData):
         Functional data object with 10 observations on a 1-dimensional support.
 
         """
-        fdata_center = self.center(**kwargs)
+        if center:
+            fdata = self.center(**kwargs)
+        else:
+            fdata = self
         std = np.std(self.values, axis=0)
-        new_values = np.divide(fdata_center.values, std, where=(std != 0))
+        new_values = np.divide(fdata.values, std, where=(std != 0))
         return DenseFunctionalData(self.argvals, new_values)
 
     def rescale(
@@ -2234,7 +2239,7 @@ class IrregularFunctionalData(FunctionalData):
             new_values[idx] = obs.values[idx] / norm
         return IrregularFunctionalData(self.argvals, new_values)
 
-    def standardize(self, **kwargs) -> IrregularFunctionalData:
+    def standardize(self, center: bool = True, **kwargs) -> IrregularFunctionalData:
         r"""Standardize the data.
 
         The standardization is performed by first centering the data and then dividing
@@ -2246,10 +2251,13 @@ class IrregularFunctionalData(FunctionalData):
 
         Parameters
         ----------
+        center: bool, default=True
+            Should the data be centered?
         **kwargs
-            Other keyword arguments are passed to the following function:
+            Other keyword arguments are passed to the following functions:
 
-            - :meth:`IrregularFunctionalData.center`.
+            - :meth:`IrregularFunctionalData.center`,
+            - :meth:`IrregularFunctionalData.covariance`.
 
         Returns
         -------
@@ -2275,12 +2283,15 @@ class IrregularFunctionalData(FunctionalData):
         Functional data object with 10 observations on a 1-dimensional support.
 
         """
-        fdata_center = self.center(**kwargs)
-        covariance = fdata_center.covariance(**kwargs)
+        if center:
+            fdata = self.center(**kwargs)
+        else:
+            fdata = self
+        covariance = fdata.covariance(**kwargs)
         variance = np.diag(covariance.values.squeeze())
 
         obs_standardized = {}
-        for idx, obs in enumerate(fdata_center):
+        for idx, obs in enumerate(fdata):
             obs_points = np.isin(
                 covariance.argvals["input_dim_0"], obs.argvals[idx]["input_dim_0"]
             )
@@ -2296,7 +2307,7 @@ class IrregularFunctionalData(FunctionalData):
         method_integration: str = "trapz",
         use_argvals_stand: bool = False,
         **kwargs,
-    ) -> Tuple[FunctionalData, float]:
+    ) -> Tuple[IrregularFunctionalData, float]:
         r"""Rescale the data.
 
         The rescaling is performed by first centering the data and then multiplying with
@@ -2354,7 +2365,7 @@ class IrregularFunctionalData(FunctionalData):
                 axis = [argvals for argvals in argvals_stand]
             else:
                 axis = [argvals for argvals in data_smooth.argvals.values()]
-            variance = np.var(data_smooth.values, axis=0, ddof=1)
+            variance = np.var(data_smooth.values, axis=0)
             weights = _integrate(variance, *axis, method=method_integration)
         return self / np.sqrt(float(weights)), weights
 
@@ -3194,13 +3205,13 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         array([1.05384959, 0.84700578, 1.37439764, 0.59235447])
 
         """
-        norm_uni = np.array(
+        norm_univariate = np.array(
             [
                 fdata.norm(squared, method_integration, use_argvals_stand)
                 for fdata in self.data
             ]
         )
-        return np.sum(norm_uni, axis=0)
+        return np.sum(norm_univariate, axis=0)
 
     def normalize(self, **kwargs) -> MultivariateFunctionalData:
         r"""Normalize the data.
@@ -3234,14 +3245,76 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         >>> fdata_1 = kl.data
         >>> fdata_2 = kl.sparse_data
         >>> fdata = MultivariateFunctionalData([fdata_1, fdata_2])
+        >>> fdata.normalize()
         Functional data object with 10 observations on a 1-dimensional support.
 
         """
-        pass
+        norm_vector = self.norm(**kwargs)
 
-    def standardize(self, **kwargs) -> MultivariateFunctionalData:
-        """Standardize the data."""
-        pass
+        list_multivariate = []
+        for obs, norm in zip(self, norm_vector):
+            list_univariate = []
+            for component in obs.data:
+                list_univariate.append(component / norm)
+            list_multivariate.append(MultivariateFunctionalData(list_univariate))
+        return MultivariateFunctionalData.concatenate(*list_multivariate)
+
+    def standardize(self, center: bool = True, **kwargs) -> MultivariateFunctionalData:
+        r"""Standardize the data.
+
+        The standardization is performed by first centering the data and then dividing
+        by the standard deviation curve [1]_. It results in
+
+        .. math::
+            \widetilde{X}(t) = C(t, t)^{-\frac12}\{X(t) - \mu(t)\}, \quad
+            t \in \mathcal{T}.
+
+        Parameters
+        ----------
+        center: bool, default=True
+            Should the data be centered?
+        **kwargs
+            Other keyword arguments are passed to the following function:
+
+            - :meth:`MultivariateFunctionalData.center`,
+            - :meth:`DenseFunctionalData.standardize`,
+            - :meth:`IrregularFunctionalData.stansardize`.
+
+        Returns
+        -------
+        MultivariateFunctionalData
+            The standardized data.
+
+        References
+        ----------
+        .. [1] Chiou, J.-M., Chen, Y.-T., Yang, Y.-F. (2014). Multivariate Functional
+            Principal Component Analysis: A Normalization Approach. Statistica Sinica
+            24, 1571--1596.
+
+        Examples
+        --------
+        >>> kl = KarhunenLoeve(
+        ...     basis_name=name, n_functions=n_functions, random_state=42
+        ... )
+        >>> kl.new(n_obs=4)
+        >>> kl.add_noise_and_sparsify(0.05, 0.5)
+
+        >>> fdata_1 = kl.data
+        >>> fdata_2 = kl.sparse_data
+        >>> fdata = MultivariateFunctionalData([fdata_1, fdata_2])
+        >>> fdata.standardize()
+        Functional data object with 10 observations on a 1-dimensional support.
+
+        """
+        if center:
+            fdata = self.center(**kwargs)
+        else:
+            fdata = self
+
+        list_multivariate = []
+        for components in fdata.data:
+            list_multivariate.append(components.standardize(center=False, **kwargs))
+        return MultivariateFunctionalData(list_multivariate)
 
     def rescale(
         self,
@@ -3298,13 +3371,13 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         if weights is None:
             weights = np.zeros(self.n_functional)
         normalization = [
-            fdata.normalize(
-                weights=ww,
+            fdata.rescale(
+                weights=weight,
                 method_integration=method_integration,
                 use_argvals_stand=use_argvals_stand,
                 **kwargs,
             )
-            for (fdata, ww) in zip(self.data, weights)
+            for (fdata, weight) in zip(self.data, weights)
         ]
         data_norm = [data for data, _ in normalization]
         weights = np.array([weight for _, weight in normalization])
