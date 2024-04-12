@@ -222,12 +222,12 @@ def _fit_inner_product(
     method_smoothing: str, default='LP'
         Should the mean and covariance be smoothed?
     noise_variance: Optional[float], default=None
-            An estimation of the variance of the noise. If `None`, an
-            estimation is computed using the methodology in [1]_.
+        An estimation of the variance of the noise. If `None`, an estimation is computed
+        using the methodology in [1]_.
     kwargs
-            Other keyword arguments are passed to the following function:
+        Other keyword arguments are passed to the following function:
 
-            - :meth:`FunctionalData.inner_product`.
+        - :meth:`FunctionalData.inner_product`.
 
     Returns
     -------
