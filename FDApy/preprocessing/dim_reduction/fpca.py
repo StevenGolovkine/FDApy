@@ -248,18 +248,16 @@ def _fit_inner_product(
     eigenvalues, eigenvectors = _compute_eigen(in_prod, n_components)
 
     # Compute the eigenfunctions
-    data_smooth = data.smooth(
-        points, method="LP", degree=1, bandwidth=4 / np.prod(points.n_points)
-    )
-    eigenfunctions = np.matmul(data_smooth.values.T, eigenvectors)
+    eigenfunctions = np.matmul(data._data_inpro.values.T, eigenvectors)
     eigenfunctions = eigenfunctions / np.sqrt(eigenvalues)
+    eigenfunctions = DenseFunctionalData(data._data_inpro.argvals, eigenfunctions.T)
 
     # Save the results
     results = dict()
     results["eigenvectors"] = eigenvectors
-    results["eigenvalues"] = eigenvalues / data_smooth.n_obs
-    results["eigenfunctions"] = DenseFunctionalData(
-        points, DenseValues(eigenfunctions.T)
+    results["eigenvalues"] = eigenvalues / data._data_inpro.n_obs
+    results["eigenfunctions"] = eigenfunctions.smooth(
+        points=points, method=method_smoothing
     )
     return results
 
@@ -317,21 +315,21 @@ def _fit_inner_product_multivariate(
     eigenvalues, eigenvectors = _compute_eigen(in_prod, n_components)
 
     # Compute the eigenfunctions
-    data_smooth = data.smooth(points, method=method_smoothing)
     temp = [
-        np.matmul(data_uni.values.T, eigenvectors) / np.sqrt(eigenvalues)
-        for data_uni in data_smooth.data
+        np.matmul(data_uni._data_inpro.values.T, eigenvectors) / np.sqrt(eigenvalues)
+        for data_uni in data.data
     ]
     eigenfunctions = [
-        DenseFunctionalData(data_uni.argvals, eigenfunction.T)
-        for data_uni, eigenfunction in zip(data_smooth.data, temp)
+        DenseFunctionalData(data_uni._data_inpro.argvals, eigenfunction.T)
+        for data_uni, eigenfunction in zip(data.data, temp)
     ]
+    eigenfunctions = MultivariateFunctionalData(eigenfunctions)
 
     # Save the results
     results = dict()
     results["eigenvectors"] = eigenvectors
-    results["eigenvalues"] = eigenvalues / data_smooth.n_obs
-    results["eigenfunctions"] = MultivariateFunctionalData(eigenfunctions)
+    results["eigenvalues"] = eigenvalues / data.n_obs
+    results["eigenfunctions"] = eigenfunctions.smooth(points=points, method="LP")
     return results
 
 

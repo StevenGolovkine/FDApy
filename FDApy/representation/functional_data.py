@@ -1442,6 +1442,7 @@ class DenseFunctionalData(FunctionalData):
         inner_mat = inner_mat + inner_mat.T
         np.fill_diagonal(inner_mat, np.diag(inner_mat) / 2)
 
+        self._data_inpro = data
         self._inner_product_matrix = inner_mat
         return self._inner_product_matrix
 
