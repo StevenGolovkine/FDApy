@@ -749,6 +749,7 @@ class PSplines:
             )
 
         # Export results
+        self.basis = basis_list
         self.y_hat = res["y_hat"]
         self.beta_hat = res["beta_hat"]
         self.diagnostics = {"hat_matrix": res["hat_matrix"]}
