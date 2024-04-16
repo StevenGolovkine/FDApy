@@ -2591,6 +2591,11 @@ class IrregularFunctionalData(FunctionalData):
 
 
 ###############################################################################
+# Class BasisFunctionalData
+class BasisFunctionalData(FunctionalData):
+    r"""Class for defining Basis Functional Data."""
+
+###############################################################################
 # Class MultivariateFunctionalData
 class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     r"""A class for defining Multivariate Functional Data.
