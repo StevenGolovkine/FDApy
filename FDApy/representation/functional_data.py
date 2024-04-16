@@ -17,7 +17,17 @@ import warnings
 from abc import ABC, abstractmethod
 from collections import UserList
 from collections.abc import Iterator
-from typing import Callable, Dict, Iterable, Optional, List, Tuple, Type, Union
+from typing import (
+    Callable,
+    Dict,
+    Iterable,
+    Optional,
+    List,
+    Tuple,
+    Type,
+    Union,
+    TYPE_CHECKING,
+)
 
 from .argvals import Argvals, DenseArgvals, IrregularArgvals
 from .values import Values, DenseValues, IrregularValues
@@ -31,6 +41,9 @@ from ..misc.utils import _inner_product
 from ..misc.utils import _integrate
 from ..misc.utils import _outer
 from ..misc.utils import _shift
+
+if TYPE_CHECKING:
+    from .basis import Basis
 
 
 ###############################################################################
@@ -205,16 +218,7 @@ def _estimate_noise_variance_with_covariance(
 ###############################################################################
 # Class FunctionalData
 class FunctionalData(ABC):
-    """Metaclass for the definition of diverse functional data objects.
-
-    Parameters
-    ----------
-    argvals: Type[Argvals]
-        Sampling points of the functional data.
-    values: Type[Values]
-        Values of the functional data.
-
-    """
+    """Metaclass for the definition of diverse functional data objects."""
 
     ###########################################################################
     # Checkers
@@ -261,6 +265,7 @@ class FunctionalData(ABC):
             raise ValueError("Elements do not have the same dimensions.")
 
     @staticmethod
+    @abstractmethod
     def _is_compatible(*fdata: Type[FunctionalData]) -> None:
         """Raise an error if elements in `fdata` are not compatible.
 
@@ -274,7 +279,6 @@ class FunctionalData(ABC):
         ValueError
             When all `fdata` do not have the same number of observations or
             when all `fdata` do not have the same dimension.
-            When all `fdata` do not have the same argvals.
         TypeError
             When all `fdata` do not have the same type.
 
@@ -282,8 +286,6 @@ class FunctionalData(ABC):
         FunctionalData._check_same_type(*fdata)
         FunctionalData._check_same_nobs(*fdata)
         FunctionalData._check_same_ndim(*fdata)
-        if not all(data.argvals == fdata[0].argvals for data in fdata):
-            raise ValueError("Argvals are not equals.")
 
     ###########################################################################
 
@@ -326,18 +328,9 @@ class FunctionalData(ABC):
         FunctionalData._check_same_ndim(*fdata)
 
     ###########################################################################
-    # Magic methods
-    def __init__(
-        self,
-        argvals: Type[Argvals],
-        values: Type[Values],
-    ) -> None:
-        """Initialize FunctionalData object."""
-        super().__init__()
-        self.argvals = argvals
-        self.values = values
-        self._index = 0
 
+    ###########################################################################
+    # Magic methods
     def __repr__(self) -> str:
         """Override print function."""
         return (
@@ -345,12 +338,171 @@ class FunctionalData(ABC):
             f"{self.n_dimension}-dimensional support."
         )
 
+    @abstractmethod
     def __iter__(self):
         """Initialize the iterator."""
 
     @abstractmethod
     def __getitem__(self, index: int) -> Type[FunctionalData]:
         """Override getitem function, called when self[index]."""
+
+    ###########################################################################
+
+    ###########################################################################
+    # Properties
+    @property
+    @abstractmethod
+    def n_obs(self) -> int:
+        """Get the number of observations of the functional data."""
+
+    @property
+    @abstractmethod
+    def n_dimension(self) -> int:
+        """Get the number of input dimension of the functional data."""
+
+    @property
+    @abstractmethod
+    def n_points(self) -> Union[Tuple[int, ...], Dict[int, Tuple[int, ...]]]:
+        """Get the number of sampling points."""
+
+    ###########################################################################
+
+    ###########################################################################
+    # Abstract methods
+    @abstractmethod
+    def to_long(self, reindex: bool = False) -> pd.DataFrame:
+        """Convert the data to long format."""
+
+    @abstractmethod
+    def noise_variance(self, order: int = 2) -> float:
+        """Estimate the variance of the noise."""
+
+    @abstractmethod
+    def smooth(
+        self,
+        points: Optional[DenseArgvals] = None,
+        method: str = "PS",
+        bandwidth: Optional[float] = None,
+        penalty: Optional[float] = None,
+        **kwargs,
+    ) -> Type[FunctionalData]:
+        """Smooth the data."""
+
+    @abstractmethod
+    def mean(
+        self,
+        points: Optional[DenseArgvals] = None,
+        method_smoothing: str = None,
+        **kwargs,
+    ) -> FunctionalData:
+        """Compute an estimate of the mean."""
+
+    @abstractmethod
+    def center(
+        self,
+        mean: Optional[DenseFunctionalData] = None,
+        method_smoothing: Optional[str] = None,
+        **kwargs,
+    ) -> FunctionalData:
+        """Center the data."""
+
+    @abstractmethod
+    def norm(
+        self,
+        squared: bool = False,
+        method_integration: str = "trapz",
+        use_argvals_stand: bool = False,
+    ) -> npt.NDArray[np.float64]:
+        """Norm of each observation of the data."""
+
+    @abstractmethod
+    def normalize(self, **kwargs) -> FunctionalData:
+        """Normalize the data."""
+
+    @abstractmethod
+    def standardize(self, center: bool = True, **kwargs) -> FunctionalData:
+        """Standardize the data."""
+
+    @abstractmethod
+    def rescale(
+        self,
+        weights: float = 0.0,
+        method_integration: str = "trapz",
+        use_argvals_stand: bool = False,
+        **kwargs,
+    ) -> Tuple[FunctionalData, float]:
+        """Rescale the data."""
+
+    @abstractmethod
+    def inner_product(
+        self,
+        method_integration: str = "trapz",
+        method_smoothing: Optional[str] = None,
+        noise_variance: Optional[float] = None,
+        **kwargs,
+    ) -> npt.NDArray[np.float64]:
+        """Compute an estimate of the inner product matrix."""
+
+    @abstractmethod
+    def covariance(
+        self,
+        points: Optional[DenseArgvals] = None,
+        method_smoothing: Optional[str] = None,
+        **kwargs,
+    ) -> Type[FunctionalData]:
+        """Compute an estimate of the covariance."""
+
+    ###########################################################################
+
+
+###############################################################################
+# Class GridFunctionalData
+class GridFunctionalData(FunctionalData):
+    """Metaclass for the definition of functional data objects defined on grids.
+
+    Parameters
+    ----------
+    argvals: Type[Argvals]
+        Sampling points of the functional data.
+    values: Type[Values]
+        Values of the functional data.
+
+    """
+
+    ###########################################################################
+    # Checkers
+    @staticmethod
+    def _is_compatible(*fdata: Type[FunctionalData]) -> None:
+        """Raise an error if elements in `fdata` are not compatible.
+
+        Parameters
+        ----------
+        *fdata: FunctionalData
+            Functional data to compare.
+
+        Raises
+        ------
+        ValueError
+            When all `fdata` do not have the same argvals.
+
+        """
+        FunctionalData._is_compatible(*fdata)
+        if not all(data.argvals == fdata[0].argvals for data in fdata):
+            raise ValueError("Argvals are not equals.")
+
+    ###########################################################################
+
+    ###########################################################################
+    # Magic methods
+    def __init__(
+        self,
+        argvals: Type[Argvals],
+        values: Type[Values],
+    ) -> None:
+        """Initialize GridFunctionalData object."""
+        self.argvals = argvals
+        self.values = values
+        self._index = 0
 
     def __add__(
         self, obj: Union[Type[FunctionalData], float, int]
@@ -514,7 +666,7 @@ class FunctionalData(ABC):
         points: Optional[DenseArgvals] = None,
         method_smoothing: str = None,
         **kwargs,
-    ) -> DenseFunctionalData:
+    ) -> FunctionalData:
         """Compute an estimate of the mean."""
 
     @abstractmethod
@@ -597,7 +749,7 @@ class DenseFunctionalDataIterator(Iterator):
 
 ###############################################################################
 # Class DenseFunctionalData
-class DenseFunctionalData(FunctionalData):
+class DenseFunctionalData(GridFunctionalData):
     r"""Class for defining Dense Functional Data.
 
     A class used to define dense functional data. We denote by :math:`n`, the
@@ -765,7 +917,7 @@ class DenseFunctionalData(FunctionalData):
 
     ###########################################################################
     # Properties
-    @FunctionalData.argvals.setter
+    @GridFunctionalData.argvals.setter
     def argvals(self, new_argvals: DenseArgvals) -> None:
         """Setter for argvals."""
         if not isinstance(new_argvals, DenseArgvals):
@@ -775,7 +927,7 @@ class DenseFunctionalData(FunctionalData):
         self._argvals = new_argvals
         self._argvals_stand = self._argvals.normalization()
 
-    @FunctionalData.values.setter
+    @GridFunctionalData.values.setter
     def values(self, new_values: DenseValues) -> None:
         """Setter for values."""
         if not isinstance(new_values, DenseValues):
@@ -1574,7 +1726,7 @@ class IrregularFunctionalDataIterator(Iterator):
 
 ###############################################################################
 # Class IrregularFunctionalData
-class IrregularFunctionalData(FunctionalData):
+class IrregularFunctionalData(GridFunctionalData):
     r"""A class for defining Irregular Functional Data.
 
     Parameters
@@ -1751,7 +1903,7 @@ class IrregularFunctionalData(FunctionalData):
 
     ###########################################################################
     # Properties
-    @FunctionalData.argvals.setter
+    @GridFunctionalData.argvals.setter
     def argvals(self, new_argvals: IrregularArgvals) -> None:
         """Setter for argvals."""
         if not isinstance(new_argvals, IrregularArgvals):
@@ -1761,7 +1913,7 @@ class IrregularFunctionalData(FunctionalData):
         self._argvals = new_argvals
         self._argvals_stand = self._argvals.normalization()
 
-    @FunctionalData.values.setter
+    @GridFunctionalData.values.setter
     def values(self, new_values: IrregularValues) -> None:
         """Setter for values."""
         if not isinstance(new_values, IrregularValues):
@@ -2593,7 +2745,189 @@ class IrregularFunctionalData(FunctionalData):
 ###############################################################################
 # Class BasisFunctionalData
 class BasisFunctionalData(FunctionalData):
-    r"""Class for defining Basis Functional Data."""
+    r"""Class for defining Basis Functional Data.
+
+    A class used to defined functional data with a basis expansion. We denote by
+    :math:`n`, the number of observations and by :math:`p`, the number of input
+    dimensions. Here, we are in the case of univariate functional data, and so the
+    output dimension will be :math:`\mathbb{R}`. We note by :math:`X` an observation,
+    while we use :math:`X_1, \dots, X_n` if we refer to a particular set of
+    observations. The observations are defined as:
+
+    .. math::
+        X(t) = \sum_{k = 1}^K c_k \phi_k(t), \quad t \in \mathcal{T},
+
+    where :math:`\mathcal{T} \subset \mathbb{R}^p` and the :math:`\phi_k(t)` is a set of
+    functions.
+
+    Parameters
+    ----------
+    basis: Basis
+        The basis of the functional data.
+    coefficients: npt.NDArray[np.float64]
+        The set of coefficients.
+
+    """
+
+    ###########################################################################
+    # Checkers
+    @staticmethod
+    def _is_compatible(*fdata: Type[FunctionalData]) -> None:
+        """Raise an error if elements in `fdata` are not compatible.
+
+        Parameters
+        ----------
+        *fdata: FunctionalData
+            Functional data to compare.
+
+        """
+
+    ###########################################################################
+
+    ###########################################################################
+    # Static methods
+    @staticmethod
+    def _perform_computation(
+        fdata1: Type[FunctionalData], fdata2: Type[FunctionalData], func: Callable
+    ) -> Type[FunctionalData]:
+        """Perform computation."""
+
+    @staticmethod
+    def _perform_computation_number(
+        fdata: Type[FunctionalData], number: float, func: Callable
+    ) -> Type[FunctionalData]:
+        """Perform computation with numbers."""
+
+    @staticmethod
+    def concatenate(*fdata: Type[FunctionalData]) -> Type[FunctionalData]:
+        """Concatenate FunctionalData objects.
+
+        Parameters
+        ----------
+        *fdata: FunctionalData
+            Functional data to concatenate.
+
+        """
+
+    ###########################################################################
+
+    ###########################################################################
+    # Magic methods
+    def __init__(
+        self,
+        basis: Type[Basis],
+        coefficients: npt.NDArray[np.float64],
+    ) -> None:
+        """Initialize GridFunctionalData object."""
+        self.basis = basis
+        self.coefficients = coefficients
+        self._index = 0
+
+    def __iter__(self):
+        """Initialize the iterator."""
+
+    def __getitem__(self, index: int) -> Type[FunctionalData]:
+        """Override getitem function, called when self[index]."""
+
+    ###########################################################################
+
+    ###########################################################################
+    # Properties
+    @property
+    def n_obs(self) -> int:
+        """Get the number of observations of the functional data."""
+        return self.coefficients.shape[0]
+
+    @property
+    def n_dimension(self) -> int:
+        """Get the number of input dimension of the functional data."""
+        return self.basis.n_dimension
+
+    @property
+    def n_points(self) -> Union[Tuple[int, ...], Dict[int, Tuple[int, ...]]]:
+        """Get the number of sampling points."""
+        return self.basis.n_points
+
+    ###########################################################################
+
+    ###########################################################################
+    # Methods
+    def to_long(self, reindex: bool = False) -> pd.DataFrame:
+        """Convert the data to long format."""
+
+    def noise_variance(self, order: int = 2) -> float:
+        """Estimate the variance of the noise."""
+
+    def smooth(
+        self,
+        points: Optional[DenseArgvals] = None,
+        method: str = "PS",
+        bandwidth: Optional[float] = None,
+        penalty: Optional[float] = None,
+        **kwargs,
+    ) -> Type[FunctionalData]:
+        """Smooth the data."""
+
+    def mean(
+        self,
+        points: Optional[DenseArgvals] = None,
+        method_smoothing: str = None,
+        **kwargs,
+    ) -> FunctionalData:
+        """Compute an estimate of the mean."""
+        mean = np.mean(self.coefficients, axis=0)[np.newaxis]
+        return BasisFunctionalData(self.basis, mean)
+
+    def center(
+        self,
+        mean: Optional[DenseFunctionalData] = None,
+        method_smoothing: Optional[str] = None,
+        **kwargs,
+    ) -> FunctionalData:
+        """Center the data."""
+
+    def norm(
+        self,
+        squared: bool = False,
+        method_integration: str = "trapz",
+        use_argvals_stand: bool = False,
+    ) -> npt.NDArray[np.float64]:
+        """Norm of each observation of the data."""
+
+    def normalize(self, **kwargs) -> FunctionalData:
+        """Normalize the data."""
+
+    def standardize(self, center: bool = True, **kwargs) -> FunctionalData:
+        """Standardize the data."""
+
+    def rescale(
+        self,
+        weights: float = 0.0,
+        method_integration: str = "trapz",
+        use_argvals_stand: bool = False,
+        **kwargs,
+    ) -> Tuple[FunctionalData, float]:
+        """Rescale the data."""
+
+    def inner_product(
+        self,
+        method_integration: str = "trapz",
+        method_smoothing: Optional[str] = None,
+        noise_variance: Optional[float] = None,
+        **kwargs,
+    ) -> npt.NDArray[np.float64]:
+        """Compute an estimate of the inner product matrix."""
+
+    def covariance(
+        self,
+        points: Optional[DenseArgvals] = None,
+        method_smoothing: Optional[str] = None,
+        **kwargs,
+    ) -> Type[FunctionalData]:
+        """Compute an estimate of the covariance."""
+
+    ###########################################################################
+
 
 ###############################################################################
 # Class MultivariateFunctionalData
