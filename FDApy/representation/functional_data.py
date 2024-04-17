@@ -2855,7 +2855,7 @@ class BasisFunctionalData(FunctionalData):
     def to_grid(self) -> DenseFunctionalData:
         """Convert the data to grid format."""
         new_argvals = self.basis.argvals
-        new_values = self.coefficients @ self.basis.values
+        new_values = np.einsum('ij,j... -> i...', self.coefficients, self.basis.values)
         return DenseFunctionalData(new_argvals, DenseValues(new_values))
 
     def to_long(self, reindex: bool = False) -> pd.DataFrame:
@@ -2901,9 +2901,17 @@ class BasisFunctionalData(FunctionalData):
         use_argvals_stand: bool = False,
     ) -> npt.NDArray[np.float64]:
         """Norm of each observation of the data."""
+        inner_product = self.inner_product(method_integration=method_integration)
+        norm_obs = np.diag(inner_product)
+        if squared:
+            return np.array(norm_obs)
+        else:
+            return np.power(norm_obs, 0.5)
 
     def normalize(self, **kwargs) -> FunctionalData:
         """Normalize the data."""
+        norm = np.moveaxis(self.coefficients, 0, -1) / self.norm(**kwargs)
+        return BasisFunctionalData(self.basis, np.moveaxis(norm, -1, 0))
 
     def standardize(self, center: bool = True, **kwargs) -> FunctionalData:
         """Standardize the data."""
@@ -2935,6 +2943,21 @@ class BasisFunctionalData(FunctionalData):
         **kwargs,
     ) -> Type[FunctionalData]:
         """Compute an estimate of the covariance."""
+        # Center the data
+        data = self.center()
+
+        # Estimate the covariance
+        cov = (data.coefficients.T @ data.coefficients) / data.n_obs
+        cov = cov.flatten()[np.newaxis]
+
+        new_dim = (self.basis.n_obs**2, *(2 * self.n_points))
+        new_argvals = DenseArgvals({
+            "input_dim_0": self.basis.argvals["input_dim_0"],
+            "input_dim_1": self.basis.argvals["input_dim_0"],
+        })
+        new_values = np.kron(self.basis.values, self.basis.values).reshape(new_dim)
+        basis_2D = DenseFunctionalData(new_argvals, new_values)
+        return BasisFunctionalData(basis_2D, cov)
 
     ###########################################################################
 
