@@ -2852,6 +2852,12 @@ class BasisFunctionalData(FunctionalData):
 
     ###########################################################################
     # Methods
+    def to_grid(self) -> DenseFunctionalData:
+        """Convert the data to grid format."""
+        new_argvals = self.basis.argvals
+        new_values = self.coefficients @ self.basis.values
+        return DenseFunctionalData(new_argvals, DenseValues(new_values))
+
     def to_long(self, reindex: bool = False) -> pd.DataFrame:
         """Convert the data to long format."""
 
@@ -2885,6 +2891,8 @@ class BasisFunctionalData(FunctionalData):
         **kwargs,
     ) -> FunctionalData:
         """Center the data."""
+        new_coefs = self.coefficients - np.mean(self.coefficients, axis=0)
+        return BasisFunctionalData(self.basis, new_coefs)
 
     def norm(
         self,
@@ -2917,6 +2925,8 @@ class BasisFunctionalData(FunctionalData):
         **kwargs,
     ) -> npt.NDArray[np.float64]:
         """Compute an estimate of the inner product matrix."""
+        inner_product = self.basis.inner_product(method_integration=method_integration)
+        return self.coefficients @ inner_product @ self.coefficients.T
 
     def covariance(
         self,

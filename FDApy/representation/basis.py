@@ -6,6 +6,7 @@ Basis
 -----
 
 """
+import itertools
 import numpy as np
 import numpy.typing as npt
 
@@ -20,6 +21,7 @@ from .argvals import DenseArgvals
 from .values import DenseValues
 
 from ..misc.basis import _basis_wiener, _basis_legendre, _basis_fourier, _basis_bsplines
+from ..misc.utils import _inner_product
 
 
 #######################################################################
@@ -414,6 +416,33 @@ class Basis(DenseFunctionalData):
     @dimension.setter
     def dimension(self, new_dimension: str) -> None:
         self._dimension = new_dimension
+
+    def inner_product(
+        self,
+        method_integration: str = "trapz",
+        method_smoothing: Optional[str] = None,
+        noise_variance: Optional[float] = None,
+        **kwargs,
+    ) -> npt.NDArray[np.float64]:
+        """Compute the inner product matrix of the basis."""
+        # Get parameters
+        n_obs = self.n_obs
+        axis = [argvals for argvals in self.argvals.values()]
+
+        inner_mat = np.zeros((n_obs, n_obs))
+        for i, j in itertools.product(np.arange(n_obs), repeat=2):
+            if i <= j:
+                inner_mat[i, j] = _inner_product(
+                    self.values[i], self.values[j], *axis, method=method_integration
+                )
+
+        # Estimate the diagonal of the inner-product matrix
+        inner_mat = inner_mat + inner_mat.T
+        np.fill_diagonal(inner_mat, np.diag(inner_mat) / 2)
+
+        inner_mat[inner_mat < 1e-8] = 0
+        self._inner_product_matrix = inner_mat
+        return self._inner_product_matrix
 
 
 ###############################################################################

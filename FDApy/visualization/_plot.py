@@ -17,6 +17,7 @@ from typing import Optional, List, Union
 from ..representation.functional_data import (
     DenseFunctionalData,
     IrregularFunctionalData,
+    BasisFunctionalData,
     MultivariateFunctionalData,
 )
 
@@ -197,6 +198,8 @@ def plot(
     """
     if labels is None:
         labels = np.arange(data.n_obs)
+    if isinstance(data, BasisFunctionalData):
+        data = data.to_grid()
     if data.n_dimension == 1:
         ax = _init_ax(ax, projection="rectilinear")
         ax = _plot_1d(data, labels, colors, ax, **plt_kwargs)
