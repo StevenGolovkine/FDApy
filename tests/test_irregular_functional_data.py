@@ -367,7 +367,6 @@ class TestIrregularFunctionalData2D(unittest.TestCase):
         np.testing.assert_array_equal(result["values"].values, expected_values)
 
     def test_mean(self):
-        N = np.nan
         mean_fd = self.irregu_fd.mean()
         expected_mean = DenseValues(
             np.array(
