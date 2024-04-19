@@ -2915,6 +2915,14 @@ class BasisFunctionalData(FunctionalData):
 
     def standardize(self, center: bool = True, **kwargs) -> FunctionalData:
         """Standardize the data."""
+        if center:
+            fdata = self.center(**kwargs)
+        else:
+            fdata = self
+        std = np.sqrt(np.diag(fdata.covariance().to_grid().values.squeeze()))
+        basis_values = np.divide(fdata.basis.values, std, where=(std != 0))
+        fdata.basis.values = basis_values
+        return BasisFunctionalData(fdata.basis, fdata.coefficients)
 
     def rescale(
         self,
@@ -2924,6 +2932,15 @@ class BasisFunctionalData(FunctionalData):
         **kwargs,
     ) -> Tuple[FunctionalData, float]:
         """Rescale the data."""
+        if weights == 0.0:
+            if use_argvals_stand:
+                axis = [argvals for argvals in self.basis.argvals_stand.values()]
+            else:
+                axis = [argvals for argvals in self.basis.argvals.values()]
+            variance = np.diag(self.covariance().to_grid().values.squeeze())
+            weights = _integrate(variance, *axis, method=method_integration)
+        new_coefs = self.coefficients / np.sqrt(float(weights))
+        return BasisFunctionalData(self.basis, new_coefs), weights
 
     def inner_product(
         self,
@@ -2956,8 +2973,8 @@ class BasisFunctionalData(FunctionalData):
             "input_dim_1": self.basis.argvals["input_dim_0"],
         })
         new_values = np.kron(self.basis.values, self.basis.values).reshape(new_dim)
-        basis_2D = DenseFunctionalData(new_argvals, new_values)
-        return BasisFunctionalData(basis_2D, cov)
+        basis_2d = DenseFunctionalData(new_argvals, new_values)
+        return BasisFunctionalData(basis_2d, cov)
 
     ###########################################################################
 

@@ -14,7 +14,7 @@ import unittest
 from pathlib import Path
 
 from FDApy.representation.functional_data import (
-    FunctionalData,
+    GridFunctionalData,
     DenseFunctionalData,
     IrregularFunctionalData,
 )
@@ -255,7 +255,7 @@ class TestPerformComputation(unittest.TestCase):
             self.func_data1 * [1, 2, 3]
 
     def test_right_multiplication(self):
-        result = FunctionalData.__rmul__(self.func_data1, self.func_data2)
+        result = GridFunctionalData.__rmul__(self.func_data1, self.func_data2)
 
         expected_values = np.array(
             [[6, 14, 24, 36, 50], [66, 84, 104, 126, 150], [11, 24, 39, 56, 75]]

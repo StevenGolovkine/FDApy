@@ -11,7 +11,7 @@ from pathlib import Path
 from FDApy.representation.argvals import DenseArgvals, IrregularArgvals
 from FDApy.representation.values import DenseValues, IrregularValues
 from FDApy.representation.functional_data import (
-    FunctionalData,
+    GridFunctionalData,
     DenseFunctionalData,
     IrregularFunctionalData,
 )
@@ -490,7 +490,7 @@ class TestPerformComputation(unittest.TestCase):
             self.func_data1 * [1, 2, 3]
 
     def test_right_multiplication(self):
-        result = FunctionalData.__rmul__(self.func_data1, self.func_data2)
+        result = GridFunctionalData.__rmul__(self.func_data1, self.func_data2)
 
         expected_values = IrregularValues(
             {
