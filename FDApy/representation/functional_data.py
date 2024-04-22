@@ -504,6 +504,14 @@ class GridFunctionalData(FunctionalData):
         self.values = values
         self._index = 0
 
+    def __eq__(
+        self, obj: GridFunctionalData
+    ) -> bool:
+        """Override eq function."""
+        if not isinstance(obj, GridFunctionalData):
+            raise TypeError("Object does not have the right type.")
+        return (self.argvals == obj.argvals) & np.allclose(self.values, obj.values)
+
     def __add__(
         self, obj: Union[Type[FunctionalData], float, int]
     ) -> Type[FunctionalData]:
@@ -2781,6 +2789,7 @@ class BasisFunctionalData(FunctionalData):
             Functional data to compare.
 
         """
+        FunctionalData._is_compatible(*fdata)
 
     ###########################################################################
 

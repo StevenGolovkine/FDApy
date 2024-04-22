@@ -188,6 +188,10 @@ class TestPerformComputation(unittest.TestCase):
         )
         self.func_data2 = DenseFunctionalData(self.argvals2, self.values2)
 
+    def test_equality(self):
+        self.assertTrue(self.func_data1 == self.func_data1)
+        self.assertFalse(self.func_data1 == self.func_data2)
+
     def test_addition(self):
         result = self.func_data1 + self.func_data2
 

@@ -6,7 +6,6 @@ Written with the help of ChatGPT.
 
 """
 import numpy as np
-import pickle
 import unittest
 
 from pathlib import Path

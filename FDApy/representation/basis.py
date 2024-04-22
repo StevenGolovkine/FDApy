@@ -6,6 +6,8 @@ Basis
 -----
 
 """
+from __future__ import annotations
+
 import itertools
 import numpy as np
 import numpy.typing as npt
@@ -344,6 +346,8 @@ class Basis(DenseFunctionalData):
 
     """
 
+    ###########################################################################
+    # Magic methods
     def __init__(
         self,
         name: str,
@@ -388,6 +392,10 @@ class Basis(DenseFunctionalData):
         else:
             raise ValueError(f"{dimension} is not a valid dimension!")
 
+    ###########################################################################
+
+    ###########################################################################
+    # Properties
     @property
     def name(self) -> str:
         """Getter for name."""
