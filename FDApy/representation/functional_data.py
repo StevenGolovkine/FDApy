@@ -2976,14 +2976,17 @@ class BasisFunctionalData(FunctionalData):
         cov = (data.coefficients.T @ data.coefficients) / data.n_obs
         cov = cov.flatten()[np.newaxis]
 
+        # Build the represetation
+        new_argvals = DenseArgvals()
+        for idx, values in enumerate(self.basis.argvals.values()):
+            new_argvals[f'input_dim_{2 * idx}'] = values
+            new_argvals[f'input_dim_{2 * idx + 1}'] = values
+
         new_dim = (self.basis.n_obs**2, *(2 * self.n_points))
-        new_argvals = DenseArgvals({
-            "input_dim_0": self.basis.argvals["input_dim_0"],
-            "input_dim_1": self.basis.argvals["input_dim_0"],
-        })
         new_values = np.kron(self.basis.values, self.basis.values).reshape(new_dim)
-        basis_2d = DenseFunctionalData(new_argvals, new_values)
-        return BasisFunctionalData(basis_2d, cov)
+
+        new_basis = DenseFunctionalData(new_argvals, new_values)
+        return BasisFunctionalData(new_basis, cov)
 
     ###########################################################################
 
