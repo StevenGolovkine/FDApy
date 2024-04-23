@@ -12,9 +12,10 @@ import itertools
 import numpy as np
 import numpy.typing as npt
 
+from functools import reduce
 from scipy.integrate import simpson
 
-from typing import Callable, Optional, List, Union
+from typing import Callable, Optional, List, Tuple, Union
 
 from .functional_data import DenseFunctionalData, MultivariateFunctionalData
 from .functional_data import _tensor_product
@@ -50,9 +51,10 @@ def _simulate_basis(
         Should we normalize the functions?
     add_intercept: bool, default=True
         Should the constant functions be into the basis?
-    **kwargs
-        degree: int, default=3
-            Degree of the B-splines. The default gives cubic splines.
+    kwargs
+        Other keyword arguments are passed to the function:
+
+        - :meth:`misc.basis._basis_bsplines`.
 
     Returns
     -------
@@ -65,7 +67,7 @@ def _simulate_basis(
     ...     'legendre',
     ...     n_functions=3,
     ...     argvals=np.arange(-1, 1, 0.1),
-    ...     norm=True
+    ...     is_normalized=True
     ... )
 
     """
@@ -317,32 +319,30 @@ def _simulate_basis_multivariate(
 
 ###############################################################################
 # Class Basis
-
-
 class Basis(DenseFunctionalData):
     r"""Define univariate orthonormal basis.
 
     Parameters
     ----------
-    name: str, {'legendre', 'wiener', 'fourier', 'bsplines'}
-        Denotes the basis of functions to use.
-    n_functions: int
+    name: Union[Tuple[str], str], {'given', 'legendre', 'wiener', 'fourier', 'bsplines'}
+        Denotes the basis of functions to use. The default is `bsplines`. If
+        `name=given`, it uses a user defined basis (defined with the `argvals` and
+        `values` parameters). For higher dimensional data, `name` is a tuple for the
+        marginal basis.
+    n_functions: Union[Tuple[int], int], default=5
         Number of functions in the basis.
-    dimension: str, {'1D', '2D'}, default='1D'
-        Dimension of the basis to simulate. If '2D', the basis is simulated as
-        the tensor product of the one dimensional basis of functions by itself.
-        The number of functions in the 2D basis will be :math:`n_function^2`.
-    argvals: Optional[npt.NDArray[np.float64]]
-        The sampling points of the functional data. Each entry of the
-        dictionary represents an input dimension. The shape of the :math:`j` th
-        dimension is :math:`(m_j,)` for :math:`0 \leq j \leq p`.
+    argvals: Optional[DenseArgvals]
+        The sampling points of the functional data.
+    values: Optional[DenseValues]
+        The values of the functional data. Only used if `name='given'`.
     is_normalized: bool, default=False
         Should we normalize the basis function?
     add_intercept: bool, default=True
         Should the constant functions be into the basis?
-    **kwargs
-        degree: int, default=3
-            Degree of the B-splines. The default gives cubic splines.
+    kwargs
+        Other keyword arguments are passed to the function:
+
+        - :meth:`representation.basis._simulate_basis`.
 
     """
 
@@ -350,62 +350,72 @@ class Basis(DenseFunctionalData):
     # Magic methods
     def __init__(
         self,
-        name: str,
-        n_functions: int = 5,
-        dimension: str = "1D",
-        argvals: Optional[npt.NDArray[np.float64]] = None,
+        name: Union[Tuple[str], str] = "bsplines",
+        n_functions: Union[Tuple[int], int] = 5,
+        argvals: Optional[DenseArgvals] = None,
+        values: Optional[DenseValues] = None,
         is_normalized: bool = False,
         add_intercept: bool = True,
         **kwargs,
     ) -> None:
         """Initialize Basis object."""
+        if name == "given":
+            n_functions = values.n_obs
         self.name = name
+        self.n_functions = n_functions
         self.is_normalized = is_normalized
-        self.dimension = dimension
+        self.add_intercept = add_intercept
 
         if argvals is None:
-            argvals = np.arange(0, 1.01, 0.01)
+            argvals = DenseArgvals(
+                {
+                    f"input_dim_{idx}": np.arange(0, 1.1, 0.1)
+                    for idx in np.arange(len(self.n_functions))
+                }
+            )
 
-        values = _simulate_basis(
-            name, argvals, n_functions, is_normalized, add_intercept, **kwargs
-        )
-
-        if dimension == "1D":
-            super().__init__(
-                DenseArgvals({"input_dim_0": argvals}), DenseValues(values)
-            )
-        elif dimension == "2D":
-            cut = np.ceil(np.sqrt(n_functions)).astype(int)
-            rest = (n_functions / cut + 1).astype(int)
-
-            basis_first_dim = DenseFunctionalData(
-                DenseArgvals({"input_dim_0": argvals}), DenseValues(values[:cut])
-            )
-            basis_second_dim = DenseFunctionalData(
-                DenseArgvals({"input_dim_0": argvals}),
-                DenseValues(values[1 : (rest + 1)]),
-            )
-            basis2d = _tensor_product(basis_first_dim, basis_second_dim)
-            super().__init__(
-                DenseArgvals(basis2d.argvals), DenseValues(basis2d.values[:n_functions])
-            )
+        if name == "given":
+            super().__init__(argvals, values)
         else:
-            raise ValueError(f"{dimension} is not a valid dimension!")
+            values_list = []
+            for name, n_function, argval in zip(
+                self.name, self.n_functions, argvals.values()
+            ):
+                temp = _simulate_basis(
+                    name, argval, n_function, is_normalized, add_intercept, **kwargs
+                )
+                values_list.append(temp)
+
+            values = reduce(np.kron, values_list).reshape(
+                (np.prod(self.n_functions), *argvals.n_points)
+            )
+            super().__init__(argvals, DenseValues(values))
 
     ###########################################################################
 
     ###########################################################################
     # Properties
     @property
-    def name(self) -> str:
+    def name(self) -> Tuple[str]:
         """Getter for name."""
         return self._name
 
     @name.setter
-    def name(self, new_name: str) -> None:
-        if not isinstance(new_name, str):
-            raise TypeError(f"{new_name!r} has to be `str`.")
+    def name(self, new_name: Union[Tuple[str], str]) -> None:
+        if isinstance(new_name, str):
+            new_name = (new_name,)
         self._name = new_name
+
+    @property
+    def n_functions(self) -> Tuple[int]:
+        """Getter for n_functions."""
+        return self._n_functions
+
+    @n_functions.setter
+    def n_functions(self, new_n_functions: Union[Tuple[int], int]) -> None:
+        if isinstance(new_n_functions, int):
+            new_n_functions = (new_n_functions,)
+        self._n_functions = new_n_functions
 
     @property
     def is_normalized(self) -> bool:
@@ -417,14 +427,16 @@ class Basis(DenseFunctionalData):
         self._is_normalized = new_is_normalized
 
     @property
-    def dimension(self) -> str:
-        """Getter for dimension."""
-        return self._dimension
+    def add_intercept(self) -> bool:
+        """Getter for add_intercept."""
+        return self._add_intercept
 
-    @dimension.setter
-    def dimension(self, new_dimension: str) -> None:
-        self._dimension = new_dimension
+    @add_intercept.setter
+    def add_intercept(self, new_add_intercept: bool) -> None:
+        self._add_intercept = new_add_intercept
 
+    ###########################################################################
+    # Methods
     def inner_product(
         self,
         method_integration: str = "trapz",
@@ -451,6 +463,8 @@ class Basis(DenseFunctionalData):
         inner_mat[inner_mat < 1e-8] = 0
         self._inner_product_matrix = inner_mat
         return self._inner_product_matrix
+
+    ###########################################################################
 
 
 ###############################################################################

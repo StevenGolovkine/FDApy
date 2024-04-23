@@ -504,9 +504,7 @@ class GridFunctionalData(FunctionalData):
         self.values = values
         self._index = 0
 
-    def __eq__(
-        self, obj: GridFunctionalData
-    ) -> bool:
+    def __eq__(self, obj: GridFunctionalData) -> bool:
         """Override eq function."""
         if not isinstance(obj, GridFunctionalData):
             raise TypeError("Object does not have the right type.")
@@ -2864,7 +2862,7 @@ class BasisFunctionalData(FunctionalData):
     def to_grid(self) -> DenseFunctionalData:
         """Convert the data to grid format."""
         new_argvals = self.basis.argvals
-        new_values = np.einsum('ij,j... -> i...', self.coefficients, self.basis.values)
+        new_values = np.einsum("ij,j... -> i...", self.coefficients, self.basis.values)
         return DenseFunctionalData(new_argvals, DenseValues(new_values))
 
     def to_long(self, reindex: bool = False) -> pd.DataFrame:
@@ -2979,8 +2977,8 @@ class BasisFunctionalData(FunctionalData):
         # Build the represetation
         new_argvals = DenseArgvals()
         for idx, values in enumerate(self.basis.argvals.values()):
-            new_argvals[f'input_dim_{2 * idx}'] = values
-            new_argvals[f'input_dim_{2 * idx + 1}'] = values
+            new_argvals[f"input_dim_{2 * idx}"] = values
+            new_argvals[f"input_dim_{2 * idx + 1}"] = values
 
         new_dim = (self.basis.n_obs**2, *(2 * self.n_points))
         new_values = np.kron(self.basis.values, self.basis.values).reshape(new_dim)

@@ -20,7 +20,7 @@ THIS_DIR = Path(__file__)
 class TestBasisFunctionalData(unittest.TestCase):
     def setUp(self):
         argvals = np.linspace(0, 1, 11)
-        basis = Basis('fourier', n_functions=2, argvals=argvals)
+        basis = Basis("fourier", n_functions=2, argvals=argvals)
         coefs = np.array([[1, 0.5], [0.5, 1]])
         self.func_data = BasisFunctionalData(basis, coefs)
 

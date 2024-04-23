@@ -8,6 +8,8 @@ Written with the help of ChatGPT.
 import numpy as np
 import unittest
 
+from FDApy.representation.argvals import DenseArgvals
+from FDApy.representation.values import DenseValues
 from FDApy.representation.basis import (
     Basis,
     MultivariateBasis,
@@ -19,17 +21,30 @@ from FDApy.representation.basis import (
 
 class TestBasis(unittest.TestCase):
     def setUp(self):
-        self.argvals = np.array([0, 0.5, 1])
+        self.argvals = DenseArgvals({"input_dim_0": np.array([0, 0.5, 1])})
+
+        self.argvals_2d = DenseArgvals(
+            {"input_dim_0": np.array([0, 0.5, 1]), "input_dim_1": np.array([0, 0.5, 1])}
+        )
 
     def test_getter(self):
         X = Basis(name="legendre", n_functions=2, argvals=self.argvals)
-        np.testing.assert_equal(X.name, "legendre")
+        np.testing.assert_equal(X.name, ("legendre",))
+        np.testing.assert_equal(X.n_functions, (2,))
         np.testing.assert_equal(X.is_normalized, False)
-        np.testing.assert_equal(X.dimension, "1D")
+        np.testing.assert_equal(X.add_intercept, True)
 
     def test_argvals(self):
         X = Basis(name="legendre", n_functions=2, argvals=None)
-        np.testing.assert_allclose(X.argvals["input_dim_0"], np.arange(0, 1.01, 0.01))
+        np.testing.assert_allclose(X.argvals["input_dim_0"], np.arange(0, 1.01, 0.1))
+
+    def test_basis_given(self):
+        argvals = DenseArgvals({"input_dim_0": np.array([0, 0.5, 1])})
+        values = DenseValues([[1, 2, 3], [4, 5, 6]])
+        basis = Basis(name="given", argvals=argvals, values=values)
+
+        np.testing.assert_equal(basis.n_functions, (2,))
+        np.testing.assert_equal(basis.values, values)
 
     def test_basis_legendre(self):
         X = Basis(name="legendre", n_functions=2, argvals=self.argvals)
@@ -78,13 +93,17 @@ class TestBasis(unittest.TestCase):
             X.values, np.array([[1.0, 0.5, 0.0], [0.0, 0.5, 1.0]])
         )
 
-    def test_multibasis(self):
-        X = Basis(name="legendre", n_functions=2, dimension="2D", argvals=self.argvals)
+    def test_multidimensional_basis(self):
+        X = Basis(
+            name=("legendre", "legendre"), n_functions=(2, 2), argvals=self.argvals_2d
+        )
         np.testing.assert_allclose(
             X.values,
             np.array(
                 [
+                    [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]],
                     [[0.0, 0.5, 1.0], [0.0, 0.5, 1.0], [0.0, 0.5, 1.0]],
+                    [[0.0, 0.0, 0.0], [0.5, 0.5, 0.5], [1.0, 1.0, 1.0]],
                     [[0.0, 0.0, 0.0], [0.0, 0.25, 0.5], [0.0, 0.5, 1.0]],
                 ]
             ),
@@ -95,25 +114,16 @@ class TestBasisFails(unittest.TestCase):
     """Fail test class for the functions in basis.py"""
 
     def setUp(self):
-        self.argvals_1d = np.array([0, 0.5, 1])
-        self.argvals_2d = [np.array([0, 0.5, 1]), np.array([0, 0.5, 1])]
+        self.argvals = DenseArgvals({"input_dim_0": np.array([0, 0.5, 1])})
+
+        self.argvals_2d = DenseArgvals(
+            {"input_dim_0": np.array([0, 0.5, 1]), "input_dim_1": np.array([0, 0.5, 1])}
+        )
 
     def test_basis(self):
         with self.assertRaises(NotImplementedError) as cm:
-            Basis(name="failed", n_functions=2, argvals=self.argvals_1d)
+            Basis(name="failed", n_functions=2, argvals=self.argvals)
         self.assertTrue("Basis" in str(cm.exception))
-
-    def test_basis_name(self):
-        with self.assertRaises(TypeError) as cm:
-            Basis(name=0, n_functions=2, argvals=self.argvals_1d)
-        self.assertTrue("str" in str(cm.exception))
-
-    def test_basis_dim(self):
-        with self.assertRaises(ValueError) as cm:
-            Basis(
-                name="legendre", n_functions=2, argvals=self.argvals_1d, dimension="3D"
-            )
-        self.assertTrue("dimension" in str(cm.exception))
 
 
 class TestSimulateBasisMultivariateWeighted(unittest.TestCase):
