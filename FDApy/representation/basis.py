@@ -15,10 +15,9 @@ import numpy.typing as npt
 from functools import reduce
 from scipy.integrate import simpson
 
-from typing import Callable, Optional, List, Tuple, Union
+from typing import Optional, List, Tuple, Union
 
 from .functional_data import DenseFunctionalData, MultivariateFunctionalData
-from .functional_data import _tensor_product
 
 from .argvals import DenseArgvals
 from .values import DenseValues
@@ -101,222 +100,6 @@ def _simulate_basis(
         return values[1:]
 
 
-def _simulate_basis_multivariate_weighted(
-    basis_name: List[str],
-    argvals: List[npt.NDArray[np.float64]],
-    n_functions: int = 5,
-    is_normalized: bool = False,
-    runif: Optional[Callable] = np.random.uniform,
-    **kwargs,
-):
-    """Simulate function for multivariate functional data.
-
-    The multivariate eigenfunction basis consists of weighted univariate
-    orthonormal bases. This yields an orthonormal basis of multivariate
-    functions with `n_functions` elements. For data on two-dimensional domains,
-    the univariate basis is constructed as a tensor product of univariate bases
-    in each direction. The simulation setup is based on [1]_.
-
-    Parameters
-    ----------
-    basis_name: List[str]
-        Name of the basis to used.
-    argvals: List[npt.NDArray[np.float64]]
-        The values on which the basis functions are evaluated.
-    n_functions: int
-        Number of basis functions to used.
-    is_normalized: bool
-        Should we normalize the functions?
-    runif: Optional[Callable], default=np.random.uniform
-        Method used to generate uniform distribution. If `None`, all the
-        weights are set to :math:`1`.
-    **kwargs
-        degree: int, default=3
-            Degree of the B-splines. The default gives cubic splines.
-
-    Returns
-    -------
-    List[npt.NDArray[np.float64]], shape=(n_functions, len(argvals))
-        An array containing the evaluation of `n_functions` functions.
-
-    References
-    ----------
-    .. [1] Happ C. & Greven S. (2018) Multivariate Functional Principal
-        Component Analysis for Data Observed on Different (Dimensional)
-        Domains, Journal of the American Statistical Association, 113:522,
-        649-659, DOI: 10.1080/01621459.2016.1273115
-
-    """
-    # Define weights
-    if runif is None:
-        alpha = np.repeat(1, len(basis_name))
-    else:
-        alpha = runif(low=0.2, high=0.8, size=len(basis_name))
-    weights = np.sqrt(alpha / np.sum(alpha))
-
-    return [
-        weight * _simulate_basis(name, argval, n_functions, is_normalized, **kwargs)
-        for name, argval, weight in zip(basis_name, argvals, weights)
-    ]
-
-
-def _simulate_basis_multivariate_split(
-    basis_name: List[str],
-    argvals: List[npt.NDArray[np.float64]],
-    n_functions: int = 5,
-    is_normalized: bool = False,
-    rchoice: Callable = np.random.choice,
-    **kwargs,
-):
-    """Simulate function for multivariate functional data.
-
-    The basis functions of an underlying big orthonormal basis are split in
-    `n_functions` parts, translated and possible reflected. This yields an
-    orthonormal basis of multivariate functions with `n_functions` elements.
-    For data on two-dimensional domains, the univariate basis is constructed as
-    a tensor product of univariate bases in each direction. The simulation
-    setup is based on [1]_.
-
-    Parameters
-    ----------
-    basis_name: List[str]
-        Name of the basis to used.
-    argvals: List[npt.NDArray[np.float64]]
-        The values on which the basis functions are evaluated.
-    n_functions: int
-        Number of basis functions to used.
-    is_normalized: bool
-        Should we normalize the functions?
-    rchoice: Callable, default=np.random.choice
-        Method used to generate binomial distribution.
-    **kwargs
-        degree: int, default=3
-            Degree of the B-splines. The default gives cubic splines.
-
-    Returns
-    -------
-    List[npt.NDArray[np.float64]], shape=(n_functions, len(argvals))
-        An array containing the evaluation of `n_functions` functions.
-
-    References
-    ----------
-    .. [1] Happ C. & Greven S. (2018) Multivariate Functional Principal
-        Component Analysis for Data Observed on Different (Dimensional)
-        Domains, Journal of the American Statistical Association, 113:522,
-        649-659, DOI: 10.1080/01621459.2016.1273115
-
-    """
-    # Create "big" argvals vector and the split points
-    x = [argvals[0]]
-    split_vals = [0, len(x[0])]
-    for idx in np.arange(1, len(argvals)):
-        x.append(argvals[idx] - np.min(argvals[idx]) + np.max(x[-1]))
-        split_vals.append(split_vals[-1] + len(x[-1]))
-
-    # Simulate the "big" basis
-    x_concat = np.concatenate(x)
-    values = _simulate_basis(basis_name, x_concat, n_functions, is_normalized, **kwargs)
-
-    flips = rchoice((-1, 1), size=len(argvals))
-    return [
-        flips[idx] * values[:, split_vals[idx] : split_vals[idx + 1]]
-        for idx in np.arange(len(argvals))
-    ]
-
-
-def _simulate_basis_multivariate(
-    simulation_type: str,
-    n_components: int,
-    name: Union[str, List[str]],
-    argvals: List[npt.NDArray[np.float64]],
-    n_functions: int = 5,
-    is_normalized: bool = False,
-    **kwargs,
-) -> npt.NDArray[np.float64]:
-    """Redirect to the right simulation basis function.
-
-    Parameters
-    ----------
-    simulation_type: str, {'split', 'weighted'}
-        Type of the simulation.
-    n_components: int
-        Number of components to generate.
-    name: Union[str, List[str]]
-        Basis names to use, {'legendre', 'wiener', 'fourier', 'bsplines'}.
-    argvals: npt.NDArray[np.float64]
-        The values on which the basis functions are evaluated.
-    n_functions: int, default=5
-        Number of functions to compute.
-    is_normalized: bool
-        Should we normalize the functions?
-    **kwargs:
-        rchoice: Callable, default=np.random.choice
-            Method used to generate binomial distribution.
-        runif: Callable, default=np.random.uniform
-            Method used to generate uniform distribution.
-        degree: int, default=3
-            Degree of the B-splines. The default gives cubic splines.
-
-    Returns
-    -------
-    values: List[npt.NDArray[np.float64]], shape=(n_functions, len(argvals))
-        An array containing the evaluation of `n_functions` functions.
-
-    Example
-    -------
-    >>> _simulate_basis_multivariate(
-    ...     simulation_type='split',
-    ...     n_components=3,
-    ...     name='fourier',
-    ...     argvals=[
-    ...         np.linspace(0, 1, 101),
-    ...         np.linspace(-np.pi, np.pi, 101),
-    ...         np.linspace(-0.5, 0.5, 51)
-    ...     ],
-    ...     n_functions=3,
-    ...     norm=True
-    ... )
-
-    """
-    if len(argvals) != n_components:
-        raise ValueError(f"`len(argvals)` should be equal to {n_components}.")
-
-    if simulation_type == "split":
-        if not isinstance(name, (str, str)):
-            raise ValueError(
-                "For the `split` simulation type, `basis_name` " "should be a str."
-            )
-        values = _simulate_basis_multivariate_split(
-            name,
-            argvals,
-            n_functions,
-            is_normalized,
-            kwargs.pop("rchoice", np.random.choice),
-            **kwargs,
-        )
-    elif simulation_type == "weighted":
-        if not isinstance(name, list):
-            raise ValueError(
-                "For the `weighted` simulation type, `basis_name` " "should be a list."
-            )
-        if len(name) != n_components:
-            raise ValueError(
-                "For the `weighted` simulation type, `len(basis_name)` "
-                f"should be equal to {n_components}."
-            )
-        values = _simulate_basis_multivariate_weighted(
-            name,
-            argvals,
-            n_functions,
-            is_normalized,
-            kwargs.pop("runif", np.random.uniform),
-            **kwargs,
-        )
-    else:
-        raise NotImplementedError(f"Simulation {simulation_type!r} not implemented!")
-    return values
-
-
 ###############################################################################
 # Class Basis
 class Basis(DenseFunctionalData):
@@ -374,9 +157,7 @@ class Basis(DenseFunctionalData):
                 }
             )
 
-        if name == "given":
-            super().__init__(argvals, values)
-        else:
+        if name != "given":
             values_list = []
             for name, n_function, argval in zip(
                 self.name, self.n_functions, argvals.values()
@@ -386,10 +167,12 @@ class Basis(DenseFunctionalData):
                 )
                 values_list.append(temp)
 
-            values = reduce(np.kron, values_list).reshape(
-                (np.prod(self.n_functions), *argvals.n_points)
+            values = DenseValues(
+                reduce(np.kron, values_list).reshape(
+                    (np.prod(self.n_functions), *argvals.n_points)
+                )
             )
-            super().__init__(argvals, DenseValues(values))
+        super().__init__(argvals, values)
 
     ###########################################################################
 
@@ -474,8 +257,6 @@ class MultivariateBasis(MultivariateFunctionalData):
 
     Parameters
     ----------
-    simulation_type: str, {'split', 'weighted'}
-        Type of the simulation.
     n_components: int
         Number of components to generate.
     name: Union[str, List[str]]
@@ -487,73 +268,71 @@ class MultivariateBasis(MultivariateFunctionalData):
         Dimension of the basis to simulate. If '2D', the basis is simulated as
         the tensor product of the one dimensional basis of functions by itself.
         The number of functions in the 2D basis will be :math:`n_function^2`.
-    argvals: Optional[Dict[str, npt.NDArray[np.float64]]]
-        The sampling points of the functional data. Each entry of the
-        dictionary represents an input dimension. The shape of the :math:`j` th
-        dimension is :math:`(m_j,)` for :math:`0 \leq j \leq p`.
+    argvals: Optional[List[DenseArgvals]]
+        The sampling points of the functional data.
+    values: Optional[List[DenseValues]]
+        The values of the functional data. Only used if `name='given'`.
     is_normalized: bool, default=False
         Should we normalize the basis function?
-    **kwargs:
-        rchoice: Callable, default=np.random.choice
-            Method used to generate binomial distribution.
-        runif: Callable, default=np.random.uniform
-            Method used to generate uniform distribution.
-        degree: int, default=3
-            Degree of the B-splines. The default gives cubic splines.
+    kwargs
+        Other keywords arguments are passed to the function:
+
+        - :meth:`representation.basis.Basis`.
 
     """
 
+    ###########################################################################
+    # Magic methods
     def __init__(
         self,
-        simulation_type: str,
-        n_components: int,
-        name: Union[str, List[str]],
-        n_functions: int = 5,
-        dimension: Optional[List[str]] = None,
-        argvals: Optional[npt.NDArray[np.float64]] = None,
+        name: List[Union[Tuple[str], str]] = ["fourier", "legendre"],
+        n_functions: List[Union[Tuple[int], int]] = [5, 5],
+        argvals: Optional[List[DenseArgvals]] = None,
+        values: Optional[List[DenseValues]] = None,
         is_normalized: bool = False,
+        add_intercept: bool = True,
         **kwargs,
     ) -> None:
         """Initialize Basis object."""
-        self.simulation_type = simulation_type
         self.name = name
+        self.n_functions = n_functions
         self.is_normalized = is_normalized
+        self.add_intercept = add_intercept
 
         if argvals is None:
-            argvals = n_components * [np.arange(0, 1.01, 0.01)]
-        self.dimension = n_components * ["1D"] if dimension is None else dimension
+            argvals = [
+                DenseArgvals(
+                    {
+                        f"input_dim_{idx}": np.arange(0, 1.1, 0.1)
+                        for idx in np.arange(len(component))
+                    }
+                )
+                for component in self.n_functions
+            ]
 
-        values = _simulate_basis_multivariate(
-            simulation_type,
-            n_components,
-            name,
-            argvals,
-            n_functions,
-            is_normalized,
-            **kwargs,
-        )
+        if name == "given":
+            basis_list = [
+                Basis(name="given", argvals=arg, values=val)
+                for arg, val in zip(argvals, values)
+            ]
+        else:
+            basis_list = [
+                Basis(
+                    name=name,
+                    n_functions=n_function,
+                    argvals=arg,
+                    is_normalized=is_normalized,
+                    add_intercept=add_intercept,
+                    **kwargs,
+                )
+                for n_function, name, arg in zip(self.n_functions, self.name, argvals)
+            ]
+        super().__init__(basis_list)
 
-        basis_fd = []
-        for argval, basis, dim in zip(argvals, values, self.dimension):
-            temp = DenseFunctionalData(
-                DenseArgvals({"input_dim_0": argval}), DenseValues(basis)
-            )
-            if dim == "2D":
-                temp = _tensor_product(temp, temp)
-            basis_fd.append(temp[:n_functions])
-        super().__init__(basis_fd)
+    ###########################################################################
 
-    @property
-    def simulation_type(self) -> str:
-        """Getter for simulation_type."""
-        return self._simulation_type
-
-    @simulation_type.setter
-    def simulation_type(self, new_simulation_type: str) -> None:
-        if not isinstance(new_simulation_type, str):
-            raise TypeError(f"{new_simulation_type!r} has to be `str`.")
-        self._simulation_type = new_simulation_type
-
+    ###########################################################################
+    # Properties
     @property
     def name(self) -> Union[str, List[str]]:
         """Getter for name."""
@@ -561,12 +340,22 @@ class MultivariateBasis(MultivariateFunctionalData):
 
     @name.setter
     def name(self, new_name: Union[str, List[str]]) -> None:
-        if isinstance(new_name, str):
-            self._name = new_name
-        elif isinstance(new_name, list) and all(isinstance(x, str) for x in new_name):
-            self._name = new_name
-        else:
-            raise TypeError(f"{new_name!r} has to be a `str` or `List[str]`.")
+        self._name = new_name
+
+    @property
+    def n_functions(self) -> List[Union[Tuple[int]]]:
+        """Getter for n_functions."""
+        return self._n_functions
+
+    @n_functions.setter
+    def n_functions(self, new_n_functions: List[Union[Tuple[int], int]]) -> None:
+        temp = []
+        for n_function in new_n_functions:
+            if isinstance(n_function, int):
+                temp.append((n_function,))
+            else:
+                temp.append(n_function)
+        self._n_functions = temp
 
     @property
     def is_normalized(self) -> bool:
@@ -578,10 +367,12 @@ class MultivariateBasis(MultivariateFunctionalData):
         self._is_normalized = new_is_normalized
 
     @property
-    def dimension(self) -> List[str]:
-        """Getter for dimension."""
-        return self._dimension
+    def add_intercept(self) -> bool:
+        """Getter for add_intercept."""
+        return self._add_intercept
 
-    @dimension.setter
-    def dimension(self, new_dimension: List[str]) -> None:
-        self._dimension = new_dimension
+    @add_intercept.setter
+    def add_intercept(self, new_add_intercept: bool) -> None:
+        self._add_intercept = new_add_intercept
+
+    ###########################################################################

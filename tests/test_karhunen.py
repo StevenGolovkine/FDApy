@@ -165,7 +165,7 @@ class TestSimulateEigenvalues(unittest.TestCase):
         output = _simulate_eigenvalues("quadratic", n=3)
         np.testing.assert_allclose(output, expected_output)
 
-    def test_linear_eigenvalues(self):
+    def test_inverse_eigenvalues(self):
         expected_output = np.array([1.0, 0.5, 0.33333333])
         output = _simulate_eigenvalues("inverse", n=3)
         np.testing.assert_allclose(output, expected_output)

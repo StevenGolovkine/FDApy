@@ -11,6 +11,7 @@ import unittest
 
 from pathlib import Path
 
+from FDApy.representation.argvals import DenseArgvals
 from FDApy.representation.functional_data import BasisFunctionalData
 from FDApy.representation.basis import Basis
 
@@ -19,7 +20,7 @@ THIS_DIR = Path(__file__)
 
 class TestBasisFunctionalData(unittest.TestCase):
     def setUp(self):
-        argvals = np.linspace(0, 1, 11)
+        argvals = DenseArgvals({"input_dim_0": np.linspace(0, 1, 11)})
         basis = Basis("fourier", n_functions=2, argvals=argvals)
         coefs = np.array([[1, 0.5], [0.5, 1]])
         self.func_data = BasisFunctionalData(basis, coefs)
