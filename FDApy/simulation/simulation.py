@@ -17,6 +17,7 @@ from ..representation.values import DenseValues, IrregularValues
 from ..representation.functional_data import (
     DenseFunctionalData,
     IrregularFunctionalData,
+    BasisFunctionalData,
     MultivariateFunctionalData,
 )
 
@@ -156,10 +157,14 @@ class Simulation(ABC):
     def _check_dimension(self) -> None:
         """Check if self.data has the right dimension."""
         if (
-            isinstance(self.data, DenseFunctionalData) and self.data.n_dimension > 1
-        ) or (
-            isinstance(self.data, MultivariateFunctionalData)
-            and all(n_dim > 1 for n_dim in self.data.n_dimension)
+            (isinstance(self.data, DenseFunctionalData) and self.data.n_dimension > 1)
+            or (
+                isinstance(self.data, BasisFunctionalData) and self.data.n_dimension > 1
+            )
+            or (
+                isinstance(self.data, MultivariateFunctionalData)
+                and all(n_dim > 1 for n_dim in self.data.n_dimension)
+            )
         ):
             raise ValueError(
                 "The sparsification is not implemented for data"

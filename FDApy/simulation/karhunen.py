@@ -465,8 +465,12 @@ class KarhunenLoeve(Simulation):
         KarhunenLoeve._check_basis_none(basis_name, basis)
         KarhunenLoeve._check_basis_type(basis)
 
+        if isinstance(basis_name, list) and isinstance(n_functions, int):
+            n_functions = len(basis_name) * [n_functions]
         # Create the Basis list using the basis_name list.
-        basis_class = Basis if isinstance(n_functions, int) else MultivariateBasis
+        basis_class = (
+            Basis if isinstance(n_functions, (int, tuple)) else MultivariateBasis
+        )
         if basis is None:
             basis = basis_class(
                 name=basis_name,
@@ -536,8 +540,12 @@ class KarhunenLoeve(Simulation):
                 BasisFunctionalData(basis=basis, coefficients=coef)
                 for basis in self.basis.data
             ]
-            self.data = MultivariateFunctionalData(basis_list)
+            self.data_basis = MultivariateFunctionalData(basis_list)
+            self.data = MultivariateFunctionalData(
+                [data.to_grid() for data in self.data_basis.data]
+            )
         else:
-            self.data = BasisFunctionalData(self.basis, coef)
+            self.data_basis = BasisFunctionalData(self.basis, coef)
+            self.data = self.data_basis.to_grid()
         self.labels = labels
         self.eigenvalues = clusters_std[:, 0]

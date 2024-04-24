@@ -15,6 +15,7 @@ from FDApy.representation.argvals import DenseArgvals
 from FDApy.representation.values import DenseValues
 from FDApy.representation.functional_data import (
     BasisFunctionalData,
+    DenseFunctionalData,
     MultivariateFunctionalData,
 )
 from FDApy.simulation.karhunen import (
@@ -430,4 +431,5 @@ class TestKarhunenLoeveNew(unittest.TestCase):
             basis_name=self.basis_name[0], n_functions=self.n_functions[0]
         )
         kl.new(10, 1)
-        self.assertIsInstance(kl.data, BasisFunctionalData)
+        self.assertIsInstance(kl.data, DenseFunctionalData)
+        self.assertIsInstance(kl.data_basis, BasisFunctionalData)

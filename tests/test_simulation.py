@@ -97,7 +97,7 @@ class TestSparsifyUnivariateData(unittest.TestCase):
 
 class TestCheckData(unittest.TestCase):
     def setUp(self):
-        self.simulation = KarhunenLoeve("fourier", random_state=1)
+        self.simulation = KarhunenLoeve(basis_name="fourier", random_state=1)
 
     def test_check_data(self):
         with self.assertRaises(ValueError):
@@ -106,10 +106,13 @@ class TestCheckData(unittest.TestCase):
 
 class TestCheckDimension(unittest.TestCase):
     def setUp(self):
-        self.simulation = KarhunenLoeve("fourier", dimension="2D")
+        self.simulation = KarhunenLoeve(
+            n_functions=(2, 3), basis_name=("fourier", "fourier")
+        )
         self.simulation.new(n_obs=1, n_clusters=1)
         self.simulation_multi = KarhunenLoeve(
-            ["fourier", "bsplines"], dimension=["2D", "2D"]
+            n_functions=[(2, 3), (2, 3)],
+            basis_name=[("fourier", "fourier"), ("bsplines", "bsplines")],
         )
         self.simulation_multi.new(n_obs=1, n_clusters=1)
 
@@ -124,7 +127,7 @@ class TestCheckDimension(unittest.TestCase):
 
 class TestSimulationUnivariate(unittest.TestCase):
     def setUp(self):
-        self.simulation = KarhunenLoeve("fourier", random_state=1)
+        self.simulation = KarhunenLoeve(basis_name="fourier", random_state=1)
         self.simulation.new(n_obs=50, n_clusters=1, argvals=np.linspace(0, 1, 10))
 
     def test_new(self):
@@ -148,7 +151,9 @@ class TestSimulationUnivariate(unittest.TestCase):
 
 class TestSimulationMultivariate(unittest.TestCase):
     def setUp(self):
-        self.simulation = KarhunenLoeve(["fourier", "bsplines"], random_state=1)
+        self.simulation = KarhunenLoeve(
+            basis_name=["fourier", "bsplines"], random_state=1
+        )
         self.simulation.new(n_obs=50, n_clusters=1, argvals=np.linspace(0, 1, 10))
 
     def test_new(self):
@@ -176,7 +181,7 @@ class TestSimulationMultivariate(unittest.TestCase):
 
 class TestSimulationRandom(unittest.TestCase):
     def setUp(self) -> None:
-        self.simulation = KarhunenLoeve(["fourier", "bsplines"])
+        self.simulation = KarhunenLoeve(basis_name=["fourier", "bsplines"])
         self.simulation.new(n_obs=50, n_clusters=1)
 
     def test_add_noise(self):

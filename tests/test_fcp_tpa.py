@@ -11,6 +11,7 @@ import unittest
 from pathlib import Path
 
 from FDApy.representation.functional_data import DenseFunctionalData
+from FDApy.representation.argvals import DenseArgvals
 from FDApy.simulation.karhunen import KarhunenLoeve
 from FDApy.misc.utils import _eigh
 from FDApy.preprocessing.dim_reduction.fcp_tpa import (
@@ -1356,11 +1357,13 @@ class TestUpdateComponents(unittest.TestCase):
 
 class FCPTPATest(unittest.TestCase):
     def setUp(self):
+        argvals = DenseArgvals(
+            {"input_dim_0": np.linspace(0, 1, 10), "input_dim_1": np.linspace(0, 1, 10)}
+        )
         kl = KarhunenLoeve(
-            basis_name="fourier",
-            n_functions=5,
-            dimension="2D",
-            argvals=np.linspace(0, 1, 10),
+            basis_name=("fourier", "fourier"),
+            n_functions=(5, 1),
+            argvals=argvals,
             random_state=42,
         )
         kl.new(n_obs=50)
@@ -1422,11 +1425,13 @@ class FCPTPATest(unittest.TestCase):
 
 class TestFit(unittest.TestCase):
     def setUp(self):
+        argvals = DenseArgvals(
+            {"input_dim_0": np.linspace(0, 1, 10), "input_dim_1": np.linspace(0, 1, 10)}
+        )
         kl = KarhunenLoeve(
-            basis_name="fourier",
-            n_functions=5,
-            dimension="2D",
-            argvals=np.linspace(0, 1, 10),
+            basis_name=("fourier", "fourier"),
+            n_functions=(5, 1),
+            argvals=argvals,
             random_state=42,
         )
         kl.new(n_obs=50)
@@ -1472,11 +1477,13 @@ class TestFit(unittest.TestCase):
 
 class TestFitNorm(unittest.TestCase):
     def setUp(self):
+        argvals = DenseArgvals(
+            {"input_dim_0": np.linspace(0, 1, 10), "input_dim_1": np.linspace(0, 1, 10)}
+        )
         kl = KarhunenLoeve(
-            basis_name="fourier",
-            n_functions=5,
-            dimension="2D",
-            argvals=np.linspace(0, 1, 10),
+            basis_name=("fourier", "fourier"),
+            n_functions=(5, 1),
+            argvals=argvals,
             random_state=42,
         )
         kl.new(n_obs=50)
@@ -1510,11 +1517,13 @@ class TestFitNorm(unittest.TestCase):
 
 class TestTransform(unittest.TestCase):
     def setUp(self):
+        argvals = DenseArgvals(
+            {"input_dim_0": np.linspace(0, 1, 10), "input_dim_1": np.linspace(0, 1, 10)}
+        )
         kl = KarhunenLoeve(
-            basis_name="fourier",
-            n_functions=5,
-            dimension="2D",
-            argvals=np.linspace(0, 1, 10),
+            basis_name=("fourier", "fourier"),
+            n_functions=(5, 1),
+            argvals=argvals,
             random_state=42,
         )
         kl.new(n_obs=50)
@@ -1576,11 +1585,13 @@ class TestTransform(unittest.TestCase):
 
 class TestInverseTransform(unittest.TestCase):
     def setUp(self):
+        argvals = DenseArgvals(
+            {"input_dim_0": np.linspace(0, 1, 10), "input_dim_1": np.linspace(0, 1, 10)}
+        )
         kl = KarhunenLoeve(
-            basis_name="fourier",
-            n_functions=5,
-            dimension="2D",
-            argvals=np.linspace(0, 1, 10),
+            basis_name=("fourier", "fourier"),
+            n_functions=(5, 1),
+            argvals=argvals,
             random_state=42,
         )
         kl.new(n_obs=50)
