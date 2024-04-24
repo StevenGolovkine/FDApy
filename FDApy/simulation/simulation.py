@@ -143,6 +143,8 @@ class Simulation(ABC):
 
     """
 
+    ###########################################################################
+    # Checkers
     def _check_data(self) -> None:
         """Check if self has the attribut data."""
         if self.data is None:
@@ -164,6 +166,10 @@ class Simulation(ABC):
                 " with dimension larger than 1."
             )
 
+    ###########################################################################
+
+    ###########################################################################
+    # Magic methods
     def __init__(self, basis_name: str, random_state: Optional[int] = None) -> None:
         """Initialize Simulation object."""
         super().__init__()
@@ -175,6 +181,10 @@ class Simulation(ABC):
         else:
             self.random_state = None
 
+    ###########################################################################
+
+    ###########################################################################
+    # Properties
     @property
     def basis_name(self) -> str:
         """Getter for basis_name."""
@@ -184,6 +194,10 @@ class Simulation(ABC):
     def basis_name(self, new_basis_name: str) -> None:
         self._basis_name = new_basis_name
 
+    ###########################################################################
+
+    ###########################################################################
+    # Abstract methods
     @abstractmethod
     def new(
         self,
@@ -194,6 +208,10 @@ class Simulation(ABC):
     ) -> None:
         """Simulate a new set of curves."""
 
+    ###########################################################################
+
+    ###########################################################################
+    # Methods
     def add_noise(self, noise_variance: float = 1.0) -> None:
         r"""Add noise to functional data objects.
 
@@ -307,3 +325,5 @@ class Simulation(ABC):
         self.data = self.noisy_data
         self.sparsify(percentage=percentage, epsilon=epsilon)
         self.data = tmp
+
+    ###########################################################################

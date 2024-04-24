@@ -1129,7 +1129,7 @@ class MFPCA:
 
         References
         ----------
-        .. [1] Happ and Greven (2018), Multivariate Functional Principal
+        .. [1] Happ C. & Greven S. (2018), Multivariate Functional Principal
             Component Analysis for Data Observed on Different (Dimensional)
             Domains. Journal of the American Statistical Association, 113,
             pp. 649--659.

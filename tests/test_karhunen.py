@@ -6,7 +6,6 @@ Written with the help of ChatGPT.
 
 """
 import numpy as np
-import pickle
 import unittest
 
 from pathlib import Path
@@ -15,7 +14,7 @@ from FDApy.representation.basis import Basis, MultivariateBasis
 from FDApy.representation.argvals import DenseArgvals
 from FDApy.representation.values import DenseValues
 from FDApy.representation.functional_data import (
-    DenseFunctionalData,
+    BasisFunctionalData,
     MultivariateFunctionalData,
 )
 from FDApy.simulation.karhunen import (
@@ -29,7 +28,6 @@ from FDApy.simulation.karhunen import (
     _make_coef,
     _initialize_centers,
     _initialize_clusters_std,
-    _compute_data,
     KarhunenLoeve,
 )
 
@@ -291,54 +289,18 @@ class TestInitializeClusterStd(unittest.TestCase):
         np.testing.assert_array_equal(result, expected)
 
 
-class TestComputeData(unittest.TestCase):
-    def setUp(self):
-        fname = THIS_DIR.parent / "data/basis_2_1D.pickle"
-        with open(fname, "rb") as handle:
-            self.basis1d = pickle.load(handle)
-
-        fname = THIS_DIR.parent / "data/basis_2_2D.pickle"
-        with open(fname, "rb") as handle:
-            self.basis2d = pickle.load(handle)
-
-        self.coef_1d = np.array([[0.30471708, -0.73537981]])
-        self.coef_2d = np.array([[0.30471708, -0.90065266]])
-
-    def test_dimension_1d(self):
-        output = _compute_data(self.basis1d, self.coef_1d)
-        expected = np.matmul(self.coef_1d, self.basis1d.values)
-        np.testing.assert_array_almost_equal(output.values, expected)
-
-    def test_dimension_2d(self):
-        output = _compute_data(self.basis2d, self.coef_2d)
-        expected = np.tensordot(self.coef_2d, self.basis2d.values, axes=1)
-        np.testing.assert_array_almost_equal(output.values, expected)
-
-    def test_raise_value_error(self):
-        argvals = DenseArgvals(
-            {
-                "input_dim_0": np.array([0, 1, 2]),
-                "input_dim_1": np.array([0, 1]),
-                "input_dim_2": np.array([0, 1]),
-            }
-        )
-        values = DenseValues(np.zeros((1, 3, 2, 2)))
-        basis = DenseFunctionalData(argvals, values)  # n_dim = 3
-
-        with self.assertRaises(ValueError):
-            _compute_data(basis, self.coef_1d)
-
-
 class TestCheckBasisNone(unittest.TestCase):
     def setUp(self):
-        fname = THIS_DIR.parent / "data/basis_2_1D.pickle"
-        with open(fname, "rb") as handle:
-            self.basis1d = pickle.load(handle)
+        argvals = DenseArgvals({"input_dim_0": np.array([0, 0.5, 1])})
+        values = DenseValues([[1, 2, 3], [4, 5, 6]])
+        basis = Basis(name="given", argvals=argvals, values=values)
+
         self.basis_name = "fourier"
+        self.basis = basis
 
     def test_raise_error(self):
         with self.assertRaises(ValueError):
-            KarhunenLoeve._check_basis_none(self.basis_name, self.basis1d)
+            KarhunenLoeve._check_basis_none(self.basis_name, self.basis)
 
     def test_raise_error_none(self):
         with self.assertRaises(ValueError):
@@ -351,13 +313,24 @@ class TestCheckBasisNone(unittest.TestCase):
 
 class TestCheckBasisType(unittest.TestCase):
     def setUp(self):
-        fname = THIS_DIR.parent / "data/basis_2_1D.pickle"
-        with open(fname, "rb") as handle:
-            self.basis1d = pickle.load(handle)
+        argvals = DenseArgvals({"input_dim_0": np.array([0, 0.5, 1])})
+        values = DenseValues([[1, 2, 3], [4, 5, 6]])
+        self.basis = Basis(name="given", argvals=argvals, values=values)
 
-        fname = THIS_DIR.parent / "data/basis_multi_3_1D.pickle"
-        with open(fname, "rb") as handle:
-            self.basis_multi = pickle.load(handle)
+        n_functions = [2, (2, 1)]
+        name = ["fourier", ("fourier", "fourier")]
+        argvals_list = [
+            DenseArgvals({"input_dim_0": np.array([0, 0.5, 1])}),
+            DenseArgvals(
+                {
+                    "input_dim_0": np.array([0, 0.5, 1]),
+                    "input_dim_1": np.array([0, 0.5, 1]),
+                }
+            ),
+        ]
+        self.basis_multi = MultivariateBasis(
+            name=name, n_functions=n_functions, argvals=argvals_list
+        )
 
     def test_raise_error(self):
         with self.assertRaises(ValueError):
@@ -368,7 +341,7 @@ class TestCheckBasisType(unittest.TestCase):
         self.assertTrue(True)  # if no error was raised, the test is successful
 
     def test_basis_basis(self):
-        KarhunenLoeve._check_basis_type(self.basis1d)
+        KarhunenLoeve._check_basis_type(self.basis)
         self.assertTrue(True)  # if no error was raised, the test is successful
 
     def test_basis_list_basis(self):
@@ -376,113 +349,60 @@ class TestCheckBasisType(unittest.TestCase):
         self.assertTrue(True)  # if no error was raised, the test is successful
 
 
-class TestCreateListBasis(unittest.TestCase):
-    def setUp(self):
-        self.basis_name = ["fourier", "bsplines"]
-        self.dimension = ["1D", "2D"]
-        self.n_functions = 5
-
-    def test_create_basis(self):
-        basis_list = KarhunenLoeve._create_basis(
-            self.basis_name, self.dimension, self.n_functions
-        )
-
-        self.assertEqual(len(basis_list), 2)
-        self.assertIsInstance(basis_list, MultivariateBasis)
-        self.assertEqual(basis_list.name, ["fourier", "bsplines"])
-
-        self.assertEqual(basis_list.data[0].n_obs, 5)
-        self.assertEqual(basis_list.data[0].n_dimension, 1)
-
-        self.assertEqual(basis_list.data[1].n_obs, 5)
-        self.assertEqual(basis_list.data[1].n_dimension, 2)
-
-    def test_create_basis_fourier(self):
-        n_functions = 6
-
-        basis_list = KarhunenLoeve._create_basis(
-            self.basis_name, self.dimension, n_functions
-        )
-
-        self.assertEqual(len(basis_list), 2)
-        self.assertIsInstance(basis_list, MultivariateBasis)
-        self.assertEqual(basis_list.name, ["fourier", "bsplines"])
-
-        self.assertEqual(basis_list.data[0].n_obs, 6)
-        self.assertEqual(basis_list.data[0].n_dimension, 1)
-
-        self.assertEqual(basis_list.data[1].n_obs, 6)
-        self.assertEqual(basis_list.data[1].n_dimension, 2)
-
-
 class TestKarhunenLoeveInit(unittest.TestCase):
     def setUp(self):
         self.basis_name = ["fourier", "bsplines"]
-        self.dimension = "1D"
-        self.n_functions = 5
-        self.basis = Basis("fourier", n_functions=self.n_functions)
+        self.n_functions = [5, 5]
+        self.basis = Basis("fourier", n_functions=5)
 
     def test_init_with_no_basis_name(self):
         with self.assertRaises(ValueError):
             KarhunenLoeve(
-                basis_name=None,
                 n_functions=self.n_functions,
-                dimension=self.dimension,
+                basis_name=None,
                 basis=None,
             )
 
     def test_init_with_basis_name_and_basis(self):
         with self.assertRaises(ValueError):
             KarhunenLoeve(
-                basis_name=self.basis_name,
                 n_functions=self.n_functions,
-                dimension=self.dimension,
+                basis_name=self.basis_name,
                 basis=self.basis,
             )
 
     def test_init_with_basis_name_as_string(self):
         kl = KarhunenLoeve(
-            basis_name=self.basis_name[0],
-            n_functions=self.n_functions,
-            dimension=self.dimension,
+            n_functions=self.n_functions[0], basis_name=self.basis_name[0]
         )
         self.assertIsNotNone(kl.basis)
         self.assertIsInstance(kl.basis, Basis)
-        self.assertEqual(kl.basis.name, "fourier")
+        self.assertEqual(kl.basis.name, ("fourier",))
         self.assertEqual(kl.basis.n_obs, 5)
-        self.assertEqual(kl.basis.dimension, "1D")
 
     def test_init_with_basis_name_as_list(self):
         kl = KarhunenLoeve(
-            basis_name=self.basis_name,
             n_functions=self.n_functions,
-            dimension=self.dimension,
+            basis_name=self.basis_name,
         )
         self.assertIsNotNone(kl.basis)
         self.assertEqual(len(kl.basis), 2)
         self.assertIsInstance(kl.basis, MultivariateBasis)
 
     def test_init_with_basis_univariate(self):
-        kl = KarhunenLoeve(
-            basis_name=None, n_functions=None, dimension=None, basis=self.basis
-        )
+        kl = KarhunenLoeve(basis_name=None, n_functions=None, basis=self.basis)
         self.assertIsNotNone(kl.basis)
         self.assertIsInstance(kl.basis, Basis)
-        self.assertEqual(kl.basis.name, "fourier")
+        self.assertEqual(kl.basis.name, ("fourier",))
         self.assertEqual(kl.basis.n_obs, 5)
-        self.assertEqual(kl.basis.dimension, "1D")
 
 
 class TestKarhunenLoeveNew(unittest.TestCase):
     def setUp(self):
         self.basis_name = ["fourier", "bsplines"]
-        self.dimension = "1D"
-        self.n_functions = 5
+        self.n_functions = [5, 5]
         self.kl = KarhunenLoeve(
-            basis_name=self.basis_name,
-            n_functions=self.n_functions,
-            dimension=self.dimension,
-            random_state=42,
+            basis_name=self.basis_name, n_functions=self.n_functions, random_state=42
         )
 
     def test_new_n_obs(self):
@@ -496,8 +416,8 @@ class TestKarhunenLoeveNew(unittest.TestCase):
         self.assertEqual(len(np.unique(self.kl.labels)), n_clusters)
 
     def test_new_eigenvalues(self):
-        centers = np.zeros((self.n_functions, 1))
-        clusters_std = np.ones((self.n_functions, 1))
+        centers = np.zeros((self.n_functions[0], 1))
+        clusters_std = np.ones((self.n_functions[0], 1))
         self.kl.new(10, 1, centers=centers, clusters_std=clusters_std)
         np.testing.assert_allclose(self.kl.eigenvalues, clusters_std[:, 0])
 
@@ -507,9 +427,7 @@ class TestKarhunenLoeveNew(unittest.TestCase):
 
     def test_new_univariate(self):
         kl = KarhunenLoeve(
-            basis_name=self.basis_name[0],
-            n_functions=self.n_functions,
-            dimension=self.dimension,
+            basis_name=self.basis_name[0], n_functions=self.n_functions[0]
         )
         kl.new(10, 1)
-        self.assertIsInstance(kl.data, DenseFunctionalData)
+        self.assertIsInstance(kl.data, BasisFunctionalData)

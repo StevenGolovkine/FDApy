@@ -257,17 +257,11 @@ class MultivariateBasis(MultivariateFunctionalData):
 
     Parameters
     ----------
-    n_components: int
-        Number of components to generate.
-    name: Union[str, List[str]]
+    name: List[Union[Tuple[str], str]]
         Name of the basis to use. One of
         `{'legendre', 'wiener', 'fourier', 'bsplines'}`.
-    n_functions: int
+    n_functions: List[Union[Tuple[int], int]]
         Number of functions in the basis.
-    dimension: Optional[List[str]], {'1D', '2D'}, default=None
-        Dimension of the basis to simulate. If '2D', the basis is simulated as
-        the tensor product of the one dimensional basis of functions by itself.
-        The number of functions in the 2D basis will be :math:`n_function^2`.
     argvals: Optional[List[DenseArgvals]]
         The sampling points of the functional data.
     values: Optional[List[DenseValues]]

@@ -922,6 +922,8 @@ class DenseFunctionalData(GridFunctionalData):
         return DenseFunctionalData(argvals, values)
 
     ###########################################################################
+
+    ###########################################################################
     # Properties
     @GridFunctionalData.argvals.setter
     def argvals(self, new_argvals: DenseArgvals) -> None:
