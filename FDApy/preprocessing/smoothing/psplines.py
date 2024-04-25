@@ -662,6 +662,7 @@ class PSplines:
         x: Union[List[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
         sample_weights: npt.NDArray[np.float64] = None,
         penalty: Optional[tuple[float, ...]] = None,
+        **kwargs,
     ) -> None:
         """Fit a P-splines model to the given data.
 
@@ -725,8 +726,8 @@ class PSplines:
                 argvals=argvals,
                 n_functions=n_segments + degree,
                 degree=degree,
-                domain_min=np.min(argvals),
-                domain_max=np.max(argvals),
+                domain_min=kwargs.get("domain_min", np.min(argvals)),
+                domain_max=kwargs.get("domain_max", np.max(argvals)),
             )
             for argvals, n_segments, degree in zip(x, self.n_segments, self.degree)
         ]
@@ -755,7 +756,7 @@ class PSplines:
         self.diagnostics = {"hat_matrix": res["hat_matrix"]}
         return self
 
-    def predict(self, x: Optional[npt.NDArray[np.float64]] = None) -> None:
+    def predict(self, x: Optional[npt.NDArray[np.float64]] = None, **kwargs) -> None:
         """Predict the response variable values for the given predictor variable values.
 
         The method predicts the response variable values for the given predictor
@@ -807,8 +808,8 @@ class PSplines:
                 argvals=argvals,
                 n_functions=n_segments + degree,
                 degree=degree,
-                domain_min=np.min(argvals),
-                domain_max=np.max(argvals),
+                domain_min=kwargs.get("domain_min", np.min(argvals)),
+                domain_max=kwargs.get("domain_max", np.max(argvals)),
             )
             for argvals, n_segments, degree in zip(x, self.n_segments, self.degree)
         ]

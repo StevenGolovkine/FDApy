@@ -14,6 +14,8 @@ import numpy.typing as npt
 import pandas as pd
 import warnings
 
+from functools import reduce
+
 from abc import ABC, abstractmethod
 from collections import UserList
 from collections.abc import Iterator
@@ -648,6 +650,12 @@ class GridFunctionalData(FunctionalData):
     ###########################################################################
     # Abstract methods
     @abstractmethod
+    def to_basis(
+        self, points: Optional[DenseArgvals] = None, method: str = "PS", **kwargs
+    ) -> BasisFunctionalData:
+        """Convert the data to basis format."""
+
+    @abstractmethod
     def to_long(self, reindex: bool = False) -> pd.DataFrame:
         """Convert the data to long format."""
 
@@ -948,6 +956,60 @@ class DenseFunctionalData(GridFunctionalData):
 
     ###########################################################################
     # Methods
+    def to_basis(
+        self,
+        points: Optional[DenseArgvals] = None,
+        method: str = "PS",
+        penalty: Optional[float] = None,
+        **kwargs,
+    ) -> BasisFunctionalData:
+        """Convert the data to basis format.
+
+        This function transform a DenseFunctionalData object into a BasisFunctonalData
+        object using `method`.
+
+        Parameters
+        ----------
+        points: Optional[DenseArgvals], default=None
+            The argvals of the basis.
+        method: str, default='PS'
+            The method to get the coefficients.
+        penalty: Optional[float], default=None
+            Strictly positive. Penalty used in the P-splined fitting of the data.
+        kwargs:
+            Other keyword arguments are passed to the function:
+
+            - :meth:`preprocessing.smoothing.PSplines`
+
+        Returns
+        -------
+        BasisFunctionalData
+            The expanded data.
+
+        """
+        from .basis import Basis
+
+        if method == "PS":
+            if penalty is None:
+                penalty = self.n_dimension * [1]
+
+            ps = PSplines(**kwargs)
+            n_functions = np.power(ps.n_segments + ps.degree, self.n_dimension)
+
+            x = list(self.argvals.values())
+            coefs = np.zeros((self.n_obs, n_functions))
+            for idx, _ in enumerate(self):
+                ps.fit(x=x, y=self.values[idx, :], penalty=penalty)
+                coefs[idx, :] = ps.beta_hat.flatten()
+
+            values = DenseValues(
+                reduce(np.kron, ps.basis).reshape((n_functions, *self.argvals.n_points))
+            )
+            basis = Basis(name="given", argvals=self.argvals, values=values)
+        else:
+            raise ValueError("Method not implemented.")
+        return BasisFunctionalData(basis=basis, coefficients=coefs)
+
     def to_long(self, reindex: bool = False) -> pd.DataFrame:
         """Convert the data to long format.
 
@@ -1144,7 +1206,7 @@ class DenseFunctionalData(GridFunctionalData):
             x = list(self.argvals.values())
 
             smooth = np.zeros((self.n_obs, *self.argvals.n_points))
-            for idx, obs in enumerate(self):
+            for idx, _ in enumerate(self):
                 ps.fit(x=x, y=self.values[idx, :], penalty=penalty)
                 smooth[idx, :] = ps.predict()
         else:
@@ -1934,6 +1996,77 @@ class IrregularFunctionalData(GridFunctionalData):
 
     ###########################################################################
     # Methods
+    def to_basis(
+        self,
+        points: Optional[DenseArgvals] = None,
+        method: str = "PS",
+        penalty: Optional[float] = None,
+        **kwargs,
+    ) -> BasisFunctionalData:
+        """Convert the data to basis format.
+
+        This function transform a IrreuglarFunctionalData object into a
+        BasisFunctonalData object using `method`.
+
+        Parameters
+        ----------
+        points: Optional[DenseArgvals], default=None
+            The argvals of the basis.
+        method: str, default='PS'
+            The method to get the coefficients.
+        penalty: Optional[float], default=None
+            Strictly positive. Penalty used in the P-splined fitting of the data.
+        kwargs:
+            Other keyword arguments are passed to the function:
+
+            - :meth:`preprocessing.smoothing.PSplines`
+
+        Returns
+        -------
+        BasisFunctionalData
+            The expanded data.
+
+        """
+        from .basis import Basis
+        from ..misc.basis import _basis_bsplines
+
+        argvals = self.argvals.to_dense()
+        do_min, do_max = argvals.min_max["input_dim_0"]
+
+        if method == "PS":
+            if penalty is None:
+                penalty = self.n_dimension * [1]
+
+            ps = PSplines(**kwargs)
+            n_functions = np.power(ps.n_segments + ps.degree, self.n_dimension)
+
+            coefs = np.zeros((self.n_obs, n_functions))
+            for idx, obs in enumerate(self):
+                x = obs.argvals[idx]["input_dim_0"]
+                ps.fit(
+                    x=x,
+                    y=obs.values[idx],
+                    penalty=penalty,
+                    domain_min=do_min,
+                    domain_max=do_max,
+                )
+                coefs[idx, :] = ps.beta_hat.flatten()
+
+            values = DenseValues(
+                _basis_bsplines(
+                    argvals=argvals["input_dim_0"],
+                    n_functions=int(ps.n_segments + ps.degree),
+                    degree=int(ps.degree),
+                    domain_min=do_min,
+                    domain_max=do_max,
+                )
+            )
+            basis = Basis(name="given", argvals=argvals, values=values)
+        else:
+            raise ValueError("Method not implemented.")
+
+        return BasisFunctionalData(basis=basis, coefficients=coefs)
+
     def to_long(self, reindex: bool = False) -> pd.DataFrame:
         """Convert the data to long format.
 
