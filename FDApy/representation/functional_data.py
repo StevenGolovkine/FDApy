@@ -2028,7 +2028,6 @@ class IrregularFunctionalData(GridFunctionalData):
 
         """
         from .basis import Basis
-        from ..misc.basis import _basis_bsplines
 
         argvals = self.argvals.to_dense()
         do_min, do_max = argvals.min_max["input_dim_0"]
@@ -2047,21 +2046,17 @@ class IrregularFunctionalData(GridFunctionalData):
                     x=x,
                     y=obs.values[idx],
                     penalty=penalty,
-                    domain_min=do_min,
-                    domain_max=do_max,
+                    domain_min=[do_min],
+                    domain_max=[do_max],
                 )
                 coefs[idx, :] = ps.beta_hat.flatten()
 
-            values = DenseValues(
-                _basis_bsplines(
-                    argvals=argvals["input_dim_0"],
-                    n_functions=int(ps.n_segments + ps.degree),
-                    degree=int(ps.degree),
-                    domain_min=do_min,
-                    domain_max=do_max,
-                )
+            basis = Basis(
+                name="bsplines",
+                n_functions=int(ps.n_segments + ps.degree),
+                degree=int(ps.degree),
+                argvals=argvals,
             )
-            basis = Basis(name="given", argvals=argvals, values=values)
         else:
             raise ValueError("Method not implemented.")
 
