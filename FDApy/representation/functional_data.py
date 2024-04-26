@@ -2030,33 +2030,33 @@ class IrregularFunctionalData(GridFunctionalData):
         from .basis import Basis
 
         argvals = self.argvals.to_dense()
-        do_min, do_max = argvals.min_max["input_dim_0"]
+        domain_min = tuple(val[0] for val in argvals.min_max.values())
+        domain_max = tuple(val[1] for val in argvals.min_max.values())
 
         if method == "PS":
             if penalty is None:
                 penalty = self.n_dimension * [1]
 
             ps = PSplines(**kwargs)
-            n_functions = np.power(ps.n_segments + ps.degree, self.n_dimension)
+            basis = Basis(
+                name=self.n_dimension * ("bsplines",),
+                n_functions=self.n_dimension * (int(ps.n_segments + ps.degree),),
+                degree=int(ps.degree),
+                argvals=argvals,
+            )
 
+            n_functions = np.power(ps.n_segments + ps.degree, self.n_dimension)
             coefs = np.zeros((self.n_obs, n_functions))
             for idx, obs in enumerate(self):
-                x = obs.argvals[idx]["input_dim_0"]
+                x = list(obs.argvals[idx].values())
                 ps.fit(
                     x=x,
                     y=obs.values[idx],
                     penalty=penalty,
-                    domain_min=[do_min],
-                    domain_max=[do_max],
+                    domain_min=domain_min,
+                    domain_max=domain_max,
                 )
                 coefs[idx, :] = ps.beta_hat.flatten()
-
-            basis = Basis(
-                name="bsplines",
-                n_functions=int(ps.n_segments + ps.degree),
-                degree=int(ps.degree),
-                argvals=argvals,
-            )
         else:
             raise ValueError("Method not implemented.")
 
