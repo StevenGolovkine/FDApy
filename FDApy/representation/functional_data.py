@@ -2005,7 +2005,7 @@ class IrregularFunctionalData(GridFunctionalData):
     ) -> BasisFunctionalData:
         """Convert the data to basis format.
 
-        This function transform a IrreuglarFunctionalData object into a
+        This function transforms a IrregularFunctionalData object into a
         BasisFunctonalData object using `method`.
 
         Parameters
@@ -3338,6 +3338,46 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     ###########################################################################
     # Methods
+    def to_basis(self, **kwargs) -> MultivariateFunctionalData:
+        """Convert the data to basis format.
+        
+        This function transforms a MultivariateFunctionalData object into a
+        MultivariateFunctionalData that contains BasisFunctionalData.
+
+        Parameters
+        ----------
+        kwargs:
+            Other keyword arguments are passed to the functions:
+
+            - :meth:`representation.functional_data.DenseFunctionalData`,
+            - :meth:`representation.functional_data.IrregularFunctionalData`.
+
+        Returns
+        -------
+        MultivariateFunctionalData
+            The expanded data.
+
+        """
+        data_list = []
+        for data in self.data:
+            if isinstance(data, BasisFunctionalData):
+                data_list.append(data)
+            else:
+                data_basis = data.to_basis(**kwargs)
+                data_list.append(data_basis)
+        return MultivariateFunctionalData(data_list)
+
+    def to_grid(self) -> MultivariateFunctionalData:
+        """Convert the data to grid."""
+        data_list = []
+        for data in self.data:
+            if isinstance(data, GridFunctionalData):
+                data_list.append(data)
+            else:
+                data_grid = data.to_grid()
+                data_list.append(data_grid)
+        return MultivariateFunctionalData(data_list)
+
     def to_long(self, reindex: bool = True) -> List[pd.DataFrame]:
         """Convert the data to long format.
 
