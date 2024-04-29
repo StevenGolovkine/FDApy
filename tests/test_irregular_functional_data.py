@@ -1589,7 +1589,7 @@ class TestRescaleIrregular(unittest.TestCase):
         np.testing.assert_allclose(results.values, expected_results)
 
     def test_rescale_2d(self):
-        results, _ = self.fdata_sparse_2D.rescale(method="LP")
+        results, _ = self.fdata_sparse_2D.rescale(method_smoothing="LP")
 
         expected_results = IrregularValues(
             {

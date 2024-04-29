@@ -16,8 +16,7 @@ from FDApy.representation.functional_data import (
     DenseFunctionalData,
     IrregularFunctionalData,
 )
-from FDApy.simulation.karhunen import KarhunenLoeve
-from FDApy.preprocessing.dim_reduction.fpca import UFPCA
+from FDApy.preprocessing.dim_reduction.ufpca import UFPCA
 
 THIS_DIR = Path(__file__)
 
@@ -266,7 +265,7 @@ class TestFit(unittest.TestCase):
         self.assertIsInstance(uf.covariance, DenseFunctionalData)
         self.assertIsInstance(uf._training_data, IrregularFunctionalData)
 
-        expected_eigenvalues = np.array([0.82648629, 0.12032015])
+        expected_eigenvalues = np.array([0.91755711, 0.13357827])
         np.testing.assert_array_almost_equal(
             uf.eigenvalues, expected_eigenvalues, decimal=2
         )
@@ -485,7 +484,7 @@ class TestFit(unittest.TestCase):
             np.abs(uf.eigenfunctions.values), np.abs(expected_eigenfunctions), decimal=2
         )
 
-        expected_noise = 0.0013317231007740737
+        expected_noise = 0.0014784661534153342
         np.testing.assert_array_almost_equal(
             uf._noise_variance, expected_noise, decimal=2
         )

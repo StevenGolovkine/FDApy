@@ -718,8 +718,8 @@ class PSplines:
         if penalty is None:
             penalty = tuple(self.dimension * [1])
 
-        domain_min = kwargs.get("domain_min", self.dimension * [4])
-        domain_max = kwargs.get("domain_max", self.dimension * [6])
+        domain_min = kwargs.get("domain_min", self.dimension * [None])
+        domain_max = kwargs.get("domain_max", self.dimension * [None])
 
         # Build the B-splines basis
         if isinstance(x, np.ndarray):

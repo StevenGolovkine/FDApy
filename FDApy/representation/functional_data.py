@@ -2594,6 +2594,7 @@ class IrregularFunctionalData(GridFunctionalData):
         self,
         weights: float = 0.0,
         method_integration: str = "trapz",
+        method_smoothing: str = "LP",
         use_argvals_stand: bool = False,
         **kwargs,
     ) -> Tuple[IrregularFunctionalData, float]:
@@ -2648,7 +2649,7 @@ class IrregularFunctionalData(GridFunctionalData):
 
         """
         if weights == 0.0:
-            data_smooth = self.smooth(**kwargs)
+            data_smooth = self.smooth(method=method_smoothing, **kwargs)
             if use_argvals_stand:
                 argvals_stand = data_smooth.argvals_stand.values()
                 axis = [argvals for argvals in argvals_stand]
@@ -3340,7 +3341,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     # Methods
     def to_basis(self, **kwargs) -> MultivariateFunctionalData:
         """Convert the data to basis format.
-        
+
         This function transforms a MultivariateFunctionalData object into a
         MultivariateFunctionalData that contains BasisFunctionalData.
 
@@ -3890,6 +3891,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         self,
         weights: Optional[npt.NDArray[np.float64]] = None,
         method_integration: str = "trapz",
+        method_smoothing: str = "LP",
         use_argvals_stand: bool = False,
         **kwargs,
     ) -> Tuple[MultivariateFunctionalData, npt.NDArray[np.float64]]:
@@ -3944,6 +3946,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             fdata.rescale(
                 weights=weight,
                 method_integration=method_integration,
+                method_smoothing=method_smoothing,
                 use_argvals_stand=use_argvals_stand,
                 **kwargs,
             )

@@ -20,7 +20,6 @@ from FDApy.representation.functional_data import (
     MultivariateFunctionalData,
 )
 
-from FDApy.simulation.karhunen import KarhunenLoeve
 
 THIS_DIR = Path(__file__)
 
@@ -57,7 +56,7 @@ class MultivariateFunctionalDataTest(unittest.TestCase):
 
     def test_repr(self):
         expected_repr = (
-            f"Multivariate functional data object with 2 functions of 3 observations."
+            "Multivariate functional data object with 2 functions of 3 observations."
         )
         actual_repr = repr(self.multivariate_data)
         self.assertEqual(actual_repr, expected_repr)
@@ -368,7 +367,7 @@ class TestStandardizeMultivariateFunctionalData(unittest.TestCase):
         np.testing.assert_array_almost_equal(res.data[2].values, expected_values)
 
 
-class TestStandardizeMultivariateFunctionalData(unittest.TestCase):
+class TestRescaleMultivariateFunctionalData(unittest.TestCase):
     def setUp(self) -> None:
         argvals = np.array([0, 1, 2])
         X = np.array([[0, 1, 4], [0, 1, np.sqrt(2)]])
@@ -397,7 +396,7 @@ class TestStandardizeMultivariateFunctionalData(unittest.TestCase):
         )
 
     def test_rescale(self) -> None:
-        results, _ = self.fdata_multi.rescale(method="LP")
+        results, _ = self.fdata_multi.rescale(method_smoothing="LP")
 
         expected_results = np.array(
             [[0.0, 1.09383632, 4.37534529], [0.0, 1.09383632, 1.54691816]]

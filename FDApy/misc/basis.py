@@ -204,6 +204,11 @@ def _basis_bsplines(
             res[:, idx] = np.power(x - knot, p) * (x >= knot)
         return res
 
+    if domain_min is None:
+        domain_min = min(argvals)
+    if domain_max is None:
+        domain_max = max(argvals)
+
     # Compute the B-splines
     n_segments = n_functions - degree
     dx = (domain_max - domain_min) / n_segments
