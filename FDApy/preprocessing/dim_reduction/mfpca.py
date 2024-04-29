@@ -197,7 +197,8 @@ def _fit_inner_product_multivariate(
     results = dict()
     results["eigenvectors"] = eigenvectors
     results["eigenvalues"] = eigenvalues / data.n_obs
-    results["eigenfunctions"] = eigenfunctions.smooth(points=points, method="LP")
+    results["eigenfunctions"] = eigenfunctions
+    #results["eigenfunctions"] = eigenfunctions.smooth(points=points, method="PS")
     return results
 
 
