@@ -459,6 +459,73 @@ def _cartesian_product(
     return stacked
 
 
+def _block_diag(*arrs: npt.NDArray[np.float_]):
+    """Create a block diagonal matrix from provided arrays.
+
+    Given the inputs `A`, `B` and `C`, the output will have these
+    arrays arranged on the diagonal::
+
+        [[A, 0, 0],
+         [0, B, 0],
+         [0, 0, C]]
+
+    Parameters
+    ----------
+    A, B, C, ...: npt.NDArray[np.float_], 2-dimensional arrays.
+        Input arrays.
+
+    Returns
+    -------
+    D: npt.NDArray[np.float_]
+        Array with `A`, `B`, `C`, ... on the diagonal. `D` has the
+        same dtype as `A`.
+
+    Notes
+    -----
+    The method is adapted from the `scipy.linalg.block_diag` function [1]_ without
+    types checking and empty array handling. If all the input arrays are square, the
+    output is known as a block diagonal matrix.
+
+    References
+    ----------
+    .. [1] Pauli Virtanen, Ralf Gommers, Travis E. Oliphant, Matt Haberland, Tyler
+        Reddy, David Cournapeau, Evgeni Burovski, Pearu Peterson, Warren Weckesser,
+        Jonathan Bright, Stéfan J. van der Walt, Matthew Brett, Joshua Wilson, K. Jarrod
+        Millman, Nikolay Mayorov, Andrew R. J. Nelson, Eric Jones, Robert Kern, Eric
+        Larson, CJ Carey, İlhan Polat, Yu Feng, Eric W. Moore, Jake VanderPlas, Denis
+        Laxalde, Josef Perktold, Robert Cimrman, Ian Henriksen, E.A. Quintero, Charles R
+        Harris, Anne M. Archibald, Antônio H. Ribeiro, Fabian Pedregosa, Paul van
+        Mulbregt, and SciPy 1.0 Contributors. (2020) SciPy 1.0: Fundamental Algorithms
+        for Scientific Computing in Python. Nature Methods, 17(3), 261-272.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scipy.linalg import block_diag
+    >>> A = [[1, 0],
+    ...      [0, 1]]
+    >>> B = [[3, 4, 5],
+    ...      [6, 7, 8]]
+    >>> C = [[7]]
+    >>> block_diag(A, B, C)
+    array([[1, 0, 0, 0, 0, 0],
+           [0, 1, 0, 0, 0, 0],
+           [0, 0, 3, 4, 5, 0],
+           [0, 0, 6, 7, 8, 0],
+           [0, 0, 0, 0, 0, 7]])
+
+    """
+    shapes = np.array([a.shape for a in arrs])
+    out = np.zeros(np.sum(shapes, axis=0), dtype="float64")
+
+    r, c = 0, 0
+    for i, (rr, cc) in enumerate(shapes):
+        out[r : r + rr, c : c + cc] = arrs[i]
+        r += rr
+        c += cc
+    return out
+
+
 ##############################################################################
 # Array computation
 ##############################################################################

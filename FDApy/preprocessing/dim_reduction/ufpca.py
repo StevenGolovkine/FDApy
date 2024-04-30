@@ -155,10 +155,8 @@ def _fit_inner_product(
     results = dict()
     results["eigenvectors"] = eigenvectors
     results["eigenvalues"] = eigenvalues / data._data_inpro.n_obs
-    #results["eigenfunctions"] = eigenfunctions
-    results["eigenfunctions"] = eigenfunctions.smooth(
-        points=points, method='PS'
-    )
+    # results["eigenfunctions"] = eigenfunctions
+    results["eigenfunctions"] = eigenfunctions.smooth(points=points, method="PS")
     return results
 
 

@@ -14,9 +14,13 @@ from typing import Dict, Optional, List, Union
 from ...representation.argvals import DenseArgvals
 from ...representation.values import DenseValues
 from ...representation.functional_data import (
+    FunctionalData,
     DenseFunctionalData,
+    BasisFunctionalData,
     MultivariateFunctionalData,
 )
+from ...representation.basis import Basis
+
 from .ufpca import (
     UFPCA,
     _transform_numerical_integration_dense,
@@ -24,15 +28,67 @@ from .ufpca import (
     _transform_innpro,
 )
 from .fcp_tpa import FCPTPA
-from ...misc.utils import _compute_eigen
+from ...misc.utils import _compute_eigen, _block_diag
 
 
 #############################################################################
 # Utilities to fit
 
 
+def _univariate_decomposition(
+    data: FunctionalData,
+    method: str,
+    n_comp=2,
+    method_smoothing="LP",
+    method_scores="NumInt",
+    **kwargs,
+):
+    """Univariate Decomposition."""
+    if method == "UFPCA":
+        ufpca = UFPCA(n_components=n_comp, normalize=True)
+        ufpca.fit(data=data, points=None, method_smoothing=method_smoothing)
+        scores_uni = ufpca.transform(
+            method=method_scores, method_smoothing=method_smoothing
+        )
+        basis = Basis(
+            name="given",
+            argvals=ufpca.eigenfunctions.argvals,
+            values=ufpca.eigenfunctions.values,
+        )
+        univ_basis = BasisFunctionalData(basis=basis, coefficients=scores_uni)
+    elif method == "PSplines":
+        univ_basis = data.to_basis()
+    elif method == "FCPTPA":
+        n_points = data.n_points
+        mat_v = np.diff(np.identity(n_points[0]))
+        mat_w = np.diff(np.identity(n_points[1]))
+        ufpca = FCPTPA(n_components=n_comp, normalize=True)
+        ufpca.fit(
+            data,
+            penalty_matrices={
+                "v": np.dot(mat_v, mat_v.T),
+                "w": np.dot(mat_w, mat_w.T),
+            },
+            alpha_range={"v": (1e-4, 1e4), "w": (1e-4, 1e4)},
+            tolerance=1e-4,
+            max_iteration=15,
+            adapt_tolerance=True,
+        )
+        scores_uni = ufpca.transform(data)
+        basis = Basis(
+            name="given",
+            argvals=ufpca.eigenfunctions.argvals,
+            values=ufpca.eigenfunctions.values,
+        )
+        univ_basis = BasisFunctionalData(basis=basis, coefficients=scores_uni)
+    else:
+        raise ValueError("Method not implemented.")
+    return univ_basis
+
+
 def _fit_covariance_multivariate(
     data: MultivariateFunctionalData,
+    methods: List[str],
     points: DenseArgvals,
     n_components: List[Union[int, float]],
     method_smoothing: str = "LP",
@@ -66,38 +122,21 @@ def _fit_covariance_multivariate(
 
     """
     # Step 1: Perform univariate fPCA on each functions.
-    ufpca_list, scores = [], []
-    for fdata_uni, n_comp in zip(data.data, n_components):
-        if fdata_uni.n_dimension == 1:
-            ufpca = UFPCA(n_components=n_comp, normalize=True)
-            ufpca.fit(data=fdata_uni, points=None, method_smoothing=method_smoothing)
-            scores_uni = ufpca.transform(
-                method=scores_method, method_smoothing=method_smoothing
-            )
-        elif fdata_uni.n_dimension == 2:
-            n_points = fdata_uni.n_points
-            mat_v = np.diff(np.identity(n_points[0]))
-            mat_w = np.diff(np.identity(n_points[1]))
-            ufpca = FCPTPA(n_components=n_comp, normalize=True)
-            ufpca.fit(
-                fdata_uni,
-                penalty_matrices={
-                    "v": np.dot(mat_v, mat_v.T),
-                    "w": np.dot(mat_w, mat_w.T),
-                },
-                alpha_range={"v": (1e-4, 1e4), "w": (1e-4, 1e4)},
-                tolerance=1e-4,
-                max_iteration=15,
-                adapt_tolerance=True,
-            )
-            scores_uni = ufpca.transform(fdata_uni)
-        ufpca_list.append(ufpca)
-        scores.append(scores_uni)
-    scores_univariate = np.concatenate(scores, axis=1)
+    univ_decomposition = []
+    for fdata_uni, n_comp, method in zip(data.data, n_components, methods):
+        univ_decomposition.append(
+            _univariate_decomposition(fdata_uni, method=method, n_comp=n_comp)
+        )
+    scores_univariate = np.hstack([d.coefficients for d in univ_decomposition])
+
+    # get Cholesky decomposition of the inner product of basis functions
+    Bchol = [np.linalg.cholesky(d.basis.inner_product()) for d in univ_decomposition]
+    B_chol = _block_diag(*Bchol)
 
     # Step 2: Estimation of the covariance of the scores.
     temp = np.dot(scores_univariate.T, scores_univariate)
     covariance = temp / (len(scores_univariate) - 1)
+    covariance = (B_chol.T @ B_chol) @ covariance
 
     # Step 3: Eigenanalysis of the covariance of the scores.
     # We choose to keep all the components here.
@@ -105,26 +144,24 @@ def _fit_covariance_multivariate(
 
     # Step 4: Estimation of the multivariate eigenfunctions.
     # Retrieve the number of eigenfunctions for each univariate function.
+    npc = [d.coefficients.shape[1] for d in univ_decomposition]
     nb_eigenfunction_uni = [0]
-    for ufpca in ufpca_list:
-        nb_eigenfunction_uni.append(len(ufpca.eigenvalues))
+    nb_eigenfunction_uni.extend(npc)
     nb_eigenfunction_uni_cum = np.cumsum(nb_eigenfunction_uni)
 
     # Compute the multivariate eigenbasis.
     eigenfunctions = []
-    for idx, ufpca in enumerate(ufpca_list):
+    for idx, ufpca in enumerate(univ_decomposition):
         start = nb_eigenfunction_uni_cum[idx]
         end = nb_eigenfunction_uni_cum[idx + 1]
-        values = np.dot(ufpca.eigenfunctions.values.T, eigenvectors[start:end, :])
-        eigenfunctions.append(
-            DenseFunctionalData(ufpca.eigenfunctions.argvals, values.T)
-        )
+        values = np.dot(ufpca.basis.values.T, eigenvectors[start:end, :])
+        eigenfunctions.append(DenseFunctionalData(ufpca.basis.argvals, values.T))
 
     # Save the results
     results = dict()
     results["eigenvalues"] = eigenvalues
     results["eigenfunctions"] = MultivariateFunctionalData(eigenfunctions)
-    results["_ufpca_list"] = ufpca_list
+    results["_ufpca_list"] = univ_decomposition
     results["_scores_univariate"] = scores_univariate
     results["_scores_eigenvectors"] = eigenvectors
     return results
@@ -198,7 +235,7 @@ def _fit_inner_product_multivariate(
     results["eigenvectors"] = eigenvectors
     results["eigenvalues"] = eigenvalues / data.n_obs
     results["eigenfunctions"] = eigenfunctions
-    #results["eigenfunctions"] = eigenfunctions.smooth(points=points, method="PS")
+    # results["eigenfunctions"] = eigenfunctions.smooth(points=points, method="PS")
     return results
 
 
@@ -329,11 +366,13 @@ class MFPCA:
         self,
         n_components: List[Union[int, float]],
         method: str = "covariance",
+        univariate_expansion: Optional[List[str]] = None,
         normalize: bool = False,
     ) -> None:
         """Initialize MFPCA object."""
         self.n_components = n_components
         self.method = method
+        self.univariate_expansion = univariate_expansion
         self.normalize = normalize
         self.weights = None
 
@@ -354,6 +393,15 @@ class MFPCA:
     @n_components.setter
     def n_components(self, new_n_components: List[Union[int, float]]) -> None:
         self._n_components = new_n_components
+
+    @property
+    def univariate_expansion(self) -> List[str]:
+        """Gettter for `univariate_expansion`."""
+        return self._univariate_expansion
+
+    @univariate_expansion.setter
+    def univariate_expansion(self, new_univariate_expansion: List[str]) -> None:
+        self._univariate_expansion = new_univariate_expansion
 
     @property
     def normalize(self) -> bool:
@@ -454,6 +502,7 @@ class MFPCA:
         if self.method == "covariance":
             results = _fit_covariance_multivariate(
                 data=data,
+                methods=self.univariate_expansion,
                 points=points,
                 n_components=self.n_components,
                 method_smoothing=method_smoothing,
