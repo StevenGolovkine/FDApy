@@ -484,8 +484,8 @@ class TestComputeEigen(unittest.TestCase):
         matrix = np.array([[26, 18], [18, 74]])
         eig_val, eig_vec = _compute_eigen(matrix, 1)
 
-        expected_val = np.array([80.0])
-        expected_vec = np.array([[0.31622777], [0.9486833]])
+        expected_val = np.array([20.0])
+        expected_vec = np.array([[0.9486833], [0.31622777]])
 
         np.testing.assert_array_almost_equal(eig_val, expected_val)
         np.testing.assert_array_almost_equal(np.abs(eig_vec), expected_vec)

@@ -2964,8 +2964,10 @@ class BasisFunctionalData(FunctionalData):
 
     def __getitem__(self, index: int) -> Type[FunctionalData]:
         """Override getitem function, called when self[index]."""
-        # new_coefs = self.coefficients[index, :]
-        # return BasisFunctionalData(coefficients=new_coefs, basis=self.basis)
+        new_coefs = self.coefficients[index]
+        if len(new_coefs.shape) == 1:
+            new_coefs = new_coefs[np.newaxis]
+        return BasisFunctionalData(coefficients=new_coefs, basis=self.basis)
 
     ###########################################################################
 
