@@ -40,6 +40,9 @@ def _fit_covariance(
 ) -> Dict[str, object]:
     """Univariate Functional PCA using the covariance operator.
 
+    This method estimate eigencomponents of a functional dataset using the
+    diagonalization of the covariance operator.
+
     Parameters
     ----------
     data: FunctionalData
@@ -49,9 +52,9 @@ def _fit_covariance(
         will be estimated.
     n_components: Union[int, float], default=1
         Number of components to be estimated.
-    method_smoothing: str, default="LP"
-        Should the mean and covariance be smoothed?
-    kwargs
+    method_smoothing: str, default='LP'
+        Method to smooth the covariance function.
+    **kwargs
         Other keyword arguments are passed to the following function:
 
         - :meth:`FunctionalData.covariance`.
@@ -60,9 +63,10 @@ def _fit_covariance(
     -------
     Dict[str, object]
         A dictionary with entries:
-            - "eigenvalues"
-            - "eigenfunctions"
-            - "noise_variance_cov"
+
+        - `'eigenvalues'`: the estimated eigenvalues;
+        - `'eigenfunctions'`: the estimated eigenfunctions;
+        - `'noise_variance_cov'`: the estimation of the noise.
 
 
     References
@@ -83,11 +87,11 @@ def _fit_covariance(
     # Compute the eigenvalues and eigenvectors of W^{1/2}VW^{1/2}
     weight_sqrt = np.diag(np.sqrt(weight))
     weight_invsqrt = np.diag(1 / np.sqrt(weight))
-    var = np.linalg.multi_dot([weight_sqrt, covariance.values[0], weight_sqrt])
-    eigenvalues, eigenvectors = _compute_eigen(var, n_components)
+    covariance_matrix = weight_sqrt @ covariance.values[0] @ weight_sqrt
+    eigenvalues, eigenvectors = _compute_eigen(covariance_matrix, n_components)
 
     # Compute eigenfunctions = W^{-1/2}U
-    eigenfunctions = np.transpose(np.dot(weight_invsqrt, eigenvectors))
+    eigenfunctions = (weight_invsqrt @ eigenvectors).T
 
     # Save the results
     results = dict()
@@ -107,7 +111,8 @@ def _fit_inner_product(
 ) -> Dict[str, object]:
     """Univariate Functional PCA using inner-product matrix decomposition.
 
-    TODO: Consider another way to choose the bandwidth.
+    This method estimate the eigencomponents of a functional dataset using the
+    diagonalization of the inner-product (or Gram) matrix.
 
     Parameters
     ----------
@@ -119,11 +124,11 @@ def _fit_inner_product(
     n_components: Union[int, float], default=1
         Number of components to be estimated.
     method_smoothing: str, default='LP'
-        Should the mean and covariance be smoothed?
+        Method to smooth the covariance function.
     noise_variance: Optional[float], default=None
         An estimation of the variance of the noise. If `None`, an estimation is computed
-        using the methodology in [1]_.
-    kwargs
+        using the method :meth:`FunctionalData.noise_variance`.
+    **kwargs
         Other keyword arguments are passed to the following function:
 
         - :meth:`FunctionalData.inner_product`.
@@ -132,31 +137,30 @@ def _fit_inner_product(
     -------
     Dict[str, object]
         A dictionary with entries:
-            - "eigenvalues"
-            - "eigenfunctions"
-            - "eigenvectors"
+
+        - `'eigenvalues'`: the estimated eigenvalues;
+        - `'eigenfunctions'`: the estimated eigenfunctions;
+        - `'eigenvectors'`: the estimated eigenvectors of the Gram matrix.
 
     """
     # Compute inner product matrix and its eigendecomposition
-    in_prod = data.inner_product(
-        method_integration="trapz",
+    gram_matrix = data.inner_product(
+        method_integration='trapz',
         method_smoothing=method_smoothing,
         noise_variance=noise_variance,
         **kwargs,
     )
-    eigenvalues, eigenvectors = _compute_eigen(in_prod, n_components)
+    eigenvalues, eigenvectors = _compute_eigen(gram_matrix, n_components)
 
     # Compute the eigenfunctions
-    eigenfunctions = np.matmul(data._data_inpro.values.T, eigenvectors)
-    eigenfunctions = eigenfunctions / np.sqrt(eigenvalues)
+    eigenfunctions = data._data_inpro.values.T @ eigenvectors / np.sqrt(eigenvalues)
     eigenfunctions = DenseFunctionalData(data._data_inpro.argvals, eigenfunctions.T)
 
     # Save the results
     results = dict()
     results["eigenvectors"] = eigenvectors
     results["eigenvalues"] = eigenvalues / data._data_inpro.n_obs
-    # results["eigenfunctions"] = eigenfunctions
-    results["eigenfunctions"] = eigenfunctions.smooth(points=points, method="PS")
+    results["eigenfunctions"] = eigenfunctions
     return results
 
 

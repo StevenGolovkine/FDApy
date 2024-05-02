@@ -516,11 +516,11 @@ def _block_diag(*arrs: npt.NDArray[np.float_]):
 
     """
     shapes = np.array([a.shape for a in arrs])
-    out = np.zeros(np.sum(shapes, axis=0), dtype='float64')
+    out = np.zeros(np.sum(shapes, axis=0), dtype="float64")
 
     r, c = 0, 0
     for i, (rr, cc) in enumerate(shapes):
-        out[r:r + rr, c:c + cc] = arrs[i]
+        out[r : r + rr, c : c + cc] = arrs[i]
         r += rr
         c += cc
     return out
@@ -826,7 +826,6 @@ def _compute_eigen(
     eigenvalues, eigenvectors = np.linalg.eig(data)
     eigenvalues = np.real(eigenvalues)
     eigenvectors = np.real(eigenvectors)
-
 
     # Estimation of the number of components
     eigenvalues[eigenvalues < 0] = 0

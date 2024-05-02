@@ -37,57 +37,76 @@ from ...misc.utils import _compute_eigen, _block_diag
 
 def _univariate_decomposition(
     data: FunctionalData,
-    method: str,
-    n_comp=2,
-    method_smoothing="LP",
-    method_scores="NumInt",
+    method: str = "UFPCA",
+    n_components: Union[int, float] = 2,
     **kwargs,
-):
-    """Univariate Decomposition."""
+) -> BasisFunctionalData:
+    """Univariate basis decomposition.
+
+    This method estimates a univariate basis decomposition for a univariate functional
+    dataset.
+
+    Parameters
+    ----------
+    data: FunctionalData
+        Training data.
+    method: str, default='UFPCA'
+        The method that specify the basis for which the decomposition is to be
+        calculated. It should one of `{'UFPCA', 'PSplines', 'FCPTPA'}`.
+    n_components: Union[int, float], default=2
+        Number of components to be estimated.
+    **kwargs
+        Other keyword arguments are passed to the following functions:
+
+        - :meth:`UFPCA.fit` and :meth:`UFPCA.transform`;
+        - :meth:`GridFunctionalData.to_basis`.
+
+    Returns
+    -------
+    BasisFunctionalData
+        The basis representation of the functional data.
+
+    Raises
+    ------
+    ValueError
+        If the provided method is not implemented.
+
+    """
     if method == "UFPCA":
-        ufpca = UFPCA(n_components=n_comp, normalize=True)
-        ufpca.fit(data=data, points=None, method_smoothing=method_smoothing)
-        scores_uni = ufpca.transform(
-            method=method_scores, method_smoothing=method_smoothing
-        )
+        ufpca = UFPCA(n_components=n_components, normalize=True)
+        ufpca.fit(data=data, points=None, **kwargs)
+        scores = ufpca.transform(data=None, **kwargs)
         basis = Basis(
             name="given",
             argvals=ufpca.eigenfunctions.argvals,
             values=ufpca.eigenfunctions.values,
         )
-        univ_basis = BasisFunctionalData(basis=basis, coefficients=scores_uni)
+        data_basis = BasisFunctionalData(basis=basis, coefficients=scores)
     elif method == "PSplines":
-        if data.n_dimension == 1:
-            penalty = [0]
-        else:
-            penalty = [0, 0]
-        univ_basis = data.to_basis(penalty=penalty)
+        data_basis = data.to_basis(**kwargs)
     elif method == "FCPTPA":
         n_points = data.n_points
         mat_v = np.diff(np.identity(n_points[0]))
         mat_w = np.diff(np.identity(n_points[1]))
-        ufpca = FCPTPA(n_components=n_comp, normalize=True)
+        ufpca = FCPTPA(n_components=n_components, normalize=True)
         ufpca.fit(
             data,
-            penalty_matrices={
-                "v": np.dot(mat_v, mat_v.T),
-                "w": np.dot(mat_w, mat_w.T),
-            },
+            penalty_matrices={"v": np.dot(mat_v, mat_v.T), "w": np.dot(mat_w, mat_w.T)},
             alpha_range={"v": (1e-4, 1e4), "w": (1e-4, 1e4)},
             tolerance=1e-4,
             max_iteration=15,
             adapt_tolerance=True,
         )
-        scores_uni = ufpca.transform(data)
+        scores = ufpca.transform(data)
         basis = Basis(
             name="given",
             argvals=ufpca.eigenfunctions.argvals,
             values=ufpca.eigenfunctions.values,
         )
-        univ_basis = BasisFunctionalData(basis=basis, coefficients=scores_uni)
+        data_basis = BasisFunctionalData(basis=basis, coefficients=scores)
     else:
         raise ValueError("Method not implemented.")
-    return univ_basis
+    return data_basis
 
 
 def _fit_covariance_multivariate(
@@ -95,8 +114,6 @@ def _fit_covariance_multivariate(
     methods: List[str],
     points: DenseArgvals,
     n_components: List[Union[int, float]],
-    method_smoothing: str = "LP",
-    scores_method: str = "NumInt",
     **kwargs,
 ) -> Dict[str, object]:
     """Multivariate Functional PCA using the covariance operator.
@@ -115,73 +132,74 @@ def _fit_covariance_multivariate(
     scores_method: str, {'NumInt', 'PACE'}, default='NumInt'
         Method for the estimation of the univariate scores.
     **kwargs:
-        kernel_name: str, default='epanechnikov'
-            Name of the kernel used for local polynomial smoothing.
-        degree: int, default=1
-            Degree used for local polynomial smoothing.
-        bandwidth: float
-            Bandwidth used for local polynomial smoothing. The default
-            bandwitdth is set to be the number of sampling points to the
-            power :math:`-1/5`.
+        Other keyword arguments are passed to the following function:
+
+        - :meth:`preprocessing.dim_reduction.mfpca._univariate_decomposition`.
+
+    Returns
+    -------
+    Dict[str, object]
+        A dictionary with entries:
+
+        - `'eigenvalues'`: the estimated eigenvalues;
+        - `'eigenfunctions'`: the estimated eigenfunctions;
+        - `'_basis_univariate'`: the univariate basis decompositions;
+        - `'_scores_univariate'`: the univariate scores;
+        - `'_eigenvectors'`: the eigenvectors from the decomposition of the scores.
 
     """
-    # Step 1: Perform univariate fPCA on each functions.
-    univ_decomposition = []
-    for fdata_uni, n_comp, method in zip(data.data, n_components, methods):
-        print(method)
-        univ_decomposition.append(
-            _univariate_decomposition(fdata_uni, method=method, n_comp=n_comp)
+    # Step 1: Perform univariate decomposition on each functions.
+    basis_univariate = []
+    for data_univariate, n_component, method in zip(data.data, n_components, methods):
+        temp = _univariate_decomposition(
+            data=data_univariate, method=method, n_components=n_component, **kwargs
         )
-    scores_univariate = np.hstack([d.coefficients for d in univ_decomposition])
-
-    # get Cholesky decomposition of the inner product of basis functions
-    Bchol = [np.linalg.cholesky(d.basis.inner_product()).T for d in univ_decomposition]
-    B_chol = _block_diag(*Bchol)
+        basis_univariate.append(temp)
+    scores_univariate = np.hstack([basis.coefficients for basis in basis_univariate])
 
     # Step 2: Estimation of the covariance of the scores.
-    Z = scores_univariate / np.sqrt(len(scores_univariate) - 1)
-    e = (B_chol.T @ B_chol) @ np.cov(scores_univariate.T)
-    #temp = np.dot(scores_univariate.T, scores_univariate)
-    #covariance = temp / (len(scores_univariate) - 1)
-    #covariance = (B_chol.T @ B_chol) @ covariance
+    cholesky_matrices = [
+        np.linalg.cholesky(basis.basis.inner_product()).T for basis in basis_univariate
+    ]
+    cholesky_matrix = _block_diag(*cholesky_matrices)
+
+    scores_normed = scores_univariate / np.sqrt(len(scores_univariate) - 1)
+    scores_cov = (cholesky_matrix.T @ cholesky_matrix) @ np.cov(scores_univariate.T)
 
     # Step 3: Eigenanalysis of the covariance of the scores.
-    # We choose to keep all the components here.
-    eigenvalues, eigenvectors = _compute_eigen(e, n_components=10)
+    eigenvalues, eigenvectors = _compute_eigen(scores_cov, n_components=n_components[0])
 
-    norm_factor = 1 / np.sqrt(np.diag((Z @ eigenvectors).T @ (Z @ eigenvectors)))
-    scores = Z @ eigenvectors * np.sqrt(len(scores_univariate) - 1)
+    norm_factor = 1 / np.sqrt(
+        np.diag((scores_normed @ eigenvectors).T @ (scores_normed @ eigenvectors))
+    )
+    scores = scores_normed @ eigenvectors * np.sqrt(len(scores_univariate) - 1)
     scores = scores @ np.diag(np.sqrt(eigenvalues) * norm_factor)
-    
+
     # Step 4: Estimation of the multivariate eigenfunctions.
     # Retrieve the number of eigenfunctions for each univariate function.
-    npc = [d.coefficients.shape[1] for d in univ_decomposition]
+    npc = [basis.coefficients.shape[1] for basis in basis_univariate]
     nb_eigenfunction_uni = [0]
     nb_eigenfunction_uni.extend(npc)
     nb_eigenfunction_uni_cum = np.cumsum(nb_eigenfunction_uni)
 
     # Compute the multivariate eigenbasis.
-    tmpWeights = (Z.T @ (Z @ eigenvectors))
+    weights = scores_normed.T @ scores_normed @ eigenvectors
 
     eigenfunctions = []
-    for idx, ufpca in enumerate(univ_decomposition):
+    for idx, basis in enumerate(basis_univariate):
         start = nb_eigenfunction_uni_cum[idx]
         end = nb_eigenfunction_uni_cum[idx + 1]
-        values = 1 / np.sqrt(eigenvalues) * norm_factor * tmpWeights[start:end, :]
-        #values = np.dot(ufpca.basis.values.T, eigenvectors[start:end, :])
-        univ = BasisFunctionalData(
-            coefficients=values.T,
-            basis=univ_decomposition[idx].basis
-        )
-        eigenfunctions.append(univ)
+        values = 1 / np.sqrt(eigenvalues) * norm_factor * weights[start:end, :]
+        univariate_eigen = BasisFunctionalData(coefficients=values.T, basis=basis.basis)
+        eigenfunctions.append(univariate_eigen)
 
     # Save the results
     results = dict()
-    results["eigenvalues"] = eigenvalues
-    results["eigenfunctions"] = MultivariateFunctionalData(eigenfunctions)
-    results["_ufpca_list"] = univ_decomposition
-    results["_scores_univariate"] = scores_univariate
-    results["_scores_eigenvectors"] = eigenvectors
+    results['eigenvalues'] = eigenvalues
+    results['eigenfunctions'] = MultivariateFunctionalData(eigenfunctions)
+    results['_basis_univariate'] = basis_univariate
+    results['_scores_univariate'] = scores_univariate
+    results['_eigenvectors'] = eigenvectors
     return results
 
 
@@ -189,8 +207,6 @@ def _fit_inner_product_multivariate(
     data: MultivariateFunctionalData,
     points: DenseArgvals,
     n_components: Union[int, float] = 1,
-    method_smoothing: str = "LP",
-    noise_variance: Optional[npt.NDArray[np.float64]] = None,
     **kwargs,
 ) -> Dict[str, object]:
     """Multivariate Functional PCA using inner-product matrix decomposition.
@@ -204,37 +220,23 @@ def _fit_inner_product_multivariate(
         will be estimated.
     n_components: Union[int, float], default=1
         Number of components to be estimated.
-    method_smoothing: str = 'LP',
-            Should the mean and covariance be smoothed?
-    noise_variance: Optional[npt.NDArray[np.float64]], default=None
-            An estimation of the variance of the noise. If `None`, an
-            estimation is computed using the methodology in [1]_.
     **kwargs:
-        kernel_name: str, default='epanechnikov'
-            Name of the kernel used for local polynomial smoothing.
-        degree: int, default=1
-            Degree used for local polynomial smoothing.
-        bandwidth: float
-            Bandwidth used for local polynomial smoothing. The default
-            bandwitdth is set to be the number of sampling points to the
-            power :math:`-1/5`.
+        Other keyword arguments are passed to the following function:
+
+        - :meth:`FunctionalData.inner_product`.
 
     Returns
     -------
     Dict[str, object]
         A dictionary with entries:
-            - "eigenvalues"
-            - "eigenfunctions"
-            - "eigenvectors"
+
+        - `'eigenvalues'`: the estimated eigenvalues;
+        - `'eigenfunctions'`: the estimated eigenfunctions;
+        - `'eigenvectors'`: the estimated eigenvectors of the Gram matrix.
 
     """
     # Compute inner product matrix and its eigendecomposition
-    in_prod = data.inner_product(
-        method_integration="trapz",
-        method_smoothing=method_smoothing,
-        noise_variance=noise_variance,
-        **kwargs,
-    )
+    in_prod = data.inner_product(method_integration='trapz', **kwargs)
     eigenvalues, eigenvectors = _compute_eigen(in_prod, n_components)
 
     # Compute the eigenfunctions
@@ -250,21 +252,19 @@ def _fit_inner_product_multivariate(
 
     # Save the results
     results = dict()
-    results["eigenvectors"] = eigenvectors
-    results["eigenvalues"] = eigenvalues / data.n_obs
-    results["eigenfunctions"] = eigenfunctions
-    # results["eigenfunctions"] = eigenfunctions.smooth(points=points, method="PS")
+    results['eigenvectors'] = eigenvectors
+    results['eigenvalues'] = eigenvalues / data.n_obs
+    results['eigenfunctions'] = eigenfunctions
     return results
 
 
 #############################################################################
 # Utilities to transform
 
-
 def _transform_numerical_integration_multivariate(
     data: MultivariateFunctionalData,
     eigenfunctions: MultivariateFunctionalData,
-    method: str = "trapz",
+    method: str = 'trapz',
 ) -> npt.NDArray[np.float64]:
     """Estimate scores using numerical integration.
 
@@ -338,20 +338,20 @@ class MFPCA:
     ----------
     method: str, {'covariance', 'inner-product'}, default='covariance'
         Method used to estimate the eigencomponents. If
-        ``method == 'covariance'``, the estimation is based on an
+        `method == 'covariance'`, the estimation is based on an
         eigendecomposition of the covariance operator of each univariate
-        components. If ``method == 'inner-product'``, the estimation is
+        components. If `method == 'inner-product'`, the estimation is
         based on an eigendecomposition of the inner-product matrix.
     n_components: Optional[List[Union[int, float]]], default=None
         Number of components to keep. If ``method=='covariance'``,
         `n_components` should be a list of length :math:`P`. Each entry
         represents the variance explained by each univariate component. Note
         that for 2-dimensional data, `n_components` has to be an integer, as we
-        use the FCP-TPA algorithm. If ``method=='inner-product'``,
+        use the FCP-TPA algorithm. If `method=='inner-product'`,
         `n_components` should not be a list and represents the variance
         explained by the multivariate components. If `n_components` is `None`,
         all components are kept,
-        ``n_components == min(n_samples, n_features)``. If `n_components` is an
+        `n_components == min(n_samples, n_features)`. If `n_components` is an
         integer, `n_components` are kept. If `0 < n_components < 1`, select the
         number of components such that the amount of variance that needs to be
         explained is greater than the percentage specified by `n_components`.
@@ -383,7 +383,7 @@ class MFPCA:
     def __init__(
         self,
         n_components: List[Union[int, float]],
-        method: str = "covariance",
+        method: str = 'covariance',
         univariate_expansion: Optional[List[str]] = None,
         normalize: bool = False,
     ) -> None:
@@ -454,8 +454,6 @@ class MFPCA:
         self,
         data: MultivariateFunctionalData,
         points: Optional[List[DenseArgvals]] = None,
-        method_smoothing: str = "LP",
-        scores_method: str = "NumInt",
         **kwargs,
     ) -> None:
         """Estimate the eigencomponents of the data.
@@ -470,11 +468,6 @@ class MFPCA:
         points: Optional[List[DenseArgvals]]
             The sampling points at which the covariance and the eigenfunctions
             will be estimated.
-        method_smoothing: str = 'LP',
-            Should the mean and covariance be smoothed?
-        scores_method: str, {'NumInt', 'PACE', 'InnPro'}, default='NumInt'
-            Method for the estimation of the univariate scores for the
-            diagonalization of the covariance operator.
         **kwargs:
             kernel_name: str, default='epanechnikov'
                 Name of the kernel used for local polynomial smoothing.
@@ -504,10 +497,8 @@ class MFPCA:
             self.weights = np.repeat(1, data.n_functional)
 
         # Compute the mean and center the data.
-        self._mean = data.mean(
-            points=points, method_smoothing=method_smoothing, **kwargs
-        )
-        data = data.center(mean=self._mean, method_smoothing=method_smoothing, **kwargs)
+        self._mean = data.mean(points=points, **kwargs)
+        data = data.center(mean=self._mean, **kwargs)
 
         # Normalize the data
         if self.normalize:
@@ -520,20 +511,16 @@ class MFPCA:
         if self.method == "covariance":
             results = _fit_covariance_multivariate(
                 data=data,
-                methods=self.univariate_expansion,
                 points=points,
+                methods=self.univariate_expansion,
                 n_components=self.n_components,
-                method_smoothing=method_smoothing,
-                scores_method=scores_method,
                 **kwargs,
             )
         elif self.method == "inner-product":
             results = _fit_inner_product_multivariate(
                 data=data,
-                points=points,
                 n_components=self.n_components,
-                method_smoothing=method_smoothing,
-                noise_variance=self._noise_variance,
+                points=points,
                 **kwargs,
             )
         else:
