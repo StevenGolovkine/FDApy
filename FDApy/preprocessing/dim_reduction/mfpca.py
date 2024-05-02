@@ -57,7 +57,11 @@ def _univariate_decomposition(
         )
         univ_basis = BasisFunctionalData(basis=basis, coefficients=scores_uni)
     elif method == "PSplines":
-        univ_basis = data.to_basis()
+        if data.n_dimension == 1:
+            penalty = [0]
+        else:
+            penalty = [0, 0]
+        univ_basis = data.to_basis(penalty=penalty)
     elif method == "FCPTPA":
         n_points = data.n_points
         mat_v = np.diff(np.identity(n_points[0]))
@@ -124,24 +128,31 @@ def _fit_covariance_multivariate(
     # Step 1: Perform univariate fPCA on each functions.
     univ_decomposition = []
     for fdata_uni, n_comp, method in zip(data.data, n_components, methods):
+        print(method)
         univ_decomposition.append(
             _univariate_decomposition(fdata_uni, method=method, n_comp=n_comp)
         )
     scores_univariate = np.hstack([d.coefficients for d in univ_decomposition])
 
     # get Cholesky decomposition of the inner product of basis functions
-    Bchol = [np.linalg.cholesky(d.basis.inner_product()) for d in univ_decomposition]
+    Bchol = [np.linalg.cholesky(d.basis.inner_product()).T for d in univ_decomposition]
     B_chol = _block_diag(*Bchol)
 
     # Step 2: Estimation of the covariance of the scores.
-    temp = np.dot(scores_univariate.T, scores_univariate)
-    covariance = temp / (len(scores_univariate) - 1)
-    covariance = (B_chol.T @ B_chol) @ covariance
+    Z = scores_univariate / np.sqrt(len(scores_univariate) - 1)
+    e = (B_chol.T @ B_chol) @ np.cov(scores_univariate.T)
+    #temp = np.dot(scores_univariate.T, scores_univariate)
+    #covariance = temp / (len(scores_univariate) - 1)
+    #covariance = (B_chol.T @ B_chol) @ covariance
 
     # Step 3: Eigenanalysis of the covariance of the scores.
     # We choose to keep all the components here.
-    eigenvalues, eigenvectors = _compute_eigen(covariance)
+    eigenvalues, eigenvectors = _compute_eigen(e, n_components=10)
 
+    norm_factor = 1 / np.sqrt(np.diag((Z @ eigenvectors).T @ (Z @ eigenvectors)))
+    scores = Z @ eigenvectors * np.sqrt(len(scores_univariate) - 1)
+    scores = scores @ np.diag(np.sqrt(eigenvalues) * norm_factor)
+    
     # Step 4: Estimation of the multivariate eigenfunctions.
     # Retrieve the number of eigenfunctions for each univariate function.
     npc = [d.coefficients.shape[1] for d in univ_decomposition]
@@ -150,12 +161,19 @@ def _fit_covariance_multivariate(
     nb_eigenfunction_uni_cum = np.cumsum(nb_eigenfunction_uni)
 
     # Compute the multivariate eigenbasis.
+    tmpWeights = (Z.T @ (Z @ eigenvectors))
+
     eigenfunctions = []
     for idx, ufpca in enumerate(univ_decomposition):
         start = nb_eigenfunction_uni_cum[idx]
         end = nb_eigenfunction_uni_cum[idx + 1]
-        values = np.dot(ufpca.basis.values.T, eigenvectors[start:end, :])
-        eigenfunctions.append(DenseFunctionalData(ufpca.basis.argvals, values.T))
+        values = 1 / np.sqrt(eigenvalues) * norm_factor * tmpWeights[start:end, :]
+        #values = np.dot(ufpca.basis.values.T, eigenvectors[start:end, :])
+        univ = BasisFunctionalData(
+            coefficients=values.T,
+            basis=univ_decomposition[idx].basis
+        )
+        eigenfunctions.append(univ)
 
     # Save the results
     results = dict()
@@ -527,6 +545,7 @@ class MFPCA:
         self._eigenvectors = results.get("eigenvectors", None)
         self._scores_univariate = results.get("_scores_univariate", None)
         self._scores_eigenvectors = results.get("_scores_eigenvectors", None)
+        self._ufpca_list = results.get("_ufpca_list", None)
         self._training_data = data
 
         # TODO: Add covariance computation

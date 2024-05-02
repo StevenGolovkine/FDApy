@@ -992,7 +992,6 @@ class DenseFunctionalData(GridFunctionalData):
         if method == "PS":
             if penalty is None:
                 penalty = self.n_dimension * [1]
-
             ps = PSplines(**kwargs)
             n_functions = np.power(ps.n_segments + ps.degree, self.n_dimension)
 
@@ -2036,7 +2035,6 @@ class IrregularFunctionalData(GridFunctionalData):
         if method == "PS":
             if penalty is None:
                 penalty = self.n_dimension * [1]
-
             ps = PSplines(**kwargs)
             basis = Basis(
                 name=self.n_dimension * ("bsplines",),
@@ -2966,6 +2964,8 @@ class BasisFunctionalData(FunctionalData):
 
     def __getitem__(self, index: int) -> Type[FunctionalData]:
         """Override getitem function, called when self[index]."""
+        # new_coefs = self.coefficients[index, :]
+        # return BasisFunctionalData(coefficients=new_coefs, basis=self.basis)
 
     ###########################################################################
 
