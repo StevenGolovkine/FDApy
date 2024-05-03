@@ -2337,7 +2337,7 @@ class IrregularFunctionalData(GridFunctionalData):
         """
         if points is None:
             points = self.argvals.to_dense()
-        fdata_long = self.to_long()
+        fdata_long = self.to_long().dropna()
         x = fdata_long.drop(["id", "values"], axis=1, inplace=False).values
         y = fdata_long["values"].values
         if method_smoothing == "LP":
