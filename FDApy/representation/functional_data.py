@@ -1336,8 +1336,10 @@ class DenseFunctionalData(GridFunctionalData):
         """
         if mean is None:
             data_mean = self.mean(method_smoothing=method_smoothing, **kwargs)
-        else:
+        elif (mean is not None) and (method_smoothing is not None):
             data_mean = mean.smooth(self.argvals, method=method_smoothing, **kwargs)
+        else:
+            data_mean = mean
         return DenseFunctionalData(
             DenseArgvals(self.argvals), DenseValues(self.values - data_mean.values)
         )
@@ -3606,7 +3608,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     def mean(
         self,
         points: Optional[List[DenseArgvals]] = None,
-        method_smoothing: Optional[str] = True,
+        method_smoothing: Optional[str] = None,
         **kwargs,
     ) -> MultivariateFunctionalData:
         """Compute an estimate of the mean.

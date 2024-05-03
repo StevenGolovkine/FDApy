@@ -145,7 +145,7 @@ def _fit_inner_product(
     """
     # Compute inner product matrix and its eigendecomposition
     gram_matrix = data.inner_product(
-        method_integration='trapz',
+        method_integration="trapz",
         method_smoothing=method_smoothing,
         noise_variance=noise_variance,
         **kwargs,
