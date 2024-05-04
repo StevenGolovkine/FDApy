@@ -73,7 +73,7 @@ def _univariate_decomposition(
 
     """
     if method == "UFPCA":
-        ufpca = UFPCA(n_components=n_components, normalize=True)
+        ufpca = UFPCA(n_components=n_components, normalize=False)
         ufpca.fit(data=data, points=None, **kwargs)
         scores = ufpca.transform(data=None, **kwargs)
         basis = Basis(
@@ -88,11 +88,11 @@ def _univariate_decomposition(
         n_points = data.n_points
         mat_v = np.diff(np.identity(n_points[0]))
         mat_w = np.diff(np.identity(n_points[1]))
-        ufpca = FCPTPA(n_components=n_components, normalize=True)
+        ufpca = FCPTPA(n_components=n_components, normalize=False)
         ufpca.fit(
             data,
             penalty_matrices={"v": np.dot(mat_v, mat_v.T), "w": np.dot(mat_w, mat_w.T)},
-            alpha_range={"v": (1e-4, 1e4), "w": (1e-4, 1e4)},
+            alpha_range={"v": (1e-5, 1e5), "w": (1e-5, 1e5)},
             tolerance=1e-4,
             max_iteration=15,
             adapt_tolerance=True,
@@ -643,7 +643,7 @@ class MFPCA:
         if method == "NumInt":
             return _transform_numerical_integration_multivariate(
                 data_new,
-                self._eigenfunctions,
+                self._eigenfunctions.to_grid(),
                 kwargs.get("integration_method", "trapz"),
             )
         elif method == "PACE":
@@ -684,7 +684,7 @@ class MFPCA:
         """
         results = [None] * self.eigenfunctions.n_functional
         for idx, (mean, eigenfunction, weight) in enumerate(
-            zip(self.mean.data, self.eigenfunctions.data, self.weights)
+            zip(self.mean.data, self.eigenfunctions.to_grid().data, self.weights)
         ):
             values = np.einsum("ij,j... -> i...", scores, eigenfunction.values)
             results[idx] = DenseFunctionalData(

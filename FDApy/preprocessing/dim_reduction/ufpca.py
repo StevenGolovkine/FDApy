@@ -481,7 +481,7 @@ class UFPCA:
         self,
         data: FunctionalData,
         points: Optional[DenseArgvals] = None,
-        method_smoothing: str = "LP",
+        method_smoothing: str = None,
         **kwargs,
     ) -> None:
         """Estimate the eigencomponents of the data.
