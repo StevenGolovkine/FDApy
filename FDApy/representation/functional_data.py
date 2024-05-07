@@ -2880,6 +2880,26 @@ class IrregularFunctionalData(GridFunctionalData):
 
 
 ###############################################################################
+# Class BasisFunctionalDataIterator
+class BasisFunctionalDataIterator(Iterator):
+    """Iterator for BasisFunctionalData object."""
+
+    def __init__(self, fdata):
+        """Initialize the Iterator object."""
+        self._fdata = fdata
+        self._index = 0
+
+    def __next__(self):
+        """Return the next item in the sequence."""
+        if self._index < self._fdata.n_obs:
+            item = self._fdata[self._index]
+            self._index += 1
+            return item
+        else:
+            raise StopIteration
+
+
+###############################################################################
 # Class BasisFunctionalData
 class BasisFunctionalData(FunctionalData):
     r"""Class for defining Basis Functional Data.
@@ -2963,6 +2983,7 @@ class BasisFunctionalData(FunctionalData):
 
     def __iter__(self):
         """Initialize the iterator."""
+        return BasisFunctionalDataIterator(self)
 
     def __getitem__(self, index: int) -> Type[FunctionalData]:
         """Override getitem function, called when self[index]."""
