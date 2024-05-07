@@ -129,6 +129,10 @@ def _smooth_covariance(
         weights = np.ones_like(covariance_matrix)
     if method_smoothing == "LP":
         # Remove covariance diagnonal because of measurements errors.
+        kernel_name = kwargs.pop("kernel_name", "epanechnikov")
+        bandwidth = kwargs.pop("bandwidth", np.prod(argvals.n_points) ** (-1 / 5))
+        degree = kwargs.get("degree", 2)
+
         if remove_diagonal:
             np.fill_diagonal(covariance_matrix, np.nan)
         covariance_fd = DenseFunctionalData(
@@ -142,24 +146,33 @@ def _smooth_covariance(
         points_mat = _cartesian_product(*points.values())
 
         lp = LocalPolynomial(
-            kernel_name=kwargs.get("kernel_name", "epanechnikov"),
-            bandwidth=kwargs.get(
-                "bandwidth", np.prod(covariance_fd.n_points) ** (-1 / 5)
-            ),
-            degree=kwargs.get("degree", 2),
+            kernel_name=kernel_name,
+            bandwidth=bandwidth,
+            degree=degree,
         )
         covariance = lp.predict(y=y, x=x, x_new=points_mat)
         covariance = covariance.reshape(points.n_points)
     elif method_smoothing == "PS":
         # Remove covariance diagnonal because of measurements errors.
+        n_segments = kwargs.pop("n_segments", 30)
+        degree = kwargs.pop("degree", 3)
+        order_penalty = kwargs.pop("order_penalty", 2)
+        order_derivative = kwargs.pop("order_derivative", 0)
+        penalty = kwargs.pop("penalty", (1, 1))
+
         if remove_diagonal:
             np.fill_diagonal(covariance_matrix, 0)
-        ps = PSplines(n_segments=30, degree=3, order_penalty=2, order_derivative=0)
+        ps = PSplines(
+            n_segments=n_segments,
+            degree=degree,
+            order_penalty=order_penalty,
+            order_derivative=order_derivative,
+        )
 
         x = argvals["input_dim_0"]
         y = argvals["input_dim_1"]
 
-        ps.fit(x=[x, y], y=covariance_matrix, penalty=(1, 1), sample_weights=weights)
+        ps.fit(x=[x, y], y=covariance_matrix, penalty=penalty, sample_weights=weights)
         covariance = ps.predict([points["input_dim_0"], points["input_dim_1"]])
     else:
         raise ValueError("Method not implemented.")
@@ -1673,6 +1686,8 @@ class DenseFunctionalData(GridFunctionalData):
         self,
         points: Optional[DenseArgvals] = None,
         method_smoothing: Optional[str] = None,
+        center: bool = True,
+        kwargs_center: Dict[str, object] = {},
         **kwargs,
     ) -> DenseFunctionalData:
         r"""Compute an estimate of the covariance function.
@@ -1692,10 +1707,15 @@ class DenseFunctionalData(GridFunctionalData):
             The method to used for the smoothing of the mean. If 'None', no smoothing
             is performed. If 'PS', the method is P-splines [1]_. If 'LP', the method
             is local polynomials [3]_.
+        center: bool, default=True
+            Should the data be centered before computing the covariance.
+        kwargs_center: Dict[str, object], default={}
+            Keyword arguments to be passed to the function
+            :meth:`FunctionalData.center`.
         kwargs
             Other keyword arguments are passed to the following function:
 
-            - :meth:`DenseFunctionalData.center`.
+            - :meth:`functional_data._smooth_covariance`.
 
         Returns
         -------
@@ -1744,7 +1764,9 @@ class DenseFunctionalData(GridFunctionalData):
         )
 
         # Center the data
-        data = self.center(method_smoothing=method_smoothing, **kwargs)
+        data = self
+        if center:
+            data = data.center(method_smoothing=method_smoothing, **kwargs_center)
 
         # Estimate the covariance
         cov = np.dot(data.values.T, data.values) / (self.n_obs - 1)
@@ -1759,6 +1781,7 @@ class DenseFunctionalData(GridFunctionalData):
                 points_cov,
                 method_smoothing=method_smoothing,
                 weights=weights,
+                **kwargs,
             )
 
         # Ensure the covariance is symmetric.

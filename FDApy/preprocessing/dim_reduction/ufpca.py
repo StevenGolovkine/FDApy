@@ -77,7 +77,7 @@ def _fit_covariance(
     """
     # Compute the covariance
     covariance = data.covariance(
-        points=points, method_smoothing=method_smoothing, **kwargs
+        points=points, method_smoothing=method_smoothing, center=False, **kwargs
     )
 
     # Choose the W_j's and the S_j's (Ramsey and Silverman, 2005)
@@ -482,7 +482,9 @@ class UFPCA:
         data: FunctionalData,
         points: Optional[DenseArgvals] = None,
         method_smoothing: str = None,
-        **kwargs,
+        kwargs_mean: Dict[str, object] = {},
+        kwargs_covariance: Dict[str, object] = {},
+        kwargs_innpro: Dict[str, object] = {},
     ) -> None:
         """Estimate the eigencomponents of the data.
 
@@ -498,13 +500,14 @@ class UFPCA:
             will be estimated.
         method_smoothing: str, default='LP'
             Should the mean and covariance be smoothed?
-        kwargs
-            Other keyword arguments are passed to the following function:
-
-            - :meth:`FunctionalData.mean`,
-            - :meth:`FunctionalData.center`,
-            - :meth:`preprocessing.fpca._fit_covariance`,
-            - :meth:`preprocessing.fpca._fit_inner_product`.
+        kwargs_mean: Dict[str, object], default={}
+            Keywords arguments to be passed to the function :meth:`FunctionalData.mean`.
+        kwargs_covariance: Dict[str, object], default={}
+            Keywords arguments to be passed to the function
+            :meth:`preprocessing.fpca._fit_covariance`.
+        kwargs_innpro: Dict[str, object], default={}
+            Keywords arguments to be passed to the function
+            :meth:`preprocessing.fpca._fit_inner_product`.
 
         References
         ----------
@@ -529,9 +532,9 @@ class UFPCA:
 
         # Compute the mean and center the data.
         self._mean = data.mean(
-            points=points, method_smoothing=method_smoothing, **kwargs
+            points=points, method_smoothing=method_smoothing, **kwargs_mean
         )
-        data = data.center(mean=self._mean, method_smoothing=method_smoothing, **kwargs)
+        data = data.center(mean=self._mean, method_smoothing=None)
 
         # Normalize the data
         if self.normalize:
@@ -551,7 +554,7 @@ class UFPCA:
                 points=points,
                 n_components=self._n_components,
                 method_smoothing=method_smoothing,
-                **kwargs,
+                **kwargs_covariance,
             )
         elif self.method == "inner-product":
             results = _fit_inner_product(
@@ -560,7 +563,7 @@ class UFPCA:
                 n_components=self.n_components,
                 method_smoothing=method_smoothing,
                 noise_variance=self._noise_variance,
-                **kwargs,
+                **kwargs_innpro,
             )
         else:
             raise NotImplementedError(f"The {self.method} method not implemented.")
