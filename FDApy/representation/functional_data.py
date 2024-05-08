@@ -2072,9 +2072,16 @@ class IrregularFunctionalData(GridFunctionalData):
             coefs = np.zeros((self.n_obs, n_functions))
             for idx, obs in enumerate(self):
                 x = list(obs.argvals[idx].values())
+                y = np.array(obs.values[idx], copy=True)
+
+                weights = np.ones_like(y)
+                weights[np.isnan(y)] = 0
+                y[np.isnan(y)] = 0
+
                 ps.fit(
                     x=x,
-                    y=obs.values[idx],
+                    y=y,
+                    sample_weights=weights,
                     penalty=penalty,
                     domain_min=domain_min,
                     domain_max=domain_max,
@@ -2138,7 +2145,7 @@ class IrregularFunctionalData(GridFunctionalData):
             temp.columns = list(cur_argvals.keys())
             temp["id"] = i if reindex else idx
             temp["values"] = cur_values.flatten()
-            temp_list.append(temp)
+            temp_list.append(temp.dropna())
         return pd.concat(temp_list, ignore_index=True)
 
     def noise_variance(self, order: int = 2) -> float:
@@ -2271,6 +2278,8 @@ class IrregularFunctionalData(GridFunctionalData):
         """
         if points is None:
             points = self.argvals.to_dense()
+        domain_min = tuple(val[0] for val in points.min_max.values())
+        domain_max = tuple(val[1] for val in points.min_max.values())
 
         if method == "LP":
             if bandwidth is None:
@@ -2294,9 +2303,22 @@ class IrregularFunctionalData(GridFunctionalData):
             ps = PSplines(**kwargs)
             smooth = np.zeros((self.n_obs, *points.n_points))
             for idx, obs in enumerate(self):
-                x = obs.argvals[idx]["input_dim_0"]
-                ps.fit(x=x, y=obs.values[idx], penalty=penalty)
-                smooth[idx, :] = ps.predict(points["input_dim_0"])
+                x = list(obs.argvals[idx].values())
+                y = np.array(obs.values[idx], copy=True)
+
+                weights = np.ones_like(y)
+                weights[np.isnan(y)] = 0
+                y[np.isnan(y)] = 0
+
+                ps.fit(
+                    x=x,
+                    y=y,
+                    sample_weights=weights,
+                    penalty=penalty,
+                    domain_min=domain_min,
+                    domain_max=domain_max,
+                )
+                smooth[idx, :] = ps.predict(x = list(points.values()))
         else:
             raise NotImplementedError("Method not implemented.")
         return DenseFunctionalData(points, DenseValues(smooth))
