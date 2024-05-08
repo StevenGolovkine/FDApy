@@ -498,7 +498,7 @@ class UFPCA:
         points: DenseArgvals
             The sampling points at which the covariance and the eigenfunctions
             will be estimated.
-        method_smoothing: str, default='LP'
+        method_smoothing: str, default=None
             Should the mean and covariance be smoothed?
         kwargs_mean: Dict[str, object], default={}
             Keywords arguments to be passed to the function :meth:`FunctionalData.mean`.

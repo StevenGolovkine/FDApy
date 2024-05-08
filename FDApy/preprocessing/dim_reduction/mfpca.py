@@ -75,7 +75,7 @@ def _univariate_decomposition(
     if method == "UFPCA":
         ufpca = UFPCA(n_components=n_components, normalize=False)
         ufpca.fit(data=data, points=None, **kwargs)
-        scores = ufpca.transform(data=None, **kwargs)
+        scores = ufpca.transform(data=None, method="PACE", **kwargs)
         basis = Basis(
             name="given",
             argvals=ufpca.eigenfunctions.argvals,
@@ -466,6 +466,7 @@ class MFPCA:
         self,
         data: MultivariateFunctionalData,
         points: Optional[List[DenseArgvals]] = None,
+        method_smoothing: str = None,
         **kwargs,
     ) -> None:
         """Estimate the eigencomponents of the data.
@@ -481,6 +482,8 @@ class MFPCA:
         points: Optional[List[DenseArgvals]]
             The sampling points at which the covariance and the eigenfunctions
             will be estimated.
+        method_smoothing: str, default=None
+            Should the mean and covariance be smoothed?
         **kwargs
             Other keyword arguments are passed to the following functions:
 
@@ -509,12 +512,16 @@ class MFPCA:
             self.weights = np.repeat(1, data.n_functional)
 
         # Compute the mean and center the data.
-        self._mean = data.mean(points=points, **kwargs)
-        data = data.center(mean=self._mean, **kwargs)
+        self._mean = data.mean(
+            points=points, method_smoothing=method_smoothing, **kwargs
+        )
+        data = data.center(mean=self._mean, method_smoothing=None)
 
         # Normalize the data
         if self.normalize:
-            data, self.weights = data.rescale(use_argvals_stand=True)
+            data, self.weights = data.rescale(
+                method_smoothing=method_smoothing, use_argvals_stand=True
+            )
 
         # Estimate the variance of the noise
         self._noise_variance = data.noise_variance(order=2)
@@ -576,7 +583,6 @@ class MFPCA:
         where :math:`l_k` and :math:`v_{k}` are the eigenvalues and
         eigenvectors of the inner-product matrix.
 
-        TODO: Add PACE.
         TODO: Test for 2D functional data
 
         Parameters
@@ -648,7 +654,7 @@ class MFPCA:
             )
         elif method == "PACE":
             return _transform_pace_multivariate(
-                self._scores_eigenvectors, self._scores_univariate
+                self._eigenvectors, self._scores_univariate
             )
         elif method == "InnPro":
             return _transform_innpro(data_new, self._eigenvectors, self.eigenvalues)
