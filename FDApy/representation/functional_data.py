@@ -2327,6 +2327,7 @@ class IrregularFunctionalData(GridFunctionalData):
         self,
         points: Optional[DenseArgvals] = None,
         method_smoothing: str = "LP",
+        approx: bool = True,
         **kwargs,
     ) -> DenseFunctionalData:
         """Compute an estimate of the mean.
@@ -2343,6 +2344,8 @@ class IrregularFunctionalData(GridFunctionalData):
         method_smoothing: str, default='LP'
             The method to used for the smoothing. If 'PS', the method is P-splines [2]_.
             If 'LP', the method is local polynomials [1]_.
+        approx: bool, default=True
+            Approximation of the estimation. 
         kwargs
             Other keyword arguments are passed to the following function:
 
@@ -2382,9 +2385,15 @@ class IrregularFunctionalData(GridFunctionalData):
         """
         if points is None:
             points = self.argvals.to_dense()
+
         fdata_long = self.to_long().dropna()
-        x = fdata_long.drop(["id", "values"], axis=1, inplace=False).values
-        y = fdata_long["values"].values
+        if approx and len(fdata_long) > 10000:
+            x = 0
+            y = 0
+        else:
+            x = fdata_long.drop(["id", "values"], axis=1, inplace=False).values
+            y = fdata_long["values"].values
+
         if method_smoothing == "LP":
             bandwidth = kwargs.pop("bandwidth", None)
             if bandwidth is None:
@@ -2395,10 +2404,12 @@ class IrregularFunctionalData(GridFunctionalData):
             lp = LocalPolynomial(bandwidth=bandwidth, **kwargs)
             pred = lp.predict(y=y, x=x, x_new=points_mat).reshape(points.n_points)
         elif method_smoothing == "PS":
+            penalty = kwargs.pop("penalty", 1)
+
             x = x.flatten()
             ps = PSplines(**kwargs)
 
-            ps.fit(x=x, y=y, penalty=1)
+            ps.fit(x=x, y=y, penalty=penalty)
             pred = ps.predict(points["input_dim_0"])
         else:
             raise ValueError("Method not implemented.")

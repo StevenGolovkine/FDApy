@@ -105,19 +105,17 @@ def _sparsify_univariate_data(
 
     """
     # Get parameters of the data
-    n_obs, n_points = data.n_obs, *data.n_points
-    points = np.arange(n_points)
+    n_obs, n_points = data.n_obs, np.prod(data.n_points)
 
     perc = runif(max(0, percentage - epsilon), min(1, percentage + epsilon), n_obs)
 
     argvals, values = {}, {}
     for idx, (obs, perc_obs) in enumerate(zip(data, perc)):
-        size = np.around(n_points * perc_obs).astype(int)
-        indices = np.sort(rchoice(n_points, size=size, replace=False))
-        argvals[idx] = DenseArgvals(
-            {"input_dim_0": obs.argvals["input_dim_0"][points[indices]]}
-        )
-        values[idx] = obs.values[0][points[indices]]
+        mask = rchoice([False, True], size=n_points, p=(1 - perc_obs, perc_obs))
+        val = obs[0].values.flatten()
+        val[~mask] = np.nan
+        argvals[idx] = data.argvals
+        values[idx] = val.reshape(data.n_points)
     return IrregularFunctionalData(IrregularArgvals(argvals), IrregularValues(values))
 
 
