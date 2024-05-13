@@ -243,7 +243,7 @@ class Basis(DenseFunctionalData):
         inner_mat = inner_mat + inner_mat.T
         np.fill_diagonal(inner_mat, np.diag(inner_mat) / 2)
 
-        inner_mat[inner_mat < 1e-8] = 0
+        inner_mat[np.abs(inner_mat) < 1e-12] = 0
         self._inner_product_matrix = inner_mat
         return self._inner_product_matrix
 
