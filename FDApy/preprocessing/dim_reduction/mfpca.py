@@ -94,7 +94,7 @@ def _univariate_decomposition(
             penalty_matrices={"v": np.dot(mat_v, mat_v.T), "w": np.dot(mat_w, mat_w.T)},
             alpha_range={"v": (1e-5, 1e5), "w": (1e-5, 1e5)},
             tolerance=1e-4,
-            max_iteration=15,
+            max_iteration=30,
             adapt_tolerance=True,
         )
         scores = ufpca.transform(data)
