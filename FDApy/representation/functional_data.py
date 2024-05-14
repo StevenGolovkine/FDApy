@@ -2145,7 +2145,8 @@ class IrregularFunctionalData(GridFunctionalData):
             temp.columns = list(cur_argvals.keys())
             temp["id"] = i if reindex else idx
             temp["values"] = cur_values.flatten()
-            temp_list.append(temp.dropna())
+            temp_list.append(temp)
+            #temp_list.append(temp.dropna())
         return pd.concat(temp_list, ignore_index=True)
 
     def noise_variance(self, order: int = 2) -> float:
