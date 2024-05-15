@@ -2388,9 +2388,11 @@ class IrregularFunctionalData(GridFunctionalData):
             points = self.argvals.to_dense()
 
         fdata_long = self.to_long().dropna()
-        if approx and len(fdata_long) > 10000:
-            x = 0
-            y = 0
+        if approx and len(fdata_long) > 2000:
+            str_sub = [f"input_dim_{idx}" for idx in np.arange(self.n_dimension)]
+            temp = fdata_long.groupby(str_sub).mean().reset_index()
+            x = temp.drop(["id", "values"], axis=1, inplace=False).values
+            y = temp['values'].values
         else:
             x = fdata_long.drop(["id", "values"], axis=1, inplace=False).values
             y = fdata_long["values"].values

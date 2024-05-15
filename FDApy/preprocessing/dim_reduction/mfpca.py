@@ -97,7 +97,7 @@ def _univariate_decomposition(
             max_iteration=30,
             adapt_tolerance=True,
         )
-        scores = ufpca.transform(data)
+        scores = ufpca.transform(data, method='FCPTPA')
         basis = Basis(
             name="given",
             argvals=ufpca.eigenfunctions.argvals,
