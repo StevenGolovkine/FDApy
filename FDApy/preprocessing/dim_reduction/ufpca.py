@@ -534,7 +534,10 @@ class UFPCA:
         self._mean = data.mean(
             points=points, method_smoothing=method_smoothing, **kwargs_mean
         )
-        data = data.center(mean=self._mean, method_smoothing=None)
+        if isinstance(data, IrregularFunctionalData):
+            data = data.center(mean=self._mean, method_smoothing='PS', penalty=0)
+        else:
+            data = data.center(mean=self._mean, method_smoothing=None)
 
         # Normalize the data
         if self.normalize:

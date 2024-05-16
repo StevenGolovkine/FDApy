@@ -2824,6 +2824,8 @@ class IrregularFunctionalData(GridFunctionalData):
         self,
         points: Optional[DenseArgvals] = None,
         method_smoothing: str = "LP",
+        center: bool = True,
+        kwargs_center: Dict[str, object] = {},
         **kwargs,
     ) -> IrregularFunctionalData:
         """Compute an estimate of the covariance function.
@@ -2899,7 +2901,9 @@ class IrregularFunctionalData(GridFunctionalData):
         n_points = self.argvals.to_dense().n_points
 
         # Center the data
-        data = self.center(method_smoothing=method_smoothing, **kwargs)
+        data = self
+        if center:
+            data = data.center(method_smoothing=method_smoothing, **kwargs_center)
 
         # Compute the covariance
         cov_sum = np.zeros(np.power(n_points, 2))
