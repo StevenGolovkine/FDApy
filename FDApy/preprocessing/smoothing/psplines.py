@@ -336,6 +336,34 @@ def _tensor_product_penalties(
         return tensors_list
 
 
+def _format_data(
+    X: npt.NDArray[np.float_], y: npt.NDArray[np.float_]
+) -> tuple[list[npt.NDArray[np.float_]], npt.NDArray[np.float_]]:
+    """Format input data for multidimensional P-splines smoothing.
+
+    Parameters
+    ----------
+    X: npt.NDArray[np.float_], shape=(n_obs, n_dimension)
+        An array containing the predictor variable values.
+    y: npt.NDArray[np.float_], shape=(n_obs,)
+        An array containing the response variable values.
+
+    """
+    new_X = [np.unique(column) for column in X.T]
+    X_matrices = np.meshgrid(*new_X, indexing="ij")
+
+    new_y = np.zeros_like(X_matrices[0])
+    for x, obs in zip(X, y):
+        indices = tuple(
+            np.flatnonzero(points == point)[0] for point, points in zip(x, new_X)
+        )
+        new_y[indices] = obs
+
+    weights = np.ones_like(new_y)
+    weights[new_y == 0] = 0
+    return new_X, new_y, weights
+
+
 ########################################################################################
 # Inner functions for the PSplines class.
 def _fit_one_dimensional(

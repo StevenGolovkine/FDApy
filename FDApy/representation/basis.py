@@ -243,14 +243,15 @@ class Basis(DenseFunctionalData):
         inner_mat[np.abs(inner_mat) < 1e-12] = 0
         inner_mat = inner_mat + inner_mat.T
         np.fill_diagonal(inner_mat, np.diag(inner_mat) / 2)
-        
+
         try:
             np.linalg.cholesky(inner_mat)
         except np.linalg.LinAlgError as error:
             from statsmodels.stats.correlation_tools import cov_nearest
+
             print(f"The inner product has been made positive definite ({error}).")
             inner_mat = cov_nearest(inner_mat)
-            #inner_mat = 1e-10 * np.eye(inner_mat.shape[0])
+            # inner_mat = 1e-10 * np.eye(inner_mat.shape[0])
 
         self._inner_product_matrix = inner_mat
         return self._inner_product_matrix

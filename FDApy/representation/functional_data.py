@@ -35,14 +35,13 @@ from .argvals import Argvals, DenseArgvals, IrregularArgvals
 from .values import Values, DenseValues, IrregularValues
 
 from ..preprocessing.smoothing.local_polynomial import LocalPolynomial
-from ..preprocessing.smoothing.psplines import PSplines
+from ..preprocessing.smoothing.psplines import PSplines, _format_data
 
 from ..misc.utils import _cartesian_product
 from ..misc.utils import _estimate_noise_variance
 from ..misc.utils import _inner_product
 from ..misc.utils import _integrate
 from ..misc.utils import _outer
-from ..misc.utils import _shift
 
 if TYPE_CHECKING:
     from .basis import Basis
@@ -2146,8 +2145,8 @@ class IrregularFunctionalData(GridFunctionalData):
             temp["id"] = i if reindex else idx
             temp["values"] = cur_values.flatten()
             temp_list.append(temp)
-            #temp_list.append(temp.dropna())
-        return pd.concat(temp_list, ignore_index=True)
+            # temp_list.append(temp.dropna())
+        return pd.concat(temp_list, ignore_index=True).dropna()
 
     def noise_variance(self, order: int = 2) -> float:
         """Estimate the variance of the noise.
@@ -2199,12 +2198,11 @@ class IrregularFunctionalData(GridFunctionalData):
                 UserWarning,
             )
             return 0
-        return np.mean(
-            [
-                _estimate_noise_variance(obs.values[idx], order)
-                for idx, obs in enumerate(self)
-            ]
-        )
+        variances = [
+            _estimate_noise_variance(obs.values[idx][~np.isnan(obs.values[idx])], order)
+            for idx, obs in enumerate(self)
+        ]
+        return np.mean(variances)
 
     def smooth(
         self,
@@ -2319,7 +2317,24 @@ class IrregularFunctionalData(GridFunctionalData):
                     domain_min=domain_min,
                     domain_max=domain_max,
                 )
-                smooth[idx, :] = ps.predict(x = list(points.values()))
+                smooth[idx, :] = ps.predict(x=list(points.values()))
+        elif method == "interpolation":
+            from scipy.interpolate import NearestNDInterpolator
+
+            smooth = np.zeros((self.n_obs, *points.n_points))
+            for idx, obs in enumerate(self):
+                fdata_long = obs.to_long()
+                x = fdata_long.drop(["id", "values"], axis=1, inplace=False).values
+                y = fdata_long["values"].values
+
+                if self.n_dimension == 1:
+                    smooth[idx, :] = np.interp(points["input_dim_0"], x.flatten(), y)
+                else:
+                    new_X = [pp for pp in points.values()]
+                    X_matrices = np.meshgrid(*new_X, indexing="ij")
+
+                    interp = NearestNDInterpolator(x, y)
+                    smooth[idx, :] = interp(*X_matrices)
         else:
             raise NotImplementedError("Method not implemented.")
         return DenseFunctionalData(points, DenseValues(smooth))
@@ -2346,7 +2361,7 @@ class IrregularFunctionalData(GridFunctionalData):
             The method to used for the smoothing. If 'PS', the method is P-splines [2]_.
             If 'LP', the method is local polynomials [1]_.
         approx: bool, default=True
-            Approximation of the estimation. 
+            Approximation of the estimation.
         kwargs
             Other keyword arguments are passed to the following function:
 
@@ -2387,12 +2402,12 @@ class IrregularFunctionalData(GridFunctionalData):
         if points is None:
             points = self.argvals.to_dense()
 
-        fdata_long = self.to_long().dropna()
+        fdata_long = self.to_long()
         if approx and len(fdata_long) > 2000:
             str_sub = [f"input_dim_{idx}" for idx in np.arange(self.n_dimension)]
             temp = fdata_long.groupby(str_sub).mean().reset_index()
             x = temp.drop(["id", "values"], axis=1, inplace=False).values
-            y = temp['values'].values
+            y = temp["values"].values
         else:
             x = fdata_long.drop(["id", "values"], axis=1, inplace=False).values
             y = fdata_long["values"].values
@@ -2407,13 +2422,13 @@ class IrregularFunctionalData(GridFunctionalData):
             lp = LocalPolynomial(bandwidth=bandwidth, **kwargs)
             pred = lp.predict(y=y, x=x, x_new=points_mat).reshape(points.n_points)
         elif method_smoothing == "PS":
-            penalty = kwargs.pop("penalty", 1)
+            penalty = kwargs.pop("penalty", self.n_dimension * (1,))
 
-            x = x.flatten()
+            x, y, weights = _format_data(x, y)
             ps = PSplines(**kwargs)
 
-            ps.fit(x=x, y=y, penalty=penalty)
-            pred = ps.predict(points["input_dim_0"])
+            ps.fit(x=x, y=y, sample_weights=weights, penalty=penalty)
+            pred = ps.predict([pp for pp in points.values()])
         else:
             raise ValueError("Method not implemented.")
 
@@ -2532,19 +2547,26 @@ class IrregularFunctionalData(GridFunctionalData):
         ])
 
         """
-        norm_fd = np.zeros(self.n_obs)
-        for idx, obs in enumerate(self):
-            if use_argvals_stand:
-                axis = [argvals for argvals in obs.argvals_stand[idx].values()]
-            else:
-                axis = [argvals for argvals in obs.argvals[idx].values()]
-            sq_values = np.power(obs.values[idx], 2)
-            norm_fd[idx] = _integrate(sq_values, *axis, method=method_integration)
+        data_interp = self.smooth(method="interpolation")
+        return data_interp.norm(
+            squared=squared,
+            method_integration=method_integration,
+            use_argvals_stand=use_argvals_stand,
+        )
+        # norm_fd = np.zeros(data_interp.n_obs)
+        # for idx, obs in enumerate(data_interp):
+        #    if use_argvals_stand:
+        #        axis = [argvals for argvals in obs.argvals_stand[idx].values()]
+        #    else:
+        #        axis = [argvals for argvals in obs.argvals[idx].values()]
+        #    values = obs.values[idx][~np.isnan(obs.values[idx])]
+        #    sq_values = np.power(values, 2)
+        #    norm_fd[idx] = _integrate(sq_values, *axis, method=method_integration)
 
-        if squared:
-            return np.array(norm_fd)
-        else:
-            return np.power(norm_fd, 0.5)
+        # if squared:
+        #    return np.array(norm_fd)
+        # else:
+        #    return np.power(norm_fd, 0.5)
 
     def normalize(self, **kwargs) -> IrregularFunctionalData:
         r"""Normalize the data.
@@ -2782,11 +2804,6 @@ class IrregularFunctionalData(GridFunctionalData):
         ])
 
         """
-        if self.n_dimension > 1:
-            raise NotImplementedError(
-                "Only implemented for one-dimensional irregular functional data."
-            )
-
         # Center the data
         data = self.center(method_smoothing=method_smoothing, **kwargs)
 
@@ -2796,20 +2813,10 @@ class IrregularFunctionalData(GridFunctionalData):
         else:
             self._noise_variance = noise_variance
 
-        dense_argvals = data.argvals.to_dense()["input_dim_0"]
-        new_values = np.zeros((data.n_obs, len(dense_argvals)))
-        for idx, obs in enumerate(self):
-            tt = obs.argvals[idx]["input_dim_0"]
-            intervals = (tt + _shift(tt, -1)) / 2
-            indices = np.searchsorted(intervals, dense_argvals)
-            new_values[idx, :] = obs.values[idx][indices]
-
-        self._data_inpro = DenseFunctionalData(
-            DenseArgvals({"input_dim_0": dense_argvals}), DenseValues(new_values)
-        )
+        self._data_inpro = data.smooth(method="interpolation")
         return self._data_inpro.inner_product(
             method_integration=method_integration,
-            method_smoothing=method_smoothing,
+            method_smoothing=None,
             noise_variance=self._noise_variance,
         )
 
@@ -2898,11 +2905,13 @@ class IrregularFunctionalData(GridFunctionalData):
         cov_sum = np.zeros(np.power(n_points, 2))
         cov_count = np.zeros(np.power(n_points, 2))
         for idx, obs in enumerate(data):
-            obs_points = np.isin(
-                self.argvals.to_dense()["input_dim_0"], obs.argvals[idx]["input_dim_0"]
-            )
+            nan_mask = np.isnan(obs.values[idx])
+            new_argvals = obs.argvals[idx]["input_dim_0"][~nan_mask]
+            new_values = obs.values[idx][~nan_mask]
+
+            obs_points = np.isin(self.argvals.to_dense()["input_dim_0"], new_argvals)
             mask = np.outer(obs_points, obs_points).flatten()
-            cov = np.outer(obs.values[idx], obs.values[idx]).flatten()
+            cov = np.outer(new_values, new_values).flatten()
 
             cov_count[mask] += 1
             cov_sum[mask] += cov
