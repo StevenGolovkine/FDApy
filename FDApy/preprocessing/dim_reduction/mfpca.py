@@ -87,7 +87,7 @@ def _univariate_decomposition(
         data_basis = data.to_basis(**kwargs)
     elif method == "FCPTPA":
         if isinstance(data, IrregularFunctionalData):
-            data = data.smooth(method='interpolation')
+            data = data.smooth(method="interpolation")
         n_points = data.n_points
         mat_v = np.diff(np.identity(n_points[0]))
         mat_w = np.diff(np.identity(n_points[1]))
@@ -518,8 +518,8 @@ class MFPCA:
         self._mean = data.mean(
             points=points, method_smoothing=method_smoothing, **kwargs
         )
-        #pen = self._mean.n_dimension * (0,)
-        data = data.center(mean=self._mean, method_smoothing='PS')
+        # pen = self._mean.n_dimension * (0,)
+        data = data.center(mean=self._mean, method_smoothing="PS")
 
         # Normalize the data
         if self.normalize:

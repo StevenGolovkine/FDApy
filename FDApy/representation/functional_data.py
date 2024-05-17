@@ -1215,11 +1215,12 @@ class DenseFunctionalData(GridFunctionalData):
             ps = PSplines(**kwargs)
 
             x = list(self.argvals.values())
+            new_x = list(points.values())
 
-            smooth = np.zeros((self.n_obs, *self.argvals.n_points))
+            smooth = np.zeros((self.n_obs, *points.n_points))
             for idx, _ in enumerate(self):
                 ps.fit(x=x, y=self.values[idx, :], penalty=penalty)
-                smooth[idx, :] = ps.predict()
+                smooth[idx, :] = ps.predict(x=new_x)
         else:
             raise NotImplementedError("Method not implemented.")
         return DenseFunctionalData(points, DenseValues(smooth))
