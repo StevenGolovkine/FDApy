@@ -240,7 +240,9 @@ def _fit_inner_product_multivariate(
 
     """
     # Compute inner product matrix and its eigendecomposition
-    in_prod = data.inner_product(method_integration="trapz", **kwargs)
+    in_prod = data.inner_product(
+        method_integration="trapz", method_smoothing="PS", **kwargs
+    )
     eigenvalues, eigenvectors = _compute_eigen(in_prod, n_components)
 
     # Compute the eigenfunctions
@@ -291,6 +293,8 @@ def _transform_numerical_integration_multivariate(
     """
     scores = [None] * eigenfunctions.n_functional
     for idx, (eigen, data) in enumerate(zip(eigenfunctions.data, data.data)):
+        if data.n_dimension > 1:
+            data = data.smooth(method='PS')
         if isinstance(data, DenseFunctionalData):
             scores[idx] = _transform_numerical_integration_dense(
                 data=data, eigenfunctions=eigen, method=method

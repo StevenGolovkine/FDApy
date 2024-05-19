@@ -226,21 +226,22 @@ def _transform_numerical_integration_irregular(
         functions defined by the eigenfunctions.
 
     """
-    scores = np.zeros((data.n_obs, eigenfunctions.n_obs))
-    for idx, obs in enumerate(data):
-        nan_mask = np.isnan(obs.values[idx])
-        new_argvals = obs.argvals[idx]["input_dim_0"][~nan_mask]
-        new_values = obs.values[idx][~nan_mask]
+    data = data.smooth(method='interpolation')
+    # scores = np.zeros((data.n_obs, eigenfunctions.n_obs))
+    # for idx, obs in enumerate(data):
+    #     nan_mask = np.isnan(obs.values[idx])
+    #     new_argvals = obs.argvals[idx]["input_dim_0"][~nan_mask]
+    #     new_values = obs.values[idx][~nan_mask]
 
-        eigen_sampled = eigenfunctions.smooth(
-            points=DenseArgvals({"input_dim_0": new_argvals}),
-            method="PS",
-            penalty=(1,),
-        )
-        temp = eigen_sampled.values * new_values
-        for idx_eigen, curve in enumerate(temp):
-            scores[idx, idx_eigen] = _integrate(curve, new_argvals, method=method)
-    return scores
+    #     eigen_sampled = eigenfunctions.smooth(
+    #         points=DenseArgvals({"input_dim_0": new_argvals}),
+    #         method="PS",
+    #         penalty=(1,),
+    #     )
+    #     temp = eigen_sampled.values * new_values
+    #     for idx_eigen, curve in enumerate(temp):
+    #         scores[idx, idx_eigen] = _integrate(curve, new_argvals, method=method)
+    return _transform_numerical_integration_dense(data, eigenfunctions, method)
 
 
 def _transform_pace_dense(
@@ -308,34 +309,37 @@ def _transform_pace_irregular(
         functions defined by the eigenfunctions.
 
     """
-    points = data.argvals.to_dense()
-    argvals_cov = DenseArgvals(
-        {
-            "input_dim_0": data.argvals.to_dense()["input_dim_0"],
-            "input_dim_1": data.argvals.to_dense()["input_dim_0"],
-        }
+    data = data.smooth(method='interpolation')
+    # points = data.argvals.to_dense()
+    # argvals_cov = DenseArgvals(
+    #     {
+    #         "input_dim_0": data.argvals.to_dense()["input_dim_0"],
+    #         "input_dim_1": data.argvals.to_dense()["input_dim_0"],
+    #     }
+    # )
+    # covariance_sampled = covariance.smooth(points=argvals_cov, method="PS")
+    # eigenfunctions_sampled = eigenfunctions.smooth(points=points, method="PS")
+
+    # scores = np.zeros((data.n_obs, eigenfunctions.n_obs))
+    # for idx, obs in enumerate(data):
+    #     nan_mask = np.isnan(obs.values[idx])
+    #     new_argvals = obs.argvals[idx]["input_dim_0"][~nan_mask]
+    #     new_values = obs.values[idx][~nan_mask]
+
+    #     obs_points = np.isin(points["input_dim_0"], new_argvals)
+
+    #     mask = np.outer(obs_points, obs_points)
+    #     cov_sampled = covariance_sampled.values[0, mask].reshape(2 * (len(new_values),))
+    #     eigen_sampled = eigenfunctions_sampled.values[:, obs_points]
+
+    #     noise_mat = noise_variance * np.eye(cov_sampled.shape[0])
+    #     sigma_inv = np.linalg.pinv(cov_sampled + noise_mat)
+    #     scores[idx, :] = eigenvalues * np.linalg.multi_dot(
+    #         [new_values, sigma_inv, eigen_sampled.T]
+    #     )
+    return _transform_pace_dense(
+        data, eigenfunctions, eigenvalues, covariance, noise_variance
     )
-    covariance_sampled = covariance.smooth(points=argvals_cov, method="PS")
-    eigenfunctions_sampled = eigenfunctions.smooth(points=points, method="PS")
-
-    scores = np.zeros((data.n_obs, eigenfunctions.n_obs))
-    for idx, obs in enumerate(data):
-        nan_mask = np.isnan(obs.values[idx])
-        new_argvals = obs.argvals[idx]["input_dim_0"][~nan_mask]
-        new_values = obs.values[idx][~nan_mask]
-
-        obs_points = np.isin(points["input_dim_0"], new_argvals)
-
-        mask = np.outer(obs_points, obs_points)
-        cov_sampled = covariance_sampled.values[0, mask].reshape(2 * (len(new_values),))
-        eigen_sampled = eigenfunctions_sampled.values[:, obs_points]
-
-        noise_mat = noise_variance * np.eye(cov_sampled.shape[0])
-        sigma_inv = np.linalg.pinv(cov_sampled + noise_mat)
-        scores[idx, :] = eigenvalues * np.linalg.multi_dot(
-            [new_values, sigma_inv, eigen_sampled.T]
-        )
-    return scores
 
 
 def _transform_innpro(

@@ -822,7 +822,7 @@ def _compute_eigen(
 
     """
     # Diagonalization of the matrix
-    # eigenvalues, eigenvectors = _eigh(data)
+    #eigenvalues, eigenvectors = _eigh(data)
     eigenvalues, eigenvectors = np.linalg.eig(data)
     eigenvalues = np.real(eigenvalues)
     eigenvectors = np.real(eigenvectors)
