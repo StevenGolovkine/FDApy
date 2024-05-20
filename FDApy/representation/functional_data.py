@@ -1124,7 +1124,9 @@ class DenseFunctionalData(GridFunctionalData):
                 UserWarning,
             )
             return 0
-        return np.mean([_estimate_noise_variance(obs.values[0], order) for obs in self])
+        return np.nanmean(
+            [_estimate_noise_variance(obs.values[0], order) for obs in self]
+        )
 
     def smooth(
         self,
@@ -1986,6 +1988,9 @@ class IrregularFunctionalData(GridFunctionalData):
             indices = index.indices(self.n_obs)
             argvals = {obs: self.argvals.get(obs) for obs in range(*indices)}
             values = {obs: self.values.get(obs) for obs in range(*indices)}
+        elif isinstance(index, np.ndarray):
+            argvals = {int(obs): self.argvals.get(obs) for obs in index}
+            values = {int(obs): self.values.get(obs) for obs in index}
         else:
             argvals = {index: self.argvals[index]}
             values = {index: self.values[index]}
@@ -2203,7 +2208,7 @@ class IrregularFunctionalData(GridFunctionalData):
             _estimate_noise_variance(obs.values[idx][~np.isnan(obs.values[idx])], order)
             for idx, obs in enumerate(self)
         ]
-        return np.mean(variances)
+        return np.nanmean(variances)
 
     def smooth(
         self,

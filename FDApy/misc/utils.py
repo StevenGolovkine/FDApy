@@ -822,7 +822,7 @@ def _compute_eigen(
 
     """
     # Diagonalization of the matrix
-    #eigenvalues, eigenvectors = _eigh(data)
+    # eigenvalues, eigenvectors = _eigh(data)
     eigenvalues, eigenvectors = np.linalg.eig(data)
     eigenvalues = np.real(eigenvalues)
     eigenvectors = np.real(eigenvectors)
@@ -889,8 +889,10 @@ def _estimate_noise_variance(x: npt.NDArray[np.float64], order: int = 2) -> floa
     """
     if order < 1 or order > 10:
         raise ValueError("The order has to be between 1 and 10.")
+    if len(x) < order + 1:
+        return 0
     weights = DIFF_SEQUENCES.get(order)
-    return np.mean(
+    return np.nanmean(
         [
             np.matmul(weights, x[idx : (idx + order + 1)]) ** 2
             for idx in range(len(x) - order)

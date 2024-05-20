@@ -294,7 +294,7 @@ def _transform_numerical_integration_multivariate(
     scores = [None] * eigenfunctions.n_functional
     for idx, (eigen, data) in enumerate(zip(eigenfunctions.data, data.data)):
         if data.n_dimension > 1:
-            data = data.smooth(method='PS')
+            data = data.smooth(method="PS")
         if isinstance(data, DenseFunctionalData):
             scores[idx] = _transform_numerical_integration_dense(
                 data=data, eigenfunctions=eigen, method=method

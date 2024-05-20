@@ -226,7 +226,7 @@ def _transform_numerical_integration_irregular(
         functions defined by the eigenfunctions.
 
     """
-    data = data.smooth(method='interpolation')
+    data = data.smooth(method="interpolation")
     # scores = np.zeros((data.n_obs, eigenfunctions.n_obs))
     # for idx, obs in enumerate(data):
     #     nan_mask = np.isnan(obs.values[idx])
@@ -309,7 +309,7 @@ def _transform_pace_irregular(
         functions defined by the eigenfunctions.
 
     """
-    data = data.smooth(method='interpolation')
+    data = data.smooth(method="interpolation")
     # points = data.argvals.to_dense()
     # argvals_cov = DenseArgvals(
     #     {
