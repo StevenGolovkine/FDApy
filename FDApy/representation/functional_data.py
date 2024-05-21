@@ -2435,6 +2435,17 @@ class IrregularFunctionalData(GridFunctionalData):
 
             ps.fit(x=x, y=y, sample_weights=weights, penalty=penalty)
             pred = ps.predict([pp for pp in points.values()])
+        elif method_smoothing == 'interpolation':
+            from scipy.interpolate import NearestNDInterpolator
+
+            if self.n_dimension == 1:
+                pred = np.interp(points["input_dim_0"], x.flatten(), y)
+            else:
+                new_X = [pp for pp in points.values()]
+                X_matrices = np.meshgrid(*new_X, indexing="ij")
+
+                interp = NearestNDInterpolator(x, y)
+                pred = interp(*X_matrices)
         else:
             raise ValueError("Method not implemented.")
 
@@ -2831,6 +2842,7 @@ class IrregularFunctionalData(GridFunctionalData):
         points: Optional[DenseArgvals] = None,
         method_smoothing: str = "LP",
         center: bool = True,
+        smooth: bool = True,
         kwargs_center: Dict[str, object] = {},
         **kwargs,
     ) -> IrregularFunctionalData:
@@ -2931,17 +2943,18 @@ class IrregularFunctionalData(GridFunctionalData):
         raw_diag_cov = np.diag(cov).copy()
 
         # Smooth the covariance
-        weights = np.ones_like(cov)
-        weights[cov == 0] = 0
+        if smooth:
+            weights = np.ones_like(cov)
+            weights[cov == 0] = 0
 
-        cov = _smooth_covariance(
-            cov,
-            argvals_cov,
-            points_cov,
-            method_smoothing=method_smoothing,
-            weights=weights,
-            **kwargs,
-        )
+            cov = _smooth_covariance(
+                cov,
+                argvals_cov,
+                points_cov,
+                method_smoothing=method_smoothing,
+                weights=weights,
+                **kwargs,
+            )
 
         # Ensure the covariance is symmetric.
         cov = (cov + cov.T) / 2
