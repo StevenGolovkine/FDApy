@@ -112,6 +112,8 @@ def _sparsify_univariate_data(
     argvals, values = {}, {}
     for idx, (obs, perc_obs) in enumerate(zip(data, perc)):
         mask = rchoice([False, True], size=n_points, p=(1 - perc_obs, perc_obs))
+        if np.sum(mask) < 2:
+            mask[rchoice(np.arange(n_points), size=2)] = True
         val = obs[0].values.flatten()
         val[~mask] = np.nan
         argvals[idx] = data.argvals
