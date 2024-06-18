@@ -16,20 +16,27 @@ combinaison of 1- and 2-dimensional data.
 import matplotlib.pyplot as plt
 import numpy as np
 
-from FDApy.simulation import KarhunenLoeve
-from FDApy.preprocessing import MFPCA
-from FDApy.visualization import plot
+from FDApy.representation import DenseArgvals
+from FDApy.simulation.karhunen import KarhunenLoeve
+from FDApy.preprocessing.dim_reduction import MFPCA
+from FDApy.visualization import plot, plot_multivariate
 
 # Set general parameters
 rng = 42
 n_obs = 50
+idx = 5
+
 
 # Parameters of the basis
-name = ["bsplines", "fourier"]
-n_functions = 5
-dimension = ["1D", "2D"]
-argvals = [np.linspace(0, 1, 101), np.linspace(0, 1, 21)]
-
+name = ['bsplines', ('fourier', 'fourier')]
+n_functions = [9, (3, 3)]
+argvals = [
+    DenseArgvals({'input_dim_0': np.linspace(0, 1, 101)}),
+    DenseArgvals({
+        'input_dim_0':np.linspace(0, 1, 21),
+        'input_dim_1':np.linspace(0, 1, 21)
+    })
+]
 
 ###############################################################################
 # We simulate :math:`N = 50` curves of a 2-dimensional process. The first
@@ -46,27 +53,12 @@ kl = KarhunenLoeve(
     basis_name=name,
     n_functions=n_functions,
     argvals=argvals,
-    dimension=dimension,
-    add_intercept=False,
-    random_state=rng,
+    random_state=rng
 )
 kl.new(n_obs=50)
 data = kl.data
 
-
-# Plot of the data
-fig = plt.figure(figsize=plt.figaspect(0.5))
-
-ax = fig.add_subplot(1, 2, 1)
-ax = plot(data.data[0], ax=ax)
-ax.set_title("First component")
-
-ax = fig.add_subplot(1, 2, 2, projection="3d")
-ax = plot(data.data[1], ax=ax)
-ax.set_title("Second component")
-
-plt.show()
-
+_ = plot_multivariate(data)
 
 ###############################################################################
 # Covariance decomposition
@@ -78,7 +70,20 @@ plt.show()
 # decomposition of the covariance operator is based on the FCP-TPA algorithm
 # for 2-dimensional data, which is an iterative algorithm. The number of
 # components has thus to be prespecified.
-mfpca_cov = MFPCA(n_components=[0.95, 5], method="covariance")
+univariate_expansions = [
+    {
+        'method': 'UFPCA',
+        'n_components': 15,
+        'method_smoothing': 'PS'
+    },
+    {
+        'method': 'FCPTPA',
+        'n_components': 20
+    }
+]
+mfpca_cov = MFPCA(
+    n_components=0.9, method='covariance', univariate_expansions=univariate_expansions
+)
 mfpca_cov.fit(data)
 
 

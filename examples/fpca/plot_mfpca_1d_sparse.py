@@ -16,8 +16,9 @@ Example of multivariate functional principal components analysis of
 import matplotlib.pyplot as plt
 import numpy as np
 
-from FDApy.simulation import KarhunenLoeve
-from FDApy.preprocessing import MFPCA
+from FDApy.representation import DenseArgvals
+from FDApy.simulation.karhunen import KarhunenLoeve
+from FDApy.preprocessing.dim_reduction import MFPCA
 from FDApy.visualization import plot, plot_multivariate
 
 # Set general parameters
@@ -28,8 +29,12 @@ colors = np.array([[0.5, 0, 0, 1]])
 
 
 # Parameters of the basis
-name = ["bsplines", "fourier"]
-n_functions = 5
+name = ['bsplines', 'fourier']
+n_functions = [5, 5]
+argvals = [
+    DenseArgvals({'input_dim_0': np.linspace(0, 1, 101)}),
+    DenseArgvals({'input_dim_0': np.linspace(0, 1, 101)})
+]
 
 ###############################################################################
 # We simulate :math:`N = 50` curves of a 2-dimensional process. The first
@@ -41,13 +46,14 @@ n_functions = 5
 # :math:`\{0, 0.01, 0.02, \cdots, 1\}`, based on the first :math:`K = 5`
 # Fourier basis functions on :math:`[0, 1]` and the variance of the scores
 # random variables equal to :math:`1`.
-kl = KarhunenLoeve(basis_name=name, n_functions=n_functions, random_state=rng)
+kl = KarhunenLoeve(
+    basis_name=name, n_functions=n_functions, argvals=argvals, random_state=rng
+)
 kl.new(n_obs=n_obs)
 kl.add_noise_and_sparsify(noise_variance=0.05, percentage=0.5, epsilon=0.05)
 data = kl.sparse_data
 
 _ = plot_multivariate(data)
-
 
 ##############################################################################
 # Covariance decomposition
@@ -56,10 +62,25 @@ _ = plot_multivariate(data)
 # Perform multivariate FPCA with an estimation of the number of components by
 # the percentage of variance explained using a decomposition of the covariance
 # operator.
-mfpca_cov = MFPCA(n_components=[3, 3], method="covariance")
-mfpca_cov.fit(data)
+univariate_expansions = [
+    {
+        'method': 'UFPCA',
+        'n_components': 15,
+        'method_smoothing': 'PS'
+    },
+    {
+        'method': 'UFPCA',
+        'n_components': 15,
+        'method_smoothing': 'PS'
+    }
+]
+mfpca_cov = MFPCA(
+    n_components=3, method='covariance',
+    univariate_expansions=univariate_expansions
+)
+mfpca_cov.fit(data, method_smoothing='PS')
 
-# Plot the eigenfunctions
+# # Plot the eigenfunctions
 _ = plot_multivariate(mfpca_cov.eigenfunctions)
 
 
@@ -83,7 +104,7 @@ data_recons_numint = mfpca_cov.inverse_transform(scores_numint)
 # percentage of variance explained using a decomposition of the inner-product
 # matrix.
 mfpca_innpro = MFPCA(n_components=3, method="inner-product")
-mfpca_innpro.fit(data)
+mfpca_innpro.fit(data, method_smoothing='PS')
 
 # Plot the eigenfunctions
 _ = plot_multivariate(mfpca_innpro.eigenfunctions)

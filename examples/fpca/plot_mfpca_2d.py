@@ -16,9 +16,10 @@ Example of multivariate functional principal components analysis of
 import matplotlib.pyplot as plt
 import numpy as np
 
-from FDApy.simulation import KarhunenLoeve
-from FDApy.preprocessing import MFPCA
-from FDApy.visualization import plot
+from FDApy.representation import DenseArgvals
+from FDApy.simulation.karhunen import KarhunenLoeve
+from FDApy.preprocessing.dim_reduction import MFPCA
+from FDApy.visualization import plot, plot_multivariate
 
 # Set general parameters
 rng = 42
@@ -27,10 +28,18 @@ idx = 5
 
 
 # Parameters of the basis
-name = ["bsplines", "fourier"]
-n_functions = 5
-dimension = ["2D", "2D"]
-argvals = [np.linspace(0, 1, 21), np.linspace(0, 1, 21)]
+name = [('bsplines', 'bsplines'), ('fourier', 'fourier')]
+n_functions = [(5, 5), (5, 5)]
+argvals = [
+    DenseArgvals({
+        'input_dim_0': np.linspace(0, 1, 21),
+        'input_dim_1': np.linspace(0, 1, 21)
+    }),
+    DenseArgvals({
+        'input_dim_0': np.linspace(0, 1, 21),
+        'input_dim_1': np.linspace(0, 1, 21)
+    })
+]
 
 
 ###############################################################################
@@ -49,26 +58,12 @@ kl = KarhunenLoeve(
     basis_name=name,
     n_functions=n_functions,
     argvals=argvals,
-    dimension=dimension,
-    add_intercept=False,
-    random_state=rng,
+    random_state=rng
 )
 kl.new(n_obs=50)
 data = kl.data
 
-
-# Plot of the data
-fig = plt.figure(figsize=plt.figaspect(0.5))
-
-ax = fig.add_subplot(1, 2, 1, projection="3d")
-ax = plot(data.data[0], ax=ax)
-ax.set_title("First component")
-
-ax = fig.add_subplot(1, 2, 2, projection="3d")
-ax = plot(data.data[1], ax=ax)
-ax.set_title("Second component")
-
-plt.show()
+_ = plot_multivariate(data)
 
 
 ###############################################################################
@@ -79,8 +74,21 @@ plt.show()
 # decomposition of the covariance operator. The decomposition of the covariance
 # operator is based on the FCP-TPA algorithm, which is an iterative algorithm.
 # The number of components has thus to be prespecified.
-mfpca_cov = MFPCA(n_components=[5, 5], method="covariance")
-mfpca_cov.fit(data)
+univariate_expansions = [
+    {
+        'method': 'FCPTPA',
+        'n_components': 20
+    },
+    {
+        'method': 'FCPTPA',
+        'n_components': 20
+    }
+]
+mfpca_cov = MFPCA(
+    n_components=5, method='covariance',
+    univariate_expansions=univariate_expansions
+)
+mfpca_cov.fit(data, method_smoothing='PS')
 
 
 ###############################################################################
@@ -105,7 +113,7 @@ data_recons_cov = mfpca_cov.inverse_transform(scores_cov)
 # the percentage of variance explained using a decomposition of the
 # inner-product matrix.
 mfpca_innpro = MFPCA(n_components=5, method="inner-product")
-mfpca_innpro.fit(data)
+mfpca_innpro.fit(data, method_smoothing='PS')
 
 
 ###############################################################################

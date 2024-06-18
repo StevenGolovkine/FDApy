@@ -15,19 +15,22 @@ Example of functional principal components analysis of 2-dimensional data.
 import matplotlib.pyplot as plt
 import numpy as np
 
-from FDApy.simulation import KarhunenLoeve
-from FDApy.preprocessing import FCPTPA, UFPCA
-from FDApy.visualization._plot import plot
-
+from FDApy.representation import DenseArgvals
+from FDApy.simulation.karhunen import KarhunenLoeve
+from FDApy.preprocessing.dim_reduction import UFPCA, FCPTPA
+from FDApy.visualization import plot
 
 # Set general parameters
 rng = 42
 n_obs = 50
 
 # Parameters of the basis
-name = "fourier"
-n_functions = 5
-argvals = np.linspace(0, 1, 21)
+name = ('fourier', 'fourier')
+n_functions = (5, 5)
+argvals = DenseArgvals({
+    'input_dim_0': np.linspace(0, 1, 21),
+    'input_dim_1': np.linspace(-0.5, 0.5, 21)
+})
 
 
 ###############################################################################
@@ -37,14 +40,10 @@ argvals = np.linspace(0, 1, 21)
 # basis functions on :math:`[0, 1] \times [0, 1]` and the variance of
 # the scores random variables decreases exponentially.
 kl = KarhunenLoeve(
-    basis_name=name,
-    n_functions=n_functions,
-    argvals=argvals,
-    dimension="2D",
-    add_intercept=False,
-    random_state=rng,
+    basis_name=name, n_functions=n_functions, argvals=argvals,
+    add_intercept=False, random_state=rng
 )
-kl.new(n_obs=n_obs, clusters_std="exponential")
+kl.new(n_obs=n_obs, clusters_std='exponential')
 data = kl.data
 
 _ = plot(data)

@@ -16,8 +16,9 @@ data.
 import matplotlib.pyplot as plt
 import numpy as np
 
-from FDApy.simulation import KarhunenLoeve
-from FDApy.preprocessing import UFPCA
+from FDApy.representation import DenseArgvals
+from FDApy.simulation.karhunen import KarhunenLoeve
+from FDApy.preprocessing.dim_reduction import UFPCA
 from FDApy.visualization import plot
 
 # Set general parameters
@@ -25,15 +26,18 @@ rng = 42
 n_obs = 50
 
 # Parameters of the basis
-name = "fourier"
+name = 'fourier'
 n_functions = 25
+argvals = DenseArgvals({'input_dim_0': np.linspace(0, 1, 101)})
 
 ###############################################################################
 # We simulate :math:`N = 50` curves on the one-dimensional observation grid
 # :math:`\{0, 0.01, 0.02, \cdots, 1\}`, based on the first :math:`K = 25`
 # Fourier basis functions on :math:`[0, 1]` and the variance of the scores
 # random variables decreasing exponentially.
-kl = KarhunenLoeve(basis_name=name, n_functions=n_functions, random_state=rng)
+kl = KarhunenLoeve(
+    n_functions=n_functions, basis_name=name, argvals=argvals, random_state=rng
+)
 kl.new(n_obs=n_obs, clusters_std="exponential")
 kl.add_noise_and_sparsify(noise_variance=0.01, percentage=0.5, epsilon=0.05)
 data = kl.sparse_data
@@ -47,7 +51,7 @@ _ = plot(data)
 # We perform a univariate FPCA with a predefined number of components using a
 # decomposition of the covariance operator.
 ufpca_cov = UFPCA(n_components=10, method="covariance")
-ufpca_cov.fit(data)
+ufpca_cov.fit(data, method_smoothing='PS')
 
 # Plot the eigenfunctions
 _ = plot(ufpca_cov.eigenfunctions)
@@ -78,7 +82,7 @@ data_recons_pace = ufpca_cov.inverse_transform(scores_pace)
 # Now, we perform a univariate FPCA using a decomposition of the inner-product
 # matrix.
 ufpca_innpro = UFPCA(n_components=10, method="inner-product")
-ufpca_innpro.fit(data)
+ufpca_innpro.fit(data, method_smoothing='PS')
 
 # Plot the eigenfunctions
 _ = plot(ufpca_innpro.eigenfunctions)

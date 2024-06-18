@@ -14,43 +14,23 @@ Multivariate Basis of one-dimensional data
 import numpy as np
 
 from FDApy.representation import MultivariateBasis
+from FDApy.representation import DenseArgvals
 from FDApy.visualization import plot_multivariate
 
-# Parameters
-n_components = 2
-basis_name = "fourier"
-argvals = [np.linspace(0, 1, 11), np.linspace(0, 0.5, 11)]
-n_functions = 3
-dimension = ["1D", "1D"]
-random_state = np.random.default_rng(42)
+
+basis_name = ['fourier', 'legendre']
+argvals = [
+    DenseArgvals({'input_dim_0': np.linspace(0, 1, 11)}),
+    DenseArgvals({'input_dim_0': np.linspace(0, 0.5, 11)})
+]
+n_functions = [3, 3]
+
 
 ###############################################################################
-# Using split
 basis = MultivariateBasis(
-    simulation_type="split",
-    n_components=n_components,
     name=basis_name,
     n_functions=n_functions,
-    dimension=dimension,
-    argvals=argvals,
-    norm=False,
-    rchoice=random_state.choice,
-)
-
-_ = plot_multivariate(basis)
-
-
-###############################################################################
-# Using weighted
-basis = MultivariateBasis(
-    simulation_type="weighted",
-    n_components=n_components,
-    name=["fourier", "legendre"],
-    n_functions=n_functions,
-    dimension=dimension,
-    argvals=argvals,
-    norm=False,
-    runif=random_state.uniform,
+    argvals=argvals
 )
 
 _ = plot_multivariate(basis)

@@ -14,17 +14,18 @@ One-dimensional Basis
 import numpy as np
 
 from FDApy.representation import Basis
+from FDApy.representation import DenseArgvals
 from FDApy.visualization import plot
 
 # Parameters
 n_functions = 5
-argvals = np.linspace(0, 1, 101)
-dimension = "1D"
+argvals = DenseArgvals({'input_dim_0': np.linspace(0, 1, 101)})
+
 
 ###############################################################################
 # Fourier
 basis = Basis(
-    name="fourier", n_functions=n_functions, argvals=argvals, dimension=dimension
+    name="fourier", n_functions=n_functions, argvals=argvals
 )
 
 _ = plot(basis)
@@ -32,7 +33,7 @@ _ = plot(basis)
 ###############################################################################
 # B-splines
 basis = Basis(
-    name="bsplines", n_functions=n_functions, argvals=argvals, dimension=dimension
+    name="bsplines", n_functions=n_functions, argvals=argvals
 )
 
 _ = plot(basis)
@@ -40,7 +41,7 @@ _ = plot(basis)
 ###############################################################################
 # Wiener
 basis = Basis(
-    name="wiener", n_functions=n_functions, argvals=argvals, dimension=dimension
+    name="wiener", n_functions=n_functions, argvals=argvals
 )
 
 _ = plot(basis)

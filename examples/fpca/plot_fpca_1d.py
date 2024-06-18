@@ -15,8 +15,9 @@ Example of functional principal components analysis of 1-dimensional data.
 import matplotlib.pyplot as plt
 import numpy as np
 
-from FDApy.simulation import KarhunenLoeve
-from FDApy.preprocessing import UFPCA
+from FDApy.representation import DenseArgvals
+from FDApy.simulation.karhunen import KarhunenLoeve
+from FDApy.preprocessing.dim_reduction import UFPCA
 from FDApy.visualization import plot
 
 # Set general parameters
@@ -24,16 +25,19 @@ rng = 42
 n_obs = 50
 
 # Parameters of the basis
-name = "fourier"
+name = 'fourier'
 n_functions = 25
+argvals = DenseArgvals({'input_dim_0': np.linspace(0, 1, 101)})
 
 ###############################################################################
 # We simulate :math:`N = 50` curves on the one-dimensional observation grid
 # :math:`\{0, 0.01, 0.02, \cdots, 1\}`, based on the first :math:`K = 25`
 # Fourier basis functions on :math:`[0, 1]` and the variance of the scores
 # random variables decreasing exponentially.
-kl = KarhunenLoeve(basis_name=name, n_functions=n_functions, random_state=rng)
-kl.new(n_obs=n_obs, clusters_std="exponential")
+kl = KarhunenLoeve(
+    n_functions=n_functions, basis_name=name, argvals=argvals, random_state=rng
+)
+kl.new(n_obs=n_obs, clusters_std='exponential')
 kl.add_noise(noise_variance=0.05)
 data = kl.noisy_data
 
