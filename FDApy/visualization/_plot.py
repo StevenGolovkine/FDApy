@@ -68,14 +68,14 @@ def _plot_1d(
         colors = mpl.cm.jet(np.linspace(0, 1, len(np.unique(labels))))
 
     if isinstance(data, DenseFunctionalData):
-        for obs, l in zip(data.values, labels):
-            ax.plot(data.argvals["input_dim_0"], obs, c=colors[l], **plt_kwargs)
+        for obs, label in zip(data.values, labels):
+            ax.plot(data.argvals["input_dim_0"], obs, c=colors[label], **plt_kwargs)
     elif isinstance(data, IrregularFunctionalData):
-        for argval, value, l in zip(
+        for argval, value, label in zip(
             data.argvals.values(), data.values.values(), labels
         ):
-            ax.plot(argval["input_dim_0"], value, c=colors[l], **plt_kwargs)
-            ax.scatter(argval["input_dim_0"], value, c=[colors[l]], **plt_kwargs)
+            ax.plot(argval["input_dim_0"], value, c=colors[label], **plt_kwargs)
+            ax.scatter(argval["input_dim_0"], value, c=[colors[label]], **plt_kwargs)
     else:
         raise TypeError("Data type not recognized!")
     return ax
@@ -128,8 +128,8 @@ def _plot_2d(
             x, y = np.meshgrid(
                 data.argvals["input_dim_0"], data.argvals["input_dim_1"], indexing="ij"
             )
-            for obs, l in zip(data.values, labels):
-                ax.plot_surface(x, y, obs, color=colors[l], **plt_kwargs)
+            for obs, label in zip(data.values, labels):
+                ax.plot_surface(x, y, obs, color=colors[label], **plt_kwargs)
     elif isinstance(data, IrregularFunctionalData):
         if data.n_obs == 1:
             data_p = data.to_long().dropna()
@@ -148,13 +148,13 @@ def _plot_2d(
             plt.colorbar(cs, ax=ax)
         else:
             data_long = data.to_long()
-            for n_obs, l in zip(np.unique(data_long["id"].values), labels):
+            for n_obs, label in zip(np.unique(data_long["id"].values), labels):
                 data_p = data_long.query(f"id == {n_obs}").dropna()
                 ax.plot_trisurf(
                     data_p["input_dim_0"].values,
                     data_p["input_dim_1"].values,
                     data_p["values"].values,
-                    color=colors[l],
+                    color=colors[label],
                     **plt_kwargs,
                 )
     else:
@@ -263,12 +263,13 @@ def plot_multivariate(
 
     axes = []
     for n, data in enumerate(data.data):
-        ax = plt.subplot(nrows, ncols, n + 1)
+        projection = '3d' if data.n_dimension == 2 else 'rectilinear'
+        ax = plt.subplot(nrows, ncols, n + 1, projection=projection)
         ax.set_title(titles[n])
         if data.n_dimension == 1:
             axes.append(plot(data, labels=labels, colors=colors, ax=ax))
         elif data.n_dimension == 2:
-            axes.append(plot(data[0], labels=labels, colors=colors, ax=ax))
+            axes.append(plot(data, labels=labels, colors=colors, ax=ax))
         else:
             raise ValueError(
                 f"Can not plot functions of dimension {data.n_dimension},"
