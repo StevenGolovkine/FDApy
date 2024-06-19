@@ -89,5 +89,4 @@ X = IrregularValues(
 
 fdata = IrregularFunctionalData(argvals=argvals, values=X)
 
-# Note: Currently, two-dimensional irregular functional data plotting is not
-# implemented.
+_ = plot(fdata)

@@ -11,6 +11,7 @@ Examples of simulation of clusters of univariate functional data.
 # Load packages
 import numpy as np
 
+from FDApy.representation import DenseArgvals
 from FDApy.simulation import KarhunenLoeve
 from FDApy.visualization import plot
 
@@ -24,6 +25,7 @@ random_state = np.random.default_rng(rng)
 # Parameters of the basis
 name = "fourier"
 n_functions = 25
+argvals = DenseArgvals({'input_dim_0': np.linspace(0, 1, 101)})
 
 # Parameters of the clusters
 n_clusters = 2
@@ -39,7 +41,9 @@ centers = random_state.multivariate_normal(mean, covariance, size=n_functions)
 # centers of the clusters are generated as Gaussian random variables with
 # parameters defined by `mean` and `covariance`. We also consider an
 # exponential decreasing of the eigenvalues.
-kl = KarhunenLoeve(basis_name=name, n_functions=n_functions, random_state=rng)
+kl = KarhunenLoeve(
+    basis_name=name, argvals=argvals, n_functions=n_functions, random_state=rng
+)
 kl.new(n_obs=n_obs, n_clusters=n_clusters, centers=centers, cluster_std="exponential")
 
 _ = plot(kl.data, kl.labels)

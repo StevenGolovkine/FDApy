@@ -17,8 +17,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from FDApy.representation import DenseArgvals
-from FDApy.simulation.karhunen import KarhunenLoeve
-from FDApy.preprocessing.dim_reduction import UFPCA
+from FDApy.simulation import KarhunenLoeve
+from FDApy.preprocessing import UFPCA
 from FDApy.visualization import plot
 
 # Set general parameters

@@ -9,6 +9,9 @@ Examples of simulation of functional data and the effect of adding noise and spa
 # License: MIT
 
 # Load packages
+import numpy as np
+
+from FDApy.representation import DenseArgvals
 from FDApy.simulation import KarhunenLoeve
 from FDApy.visualization import plot
 
@@ -17,8 +20,9 @@ rng = 42
 n_obs = 10
 
 # Parameters of the basis
-name = "bsplines"
+name = 'bsplines'
 n_functions = 5
+argvals = DenseArgvals({'input_dim_0': np.linspace(0, 1, 101)})
 
 ###############################################################################
 # For one dimensional data
@@ -28,7 +32,9 @@ n_functions = 5
 # :math:`\{0, 0.01, 0.02, \cdots, 1\}`, based on the first
 # :math:`K = 5` B-splines basis functions on :math:`[0, 1]` and the variance of
 # the scores random variables equal to :math:`1`.
-kl = KarhunenLoeve(basis_name=name, n_functions=n_functions, random_state=rng)
+kl = KarhunenLoeve(
+    basis_name=name, n_functions=n_functions, argvals=argvals, random_state=rng
+)
 kl.new(n_obs=n_obs)
 
 _ = plot(kl.data)
@@ -65,7 +71,15 @@ _ = plot(kl.sparse_data)
 ###############################################################################
 # For two dimensional data
 # ------------------------
-#
+
+# Parameters of the basis
+name = ('bsplines', 'bsplines')
+n_functions = (5, 5)
+argvals = DenseArgvals({
+    'input_dim_0': np.linspace(0, 1, 101),
+    'input_dim_1': np.linspace(0, 1, 101)
+})
+
 # We simulate :math:`N = 1` image on the two-dimensional observation grid
 # :math:`\{0, 0.01, 0.02, \cdots, 1\} \times \{0, 0.01, 0.02, \cdots, 1\}`,
 # based on the tensor product of the first :math:`K = 25` B-splines
@@ -73,7 +87,7 @@ _ = plot(kl.sparse_data)
 # the scores random variables equal to :math:`1`.
 
 kl = KarhunenLoeve(
-    basis_name=name, dimension="2D", n_functions=n_functions, random_state=rng
+    basis_name=name, n_functions=n_functions, argvals=argvals, random_state=rng
 )
 kl.new(n_obs=1)
 

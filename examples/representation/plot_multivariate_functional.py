@@ -102,4 +102,4 @@ fdata_second = DenseFunctionalData(
 
 fdata = MultivariateFunctionalData([fdata_first, fdata_second])
 
-# Note: For 2D data, only the first observation is plotted.
+_ = plot_multivariate(fdata)

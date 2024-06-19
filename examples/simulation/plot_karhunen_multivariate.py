@@ -35,6 +35,7 @@ Examples of simulation using the multivariate Karhunen-Loève decomposition.
 # Load packages
 import numpy as np
 
+from FDApy.representation import DenseArgvals
 from FDApy.simulation import KarhunenLoeve
 from FDApy.visualization import plot_multivariate
 
@@ -44,33 +45,18 @@ n_obs = 10
 
 
 # Parameters of the basis
-name = ["fourier", "bsplines"]
-n_functions = 5
-dimensions = ["2D", "1D"]
-argvals = [np.arange(0, 10.01, 0.01), np.arange(-0.5, 0.51, 0.01)]
+name = ['fourier', 'bsplines']
+n_functions = [5, 5]
+argvals = [
+    DenseArgvals({'input_dim_0': np.arange(0, 10.01, 0.01)}),
+    DenseArgvals({'input_dim_0': np.arange(-0.5, 0.51, 0.01)})
+]
 
 ###############################################################################
 # Simulation for one-dimensional curve
 # ------------------------------------
 #
 # **First example**
-# ---
-# We simulate :math:`N = 10` curves of a 2-dimensional process. The first
-# component of the process is defined on the one-dimensional observation grid
-# :math:`\{0, 0.01, 0.02, \cdots, 1\}` (default), based on the first
-# :math:`K = 5` Fourier basis functions on :math:`[0, 1]` and the variance of
-# the scores random variables equal to :math:`1` (default). The second
-# component of the process is defined on the one-dimensional observation grid
-# :math:`\{0, 0.01, 0.02, \cdots, 1\}` (default), based on the first
-# :math:`K = 5` B-splines basis functions on :math:`[0, 1]` and the variance of
-# the scores random variables equal to :math:`1` (default).
-kl = KarhunenLoeve(basis_name=name, n_functions=n_functions, random_state=rng)
-kl.new(n_obs=n_obs)
-
-_ = plot_multivariate(kl.data)
-
-###############################################################################
-# **Second example**
 # ---
 # We simulate :math:`N = 10` curves of a 2-dimensional process. The first
 # component of the process is defined on the one-dimensional observation grid
@@ -89,7 +75,7 @@ kl.new(n_obs=n_obs)
 _ = plot_multivariate(kl.data)
 
 ###############################################################################
-# **Third example**
+# **Second example**
 # ---
 # We simulate :math:`N = 10` curves of a 2-dimensional process. The first
 # component of the process is defined on the one-dimensional observation grid
@@ -100,7 +86,9 @@ _ = plot_multivariate(kl.data)
 # :math:`\{0, 0.01, 0.02, \cdots, 1\}` (default), based on the first
 # :math:`K = 5` B-splines basis functions on :math:`[0, 1]` and the decreasing
 # of the variance of the scores is exponential.
-kl = KarhunenLoeve(basis_name=name, n_functions=n_functions, random_state=rng)
+kl = KarhunenLoeve(
+    basis_name=name, n_functions=n_functions, argvals=argvals, random_state=rng
+)
 kl.new(n_obs=n_obs, clusters_std="exponential")
 
 _ = plot_multivariate(kl.data)
@@ -113,7 +101,17 @@ _ = plot_multivariate(kl.data)
 # and the second component is a curve. For the simulation on a two-dimensional
 # domain, we construct an two-dimensional eigenbasis based on tensor products
 # of univariate eigenbasis.
-#
+
+# Parameters of the basis
+name = [('fourier', 'fourier'), 'bsplines']
+n_functions = [(5, 5), 25]
+argvals = [
+    DenseArgvals({
+        'input_dim_0': np.arange(0, 10.01, 0.01),
+        'input_dim_1': np.arange(0, 10.01, 0.01)
+    }),
+    DenseArgvals({'input_dim_0': np.arange(-0.5, 0.51, 0.01)})
+]
 # **First example**
 # ---
 # We simulate :math:`N = 1` curves of a 2-dimensional process. The first
@@ -127,7 +125,7 @@ _ = plot_multivariate(kl.data)
 # :math:`[0, 1]` and the variance of the scores random variables equal to
 # :math:`1` (default).
 kl = KarhunenLoeve(
-    basis_name=name, dimension=dimensions, n_functions=n_functions, random_state=rng
+    basis_name=name, n_functions=n_functions, argvals=argvals, random_state=rng
 )
 kl.new(n_obs=1)
 
@@ -146,7 +144,7 @@ _ = plot_multivariate(kl.data)
 # (default), based on the first :math:`K = 25` B-splines basis functions on
 # :math:`[0, 1]` and the decreasing of the variance of the scores is linear.
 kl = KarhunenLoeve(
-    basis_name=name, dimension=dimensions, n_functions=n_functions, random_state=rng
+    basis_name=name, n_functions=n_functions, argvals=argvals, random_state=rng
 )
 kl.new(n_obs=1, clusters_std="linear")
 
