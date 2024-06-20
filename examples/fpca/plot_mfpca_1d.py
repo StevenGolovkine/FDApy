@@ -29,11 +29,11 @@ colors = np.array([[0.5, 0, 0, 1]])
 
 
 # Parameters of the basis
-name = ['bsplines', 'fourier']
+name = ["bsplines", "fourier"]
 n_functions = [5, 5]
 argvals = [
-    DenseArgvals({'input_dim_0': np.linspace(0, 1, 101)}),
-    DenseArgvals({'input_dim_0': np.linspace(-0.5, 0.5, 101)})
+    DenseArgvals({"input_dim_0": np.linspace(0, 1, 101)}),
+    DenseArgvals({"input_dim_0": np.linspace(-0.5, 0.5, 101)}),
 ]
 
 ###############################################################################
@@ -47,7 +47,7 @@ argvals = [
 # Fourier basis functions on :math:`[0, 1]` and the variance of the scores
 # random variables equal to :math:`1`.
 kl = KarhunenLoeve(
-     basis_name=name, n_functions=n_functions, argvals=argvals, random_state=rng
+    basis_name=name, n_functions=n_functions, argvals=argvals, random_state=rng
 )
 kl.new(n_obs=n_obs)
 kl.add_noise(noise_variance=0.05)
@@ -63,22 +63,14 @@ _ = plot_multivariate(data)
 # the percentage of variance explained using a decomposition of the covariance
 # operator.
 univariate_expansions = [
-    {
-        'method': 'UFPCA',
-        'n_components': 15,
-        'method_smoothing': 'PS'
-    },
-    {
-        'method': 'UFPCA',
-        'n_components': 15,
-        'method_smoothing': 'PS'
-    }
+    {"method": "UFPCA", "n_components": 15, "method_smoothing": "PS"},
+    {"method": "UFPCA", "n_components": 15, "method_smoothing": "PS"},
 ]
 
 mfpca_cov = MFPCA(
-    n_components=0.95, method='covariance', univariate_expansions=univariate_expansions
+    n_components=0.95, method="covariance", univariate_expansions=univariate_expansions
 )
-mfpca_cov.fit(data, scores_method='PACE')
+mfpca_cov.fit(data, scores_method="PACE")
 
 # # Plot the eigenfunctions
 _ = plot_multivariate(mfpca_cov.eigenfunctions)

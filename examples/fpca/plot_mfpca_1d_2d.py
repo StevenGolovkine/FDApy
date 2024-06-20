@@ -28,14 +28,13 @@ idx = 5
 
 
 # Parameters of the basis
-name = ['bsplines', ('fourier', 'fourier')]
+name = ["bsplines", ("fourier", "fourier")]
 n_functions = [9, (3, 3)]
 argvals = [
-    DenseArgvals({'input_dim_0': np.linspace(0, 1, 101)}),
-    DenseArgvals({
-        'input_dim_0':np.linspace(0, 1, 21),
-        'input_dim_1':np.linspace(0, 1, 21)
-    })
+    DenseArgvals({"input_dim_0": np.linspace(0, 1, 101)}),
+    DenseArgvals(
+        {"input_dim_0": np.linspace(0, 1, 21), "input_dim_1": np.linspace(0, 1, 21)}
+    ),
 ]
 
 ###############################################################################
@@ -50,10 +49,7 @@ argvals = [
 # basis functions on :math:`[0, 1] \times [0, 1]` and the variance of
 # the scores random variables equal to :math:`1`.
 kl = KarhunenLoeve(
-    basis_name=name,
-    n_functions=n_functions,
-    argvals=argvals,
-    random_state=rng
+    basis_name=name, n_functions=n_functions, argvals=argvals, random_state=rng
 )
 kl.new(n_obs=50)
 data = kl.data
@@ -71,18 +67,11 @@ _ = plot_multivariate(data)
 # for 2-dimensional data, which is an iterative algorithm. The number of
 # components has thus to be prespecified.
 univariate_expansions = [
-    {
-        'method': 'UFPCA',
-        'n_components': 15,
-        'method_smoothing': 'PS'
-    },
-    {
-        'method': 'FCPTPA',
-        'n_components': 20
-    }
+    {"method": "UFPCA", "n_components": 15, "method_smoothing": "PS"},
+    {"method": "FCPTPA", "n_components": 20},
 ]
 mfpca_cov = MFPCA(
-    n_components=0.9, method='covariance', univariate_expansions=univariate_expansions
+    n_components=0.9, method="covariance", univariate_expansions=univariate_expansions
 )
 mfpca_cov.fit(data)
 

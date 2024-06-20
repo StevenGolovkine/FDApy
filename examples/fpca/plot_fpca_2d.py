@@ -25,12 +25,11 @@ rng = 42
 n_obs = 50
 
 # Parameters of the basis
-name = ('fourier', 'fourier')
+name = ("fourier", "fourier")
 n_functions = (5, 5)
-argvals = DenseArgvals({
-    'input_dim_0': np.linspace(0, 1, 21),
-    'input_dim_1': np.linspace(-0.5, 0.5, 21)
-})
+argvals = DenseArgvals(
+    {"input_dim_0": np.linspace(0, 1, 21), "input_dim_1": np.linspace(-0.5, 0.5, 21)}
+)
 
 
 ###############################################################################
@@ -40,10 +39,13 @@ argvals = DenseArgvals({
 # basis functions on :math:`[0, 1] \times [0, 1]` and the variance of
 # the scores random variables decreases exponentially.
 kl = KarhunenLoeve(
-    basis_name=name, n_functions=n_functions, argvals=argvals,
-    add_intercept=False, random_state=rng
+    basis_name=name,
+    n_functions=n_functions,
+    argvals=argvals,
+    add_intercept=False,
+    random_state=rng,
 )
-kl.new(n_obs=n_obs, clusters_std='exponential')
+kl.new(n_obs=n_obs, clusters_std="exponential")
 data = kl.data
 
 _ = plot(data)

@@ -20,10 +20,9 @@ from FDApy.visualization import plot
 # Parameters
 name = ("fourier", "fourier")
 n_functions = (5, 5)
-argvals = DenseArgvals({
-    'input_dim_0': np.linspace(0, 1, 101),
-    'input_dim_1': np.linspace(0, 1, 51)
-})
+argvals = DenseArgvals(
+    {"input_dim_0": np.linspace(0, 1, 101), "input_dim_1": np.linspace(0, 1, 51)}
+)
 
 ###############################################################################
 basis = Basis(name=name, n_functions=n_functions, argvals=argvals)

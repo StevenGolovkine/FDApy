@@ -26,9 +26,9 @@ rng = 42
 n_obs = 50
 
 # Parameters of the basis
-name = 'fourier'
+name = "fourier"
 n_functions = 25
-argvals = DenseArgvals({'input_dim_0': np.linspace(0, 1, 101)})
+argvals = DenseArgvals({"input_dim_0": np.linspace(0, 1, 101)})
 
 ###############################################################################
 # We simulate :math:`N = 50` curves on the one-dimensional observation grid
@@ -51,7 +51,7 @@ _ = plot(data)
 # We perform a univariate FPCA with a predefined number of components using a
 # decomposition of the covariance operator.
 ufpca_cov = UFPCA(n_components=10, method="covariance")
-ufpca_cov.fit(data, method_smoothing='PS')
+ufpca_cov.fit(data, method_smoothing="PS")
 
 # Plot the eigenfunctions
 _ = plot(ufpca_cov.eigenfunctions)
@@ -82,7 +82,7 @@ data_recons_pace = ufpca_cov.inverse_transform(scores_pace)
 # Now, we perform a univariate FPCA using a decomposition of the inner-product
 # matrix.
 ufpca_innpro = UFPCA(n_components=10, method="inner-product")
-ufpca_innpro.fit(data, method_smoothing='PS')
+ufpca_innpro.fit(data, method_smoothing="PS")
 
 # Plot the eigenfunctions
 _ = plot(ufpca_innpro.eigenfunctions)

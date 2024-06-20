@@ -45,11 +45,11 @@ n_obs = 10
 
 
 # Parameters of the basis
-name = ['fourier', 'bsplines']
+name = ["fourier", "bsplines"]
 n_functions = [5, 5]
 argvals = [
-    DenseArgvals({'input_dim_0': np.arange(0, 10.01, 0.01)}),
-    DenseArgvals({'input_dim_0': np.arange(-0.5, 0.51, 0.01)})
+    DenseArgvals({"input_dim_0": np.arange(0, 10.01, 0.01)}),
+    DenseArgvals({"input_dim_0": np.arange(-0.5, 0.51, 0.01)}),
 ]
 
 ###############################################################################
@@ -103,14 +103,16 @@ _ = plot_multivariate(kl.data)
 # of univariate eigenbasis.
 
 # Parameters of the basis
-name = [('fourier', 'fourier'), 'bsplines']
+name = [("fourier", "fourier"), "bsplines"]
 n_functions = [(5, 5), 25]
 argvals = [
-    DenseArgvals({
-        'input_dim_0': np.arange(0, 10.01, 0.01),
-        'input_dim_1': np.arange(0, 10.01, 0.01)
-    }),
-    DenseArgvals({'input_dim_0': np.arange(-0.5, 0.51, 0.01)})
+    DenseArgvals(
+        {
+            "input_dim_0": np.arange(0, 10.01, 0.01),
+            "input_dim_1": np.arange(0, 10.01, 0.01),
+        }
+    ),
+    DenseArgvals({"input_dim_0": np.arange(-0.5, 0.51, 0.01)}),
 ]
 # **First example**
 # ---

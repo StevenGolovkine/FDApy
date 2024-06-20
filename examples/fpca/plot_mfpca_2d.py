@@ -28,17 +28,15 @@ idx = 5
 
 
 # Parameters of the basis
-name = [('bsplines', 'bsplines'), ('fourier', 'fourier')]
+name = [("bsplines", "bsplines"), ("fourier", "fourier")]
 n_functions = [(5, 5), (5, 5)]
 argvals = [
-    DenseArgvals({
-        'input_dim_0': np.linspace(0, 1, 21),
-        'input_dim_1': np.linspace(0, 1, 21)
-    }),
-    DenseArgvals({
-        'input_dim_0': np.linspace(0, 1, 21),
-        'input_dim_1': np.linspace(0, 1, 21)
-    })
+    DenseArgvals(
+        {"input_dim_0": np.linspace(0, 1, 21), "input_dim_1": np.linspace(0, 1, 21)}
+    ),
+    DenseArgvals(
+        {"input_dim_0": np.linspace(0, 1, 21), "input_dim_1": np.linspace(0, 1, 21)}
+    ),
 ]
 
 
@@ -55,10 +53,7 @@ argvals = [
 # basis functions on :math:`[0, 1] \times [0, 1]` and the variance of
 # the scores random variables equal to :math:`1`.
 kl = KarhunenLoeve(
-    basis_name=name,
-    n_functions=n_functions,
-    argvals=argvals,
-    random_state=rng
+    basis_name=name, n_functions=n_functions, argvals=argvals, random_state=rng
 )
 kl.new(n_obs=50)
 data = kl.data
@@ -75,20 +70,13 @@ _ = plot_multivariate(data)
 # operator is based on the FCP-TPA algorithm, which is an iterative algorithm.
 # The number of components has thus to be prespecified.
 univariate_expansions = [
-    {
-        'method': 'FCPTPA',
-        'n_components': 20
-    },
-    {
-        'method': 'FCPTPA',
-        'n_components': 20
-    }
+    {"method": "FCPTPA", "n_components": 20},
+    {"method": "FCPTPA", "n_components": 20},
 ]
 mfpca_cov = MFPCA(
-    n_components=5, method='covariance',
-    univariate_expansions=univariate_expansions
+    n_components=5, method="covariance", univariate_expansions=univariate_expansions
 )
-mfpca_cov.fit(data, method_smoothing='PS')
+mfpca_cov.fit(data, method_smoothing="PS")
 
 
 ###############################################################################
@@ -113,7 +101,7 @@ data_recons_cov = mfpca_cov.inverse_transform(scores_cov)
 # the percentage of variance explained using a decomposition of the
 # inner-product matrix.
 mfpca_innpro = MFPCA(n_components=5, method="inner-product")
-mfpca_innpro.fit(data, method_smoothing='PS')
+mfpca_innpro.fit(data, method_smoothing="PS")
 
 
 ###############################################################################

@@ -2435,7 +2435,7 @@ class IrregularFunctionalData(GridFunctionalData):
 
             ps.fit(x=x, y=y, sample_weights=weights, penalty=penalty)
             pred = ps.predict([pp for pp in points.values()])
-        elif method_smoothing == 'interpolation':
+        elif method_smoothing == "interpolation":
             from scipy.interpolate import NearestNDInterpolator
 
             if self.n_dimension == 1:

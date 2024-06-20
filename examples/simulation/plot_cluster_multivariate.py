@@ -23,11 +23,11 @@ n_obs = 20
 random_state = np.random.default_rng(rng)
 
 # Parameters of the basis
-name = ['fourier', 'wiener']
+name = ["fourier", "wiener"]
 n_functions = [5, 5]
 argvals = [
-    DenseArgvals({'input_dim_0': np.linspace(0, 1, 101)}),
-    DenseArgvals({'input_dim_0': np.linspace(0, 1, 101)})
+    DenseArgvals({"input_dim_0": np.linspace(0, 1, 101)}),
+    DenseArgvals({"input_dim_0": np.linspace(0, 1, 101)}),
 ]
 
 # Parameters of the clusters
@@ -74,7 +74,7 @@ _ = plot_multivariate(kl.data, kl.labels)
 # centers of the clusters are generated as Gaussian random variables with
 # parameters defined by `mean` and `covariance`.
 kl = KarhunenLoeve(
-    basis_name=name, argvals=argvals,n_functions=n_functions, random_state=rng
+    basis_name=name, argvals=argvals, n_functions=n_functions, random_state=rng
 )
 kl.new(n_obs=n_obs, n_clusters=n_clusters, centers=centers, clusters_std="linear")
 

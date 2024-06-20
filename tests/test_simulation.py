@@ -87,7 +87,9 @@ class TestSparsifyUnivariateData(unittest.TestCase):
         expected_min_perc = max(0, expected_percentage - expected_epsilon)
         expected_max_perc = min(1, expected_percentage + expected_epsilon)
 
-        actual_percentage = sparse_data.argvals.n_points[0][0] / self.data.n_points[0]
+        actual_percentage = (
+            np.sum(~np.isnan(sparse_data.values[0])) / self.data.n_points[0]
+        )
         self.assertGreaterEqual(actual_percentage, expected_min_perc)
         self.assertLessEqual(actual_percentage, expected_max_perc)
 
@@ -111,7 +113,7 @@ class TestCheckDimension(unittest.TestCase):
         )
         self.simulation.new(n_obs=1, n_clusters=1)
         self.simulation_multi = KarhunenLoeve(
-            n_functions=[(2, 3), (2, 3)],
+            n_functions=[(5, 5), (5, 5)],
             basis_name=[("fourier", "fourier"), ("bsplines", "bsplines")],
         )
         self.simulation_multi.new(n_obs=1, n_clusters=1)

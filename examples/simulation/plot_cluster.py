@@ -25,7 +25,7 @@ random_state = np.random.default_rng(rng)
 # Parameters of the basis
 name = "fourier"
 n_functions = 25
-argvals = DenseArgvals({'input_dim_0': np.linspace(0, 1, 101)})
+argvals = DenseArgvals({"input_dim_0": np.linspace(0, 1, 101)})
 
 # Parameters of the clusters
 n_clusters = 2

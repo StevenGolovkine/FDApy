@@ -263,7 +263,7 @@ def plot_multivariate(
 
     axes = []
     for n, data in enumerate(data.data):
-        projection = '3d' if data.n_dimension == 2 else 'rectilinear'
+        projection = "3d" if data.n_dimension == 2 else "rectilinear"
         ax = plt.subplot(nrows, ncols, n + 1, projection=projection)
         ax.set_title(titles[n])
         if data.n_dimension == 1:

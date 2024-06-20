@@ -41,9 +41,9 @@ n_obs = 10
 
 
 # Parameters of the basis
-name = 'fourier'
+name = "fourier"
 n_functions = 25
-argvals = DenseArgvals({'input_dim_0': np.arange(0, 10.01, 0.01)})
+argvals = DenseArgvals({"input_dim_0": np.arange(0, 10.01, 0.01)})
 
 ###############################################################################
 # Simulation for one-dimensional curve
@@ -86,7 +86,7 @@ _ = plot(kl.data)
 kl = KarhunenLoeve(
     basis_name=name, argvals=argvals, n_functions=n_functions, random_state=rng
 )
-kl.new(n_obs=n_obs, clusters_std='exponential')
+kl.new(n_obs=n_obs, clusters_std="exponential")
 
 _ = plot(kl.data)
 
@@ -106,12 +106,11 @@ _ = plot(kl.data)
 # the scores random variables equal to :math:`1` (default).
 
 # Parameters of the basis
-name = ('fourier', 'fourier')
+name = ("fourier", "fourier")
 n_functions = (5, 5)
-argvals = DenseArgvals({
-    'input_dim_0': np.arange(0, 10.01, 0.01),
-    'input_dim_1': np.arange(0, 10.01, 0.01)
-})
+argvals = DenseArgvals(
+    {"input_dim_0": np.arange(0, 10.01, 0.01), "input_dim_1": np.arange(0, 10.01, 0.01)}
+)
 
 kl = KarhunenLoeve(
     basis_name=name, argvals=argvals, n_functions=n_functions, random_state=rng
@@ -131,6 +130,6 @@ _ = plot(kl.data)
 kl = KarhunenLoeve(
     basis_name=name, argvals=argvals, n_functions=n_functions, random_state=rng
 )
-kl.new(n_obs=1, clusters_std='linear')
+kl.new(n_obs=1, clusters_std="linear")
 
 _ = plot(kl.data)

@@ -20,13 +20,12 @@ rng = 42
 n_obs = 4
 
 # Parameters of the basis
-name = ('bsplines', 'bsplines')
+name = ("bsplines", "bsplines")
 n_functions = (5, 5)
 
-argvals = DenseArgvals({
-    'input_dim_0': np.linspace(0, 1, 51),
-    'input_dim_1': np.linspace(0, 1, 51)
-})
+argvals = DenseArgvals(
+    {"input_dim_0": np.linspace(0, 1, 51), "input_dim_1": np.linspace(0, 1, 51)}
+)
 
 
 kl = KarhunenLoeve(
@@ -40,16 +39,19 @@ kl.add_noise(0.05)
 
 
 # Smooth the data
-points = DenseArgvals({
-    'input_dim_0': np.linspace(0, 1, 11),
-    'input_dim_1': np.linspace(0, 1, 11)
-})
+points = DenseArgvals(
+    {"input_dim_0": np.linspace(0, 1, 11), "input_dim_1": np.linspace(0, 1, 11)}
+)
 kernel_name = "epanechnikov"
 bandwidth = 0.5
 degree = 1
 
 data_smooth = kl.noisy_data.smooth(
-    points=points, method='LP', kernel_name=kernel_name, bandwidth=bandwidth, degree=degree
+    points=points,
+    method="LP",
+    kernel_name=kernel_name,
+    bandwidth=bandwidth,
+    degree=degree,
 )
 
 _ = plot(data_smooth)

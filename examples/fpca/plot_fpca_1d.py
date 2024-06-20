@@ -25,9 +25,9 @@ rng = 42
 n_obs = 50
 
 # Parameters of the basis
-name = 'fourier'
+name = "fourier"
 n_functions = 25
-argvals = DenseArgvals({'input_dim_0': np.linspace(0, 1, 101)})
+argvals = DenseArgvals({"input_dim_0": np.linspace(0, 1, 101)})
 
 ###############################################################################
 # We simulate :math:`N = 50` curves on the one-dimensional observation grid
@@ -37,7 +37,7 @@ argvals = DenseArgvals({'input_dim_0': np.linspace(0, 1, 101)})
 kl = KarhunenLoeve(
     n_functions=n_functions, basis_name=name, argvals=argvals, random_state=rng
 )
-kl.new(n_obs=n_obs, clusters_std='exponential')
+kl.new(n_obs=n_obs, clusters_std="exponential")
 kl.add_noise(noise_variance=0.05)
 data = kl.noisy_data
 

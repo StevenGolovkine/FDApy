@@ -29,11 +29,11 @@ colors = np.array([[0.5, 0, 0, 1]])
 
 
 # Parameters of the basis
-name = ['bsplines', 'fourier']
+name = ["bsplines", "fourier"]
 n_functions = [5, 5]
 argvals = [
-    DenseArgvals({'input_dim_0': np.linspace(0, 1, 101)}),
-    DenseArgvals({'input_dim_0': np.linspace(0, 1, 101)})
+    DenseArgvals({"input_dim_0": np.linspace(0, 1, 101)}),
+    DenseArgvals({"input_dim_0": np.linspace(0, 1, 101)}),
 ]
 
 ###############################################################################
@@ -63,22 +63,13 @@ _ = plot_multivariate(data)
 # the percentage of variance explained using a decomposition of the covariance
 # operator.
 univariate_expansions = [
-    {
-        'method': 'UFPCA',
-        'n_components': 15,
-        'method_smoothing': 'PS'
-    },
-    {
-        'method': 'UFPCA',
-        'n_components': 15,
-        'method_smoothing': 'PS'
-    }
+    {"method": "UFPCA", "n_components": 15, "method_smoothing": "PS"},
+    {"method": "UFPCA", "n_components": 15, "method_smoothing": "PS"},
 ]
 mfpca_cov = MFPCA(
-    n_components=3, method='covariance',
-    univariate_expansions=univariate_expansions
+    n_components=3, method="covariance", univariate_expansions=univariate_expansions
 )
-mfpca_cov.fit(data, method_smoothing='PS')
+mfpca_cov.fit(data, method_smoothing="PS")
 
 # # Plot the eigenfunctions
 _ = plot_multivariate(mfpca_cov.eigenfunctions)
@@ -104,7 +95,7 @@ data_recons_numint = mfpca_cov.inverse_transform(scores_numint)
 # percentage of variance explained using a decomposition of the inner-product
 # matrix.
 mfpca_innpro = MFPCA(n_components=3, method="inner-product")
-mfpca_innpro.fit(data, method_smoothing='PS')
+mfpca_innpro.fit(data, method_smoothing="PS")
 
 # Plot the eigenfunctions
 _ = plot_multivariate(mfpca_innpro.eigenfunctions)

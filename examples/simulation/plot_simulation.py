@@ -20,9 +20,9 @@ rng = 42
 n_obs = 10
 
 # Parameters of the basis
-name = 'bsplines'
+name = "bsplines"
 n_functions = 5
-argvals = DenseArgvals({'input_dim_0': np.linspace(0, 1, 101)})
+argvals = DenseArgvals({"input_dim_0": np.linspace(0, 1, 101)})
 
 ###############################################################################
 # For one dimensional data
@@ -73,12 +73,11 @@ _ = plot(kl.sparse_data)
 # ------------------------
 
 # Parameters of the basis
-name = ('bsplines', 'bsplines')
+name = ("bsplines", "bsplines")
 n_functions = (5, 5)
-argvals = DenseArgvals({
-    'input_dim_0': np.linspace(0, 1, 101),
-    'input_dim_1': np.linspace(0, 1, 101)
-})
+argvals = DenseArgvals(
+    {"input_dim_0": np.linspace(0, 1, 101), "input_dim_1": np.linspace(0, 1, 101)}
+)
 
 # We simulate :math:`N = 1` image on the two-dimensional observation grid
 # :math:`\{0, 0.01, 0.02, \cdots, 1\} \times \{0, 0.01, 0.02, \cdots, 1\}`,
