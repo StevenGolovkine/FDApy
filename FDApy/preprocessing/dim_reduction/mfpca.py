@@ -639,7 +639,7 @@ class MFPCA:
                 f"The method {method} can not be used as the eigencomponents "
                 "have not been estimated using the provided data."
             )
-        if method == "InnPro" and self._eigenvectors is None:
+        if method == "InnPro" and self.method == "covariance":
             raise ValueError(
                 f"The method {method} can not be used as the eigencomponents "
                 "have not been estimated using the inner-product matrix."
