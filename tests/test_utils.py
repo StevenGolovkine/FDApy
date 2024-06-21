@@ -607,5 +607,9 @@ class TestEstimateNoiseVariance(unittest.TestCase):
         expected_results = 0.07193388
         np.testing.assert_almost_equal(results, expected_results)
 
+        results = _estimate_noise_variance(np.array([1, 2]), 3)
+        expected_results = 0
+        np.testing.assert_equal(results, expected_results)
+
         with self.assertRaises(ValueError):
             _estimate_noise_variance(x, 15)
