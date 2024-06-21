@@ -174,6 +174,23 @@ class TestPSplines(unittest.TestCase):
         self.x = np.array([1, 2, 3, 4, 5])
         self.y = np.array([1, 2, 3, 4, 5])
 
+    def test_getter(self):
+        ps = PSplines(order_penalty=2, order_derivative=2)
+        
+        ps.order_penalty = 3
+        np.testing.assert_equal(ps.order_penalty, 3)
+
+        ps.order_derivative = 3
+        np.testing.assert_equal(ps.order_derivative, 3)
+
+    def test_getter_error(self):
+        ps = PSplines(order_penalty=2, order_derivative=2)
+
+        with self.assertRaises(ValueError):
+            ps.order_derivative = -1
+        with self.assertRaises(ValueError):
+            ps.order_penalty = -1
+
     def test_fit(self):
         ps = PSplines(n_segments=3, degree=2)
         ps.fit(self.y, self.x)
@@ -194,6 +211,9 @@ class TestPSplines(unittest.TestCase):
         y_pred = ps.predict(self.x)
         np.testing.assert_allclose(y_pred, self.y)
 
+        y_pred2 = ps.predict()
+        np.testing.assert_allclose(y_pred2, self.y)
+
     def test_fit_and_predict_with_weights(self):
         ps = PSplines(n_segments=3, degree=2)
         sample_weights = np.array([0.5, 1.0, 1.5, 2.0, 2.5])
@@ -206,7 +226,7 @@ class TestPSplines(unittest.TestCase):
         ps = PSplines(n_segments=3, degree=2)
         ps.fit(self.y, self.x, penalty=(0.5,))
         y_pred = ps.predict(self.x)
-
+        
         np.testing.assert_allclose(y_pred, self.y)
 
     def test_fit_with_multiple_dimensions(self):
