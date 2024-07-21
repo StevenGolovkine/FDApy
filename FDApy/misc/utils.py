@@ -568,7 +568,7 @@ def _integration_weights(
         weights = 0.5 * np.concatenate(
             (
                 np.array([x[1] - x[0]]),
-                2 * (x[1 : (len(x) - 1)] - x[: (len(x) - 2)]),
+                (x[2 : len(x)] - x[: (len(x) - 2)]),
                 np.array([x[len(x) - 1] - x[len(x) - 2]]),
             ),
             axis=None,
