@@ -2924,6 +2924,7 @@ class IrregularFunctionalData(GridFunctionalData):
             data = data.center(method_smoothing=method_smoothing, **kwargs_center)
 
         # Compute the covariance
+        cov = np.zeros(np.power(n_points, 2))
         cov_sum = np.zeros(np.power(n_points, 2))
         cov_count = np.zeros(np.power(n_points, 2))
         for idx, obs in enumerate(data):
@@ -2933,11 +2934,11 @@ class IrregularFunctionalData(GridFunctionalData):
 
             obs_points = np.isin(self.argvals.to_dense()["input_dim_0"], new_argvals)
             mask = np.outer(obs_points, obs_points).flatten()
-            cov = np.outer(new_values, new_values).flatten()
+            cov_inner = np.outer(new_values, new_values).flatten()
 
             cov_count[mask] += 1
-            cov_sum[mask] += cov
-        cov = np.divide(cov_sum, cov_count, where=(cov_count != 0))
+            cov_sum[mask] += cov_inner
+        _ = np.divide(cov_sum, cov_count, where=(cov_count != 0), out=cov)
         cov = cov.reshape(2 * n_points)
         # cov[cov < 1e-12] = 0
         raw_diag_cov = np.diag(cov).copy()
