@@ -535,7 +535,8 @@ class UFPCA:
             points=points, method_smoothing=method_smoothing, **kwargs_mean
         )
         if isinstance(data, IrregularFunctionalData):
-            data = data.center(mean=self._mean, method_smoothing="PS", penalty=0)
+            penalty = data.n_dimension * (0,)
+            data = data.center(mean=self._mean, method_smoothing="PS", penalty=penalty)
         else:
             data = data.center(mean=self._mean, method_smoothing=None)
 
