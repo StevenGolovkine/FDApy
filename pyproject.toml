@@ -18,7 +18,6 @@ classifiers = [
 dynamic = ["version"]
 
 dependencies = [
-	'csaps>=1.1.0',
     'lazy_loader',
     'matplotlib',
     'numpy>=1.24.0',
@@ -29,7 +28,6 @@ dependencies = [
 
 [project.optional-dependencies]
 docs = [
-    "csaps",
     "matplotlib",
     "mpldatacursor",
     "numpydoc",
