@@ -11,35 +11,35 @@ maintainers = [
   {name = "Steven Golovkine", email = "steven_golovkine@icloud.com"},
 ]
 classifiers = [
-    'Programming Language :: Python :: 3.9',
-    'Topic :: Scientific/Engineering :: Mathematics'
+  'Programming Language :: Python :: 3.9',
+  'Topic :: Scientific/Engineering :: Mathematics'
 ]
 
 dynamic = ["version"]
 
 dependencies = [
-    'lazy_loader',
-    'matplotlib',
-    'numpy>=1.24.0',
-    'pandas>=2.0.0',
-    'scikit-learn>=1.2.0',
-    'scipy>=1.10.0'
+  'lazy_loader',
+  'matplotlib',
+  'numpy>=1.24.0',
+  'pandas>=2.0.0',
+  'scikit-learn>=1.2.0',
+  'scipy>=1.10.0'
 ]
 
 [project.optional-dependencies]
 docs = [
-    "matplotlib",
-    "mpldatacursor",
-    "numpydoc",
-    "pandas",
-    "pillow",
-    "pydata-sphinx-theme",
-    "scikit-learn",
-    "scikit-fda",
-    "scipy",
-    "setuptools>=41.2",
-    "sphinx>=3",
-    "sphinx-gallery",
+  "matplotlib",
+  "mpldatacursor",
+  "numpydoc",
+  "pandas",
+  "pillow",
+  "pydata-sphinx-theme",
+  "scikit-learn",
+  "scikit-fda",
+  "scipy",
+  "setuptools>=41.2",
+  "sphinx>=3",
+  "sphinx-gallery",
 ]
 test = [
   "pytest",
