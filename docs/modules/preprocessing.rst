@@ -6,7 +6,10 @@ Preprocessing
 	:maxdepth: 2
 	:titlesonly:
 
-.. automodule:: FDApy.preprocessing.dim_reduction.fpca
+.. automodule:: FDApy.preprocessing.dim_reduction.ufpca
+    :members:
+
+.. automodule:: FDApy.preprocessing.dim_reduction.mfpca
     :members:
 
 .. automodule:: FDApy.preprocessing.dim_reduction.fcp_tpa
