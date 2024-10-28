@@ -15,7 +15,7 @@ affiliations:
    index: 1
    ror: 00a0n9e72
 date: 28 October 2024
-bibliography: ./joss/paper.bib
+bibliography: paper.bib
 
 ---
 
