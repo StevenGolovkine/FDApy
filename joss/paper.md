@@ -8,7 +8,6 @@ tags:
 authors:
   - name: Steven Golovkine
     orcid: 0000-0002-5994-2671
-    equal-contrib: true
     affiliation: 1
 affiliations:
  - name: MACSI, Department of Mathematics and Statistics, University of Limerick, Limerick, Ireland
