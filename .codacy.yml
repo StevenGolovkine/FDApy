@@ -7,3 +7,4 @@ exclude_paths:
     - 'tests/**'
     - 'docs/**'
     - '.github/**'
+    - 'joss/**'
