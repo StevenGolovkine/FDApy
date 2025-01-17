@@ -31,7 +31,7 @@ Concerning the Python community, there are only few packages that are related to
 
 `FDApy` supports the analysis of diverse types of functional data (densely or irregularly sampled, multivariate and multidimensional), represented over a grid of points or using a basis of functions. It implements dimension reduction techniques and smoothing functionalities. A large simulation toolbox, based on basis decomposition, is provided. By providing a flexible and robust toolset for functional data analysis, it aims to support researchers and practitioners in uncovering insights from complex functional datasets.
 
-`FDApy` was used in @golovkineClusteringMultivariateFunctional2022 and @golovkineUseGramMatrix2023 and is also presented in the author's doctoral dissertation.
+`FDApy` was used in @golovkineClusteringMultivariateFunctional2022, @yoshidaDetectingDifferencesGait2022, @golovkineUseGramMatrix2023 and @nguyenLearningDomainspecificCameras2024 and is also presented in the author's doctoral dissertation.
 
 
 # Code Quality and Documentation
