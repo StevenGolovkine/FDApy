@@ -22,7 +22,7 @@ author = "Steven Golovkine"
 
 # The full version, including alpha/beta/rc tags
 release = "1.0.0"
-
+github_url = "https://github.com/StevenGolovkine/FDApy"
 
 # -- General configuration ---------------------------------------------------
 
@@ -75,6 +75,19 @@ html_sidebars = {
         #'searchbox.html',
         #'donate.html',
     ]
+}
+
+html_theme_options = {
+    "use_edit_page_button": True,
+    "github_url": github_url,
+    "icon_links": [
+        {
+            "name": "PyPI",
+            "url": "https://pypi.org/project/FDApy/",
+            "icon": "https://avatars.githubusercontent.com/u/2964877",
+            "type": "url",
+        },
+    ],
 }
 
 
