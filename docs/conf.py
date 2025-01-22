@@ -13,7 +13,7 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(".."))
+#sys.path.insert(0, os.path.abspath(".."))
 
 # -- Project information -----------------------------------------------------
 
@@ -23,6 +23,10 @@ author = "Steven Golovkine"
 # The full version, including alpha/beta/rc tags
 release = "1.0.0"
 github_url = "https://github.com/StevenGolovkine/FDApy"
+
+rtd_branch = os.environ.get(" READTHEDOCS_GIT_IDENTIFIER", "master")
+language = "en"
+
 
 # -- General configuration ---------------------------------------------------
 
@@ -39,6 +43,7 @@ extensions = [
     "sphinx_gallery.gen_gallery",
 ]
 
+
 master_doc = "index"
 
 # Add any paths that contain templates here, relative to this directory.
@@ -47,7 +52,7 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -63,6 +68,8 @@ html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
 
 
+html_show_sourcelink = True
+
 html_theme_options = {
     "use_edit_page_button": True,
     "github_url": github_url,
@@ -74,6 +81,7 @@ html_theme_options = {
             "type": "url",
         },
     ],
+    "secondary_sidebar_items": ["page-toc", "edit-this-page", "sourcelink"],
 }
 
 html_context = {
