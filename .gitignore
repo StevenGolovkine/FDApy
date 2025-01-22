@@ -42,7 +42,6 @@ notebooks/*
 # Build docs files
 docs/_build/*
 docs/_static/*
-docs/_templates/*
 docs/auto_examples/*
 docs/backreferences/*
 
