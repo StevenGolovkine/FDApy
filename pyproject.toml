@@ -2,7 +2,7 @@
 name = "FDApy"
 description = "A Python package to analyze functional data."
 readme = "README.rst"
-requires-python = ">=3.9, <4"
+requires-python = ">=3.10, <4"
 license = {file = "LICENSE"}
 keywords = [
 	"functional data analysis"
@@ -11,7 +11,7 @@ maintainers = [
   {name = "Steven Golovkine", email = "steven_golovkine@icloud.com"},
 ]
 classifiers = [
-  'Programming Language :: Python :: 3.9',
+  'Programming Language :: Python :: 3.10',
   'Topic :: Scientific/Engineering :: Mathematics'
 ]
 
@@ -34,7 +34,7 @@ docs = [
   "numpy<2.0.0",
   "pandas>=2.0.0",
   "pillow",
-  "pydata-sphinx-theme",
+  "pydata-sphinx-theme==0.16.0",
   "scikit-learn",
   "scikit-fda",
   "scipy",

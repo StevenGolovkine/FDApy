@@ -21,7 +21,7 @@ project = "FDApy"
 author = "Steven Golovkine"
 
 # The full version, including alpha/beta/rc tags
-release = "1.0.0"
+release = "1.0.2"
 github_url = "https://github.com/StevenGolovkine/FDApy"
 
 rtd_branch = os.environ.get(" READTHEDOCS_GIT_IDENTIFIER", "master")
@@ -67,9 +67,6 @@ html_theme = "pydata_sphinx_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-
-html_show_sourcelink = True
-
 html_theme_options = {
     "use_edit_page_button": True,
     "github_url": github_url,
@@ -80,8 +77,7 @@ html_theme_options = {
             "icon": "https://avatars.githubusercontent.com/u/2964877",
             "type": "url",
         },
-    ],
-    "secondary_sidebar_items": ["page-toc", "edit-this-page", "sourcelink"],
+    ]
 }
 
 html_context = {
