@@ -90,6 +90,12 @@ html_theme_options = {
     ],
 }
 
+html_context = {
+    "github_user": "StevenGolovkine",
+    "github_repo": "FDApy",
+    "github_version": "master",
+    "doc_path": "docs",
+}
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/{.major}".format(sys.version_info), None),
