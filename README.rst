@@ -74,6 +74,7 @@ Requirements
 
 *FDApy* depends on the following packages:
 
+* `lazy_loader <https://github.com/scientific-python/lazy-loader>`_ - A loader for Python submodules
 * `matplotlib <https://github.com/matplotlib/matplotlib>`_ - Plotting with Python
 * `numpy <https://github.com/numpy/numpy>`_ - The fundamental package for scientific computing with Python
 * `pandas <https://github.com/pandas-dev/pandas>`_ - Powerful Python data analysis toolkit
