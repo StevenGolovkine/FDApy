@@ -62,20 +62,6 @@ html_theme = "pydata_sphinx_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-# Custom sidebar templates, must be a dictionary that maps document names
-# to template names.
-#
-# This is required for the alabaster theme
-# refs: http://alabaster.readthedocs.io/en/latest/installation.html#sidebars
-html_sidebars = {
-    "**": [
-        #'about.html',
-        #'navigation.html',
-        #'relations.html',  # needs 'show_related': True theme option to display
-        #'searchbox.html',
-        #'donate.html',
-    ]
-}
 
 html_theme_options = {
     "use_edit_page_button": True,
