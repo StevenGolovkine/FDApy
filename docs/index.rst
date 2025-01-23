@@ -26,10 +26,13 @@ FDApy: a Python package to analyze functional data
 Description
 ===========
 
-Functional Data Analysis, usually referred as FDA, concerns the field of Statistics that deals with discrete observations of continuous :math:`d`-dimensional functions.
+Functional data analysis (FDA) is a statistical methodology for analyzing data that can be characterized as functions. These functions could represent measurements taken over time, space, frequency, probability, etc. The goal of FDA is to extract meaningful information from these functions and to model their behavior.
 
-This package provide modules for the analysis of such data. It includes methods for different dimensional data as well as irregularly sampled functional data. An implementation of (multivariate) functional principal component analysis is also given. Moreover, a simulation toolbox is provided. It might be used to simulate different clusters of functional data.
-Check out the documentation for more complete information on the available features within the package.
+The package aims to provide functionalities for creating and manipulating general functional data objects. It thus supports the analysis of various types of functional data, whether densely or irregularly sampled, multivariate, or multidimensional. Functional data can be represented over a grid of points or using a basis of functions. `FDApy` implements dimension reduction techniques and smoothing methods, facilitating the extraction of patterns from complex functional datasets. A large simulation toolbox, based on basis decomposition, is provided. It allows to configure parameters for simulating different clusters within the data. Finally, some visualization tools are also available.
+
+Check out the `examples <https://fdapy.readthedocs.io/en/latest/auto_examples/index.html>`_ for an overview of the package functionalities.
+
+Check out the `API reference <https://fdapy.readthedocs.io/en/latest/modules.html>`_ for an exhaustive list of the available features within the package.
 
 Installation
 ============
