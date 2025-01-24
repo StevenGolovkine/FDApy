@@ -57,13 +57,11 @@ Documentation
 
 The documentation is available `here <https://fdapy.readthedocs.io/en/stable/>`__, which included detailled information about API references and several examples presenting the different functionalities.
 
-The documentation of the latest version can be found at `here <https://fdapy.readthedocs.io/en/latest/>`__
-
 
 Installation
 ============
 
-Up to now, *FDApy* is availlable in Python 3.9 on any Linux platforms. The stable version can be installed via `PyPI <https://pypi.org/project/FDApy/>`_:
+Up to now, *FDApy* is availlable in Python 3.10 on any Linux platforms. The stable version can be installed via `PyPI <https://pypi.org/project/FDApy/>`_:
 
 .. code::
 	

@@ -37,7 +37,7 @@ Check out the `API reference <https://fdapy.readthedocs.io/en/latest/modules.htm
 Installation
 ============
 
-Up to now, *FDApy* is availlable in Python 3.9 on any Linux platforms. The stable version can be installed via `PyPI <https://pypi.org/project/FDApy/>`_:
+Up to now, *FDApy* is availlable in Python 3.10 on any Linux platforms. The stable version can be installed via `PyPI <https://pypi.org/project/FDApy/>`_:
 
 .. code::
 	
