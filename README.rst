@@ -35,6 +35,10 @@ FDApy: a Python package to analyze functional data
    		:target: https://zenodo.org/badge/latestdoi/155183454
    		:alt: DOI
 
+.. image:: https://img.shields.io/github/all-contributors/StevenGolovkine/FDApy?color=ee8449&style=flat-square
+		:target: https://github.com/StevenGolovkine/FDApy/blob/master/CONTRIBUTORS.md
+		:alt: Contributors
+		
 
 Description
 ===========
@@ -114,22 +118,3 @@ License
 =======
 
 The package is licensed under the MIT License. A copy of the `license <https://github.com/StevenGolovkine/FDApy/blob/master/LICENSE>`_ can be found along with the code.
-
-Contributors
-============
-
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<table>
-  <tbody>
-    <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/StevenGolovkine"><img src="https://avatars.githubusercontent.com/u/22517192?v=4?s=100" width="100px;" alt="Steven"/><br /><sub><b>Steven</b></sub></a><br /><a href="#code-StevenGolovkine" title="Code">💻</a></td>
-    </tr>
-  </tbody>
-</table>
-
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
