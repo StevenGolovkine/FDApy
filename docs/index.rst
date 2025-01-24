@@ -69,7 +69,7 @@ Contributing
 ============
 
 Contributions are welcome, and they are greatly appreciated! Every little bit
-helps, and credit will always be given. Contributing guidelines are provided `here <https://github.com/StevenGolovkine/FDApy/blob/master/CONTRIBUTING.rst>`_.
+helps, and credit will always be given. Contributing guidelines are provided `here <https://github.com/StevenGolovkine/FDApy/blob/master/CONTRIBUTING.rst>`_. The people involved in the development of the package can be found in the `contributors page <https://github.com/StevenGolovkine/FDApy/blob/master/CONTRIBUTORS.md>`.
 
 License
 =======
