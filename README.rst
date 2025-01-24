@@ -45,7 +45,7 @@ Description
 
 Functional data analysis (FDA) is a statistical methodology for analyzing data that can be characterized as functions. These functions could represent measurements taken over time, space, frequency, probability, etc. The goal of FDA is to extract meaningful information from these functions and to model their behavior.
 
-The package aims to provide functionalities for creating and manipulating general functional data objects. It thus supports the analysis of various types of functional data, whether densely or irregularly sampled, multivariate, or multidimensional. Functional data can be represented over a grid of points or using a basis of functions. `FDApy` implements dimension reduction techniques and smoothing methods, facilitating the extraction of patterns from complex functional datasets. A large simulation toolbox, based on basis decomposition, is provided. It allows to configure parameters for simulating different clusters within the data. Finally, some visualization tools are also available.
+The package aims to provide functionalities for creating and manipulating general functional data objects. It thus supports the analysis of various types of functional data, whether densely or irregularly sampled, multivariate, or multidimensional. Functional data can be represented over a grid of points or using a basis of functions. *FDApy* implements dimension reduction techniques and smoothing methods, facilitating the extraction of patterns from complex functional datasets. A large simulation toolbox, based on basis decomposition, is provided. It allows to configure parameters for simulating different clusters within the data. Finally, some visualization tools are also available.
 
 Check out the `examples <https://fdapy.readthedocs.io/en/latest/auto_examples/index.html>`_ for an overview of the package functionalities.
 
@@ -112,7 +112,7 @@ Contributing
 ============
 
 Contributions are welcome, and they are greatly appreciated! Every little bit
-helps, and credit will always be given. Contributing guidelines are provided `here <https://github.com/StevenGolovkine/FDApy/blob/master/CONTRIBUTING.rst>`_. The people involved in the development of the package can be found in the `contributors page <https://github.com/StevenGolovkine/FDApy/blob/master/CONTRIBUTORS.md>`.
+helps, and credit will always be given. Contributing guidelines are provided `here <https://github.com/StevenGolovkine/FDApy/blob/master/CONTRIBUTING.rst>`_. The people involved in the development of the package can be found in the `contributors page <https://github.com/StevenGolovkine/FDApy/blob/master/CONTRIBUTORS.md>`_.
 
 License
 =======
