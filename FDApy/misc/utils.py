@@ -634,7 +634,7 @@ def _integrate(
 
     """
     if method == "simpson":
-        integrate = scipy.integrate.simps
+        integrate = scipy.integrate.simpson
     elif method == "trapz":
         integrate = np.trapz
     else:

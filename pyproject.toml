@@ -46,7 +46,7 @@ test = [
   "pytest",
   "pytest-env",
   "pytest-subtests",
-  "scipy<1.11.0",
+  "scipy",
 ]
 
 [project.urls]
