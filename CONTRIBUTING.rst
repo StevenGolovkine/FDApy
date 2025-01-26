@@ -100,6 +100,11 @@ Before you submit a pull request, check that it meets these guidelines:
    feature to the list in docs/index.rst.
 3. The pull request should work for Python 3.10 and above.
 
+Git rebase
+----------
+
+The `git rebase` command should be use with caution. It is fine to use it for your own branches, but it should not be used for branches that are shared with others. Once a branch has been pushed to the repository, it should not be rebased.
+
 Tips
 ----
 
