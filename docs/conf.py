@@ -10,9 +10,14 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import inspect
 import os
 import sys
 
+from os.path import dirname, relpath
+from typing import Mapping
+
+import FDApy
 #sys.path.insert(0, os.path.abspath(".."))
 
 # -- Project information -----------------------------------------------------
@@ -34,9 +39,10 @@ language = "en"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "sphinx.ext.autodoc",
     "numpydoc",
+    "sphinx.ext.autodoc",
     "sphinx.ext.coverage",
+    "sphinx.ext.linkcode",
     "sphinx.ext.napoleon",
     "sphinx.ext.mathjax",
     "sphinx.ext.todo",
@@ -113,3 +119,60 @@ autosummary_generate = True
 autodoc_member_order = "bysource"
 
 autodoc_default_options = {"show-inheritance": True}
+
+
+# -- Options for "sphinx.ext.linkcode" --
+
+
+def linkcode_resolve(domain: str, info: Mapping[str, str]) -> str | None:
+    """
+    Resolve a link to source in the Github repo.
+
+    Based on the NumPy version.
+    """
+    if domain != "py":
+        return None
+
+    modname = info["module"]
+    fullname = info["fullname"]
+
+    submod = sys.modules.get(modname)
+    if submod is None:
+        return None
+
+    obj = submod
+    for part in fullname.split("."):
+        try:
+            obj = getattr(obj, part)
+        except Exception:
+            return None
+
+    fn = None
+    lineno = None
+
+    try:
+        fn = inspect.getsourcefile(obj)
+    except Exception:
+        fn = None
+    if not fn:
+        return None
+
+    # Ignore re-exports as their source files are not within the FDApy repo
+    module = inspect.getmodule(obj)
+    if module is not None and not module.__name__.startswith("FDApy"):
+        return None
+
+    try:
+        source, lineno = inspect.getsourcelines(obj)
+        lineno_final = lineno + len(source) - 1
+    except Exception:
+        lineno_final = None
+
+    fn = relpath(fn, start=dirname(FDApy.__file__))
+
+    if lineno:
+        linespec = f"#L{lineno}-L{lineno_final}"
+    else:
+        linespec = ""
+
+    return f"{github_url}/tree/{rtd_branch}/FDApy/{fn}{linespec}"
