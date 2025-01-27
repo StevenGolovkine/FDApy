@@ -46,3 +46,13 @@ Multivariate Functional Data
 	:toctree: autosummary
 
 	FDApy.representation.MultivariateFunctionalData
+
+Iterators
+=========
+
+.. autosummary::
+	:toctree: autosummary
+
+	FDApy.representation.DenseFunctionalDataIterator
+	FDApy.representation.IrregularFunctionalDataIterator
+	FDApy.representation.BasisFunctionalDataIterator

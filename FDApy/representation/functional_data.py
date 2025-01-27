@@ -204,7 +204,7 @@ def _estimate_noise_variance_with_covariance(
 
     References
     ----------
-    .. [2] Yao, F., Müller, H.-G., Wang, J.-L. (2005). Functional Data
+    .. [3] Yao, F., Müller, H.-G., Wang, J.-L. (2005). Functional Data
         Analysis for Sparse Longitudinal Data. Journal of the American
         Statistical Association 100, pp. 577--590.
 
@@ -835,6 +835,31 @@ class DenseFunctionalData(GridFunctionalData):
     ... ]))
     >>> DenseFunctionalData(argvals, values)
 
+    References
+    ----------
+    .. [1] Benko, M., Härdle, W. and Kneip, A. (2009). Common functional
+        principal components. The Annals of Statistics 37, 1--34.
+    .. [2] Cai, T.T., Yuan, M., (2011), Optimal estimation of the mean
+        function based on discretely sampled functional data: Phase
+        transition. The Annals of Statistics 39, 2330-2355.
+    .. [3] Chiou, J.-M., Chen, Y.-T., Yang, Y.-F. (2014). Multivariate Functional
+        Principal Component Analysis: A Normalization Approach. Statistica Sinica
+        24, 1571--1596.
+    .. [4] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
+        P-splines. Cambridge University Press, Cambridge.
+    .. [5] Hall, P., Kay, J.W. and Titterington, D.M. (1990).
+        Asymptotically Optimal Difference-Based Estimation of Variance in
+        Nonparametric Regression. Biometrika 77, 521--528.
+    .. [6] Happ, C., Greven, S. (2018). Multivariate Functional Principal Component
+        Analysis for Data Observed on Different (Dimensional) Domains. Journal of
+        the American Statistical Association 113, 649--659.
+    .. [7] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+        Analysis, Springer Science, Chapter 8.
+    .. [8] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
+        Springer Series in Statistics.
+    .. [9] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
+        Functional Data, The Annals of Statistics, Vol. 35, No. 3.
+
     """
 
     ###########################################################################
@@ -1089,18 +1114,12 @@ class DenseFunctionalData(GridFunctionalData):
         ----------
         order: int, default=2
             Order of the difference sequence. The order has to be between
-            1 and 10. See [1]_ for more information.
+            1 and 10. See [4]_ for more information.
 
         Returns
         -------
         float
             The estimation of the variance of the noise.
-
-        References
-        ----------
-        .. [1] Hall, P., Kay, J.W. and Titterington, D.M. (1990).
-            Asymptotically Optimal Difference-Based Estimation of Variance in
-            Nonparametric Regression. Biometrika 77, 521--528.
 
         Examples
         --------
@@ -1148,13 +1167,13 @@ class DenseFunctionalData(GridFunctionalData):
             Points at which the curves are estimated. The default is None,
             meaning we use the argvals as estimation points.
         method: str, default='PS'
-            The method to used for the smoothing. If 'PS', the method is P-splines [1]_.
-            If 'LP', the method is local polynomials [3]_. Otherwise, it raises an
+            The method to used for the smoothing. If 'PS', the method is P-splines [2]_.
+            If 'LP', the method is local polynomials [4]_. Otherwise, it raises an
             error.
         bandwidth: Optional[float], default=None
             Strictly positive. Control the size of the associated neighborhood.
             If ``bandwidth=None``, it is assumed that the curves are twice
-            differentiable and the bandwidth is set to :math:`n^{-1/5}` [2]_
+            differentiable and the bandwidth is set to :math:`n^{-1/5}` [3]_
             where :math:`n` is the number of sampling points per curve. Be
             careful that it will not work if the curves are not sampled on
             :math:`[0, 1]`.
@@ -1170,15 +1189,6 @@ class DenseFunctionalData(GridFunctionalData):
         -------
         DenseFunctionalData
             Smoothed data.
-
-        References
-        ----------
-        .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
-            P-splines. Cambridge University Press, Cambridge.
-        .. [2] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
-            Springer Series in Statistics.
-        .. [3] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
-            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
 
         Examples
         --------
@@ -1237,8 +1247,8 @@ class DenseFunctionalData(GridFunctionalData):
 
         This function computes an estimate of the mean curve of a DenseFunctionalData
         object. As the curves are sampled on a common grid, we consider the sample mean,
-        as defined in [3]_. The sampled mean is rate optimal [1]_. We included some
-        smoothing using Local Polynonial Estimators [4]_ or P-Splines [2]_.
+        as defined in [7]_. The sampled mean is rate optimal [5]_. We included some
+        smoothing using Local Polynonial Estimators [8]_ or P-Splines [6]_.
 
         Parameters
         ----------
@@ -1247,8 +1257,8 @@ class DenseFunctionalData(GridFunctionalData):
             DenseArgvals of the DenseFunctionalData is used.
         method_smoothing: Optional[str], default=None
             The method to used for the smoothing. If 'None', no smoothing is performed.
-            If 'PS', the method is P-splines [2]_. If 'LP', the method is local
-            polynomials [4]_.
+            If 'PS', the method is P-splines [6]_. If 'LP', the method is local
+            polynomials [8]_.
         kwargs
             Other keyword arguments are passed to the following function:
 
@@ -1258,18 +1268,6 @@ class DenseFunctionalData(GridFunctionalData):
         -------
         DenseFunctionalData
             An estimate of the mean as a DenseFunctionalData object.
-
-        References
-        ----------
-        .. [1] Cai, T.T., Yuan, M., (2011), Optimal estimation of the mean
-            function based on discretely sampled functional data: Phase
-            transition. The Annals of Statistics 39, 2330-2355.
-        .. [2] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
-            P-splines. Cambridge University Press, Cambridge.
-        .. [3] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
-            Analysis, Springer Science, Chapter 8.
-        .. [4] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
-            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
 
         Examples
         --------
@@ -1330,13 +1328,6 @@ class DenseFunctionalData(GridFunctionalData):
         DenseFunctionalData
             The centered version of the data.
 
-        References
-        ----------
-        .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
-            P-splines. Cambridge University Press, Cambridge.
-        .. [2] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
-            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
-
         Examples
         --------
         >>> kl = KarhunenLoeve(
@@ -1386,11 +1377,6 @@ class DenseFunctionalData(GridFunctionalData):
         -------
         npt.NDArray[np.float64], shape=(n_obs,)
             The norm of each observations.
-
-        References
-        ----------
-        .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
-            Analysis, Springer Science, Chapter 2.
 
         Examples
         --------
@@ -1489,12 +1475,6 @@ class DenseFunctionalData(GridFunctionalData):
         DenseFunctionalData
             The standardized data.
 
-        References
-        ----------
-        .. [1] Chiou, J.-M., Chen, Y.-T., Yang, Y.-F. (2014). Multivariate Functional
-            Principal Component Analysis: A Normalization Approach. Statistica Sinica
-            24, 1571--1596.
-
         Examples
         --------
         >>> kl = KarhunenLoeve(
@@ -1546,12 +1526,6 @@ class DenseFunctionalData(GridFunctionalData):
         -------
         Tuple[DenseFunctionalData, float]
             The rescaled data and the weight.
-
-        References
-        ----------
-        .. [1] Happ, C., Greven, S. (2018). Multivariate Functional Principal Component
-            Analysis for Data Observed on Different (Dimensional) Domains. Journal of
-            the American Statistical Association 113, 649--659.
 
         Examples
         --------
@@ -1613,17 +1587,6 @@ class DenseFunctionalData(GridFunctionalData):
         -------
         npt.NDArray[np.float64], shape=(n_obs, n_obs)
             Inner product matrix of the data.
-
-        References
-        ----------
-        .. [1] Benko, M., Härdle, W. and Kneip, A. (2009). Common functional
-            principal components. The Annals of Statistics 37, 1--34.
-        .. [2] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
-            P-splines. Cambridge University Press, Cambridge.
-        .. [3] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
-            Analysis, Springer Science, Chapter 2.
-        .. [4] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
-            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
 
         Examples
         --------
@@ -1724,15 +1687,6 @@ class DenseFunctionalData(GridFunctionalData):
         DenseFunctionalData
             An estimate of the covariance as a two-dimensional
             DenseFunctionalData object.
-
-        References
-        ----------
-        .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
-            P-splines. Cambridge University Press, Cambridge.
-        .. [2] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
-            Analysis, Springer Science, Chapter 2.
-        .. [3] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
-            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
 
         Examples
         --------
@@ -1878,6 +1832,36 @@ class IrregularFunctionalData(GridFunctionalData):
     ...     2: np.array([[8, 9], [8, 9], [8, 9]])
     ... })
     >>> IrregularFunctionalData(argvals, values)
+
+    References
+    ----------
+    .. [1] Benko, M., Härdle, W., Kneip, A., (2009), Common functional
+        principal components. The Annals of Statistics 37, 1-34.
+    .. [2] Cai, T.T., Yuan, M., (2011), Optimal estimation of the mean
+        function based on discretely sampled functional data: Phase
+        transition. The Annals of Statistics 39, 2330-2355.
+    .. [3] Chiou, J.-M., Chen, Y.-T., Yang, Y.-F. (2014). Multivariate Functional
+        Principal Component Analysis: A Normalization Approach. Statistica Sinica
+        24, 1571--1596.
+    .. [4] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
+        P-splines. Cambridge University Press, Cambridge.
+    .. [5] Hall, P., Kay, J.W. and Titterington, D.M. (1990).
+        Asymptotically Optimal Difference-Based Estimation of Variance in
+        Nonparametric Regression. Biometrika 77, 521--528.
+    .. [6] Happ and Greven (2018), Multivariate Functional Principal
+        Component Analysis for Data Observed on Different (Dimensional)
+        Domains. Journal of the American Statistical Association, 113,
+        pp. 649--659.
+    .. [7] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+        Analysis, Springer Science, Chapter 2.
+    .. [8] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
+        Springer Series in Statistics.
+    .. [9] Yao, F., Müller, H.-G., Wang, J.-L. (2005). Functional Data
+        Analysis for Sparse Longitudinal Data. Journal of the American
+        Statistical Association 100, pp. 577--590.
+    .. [10] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
+        Functional Data, The Annals of Statistics, Vol. 35, No. 3.
+
 
     """
 
@@ -2176,12 +2160,6 @@ class IrregularFunctionalData(GridFunctionalData):
         float
             The estimation of the variance of the noise.
 
-        References
-        ----------
-        .. [1] Hall, P., Kay, J.W. and Titterington, D.M. (1990).
-            Asymptotically Optimal Difference-Based Estimation of Variance in
-            Nonparametric Regression. Biometrika 77, 521--528.
-
         Examples
         --------
         >>> kl = KarhunenLoeve(
@@ -2252,15 +2230,6 @@ class IrregularFunctionalData(GridFunctionalData):
         -------
         DenseFunctionalData
             Smoothed data.
-
-        References
-        ----------
-        .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
-            P-splines. Cambridge University Press, Cambridge.
-        .. [2] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
-            Springer Series in Statistics.
-        .. [3] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
-            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
 
         Examples
         --------
@@ -2378,14 +2347,6 @@ class IrregularFunctionalData(GridFunctionalData):
         DenseFunctionalData
             An estimate of the mean as a DenseFunctionalData object.
 
-        References
-        ----------
-        .. [1] Cai, T.T., Yuan, M., (2011), Optimal estimation of the mean
-            function based on discretely sampled functional data: Phase
-            transition. The Annals of Statistics 39, 2330-2355.
-        .. [2] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
-            P-splines. Cambridge University Press, Cambridge.
-
         Examples
         --------
         For one-dimensional functional data:
@@ -2478,13 +2439,6 @@ class IrregularFunctionalData(GridFunctionalData):
         IrregularFunctionalData
             The centered version of the data.
 
-        References
-        ----------
-        .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
-            P-splines. Cambridge University Press, Cambridge.
-        .. [2] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
-            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
-
         Examples
         --------
         >>> kl = KarhunenLoeve(
@@ -2542,11 +2496,6 @@ class IrregularFunctionalData(GridFunctionalData):
         -------
         npt.NDArray[np.float64], shape=(n_obs,)
             The norm of each observations.
-
-        References
-        ----------
-        .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
-            Analysis, Springer Science, Chapter 2.
 
         Examples
         --------
@@ -2651,11 +2600,6 @@ class IrregularFunctionalData(GridFunctionalData):
         IrregularFunctionalData
             The standardized data.
 
-        References
-        ----------
-        .. [1] Chiou, J.-M., Chen, Y.-T., Yang, Y.-F. (2014). Multivariate Functional
-            Principal Component Analysis: A Normalization Approach. Statistica Sinica
-            24, 1571--1596.
 
         Examples
         --------
@@ -2725,13 +2669,6 @@ class IrregularFunctionalData(GridFunctionalData):
         Tuple[IrregularFunctionalData, float]
             The rescaled data and the weight.
 
-        References
-        ----------
-        .. [1] Happ and Greven (2018), Multivariate Functional Principal
-            Component Analysis for Data Observed on Different (Dimensional)
-            Domains. Journal of the American Statistical Association, 113,
-            pp. 649--659.
-
         Examples
         --------
         >>> kl = KarhunenLoeve(
@@ -2798,11 +2735,6 @@ class IrregularFunctionalData(GridFunctionalData):
         ------
         NotImplementedError
             Not implement for higher-dimensional data.
-
-        References
-        ----------
-        .. [1] Benko, M., Härdle, W., Kneip, A., (2009), Common functional
-            principal components. The Annals of Statistics 37, 1-34.
 
         Examples
         --------
@@ -2871,14 +2803,6 @@ class IrregularFunctionalData(GridFunctionalData):
         DenseFunctionalData
             An estimate of the covariance as a two-dimensional
             DenseFunctionalData object.
-
-        References
-        ----------
-        .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
-            P-splines. Cambridge University Press, Cambridge.
-        .. [2] Yao, F., Müller, H.-G., Wang, J.-L. (2005). Functional Data
-            Analysis for Sparse Longitudinal Data. Journal of the American
-            Statistical Association 100, pp. 577--590.
 
         Raises
         ------
@@ -3282,6 +3206,29 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     >>> MultivariateFunctionalData([fdata_dense, fdata_irregular])
 
+    References
+    ----------
+    .. [1] Benko, M., Härdle, W. and Kneip, A. (2009). Common functional
+        principal components. The Annals of Statistics 37, 1--34.
+    .. [2] Chiou, J.-M., Chen, Y.-T., Yang, Y.-F. (2014). Multivariate Functional
+        Principal Component Analysis: A Normalization Approach. Statistica Sinica
+        24, 1571--1596.
+    .. [3] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
+        P-splines. Cambridge University Press, Cambridge.
+    .. [4] Hall, P., Kay, J.W. and Titterington, D.M. (1990).
+        Asymptotically Optimal Difference-Based Estimation of Variance in
+        Nonparametric Regression. Biometrika 77, 521--528.
+    .. [5] Happ and Greven (2018), Multivariate Functional Principal
+        Component Analysis for Data Observed on Different (Dimensional)
+        Domains. Journal of the American Statistical Association, 113,
+        pp. 649--659.
+    .. [6] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+        Analysis, Springer Science, Chapter 2.
+    .. [7] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
+        Springer Series in Statistics.
+    .. [8] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
+        Functional Data, The Annals of Statistics, Vol. 35, No. 3.
+
     """
 
     ###########################################################################
@@ -3584,12 +3531,6 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         float
             The estimation of the variance of the noise.
 
-        References
-        ----------
-        .. [1] Hall, P., Kay, J.W. and Titterington, D.M. (1990).
-            Asymptotically Optimal Difference-Based Estimation of Variance in
-            Nonparametric Regression. Biometrika 77, 521--528.
-
         Examples
         --------
         >>> kl = KarhunenLoeve(
@@ -3651,15 +3592,6 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         -------
         MultivariateFunctionalData
             Smoothed data.
-
-        References
-        ----------
-        .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
-            P-splines. Cambridge University Press, Cambridge.
-        .. [2] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
-            Springer Series in Statistics.
-        .. [3] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
-            Functional Data, The Annals of Statistics, Vol. 35, No. 3.
 
         Examples
         --------
@@ -3747,13 +3679,6 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         -------
         MultivariateFunctionalData
             An estimate of the mean as a MultivariateFunctionalData object.
-
-        References
-        ----------
-        .. [1] Happ and Greven (2018), Multivariate Functional Principal
-            Component Analysis for Data Observed on Different (Dimensional)
-            Domains. Journal of the American Statistical Association, 113,
-            pp. 649--659.
 
         Examples
         --------
@@ -3873,11 +3798,6 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         npt.NDArray[np.float64], shape=(n_obs,)
             The norm of each observations.
 
-        References
-        ----------
-        .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
-            Analysis, Springer Science, Chapter 2.
-
         Examples
         --------
         >>> kl = KarhunenLoeve(
@@ -3973,12 +3893,6 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         MultivariateFunctionalData
             The standardized data.
 
-        References
-        ----------
-        .. [1] Chiou, J.-M., Chen, Y.-T., Yang, Y.-F. (2014). Multivariate Functional
-            Principal Component Analysis: A Normalization Approach. Statistica Sinica
-            24, 1571--1596.
-
         Examples
         --------
         >>> kl = KarhunenLoeve(
@@ -4034,12 +3948,6 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         Tuple[MultivariateFunctionalData, npt.NDArray[np.float64]]
             The normalized data.
 
-        References
-        ----------
-        .. [1] Happ and Greven (2018), Multivariate Functional Principal
-            Component Analysis for Data Observed on Different (Dimensional)
-            Domains. Journal of the American Statistical Association, 113,
-            pp. 649--659.
 
         Examples
         --------
@@ -4111,11 +4019,6 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         -------
         npt.NDArray[np.float64], shape=(n_obs, n_obs)
             Inner product matrix of the data.
-
-        References
-        ----------
-        .. [1] Benko, M., Härdle, W. and Kneip, A. (2009). Common functional
-            principal components. The Annals of Statistics 37, 1--34.
 
         Examples
         --------
