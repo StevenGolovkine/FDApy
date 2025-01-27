@@ -39,13 +39,16 @@ language = "en"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "numpydoc",
+    # "numpydoc",
     "sphinx.ext.autodoc",
-    "sphinx.ext.coverage",
+    "sphinx.ext.autodoc.typehints",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.intersphinx",
+    # "sphinx.ext.coverage",
     "sphinx.ext.linkcode",
-    "sphinx.ext.napoleon",
+    # "sphinx.ext.napoleon",
     "sphinx.ext.mathjax",
-    "sphinx.ext.todo",
+    # "sphinx.ext.todo",
     "sphinx_gallery.gen_gallery",
 ]
 
@@ -93,6 +96,14 @@ html_context = {
     "doc_path": "docs",
 }
 
+
+# -- Options for "sphinx.ext.autosummary" --
+
+autosummary_generate = True
+
+
+# -- Options for "sphinx.ext.intersphinx" --
+
 intersphinx_mapping = {
     "python": ("https://docs.python.org/{.major}".format(sys.version_info), None),
     "numpy": ("https://docs.scipy.org/doc/numpy/", None),
@@ -101,6 +112,10 @@ intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
 }
+
+
+# -- Options for "sphinx_gallery.gen_gallery" --
+
 
 sphinx_gallery_conf = {
     # path to your examples scripts
@@ -114,11 +129,6 @@ sphinx_gallery_conf = {
     "backreferences_dir": "backreferences",
     "doc_module": "FDApy",
 }
-
-autosummary_generate = True
-autodoc_member_order = "bysource"
-
-autodoc_default_options = {"show-inheritance": True}
 
 
 # -- Options for "sphinx.ext.linkcode" --

@@ -6,6 +6,9 @@ __getattr__, __dir__, __all__ = lazy.attach(
     submodules=["argvals", "basis", "functional_data", "values"],
     submod_attrs={
         "functional_data": [
+            "FunctionalData",
+            "GridFunctionalData",
+            "BasisFunctionalData",
             "DenseFunctionalData",
             "IrregularFunctionalData",
             "MultivariateFunctionalData",
