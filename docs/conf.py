@@ -39,17 +39,15 @@ language = "en"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    # "numpydoc",
     "sphinx.ext.autodoc",
     "sphinx.ext.autodoc.typehints",
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
-    # "sphinx.ext.coverage",
     "sphinx.ext.linkcode",
-    # "sphinx.ext.napoleon",
+    "sphinx.ext.napoleon",
     "sphinx.ext.mathjax",
-    # "sphinx.ext.todo",
     "sphinx_gallery.gen_gallery",
+    "sphinxcontrib.bibtex",
 ]
 
 
@@ -95,6 +93,9 @@ html_context = {
     "github_version": "master",
     "doc_path": "docs",
 }
+
+
+# -- Options for sphinx.ext.autodoc --
 
 
 # -- Options for "sphinx.ext.autosummary" --
@@ -186,3 +187,8 @@ def linkcode_resolve(domain: str, info: Mapping[str, str]) -> str | None:
         linespec = ""
 
     return f"{github_url}/tree/{rtd_branch}/FDApy/{fn}{linespec}"
+
+
+# -- Options for "sphinxcontrib.bibtex" --
+
+bibtex_bibfiles = ["refs.bib"]
