@@ -1,20 +1,29 @@
+==========
 Simulation
 ==========
 
-.. .. toctree::
-.. 	:includehidden:
-.. 	:maxdepth: 2
-.. 	:titlesonly:
-.. 
-.. This module is used to define an abstract Simulation class. We may simulate
-.. different data from a linear combination of basis functions or multiple
-.. realizations of diverse Brownian motion.
-.. 
-.. .. automodule:: FDApy.simulation.simulation
-..     :members:
-.. 
-.. .. automodule:: FDApy.simulation.brownian
-..     :members:
-.. 
-.. .. automodule:: FDApy.simulation.karhunen
-..     :members:
+Blablabla
+
+Datasets
+========
+
+Blablabla
+
+.. autosummary::
+    :toctree: autosummary
+
+    FDApy.simulation.Datasets
+
+
+Simulation
+==========
+
+Blablabla
+
+.. autosummary::
+    :toctree: autosummary
+
+    FDApy.simulation.Simulation
+    FDApy.simulation.Brownian
+    FDApy.simulation.KarhunenLoeve
+

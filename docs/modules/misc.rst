@@ -1,3 +1,4 @@
+=============
 Miscellaneous
 =============
 
@@ -10,4 +11,7 @@ Miscellaneous
 ..     :members:
 .. 
 .. .. automodule:: FDApy.misc.utils
+..     :members:
+
+.. .. automodule:: FDApy.visualization.plot
 ..     :members:

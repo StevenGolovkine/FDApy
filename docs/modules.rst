@@ -9,6 +9,5 @@ API References
 
 	modules/representation
 	modules/preprocessing
-	modules/visualization
 	modules/simulation
 	modules/misc
