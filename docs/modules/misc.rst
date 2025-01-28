@@ -2,16 +2,23 @@
 Miscellaneous
 =============
 
-.. .. toctree::
-.. 	:includehidden:
-.. 	:maxdepth: 2
-.. 	:titlesonly:
-.. 
-.. .. automodule:: FDApy.misc.loader
-..     :members:
-.. 
-.. .. automodule:: FDApy.misc.utils
-..     :members:
+Blablabla
 
-.. .. automodule:: FDApy.visualization.plot
-..     :members:
+
+Visualization
+=============
+
+.. autosummary::
+    :toctree: autosummary
+
+    FDApy.visualization.plot
+    FDApy.visualization.plot_multivariate
+
+
+Loader
+======
+
+.. autosummary::
+    :toctree: autosummary
+
+    FDApy.misc.read_csv
