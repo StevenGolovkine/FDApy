@@ -1,4 +1,5 @@
 """Representation module."""
+
 import lazy_loader as lazy
 
 __getattr__, __dir__, __all__ = lazy.attach(
@@ -14,7 +15,7 @@ __getattr__, __dir__, __all__ = lazy.attach(
             "MultivariateFunctionalData",
             "DenseFunctionalDataIterator",
             "IrregularFunctionalDataIterator",
-            "BasisFunctionalDataIterator"
+            "BasisFunctionalDataIterator",
         ],
         "argvals": ["DenseArgvals", "IrregularArgvals"],
         "values": ["DenseValues", "IrregularValues"],

@@ -510,9 +510,11 @@ class MFPCA:
         """
         if points is None:
             points = [
-                data_univariate.argvals
-                if isinstance(data_univariate, DenseFunctionalData)
-                else data_univariate.argvals.to_dense()
+                (
+                    data_univariate.argvals
+                    if isinstance(data_univariate, DenseFunctionalData)
+                    else data_univariate.argvals.to_dense()
+                )
                 for data_univariate in data.data
             ]
         if self.weights is None:

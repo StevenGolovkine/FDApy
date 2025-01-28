@@ -329,7 +329,8 @@ def _transform_pace_irregular(
     #     obs_points = np.isin(points["input_dim_0"], new_argvals)
 
     #     mask = np.outer(obs_points, obs_points)
-    #     cov_sampled = covariance_sampled.values[0, mask].reshape(2 * (len(new_values),))
+    #     cov_sampled = covariance_sampled.values[0, mask].\
+    #       reshape(2 * (len(new_values),))
     #     eigen_sampled = eigenfunctions_sampled.values[:, obs_points]
 
     #     noise_mat = noise_variance * np.eye(cov_sampled.shape[0])

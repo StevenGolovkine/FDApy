@@ -1347,16 +1347,11 @@ class DenseFunctionalData(GridFunctionalData):
         if mean is None:
             data_mean = self.mean(method_smoothing=method_smoothing, **kwargs)
         elif (mean is not None) and (method_smoothing is not None):
-            data_mean = mean.smooth(
-                self.argvals,
-                method=method_smoothing,
-                **kwargs
-            )
+            data_mean = mean.smooth(self.argvals, method=method_smoothing, **kwargs)
         else:
             data_mean = mean
         return DenseFunctionalData(
-            DenseArgvals(self.argvals),
-            DenseValues(self.values - data_mean.values)
+            DenseArgvals(self.argvals), DenseValues(self.values - data_mean.values)
         )
 
     def norm(
@@ -1414,11 +1409,7 @@ class DenseFunctionalData(GridFunctionalData):
 
         norm_fd = np.zeros(n_obs)
         for idx in np.arange(n_obs):
-            norm_fd[idx] = _integrate(
-                sq_values[idx],
-                *axis,
-                method=method_integration
-            )
+            norm_fd[idx] = _integrate(sq_values[idx], *axis, method=method_integration)
 
         if squared:
             return np.array(norm_fd)
@@ -1649,10 +1640,7 @@ class DenseFunctionalData(GridFunctionalData):
         for i, j in itertools.product(np.arange(n_obs), repeat=2):
             if i <= j:
                 inner_mat[i, j] = _inner_product(
-                    data.values[i],
-                    data.values[j],
-                    *axis,
-                    method=method_integration
+                    data.values[i], data.values[j], *axis, method=method_integration
                 )
         inner_mat = inner_mat - np.diag(np.repeat(self._noise_variance, n_obs))
 
@@ -1719,9 +1707,7 @@ class DenseFunctionalData(GridFunctionalData):
 
         """
         if self.n_dimension > 1:
-            raise ValueError(
-                "Only one dimensional functional data are supported."
-            )
+            raise ValueError("Only one dimensional functional data are supported.")
 
         if points is None:
             points = self.argvals
@@ -1741,9 +1727,7 @@ class DenseFunctionalData(GridFunctionalData):
         # Center the data
         data = self
         if center:
-            data = data.center(
-                method_smoothing=method_smoothing, **kwargs_center
-            )
+            data = data.center(method_smoothing=method_smoothing, **kwargs_center)
 
         # Estimate the covariance
         cov = np.dot(data.values.T, data.values) / (self.n_obs - 1)
@@ -1769,10 +1753,7 @@ class DenseFunctionalData(GridFunctionalData):
             raw_diag_cov, np.diag(cov), self.argvals, points
         )
 
-        self._covariance = DenseFunctionalData(
-            points_cov,
-            DenseValues(cov[np.newaxis])
-        )
+        self._covariance = DenseFunctionalData(points_cov, DenseValues(cov[np.newaxis]))
         return self._covariance
 
     ###########################################################################
@@ -1893,9 +1874,7 @@ class IrregularFunctionalData(GridFunctionalData):
     # Static methods
     @staticmethod
     def _perform_computation(
-        fdata1: IrregularFunctionalData,
-        fdata2: IrregularFunctionalData,
-        func: Callable
+        fdata1: IrregularFunctionalData, fdata2: IrregularFunctionalData, func: Callable
     ) -> IrregularFunctionalData:
         """Perform computation defined by `func` if they are compatible.
 
@@ -1922,10 +1901,7 @@ class IrregularFunctionalData(GridFunctionalData):
                 fdata1.values.items(), fdata2.values.items()
             )
         }
-        return IrregularFunctionalData(
-            fdata1.argvals,
-            IrregularValues(new_values)
-        )
+        return IrregularFunctionalData(fdata1.argvals, IrregularValues(new_values))
 
     @staticmethod
     def _perform_computation_number(
@@ -1948,13 +1924,8 @@ class IrregularFunctionalData(GridFunctionalData):
             The resulting functional data.
 
         """
-        new_values = {
-            idx: func(obs, number) for (idx, obs) in fdata.values.items()
-        }
-        return IrregularFunctionalData(
-            fdata.argvals,
-            IrregularValues(new_values)
-        )
+        new_values = {idx: func(obs, number) for (idx, obs) in fdata.values.items()}
+        return IrregularFunctionalData(fdata.argvals, IrregularValues(new_values))
 
     @staticmethod
     def concatenate(*fdata: IrregularFunctionalData) -> IrregularFunctionalData:
@@ -1966,9 +1937,7 @@ class IrregularFunctionalData(GridFunctionalData):
             The concatenated objects.
 
         """
-        super(
-            IrregularFunctionalData, IrregularFunctionalData
-        ).concatenate(*fdata)
+        super(IrregularFunctionalData, IrregularFunctionalData).concatenate(*fdata)
         argvals = IrregularArgvals.concatenate(*[el.argvals for el in fdata])
         values = IrregularValues.concatenate(*[el.values for el in fdata])
         return IrregularFunctionalData(argvals, values)
@@ -1977,11 +1946,7 @@ class IrregularFunctionalData(GridFunctionalData):
 
     ###########################################################################
     # Magic methods
-    def __init__(
-        self,
-        argvals: IrregularArgvals,
-        values: IrregularValues
-    ) -> None:
+    def __init__(self, argvals: IrregularArgvals, values: IrregularValues) -> None:
         """Initialize IrregularFunctionalData object."""
         super().__init__(argvals, values)
 
@@ -2088,8 +2053,7 @@ class IrregularFunctionalData(GridFunctionalData):
             ps = PSplines(**kwargs)
             basis = Basis(
                 name=self.n_dimension * ("bsplines",),
-                n_functions=self.n_dimension *\
-                    (int(ps.n_segments + ps.degree),),
+                n_functions=self.n_dimension * (int(ps.n_segments + ps.degree),),
                 degree=int(ps.degree),
                 argvals=argvals,
             )
@@ -2219,9 +2183,8 @@ class IrregularFunctionalData(GridFunctionalData):
             )
             return 0
         variances = [
-            _estimate_noise_variance(
-                obs.values[idx][~np.isnan(obs.values[idx])], order
-            ) for idx, obs in enumerate(self)
+            _estimate_noise_variance(obs.values[idx][~np.isnan(obs.values[idx])], order)
+            for idx, obs in enumerate(self)
         ]
         return np.nanmean(variances)
 
@@ -2410,9 +2373,7 @@ class IrregularFunctionalData(GridFunctionalData):
 
         fdata_long = self.to_long()
         if approx and len(fdata_long) > 2000:
-            str_sub = [
-                f"input_dim_{idx}" for idx in np.arange(self.n_dimension)
-            ]
+            str_sub = [f"input_dim_{idx}" for idx in np.arange(self.n_dimension)]
             temp = fdata_long.groupby(str_sub).mean().reset_index()
             x = temp.drop(["id", "values"], axis=1, inplace=False).values
             y = temp["values"].values
@@ -2428,8 +2389,7 @@ class IrregularFunctionalData(GridFunctionalData):
             points_mat = _cartesian_product(*points.values())
 
             lp = LocalPolynomial(bandwidth=bandwidth, **kwargs)
-            pred = lp.predict(y=y, x=x, x_new=points_mat).\
-                reshape(points.n_points)
+            pred = lp.predict(y=y, x=x, x_new=points_mat).reshape(points.n_points)
         elif method_smoothing == "PS":
             penalty = kwargs.pop("penalty", self.n_dimension * (1,))
 
@@ -2502,9 +2462,7 @@ class IrregularFunctionalData(GridFunctionalData):
                 points=new_argvals, method_smoothing=method_smoothing, **kwargs
             )
         else:
-            data_mean = mean.smooth(
-                new_argvals, method=method_smoothing, **kwargs
-            )
+            data_mean = mean.smooth(new_argvals, method=method_smoothing, **kwargs)
 
         obs_centered = {}
         for idx, obs in enumerate(self):
@@ -2513,10 +2471,7 @@ class IrregularFunctionalData(GridFunctionalData):
             )
             mean_obs = data_mean.values[0][obs_points]
             obs_centered[idx] = obs.values[idx] - mean_obs
-        return IrregularFunctionalData(
-            self.argvals,
-            IrregularValues(obs_centered)
-        )
+        return IrregularFunctionalData(self.argvals, IrregularValues(obs_centered))
 
     def norm(
         self,
@@ -2626,11 +2581,7 @@ class IrregularFunctionalData(GridFunctionalData):
             new_values[idx] = obs.values[idx] / norm
         return IrregularFunctionalData(self.argvals, new_values)
 
-    def standardize(
-        self,
-        center: bool = True,
-        **kwargs
-    ) -> IrregularFunctionalData:
+    def standardize(self, center: bool = True, **kwargs) -> IrregularFunctionalData:
         r"""Standardize the data.
 
         The standardization is performed by first centering the data and then
@@ -2679,17 +2630,13 @@ class IrregularFunctionalData(GridFunctionalData):
         obs_standardized = {}
         for idx, obs in enumerate(fdata):
             obs_points = np.isin(
-                covariance.argvals["input_dim_0"],
-                obs.argvals[idx]["input_dim_0"]
+                covariance.argvals["input_dim_0"], obs.argvals[idx]["input_dim_0"]
             )
             std_obs = np.sqrt(variance[obs_points])
             obs_standardized[idx] = np.divide(
                 obs.values[idx], std_obs, where=(std_obs > 1e-12)
             )
-        return IrregularFunctionalData(
-            self.argvals,
-            IrregularValues(obs_standardized)
-        )
+        return IrregularFunctionalData(self.argvals, IrregularValues(obs_standardized))
 
     def rescale(
         self,
@@ -2884,8 +2831,7 @@ class IrregularFunctionalData(GridFunctionalData):
         """
         if self.n_dimension > 1:
             raise NotImplementedError(
-                "Only implemented for one-dimensional irregular ",
-                "functional data."
+                "Only implemented for one-dimensional irregular ", "functional data."
             )
         if points is None:
             points = self.argvals.to_dense()
@@ -2906,10 +2852,7 @@ class IrregularFunctionalData(GridFunctionalData):
         # Center the data
         data = self
         if center:
-            data = data.center(
-                method_smoothing=method_smoothing,
-                **kwargs_center
-            )
+            data = data.center(method_smoothing=method_smoothing, **kwargs_center)
 
         # Compute the covariance
         cov = np.zeros(np.power(n_points, 2))
@@ -2920,9 +2863,7 @@ class IrregularFunctionalData(GridFunctionalData):
             new_argvals = obs.argvals[idx]["input_dim_0"][~nan_mask]
             new_values = obs.values[idx][~nan_mask]
 
-            obs_points = np.isin(
-                self.argvals.to_dense()["input_dim_0"], new_argvals
-            )
+            obs_points = np.isin(self.argvals.to_dense()["input_dim_0"], new_argvals)
             mask = np.outer(obs_points, obs_points).flatten()
             cov_inner = np.outer(new_values, new_values).flatten()
 
@@ -2955,10 +2896,7 @@ class IrregularFunctionalData(GridFunctionalData):
             raw_diag_cov, np.diag(cov), self.argvals.to_dense(), points
         )
 
-        self._covariance = DenseFunctionalData(
-            points_cov,
-            DenseValues(cov[np.newaxis])
-        )
+        self._covariance = DenseFunctionalData(points_cov, DenseValues(cov[np.newaxis]))
         return self._covariance
 
     ###########################################################################
@@ -3301,9 +3239,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     ###########################################################################
     # Static methods
     @staticmethod
-    def concatenate(
-        *fdata: MultivariateFunctionalData
-    ) -> MultivariateFunctionalData:
+    def concatenate(*fdata: MultivariateFunctionalData) -> MultivariateFunctionalData:
         """Concatenate MultivariateFunctionalData objects.
 
         Parameters
@@ -3712,8 +3648,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             or len(degree) != self.n_functional
         ):
             raise ValueError(
-                "Each parameter has to be a list of length "
-                f"{self.n_functional}."
+                "Each parameter has to be a list of length " f"{self.n_functional}."
             )
         return MultivariateFunctionalData(
             [
@@ -3779,11 +3714,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             )
         self._mean = MultivariateFunctionalData(
             [
-                fdata.mean(
-                    points=pp,
-                    method_smoothing=method_smoothing,
-                    **kwargs
-                )
+                fdata.mean(points=pp, method_smoothing=method_smoothing, **kwargs)
                 for (fdata, pp) in zip(self.data, points)
             ]
         )
@@ -3842,11 +3773,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         else:
             return MultivariateFunctionalData(
                 [
-                    fdata.center(
-                        mean=mean,
-                        method_smoothing=method_smoothing,
-                        **kwargs
-                    )
+                    fdata.center(mean=mean, method_smoothing=method_smoothing, **kwargs)
                     for (fdata, mean) in zip(self.data, mean.data)
                 ]
             )
@@ -3906,7 +3833,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     def normalize(self, **kwargs) -> MultivariateFunctionalData:
         r"""Normalize the data.
 
-        The normalization is performed by divising each functional datum 
+        The normalization is performed by divising each functional datum
         :math:`X` by its norm :math:`\| X \|`. It results in
 
         .. math::
@@ -3949,9 +3876,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             list_multivariate.append(MultivariateFunctionalData(list_univariate))
         return MultivariateFunctionalData.concatenate(*list_multivariate)
 
-    def standardize(
-        self, center: bool = True, **kwargs
-    ) -> MultivariateFunctionalData:
+    def standardize(self, center: bool = True, **kwargs) -> MultivariateFunctionalData:
         r"""Standardize the data.
 
         The standardization is performed by first centering the data and then
@@ -3999,9 +3924,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         list_multivariate = []
         for components in fdata.data:
-            list_multivariate.append(
-                components.standardize(center=False, **kwargs)
-            )
+            list_multivariate.append(components.standardize(center=False, **kwargs))
         return MultivariateFunctionalData(list_multivariate)
 
     def rescale(
@@ -4133,14 +4056,9 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         return np.sum(
             [
                 data.inner_product(
-                    method_integration,
-                    method_smoothing,
-                    noise_variance,
-                    **kwargs
+                    method_integration, method_smoothing, noise_variance, **kwargs
                 )
-                for (data, noise_variance) in zip(
-                    self.data, self._noise_variance
-                )
+                for (data, noise_variance) in zip(self.data, self._noise_variance)
             ],
             axis=0,
         )
@@ -4202,17 +4120,11 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             )
         self._covariance = MultivariateFunctionalData(
             [
-                fdata.covariance(
-                    pp,
-                    method_smoothing=method_smoothing,
-                    **kwargs
-                )
+                fdata.covariance(pp, method_smoothing=method_smoothing, **kwargs)
                 for fdata, pp in zip(self.data, points)
             ]
         )
-        self._noise_variance_cov = [
-            fdata._noise_variance_cov for fdata in self.data
-        ]
+        self._noise_variance_cov = [fdata._noise_variance_cov for fdata in self.data]
         return self._covariance
 
     ###########################################################################

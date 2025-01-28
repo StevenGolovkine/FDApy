@@ -144,7 +144,7 @@ def _plot_2d(
                 data_p["input_dim_0"].values,
                 data_p["input_dim_1"].values,
                 data_p["values"].values,
-                **plt_kwargs
+                **plt_kwargs,
             )
             plt.colorbar(cs, ax=ax)
         else:
