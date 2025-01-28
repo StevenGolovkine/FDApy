@@ -14,6 +14,24 @@ Generic representation
 	FDApy.representation.FunctionalData
 
 
+Representing Argvals and Values
+===============================
+
+.. autosummary::
+	:toctree: autosummary
+
+	FDApy.representation.Argvals
+	FDApy.representation.DenseArgvals
+	FDApy.representation.IrregularArgvals
+
+.. autosummary::
+	:toctree: autosummary
+
+	FDApy.representation.Values
+	FDApy.representation.DenseValues
+	FDApy.representation.IrregularValues
+
+
 Univariate Functional Data
 ==========================
 
@@ -56,3 +74,13 @@ Iterators
 	FDApy.representation.DenseFunctionalDataIterator
 	FDApy.representation.IrregularFunctionalDataIterator
 	FDApy.representation.BasisFunctionalDataIterator
+
+
+Basis
+=====
+
+.. autosummary::
+	:toctree: autosummary
+
+	FDApy.representation.Basis
+	FDApy.representation.MultivariateBasis

@@ -127,6 +127,29 @@ class Basis(DenseFunctionalData):
 
         - :meth:`representation.basis._simulate_basis`.
 
+    References
+    ----------
+    .. [1] Benko, M., Härdle, W. and Kneip, A. (2009). Common functional
+        principal components. The Annals of Statistics 37, 1--34.
+    .. [2] Cai, T.T., Yuan, M., (2011), Optimal estimation of the mean
+        function based on discretely sampled functional data: Phase
+        transition. The Annals of Statistics 39, 2330-2355.
+    .. [3] Chiou, J.-M., Chen, Y.-T., Yang, Y.-F. (2014). Multivariate
+        Functional Principal Component Analysis: A Normalization Approach.
+        Statistica Sinica 24, 1571--1596.
+    .. [4] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys
+        of P-splines. Cambridge University Press, Cambridge.
+    .. [5] Hall, P., Kay, J.W. and Titterington, D.M. (1990).
+        Asymptotically Optimal Difference-Based Estimation of Variance in
+        Nonparametric Regression. Biometrika 77, 521--528.
+    .. [6] Happ, C., Greven, S. (2018). Multivariate Functional Principal
+        Component Analysis for Data Observed on Different (Dimensional)
+        Domains. Journal of the American Statistical Association 113, 649--659.
+    .. [7] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+        Analysis, Springer Science, Chapter 8.
+    .. [8] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
+        Springer Series in Statistics.
+
     """
 
     ###########################################################################
@@ -227,7 +250,6 @@ class Basis(DenseFunctionalData):
         noise_variance: Optional[float] = None,
         **kwargs,
     ) -> npt.NDArray[np.float64]:
-        """Compute the inner product matrix of the basis."""
         # Get parameters
         n_obs = self.n_obs
         axis = [argvals for argvals in self.argvals.values()]
@@ -281,6 +303,27 @@ class MultivariateBasis(MultivariateFunctionalData):
         Other keywords arguments are passed to the function:
 
         - :meth:`representation.basis.Basis`.
+
+    References
+    ----------
+    .. [1] Benko, M., Härdle, W. and Kneip, A. (2009). Common functional
+        principal components. The Annals of Statistics 37, 1--34.
+    .. [2] Chiou, J.-M., Chen, Y.-T., Yang, Y.-F. (2014). Multivariate
+        Functional Principal Component Analysis: A Normalization Approach.
+        Statistica Sinica 24, 1571--1596.
+    .. [3] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys
+        of P-splines. Cambridge University Press, Cambridge.
+    .. [4] Hall, P., Kay, J.W. and Titterington, D.M. (1990).
+        Asymptotically Optimal Difference-Based Estimation of Variance in
+        Nonparametric Regression. Biometrika 77, 521--528.
+    .. [5] Happ and Greven (2018), Multivariate Functional Principal
+        Component Analysis for Data Observed on Different (Dimensional)
+        Domains. Journal of the American Statistical Association, 113,
+        pp. 649--659.
+    .. [6] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
+        Springer Series in Statistics.
+    .. [7] Zhang, J.-T. and Chen J. (2007), Statistical Inferences for
+        Functional Data, The Annals of Statistics, Vol. 35, No. 3.
 
     """
 

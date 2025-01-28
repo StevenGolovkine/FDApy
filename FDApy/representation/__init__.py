@@ -17,8 +17,8 @@ __getattr__, __dir__, __all__ = lazy.attach(
             "IrregularFunctionalDataIterator",
             "BasisFunctionalDataIterator",
         ],
-        "argvals": ["DenseArgvals", "IrregularArgvals"],
-        "values": ["DenseValues", "IrregularValues"],
+        "argvals": ["Argvals", "DenseArgvals", "IrregularArgvals"],
+        "values": ["Values", "DenseValues", "IrregularValues"],
         "basis": ["Basis", "MultivariateBasis"],
     },
 )
