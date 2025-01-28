@@ -106,12 +106,12 @@ autosummary_generate = True
 # -- Options for "sphinx.ext.intersphinx" --
 
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/{.major}".format(sys.version_info), None),
-    "numpy": ("https://docs.scipy.org/doc/numpy/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
-    "sklearn": ("https://scikit-learn.org/stable", None),
-    "matplotlib": ("https://matplotlib.org/", None),
+    "matplotlib": ("https://matplotlib.org/stable", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
+    "python": (f"https://docs.python.org/{sys.version_info.major}", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy", None),
+    "sklearn": ("https://scikit-learn.org/stable", None),
 }
 
 

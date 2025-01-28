@@ -620,7 +620,7 @@ class PSplines:
 
     Notes
     -----
-    This code is adapted from _[2]. See [1]_ for more details.
+    This code is adapted from [2]_. See [1]_ for more details.
 
     References
     ----------
@@ -729,13 +729,6 @@ class PSplines:
         >>> ps.y_hat
         array([1., 2., 3., 4., 5.])
 
-        References
-        ----------
-        .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
-            P-splines. Cambridge University Press, Cambridge.
-        .. [2] Eilers, P., Marx, B., Li, B., Gampe, J., Rodriguez-Alvarez, M.X. (2023).
-            JOPS: Practical Smoothing with P-Splines.
-
         """
         # Check parameters
         self.dimension = len(y.shape)
@@ -821,13 +814,6 @@ class PSplines:
         >>> ps.fit(y, x)
         >>> ps.predict(x)
         array([1., 2., 3., 4., 5.])
-
-        References
-        ----------
-        .. [1] Eilers, P. H. C., Marx, B. D. (2021). Practical Smoothing: The Joys of
-            P-splines. Cambridge University Press, Cambridge.
-        .. [2] Eilers, P., Marx, B., Li, B., Gampe, J., Rodriguez-Alvarez, M.X. (2023).
-            JOPS: Practical Smoothing with P-Splines.
 
         """
         if x is None:
