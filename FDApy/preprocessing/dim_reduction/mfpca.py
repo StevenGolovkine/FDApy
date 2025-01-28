@@ -460,7 +460,7 @@ class MFPCA:
         return self._covariance
 
     @property
-    def eigenvalues(self) -> npt.NDArray[np.float64]:
+    def eigenvalues(self) -> npt.NDArray[np.float_]:
         """Getter for `eigenvalues`."""
         return self._eigenvalues
 

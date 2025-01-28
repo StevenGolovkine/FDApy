@@ -1,19 +1,30 @@
+=============
 Preprocessing
 =============
 
-.. .. toctree::
-.. 	:includehidden:
-.. 	:maxdepth: 2
-.. 	:titlesonly:
-.. 
-.. .. automodule:: FDApy.preprocessing.dim_reduction.ufpca
-..     :members:
-.. 
-.. .. automodule:: FDApy.preprocessing.dim_reduction.mfpca
-..     :members:
-.. 
-.. .. automodule:: FDApy.preprocessing.dim_reduction.fcp_tpa
-..     :members:
-.. 
-.. .. automodule:: FDApy.preprocessing.smoothing.local_polynomial
-..     :members:
+Blablabla
+
+Smoothing
+=========
+
+Blablabla
+
+.. autosummary::
+    :toctree: autosummary
+
+    FDApy.preprocessing.LocalPolynomial
+    FDApy.preprocessing.PSplines
+
+
+Dimension reduction
+===================
+
+Blablabla
+
+.. autosummary::
+    :toctree: autosummary
+
+    FDApy.preprocessing.UFPCA
+    FDApy.preprocessing.MFPCA
+    FDApy.preprocessing.FCPTPA
+

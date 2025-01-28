@@ -295,7 +295,7 @@ class LocalPolynomial:
 
     Parameters
     ----------
-    kernel_name: np.str_, default="epanechnikov"
+    kernel_name: str, default="epanechnikov"
         Kernel name used as weight (`gaussian`, `epanechnikov`, `tricube`,
         `bisquare`).
     bandwidth: float, default=0.05
@@ -332,10 +332,6 @@ class LocalPolynomial:
         Statistical Learning: Data Mining, Inference, and Prediction,
         Second Edition, Springer Series in Statistics.
     .. [3] https://github.com/arokem/lowess/blob/master/lowess/lowess.py
-
-    TODO
-    ----
-    Add robustification
 
     """
 
