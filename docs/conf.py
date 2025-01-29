@@ -39,17 +39,15 @@ language = "en"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    # "numpydoc",
     "sphinx.ext.autodoc",
     "sphinx.ext.autodoc.typehints",
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
-    # "sphinx.ext.coverage",
     "sphinx.ext.linkcode",
-    # "sphinx.ext.napoleon",
+    "sphinx.ext.napoleon",
     "sphinx.ext.mathjax",
-    # "sphinx.ext.todo",
     "sphinx_gallery.gen_gallery",
+    "sphinxcontrib.bibtex",
 ]
 
 
@@ -97,6 +95,9 @@ html_context = {
 }
 
 
+# -- Options for sphinx.ext.autodoc --
+
+
 # -- Options for "sphinx.ext.autosummary" --
 
 autosummary_generate = True
@@ -105,12 +106,12 @@ autosummary_generate = True
 # -- Options for "sphinx.ext.intersphinx" --
 
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/{.major}".format(sys.version_info), None),
-    "numpy": ("https://docs.scipy.org/doc/numpy/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
-    "sklearn": ("https://scikit-learn.org/stable", None),
-    "matplotlib": ("https://matplotlib.org/", None),
+    "matplotlib": ("https://matplotlib.org/stable", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
+    "python": (f"https://docs.python.org/{sys.version_info.major}", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy", None),
+    "sklearn": ("https://scikit-learn.org/stable", None),
 }
 
 
@@ -186,3 +187,8 @@ def linkcode_resolve(domain: str, info: Mapping[str, str]) -> str | None:
         linespec = ""
 
     return f"{github_url}/tree/{rtd_branch}/FDApy/{fn}{linespec}"
+
+
+# -- Options for "sphinxcontrib.bibtex" --
+
+bibtex_bibfiles = ["refs.bib"]

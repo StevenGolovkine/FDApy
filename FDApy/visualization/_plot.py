@@ -144,7 +144,7 @@ def _plot_2d(
                 data_p["input_dim_0"].values,
                 data_p["input_dim_1"].values,
                 data_p["values"].values,
-                **plt_kwargs
+                **plt_kwargs,
             )
             plt.colorbar(cs, ax=ax)
         else:
@@ -236,7 +236,7 @@ def plot_multivariate(
         The object to plot.
     labels: Optional[npt.NDArray[np.float64]], default=None
         The labels of each curve.
-    titles: Optional[List[np.str_]], default=None
+    titles: Optional[List[str]], default=None
         Titles of the subfigure.
     colors: Optional[npt.NDArray[np.float64]], default=None
         Colors used for the plot. If `colors` is `None`, it uses the `jet`

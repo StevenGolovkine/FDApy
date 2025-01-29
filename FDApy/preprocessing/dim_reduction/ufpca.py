@@ -68,12 +68,6 @@ def _fit_covariance(
         - `'eigenfunctions'`: the estimated eigenfunctions;
         - `'noise_variance_cov'`: the estimation of the noise.
 
-
-    References
-    ----------
-    .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
-        Analysis, Springer Science, Chapter 8.
-
     """
     # Compute the covariance
     covariance = data.covariance(
@@ -208,8 +202,6 @@ def _transform_numerical_integration_irregular(
 ) -> npt.NDArray[np.float64]:
     """Estimate scores using numerical integration.
 
-    TODO: Consider another way to choose the bandwidth.
-
     Parameters
     ----------
     data: IrregularFunctionalData
@@ -329,7 +321,8 @@ def _transform_pace_irregular(
     #     obs_points = np.isin(points["input_dim_0"], new_argvals)
 
     #     mask = np.outer(obs_points, obs_points)
-    #     cov_sampled = covariance_sampled.values[0, mask].reshape(2 * (len(new_values),))
+    #     cov_sampled = covariance_sampled.values[0, mask].\
+    #       reshape(2 * (len(new_values),))
     #     eigen_sampled = eigenfunctions_sampled.values[:, obs_points]
 
     #     noise_mat = noise_variance * np.eye(cov_sampled.shape[0])
@@ -415,6 +408,10 @@ class UFPCA:
     ----------
     .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
         Analysis, Springer Science, Chapter 8.
+    .. [2] Yao, Müller and Wang (2005), Functional Data Analysis for Sparse
+        Longitudinal Data. Journal of the American Statistical Association,
+        100, pp. 577--590.
+
 
     """
 
@@ -508,11 +505,6 @@ class UFPCA:
         kwargs_innpro: Dict[str, object], default={}
             Keywords arguments to be passed to the function
             :meth:`preprocessing.fpca._fit_inner_product`.
-
-        References
-        ----------
-        .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
-            Analysis, Springer Science, Chapter 8.
 
         """
         if self.method == "covariance" and data.n_dimension > 1:
@@ -620,7 +612,7 @@ class UFPCA:
         This integral can be estimated using two ways. First, if data are
         sampled on a common fine grid, the estimation is done using
         numerical integration. Second, the PACE (Principal Components through
-        Conditional Expectation) algorithm [1]_ is used for sparse functional
+        Conditional Expectation) algorithm [2]_ is used for sparse functional
         data. If the eigenfunctions have been estimated using the inner-product
         matrix, the scores can also be estimated using the formula
 
@@ -658,12 +650,6 @@ class UFPCA:
         npt.NDArray[np.float64], shape=(n_obs, n_components)
             An array representing the projection of the data onto the basis of
             functions defined by the eigenfunctions.
-
-        References
-        ----------
-        .. [1] Yao, Müller and Wang (2005), Functional Data Analysis for Sparse
-            Longitudinal Data. Journal of the American Statistical Association,
-            100, pp. 577--590.
 
         """
         # Checkers

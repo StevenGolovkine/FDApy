@@ -359,7 +359,7 @@ class MFPCA:
         eigendecomposition of the covariance operator of each univariate
         components. If `method == 'inner-product'`, the estimation is
         based on an eigendecomposition of the inner-product matrix.
-    weights: npt.NDArray[np.float_], default=None
+    weights: npt.NDArray[np.float64], default=None
         A vector of weights of length :math:`P`. If `None`, we set the weights to be
         equal to 1 for each component.
     normalize: bool, default=False
@@ -372,7 +372,7 @@ class MFPCA:
     covariance: MultivariateFunctionalData
         An estimation of the covariance of the training data based on their
         eigendecomposition using the Mercer's theorem.
-    eigenvalues: npt.NDArray[np.float_], shape=(n_components,)
+    eigenvalues: npt.NDArray[np.float64], shape=(n_components,)
         The singular values corresponding to each of selected components.
     eigenfunctions: MultivariateFunctionalData
         Principal axes in feature space, representing the directions of
@@ -380,7 +380,10 @@ class MFPCA:
 
     References
     ----------
-    .. [1] Happ and Greven (2018), Multivariate Functional Principal
+    .. [1] Golovkine, S., Gunning, E., Simpkin, A.J., Bargary, N. (2023). On the use
+        of the Gram matrix for multivariate functional principal components
+        analysis.
+    .. [2] Happ and Greven (2018), Multivariate Functional Principal
         Component Analysis for Data Observed on Different (Dimensional)
         Domains. Journal of the American Statistical Association, 113,
         pp. 649--659.
@@ -392,7 +395,7 @@ class MFPCA:
         n_components: Union[int, float] = 2,
         univariate_expansions: Optional[List[Dict[str, object]]] = None,
         method: str = "covariance",
-        weights: Optional[npt.NDArray[np.float_]] = None,
+        weights: Optional[npt.NDArray[np.float64]] = None,
         normalize: bool = False,
     ) -> None:
         """Initialize MFPCA object."""
@@ -432,12 +435,12 @@ class MFPCA:
         self._method = new_method
 
     @property
-    def weights(self) -> Optional[npt.NDArray[np.float_]]:
+    def weights(self) -> Optional[npt.NDArray[np.float64]]:
         """Getter for `weights`."""
         return self._weights
 
     @weights.setter
-    def weights(self, new_weights: Optional[npt.NDArray[np.float_]]) -> None:
+    def weights(self, new_weights: Optional[npt.NDArray[np.float64]]) -> None:
         self._weights = new_weights
 
     @property
@@ -497,22 +500,14 @@ class MFPCA:
             - :meth:`FunctionalData.mean` and :meth:`FunctionalData.center`;
             - :meth:`preprocessing.dim_reduction.mfpca._fit_inner_product_multivariate`.
 
-        References
-        ----------
-        .. [1] Golovkine, S., Gunning, E., Simpkin, A.J., Bargary, N. (2023). On the use
-            of the Gram matrix for multivariate functional principal components
-            analysis.
-        .. [2] Happ C. & Greven S. (2018), Multivariate Functional Principal
-            Component Analysis for Data Observed on Different (Dimensional)
-            Domains. Journal of the American Statistical Association, 113,
-            pp. 649--659.
-
         """
         if points is None:
             points = [
-                data_univariate.argvals
-                if isinstance(data_univariate, DenseFunctionalData)
-                else data_univariate.argvals.to_dense()
+                (
+                    data_univariate.argvals
+                    if isinstance(data_univariate, DenseFunctionalData)
+                    else data_univariate.argvals.to_dense()
+                )
                 for data_univariate in data.data
             ]
         if self.weights is None:
@@ -561,7 +556,6 @@ class MFPCA:
         self._basis_univariate = results.get("_basis_univariate", None)
         self._training_data = data
 
-        # TODO: Add covariance computation
         self._covariance = None
 
     def transform(
@@ -590,8 +584,6 @@ class MFPCA:
 
         where :math:`l_k` and :math:`v_{k}` are the eigenvalues and
         eigenvectors of the inner-product matrix.
-
-        TODO: Test for 2D functional data
 
         Parameters
         ----------
@@ -623,14 +615,7 @@ class MFPCA:
         directly estimate the scores using the projection of the data onto the
         multivariate eigenfunctions and not use the univariate components and
         the decomposition of the covariance of the univariate scores as Happ
-        and Greven [1]_ could do.
-
-        References
-        ----------
-        .. [1] Happ and Greven (2018), Multivariate Functional Principal
-            Component Analysis for Data Observed on Different (Dimensional)
-            Domains. Journal of the American Statistical Association, 113,
-            pp. 649--659.
+        and Greven [2]_ could do.
 
         """
         # Checkers

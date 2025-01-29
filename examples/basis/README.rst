@@ -1,4 +1,4 @@
-.. _representation_examples:
+.. _basis_examples:
 
 Basis
 -----
