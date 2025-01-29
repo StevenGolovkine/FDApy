@@ -98,6 +98,11 @@ html_context = {
 # -- Options for sphinx.ext.autodoc --
 
 
+# -- Options for "sphinx.ext.autodoc.typehints" --
+
+autodoc_typehints = "description"
+
+
 # -- Options for "sphinx.ext.autosummary" --
 
 autosummary_generate = True

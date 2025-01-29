@@ -179,16 +179,16 @@ def plot(
 
     Parameters
     ----------
-    data: Union[DenseFunctionalData, IrregularFunctionalData]
+    data
         The object to plot.
-    labels: Optional[npt.NDArray[np.float64]], default=None
+    labels
         The labels of each curve.
-    colors: Optional[npt.NDArray[np.float64]], default=None
+    colors
         Colors used for the plot. If `colors` is `None`, it uses the `jet`
         colormaps from the `matplotlib` library by default.
-    ax: Optional[Axes]
+    ax
         Axes object onto which the objects are plotted.
-    **plt_kwargs:
+    **plt_kwargs
         Keywords plotting arguments
 
     Returns
@@ -232,18 +232,18 @@ def plot_multivariate(
 
     Parameters
     ----------
-    data: MultivariateFunctional
+    data
         The object to plot.
-    labels: Optional[npt.NDArray[np.float64]], default=None
+    labels
         The labels of each curve.
-    titles: Optional[List[str]], default=None
+    titles
         Titles of the subfigure.
-    colors: Optional[npt.NDArray[np.float64]], default=None
+    colors
         Colors used for the plot. If `colors` is `None`, it uses the `jet`
         colormaps from the `matplotlib` library by default.
-    ax: Optional[Axes]
+    ax
         Axes object onto which the objects are plotted.
-    **plt_kwargs:
+    **plt_kwargs
         Keywords plotting arguments
 
     Returns
