@@ -11,8 +11,6 @@ import numpy.typing as npt
 
 from scipy.special import gamma, eval_legendre
 
-from typing import Optional
-
 
 def _basis_legendre(
     argvals: npt.NDArray[np.float64],
@@ -25,9 +23,9 @@ def _basis_legendre(
 
     Parameters
     ----------
-    argvals: npt.NDArray[np.float64]
+    argvals
         The values on which evaluated the Legendre polynomials.
-    n_functions: int, default=3
+    n_functions
         Maximum degree of the Legendre polynomials.
 
     Returns
@@ -68,10 +66,10 @@ def _basis_wiener(
 
     Parameters
     ----------
-    argvals: npt.NDArray[np.float64]
+    argvals
         The values on which the eigenfunctions of a Wiener process are
         evaluated.
-    n_functions: int, default=3
+    n_functions
         Number of functions to consider.
 
     Returns
@@ -110,9 +108,9 @@ def _basis_fourier(
 
     Parameters
     ----------
-    argvals: npt.NDArray[np.float64]
+    argvals
         The values on which evaluated the Fourier series.
-    n_functions: int, default=3
+    n_functions
         Number of considered Fourier series. Should be odd.
 
     Returns
@@ -152,8 +150,8 @@ def _basis_bsplines(
     argvals: npt.NDArray[np.float64],
     n_functions: int = 10,
     degree: int = 3,
-    domain_min: Optional[float] = None,
-    domain_max: Optional[float] = None,
+    domain_min: float | None = None,
+    domain_max: float | None = None,
 ) -> npt.NDArray[np.float64]:
     """Define B-splines basis of function.
 
@@ -163,15 +161,15 @@ def _basis_bsplines(
 
     Parameters
     ----------
-    argvals: npt.NDArray[np.float64]
+    argvals
         The values on which evaluated the B-splines.
-    n_functions: int, default=10
+    n_functions
         Number of considered B-splines.
-    degree: int, default=3
+    degree
         Degree of the B-splines. The default gives cubic splines.
-    domain_min: float, default=None
+    domain_min
         Minimum number for the argvals.
-    domain_max: float, default=None
+    domain_max
         Maximum number for hte argvals.
 
     Returns

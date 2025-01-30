@@ -65,8 +65,8 @@ DIFF_SEQUENCES = {
 #############################################################################
 def _normalization(
     x: npt.NDArray[np.float64],
-    max_x: Optional[float] = None,
-    min_x: Optional[float] = None,
+    max_x: float | None = None,
+    min_x: float | None = None,
 ) -> npt.NDArray[np.float64]:
     r"""Normalize a vector :math:`[a, b]` into a vector :math:`[0, 1]`.
 
@@ -77,11 +77,11 @@ def _normalization(
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64], shape=(n_obs,)
+    x
         Vector of data
-    max_x: Optional[float], default=None
+    max_x
         Maximum value
-    min_x: Optional[float], default=None
+    min_x
         Minimum value
 
     Returns
@@ -116,7 +116,7 @@ def _standardization(
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64], shape=(n_obs,)
+    x
         Vector of data
 
     Returns
@@ -143,7 +143,7 @@ def _row_mean(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64], shape=(n_obs, n_features)
+    x
         Matrix of data
 
     Returns
@@ -176,7 +176,7 @@ def _row_var(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64], shape=(n_obs, n_features)
+    x
         Matrix of data
 
     Returns
@@ -209,7 +209,7 @@ def _col_mean(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64], shape=(n_obs, n_features)
+    x
         Matrix of data
 
     Returns
@@ -242,7 +242,7 @@ def _col_var(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64], shape=(n_obs, n_features)
+    x
         Matrix of data
 
     Returns
@@ -278,9 +278,9 @@ def _get_axis_dimension(x: npt.NDArray[np.float64], axis: int = 0) -> int:
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64], shape=(n_obs, n_features)
+    x
         Matrix of data
-    axis: int, default=0
+    axis
         Integer value that represents the axis along which the dimension of the
         array is to be computed. The default value is 0.
 
@@ -306,7 +306,7 @@ def _get_dict_dimension(x: Dict[str, npt.NDArray[np.float64]]) -> Tuple[int, ...
 
     Parameters
     ----------
-    x: Dict[str, npt.NDArray[np.float64]]
+    x
         Dictionary containing keys as string and values as numpy array.
 
     Returns
@@ -334,11 +334,11 @@ def _get_obs_shape(
 
     Parameters
     ----------
-    x: Dict[str, Dict[int, npt.NDArray[np.float64]]]
+    x
         Nested dictionary containing the data, where the first level of keys
         are strings and the second level of keys are integers representing the
         observation number.
-    obs: int
+    obs
         Observation number for which to get the shape.
 
     Returns
@@ -371,11 +371,11 @@ def _shift(
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64], shape=(n_obs, n_features)
+    x
         Matrix of data
-    num: int, default=0
+    num
         The number of columns to shift.
-    fill_value: float, default=np.nan
+    fill_value
         The value with one fill the array.
 
     Returns
@@ -413,7 +413,7 @@ def _cartesian_product(
 
     Parameters
     ----------
-    arrays: List[npt.NDArray[np.float64]]
+    arrays
         List of arrays
 
     Returns
@@ -471,7 +471,7 @@ def _block_diag(*arrs: npt.NDArray[np.float_]):
 
     Parameters
     ----------
-    A, B, C, ...: npt.NDArray[np.float_], 2-dimensional arrays.
+    arrs
         Input arrays.
 
     Returns
@@ -532,7 +532,7 @@ def _block_diag(*arrs: npt.NDArray[np.float_]):
 
 
 def _integration_weights(
-    x: npt.NDArray[np.float64], method: Union[str, Callable] = "trapz"
+    x: npt.NDArray[np.float64], method: str | Callable = "trapz"
 ) -> npt.NDArray[np.float64]:
     """Compute integration weights.
 
@@ -541,9 +541,9 @@ def _integration_weights(
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64], shape=(n_points,)
+    x
         Domain on which compute the weights.
-    method: Union[str, Callable], default='trapz'
+    method
         The method to compute the weights.
 
     Returns
@@ -607,11 +607,11 @@ def _integrate(
 
     Parameters
     ----------
-    y: npt.NDArray[np.float64], shape=(n_features,)
+    y
         Observations
-    *args: npt.NDArray[np.float64], shape=(n_features,)
+    args
         Domain for the integration, it has to be ordered.
-    method: str, {'simpson', 'trapz'}, default = 'simpson'
+    method
         The method used to integrated.
 
     Returns
@@ -649,7 +649,7 @@ def _integrate(
 def _inner_product(
     x: npt.NDArray[np.float64],
     y: npt.NDArray[np.float64],
-    *axis: Optional[npt.NDArray[np.float64]],
+    *axis: npt.NDArray[np.float64] | None,
     method: str = "trapz",
 ) -> float:
     r"""Compute the inner product between two curves.
@@ -664,14 +664,14 @@ def _inner_product(
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64]
+    x
         First curve considered.
-    y: npt.NDArray[np.float64]
+    y
         Second curve considered.
-    axis: Optional[npt.NDArray[np.float64]], default=None
+    axis
         Domain of integration. If ``axis`` is ``None``, the domain is set to be
         a regular grid on :math:`[0, 1]` with ``len(x)`` number of points.
-    method: str, {'simpson', 'trapz'}, default = 'trapz'
+    method
         The method used to integrated.
 
     Returns
@@ -701,9 +701,9 @@ def _outer(
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64], shape=(n_obs1,)
+    x
         First input vector
-    y: npt.NDArray[np.float64], shape=(n_obs2,)
+    y
         Second input vector
 
     Returns
@@ -723,15 +723,15 @@ def _outer(
 
 
 def _select_number_eigencomponents(
-    eigenvalues: npt.NDArray[np.float64], percentage: Optional[Union[float, int]] = None
+    eigenvalues: npt.NDArray[np.float64], percentage: float | int | None = None
 ) -> int:
     """Select the number of eigencomponents.
 
     Parameters
     ----------
-    eigenvalues: npt.NDArray[np.float64]
+    eigenvalues
         An estimation of the eigenvalues.
-    percentage: Optional[Union[float, int]], default=None
+    percentage
         Number of components to keep. If `percentage` is `None`, all
         components are kept, ``percentage == len(eigenvalues)``.
         If `percentage` is an integer, `percentage` components are kept. If
@@ -768,10 +768,10 @@ def _eigh(
 
     Parameters
     ----------
-    matrix: npt.NDArray[np.float64], shape=(M, M)
+    matrix
         Hermitian or real symmetric matrices whose eigenvalues and eigenvectors
         are to be computed.
-    UPLO: str, {'L', 'U'}, default='L'
+    UPLO
         Specifies whether the calculation is done with the lower triangular
         part of a ('L', default) or the upper triangular part ('U').
         Irrespective of this value only the real parts of the diagonal will be
@@ -794,7 +794,7 @@ def _eigh(
 
 def _compute_eigen(
     data: npt.NDArray[np.float64],
-    n_components: Optional[Union[np.float64, np.int64]] = None,
+    n_components: np.float64 | np.int64 | None = None,
 ) -> Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
     """Compute the eigendecomposition of a matrix.
 
@@ -803,10 +803,10 @@ def _compute_eigen(
 
     Parameters
     ----------
-    data: npt.NDArray[np.float64]
+    data
         The array to diagonalize. Depending on the context, it could the
         covariance matrix or the inner-product matrix.
-    n_components: Optional[Union[np.float64, np.int64]], default=None
+    n_components
         Number of components to keep. If `n_components` is `None`, all
         components are kept, ``n_components == min(n_samples, n_features)``.
         If `n_components` is an integer, `n_components` are kept. If
@@ -840,9 +840,9 @@ def _compute_covariance(
 
     Parameters
     ----------
-    eigenvalues: npt.NDArray[np.float64], shape=(n_components,)
+    eigenvalues
         The singular values corresponding to each of selected components.
-    eigenfunctions: npt.NDArray[np.float64], shape=(n_components, n_points)
+    eigenfunctions
         An array representing the eigenfunctions.
 
     Returns
@@ -870,9 +870,9 @@ def _estimate_noise_variance(x: npt.NDArray[np.float64], order: int = 2) -> floa
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64]
+    x
         Vector of observed values.
-    order: int, default=2
+    order
         Order of the difference sequence. The order has to be between 1 and 10.
 
     Returns
