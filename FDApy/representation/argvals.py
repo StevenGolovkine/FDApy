@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 ###############################################################################
 # Class Argvals
 class Argvals(UserDict):
-    """Metaclass for the definition of argvals of functional data."""
+    """Define the structure of Argvals."""
 
     @staticmethod
     @abstractmethod
@@ -121,7 +121,7 @@ class Argvals(UserDict):
 ###############################################################################
 # Class DenseArgvals
 class DenseArgvals(Argvals):
-    """Class representing a dictionary of argvals for DenseFunctionalData.
+    """Represent the argvals of dense functional data.
 
     This class extends the `Argvals` class to represent a dictionary where the
     keys are strings and the values are np.ndarray. It provides additional
@@ -292,7 +292,7 @@ class DenseArgvals(Argvals):
 ###############################################################################
 # Class IrregularArgvals
 class IrregularArgvals(Argvals):
-    """Class representing a dictionary of argvals for IrregularFunctionalData.
+    """Represent the argvals of irregular functional data.
 
     This class extends the `Argvals` class to represent a dictionary where the
     keys are strings and the values are DenseArgvals. It provides additional

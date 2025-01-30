@@ -366,7 +366,7 @@ def _transform_innpro(
 
 
 class UFPCA:
-    """UFPCA -- Univariate Functional Principal Components Analysis.
+    """Univariate functional principal components analysis.
 
     Linear dimensionality reduction of a univariate functional dataset. The
     projection of the data in a lower dimensional space is performed using

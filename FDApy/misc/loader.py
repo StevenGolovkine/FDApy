@@ -25,7 +25,7 @@ from ..representation.functional_data import (
 def read_csv(
     filepath: str, **kwargs
 ) -> Union[DenseFunctionalData, IrregularFunctionalData]:
-    """Read a comma-separated values (csv) file into Functional Data.
+    """Load CSV file into functional data object.
 
     Build a DenseFunctionalData or IrregularFunctionalData object upon a csv
     file passed as parameter.

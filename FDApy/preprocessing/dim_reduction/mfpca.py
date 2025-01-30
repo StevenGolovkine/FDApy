@@ -335,7 +335,7 @@ def _transform_pace_multivariate(
 
 
 class MFPCA:
-    r"""MFPCA -- Multivariate Functional Principal Components Analysis.
+    r"""Multivariate functional principal components analysis.
 
     Linear dimensionality reduction of a multivariate functional dataset. The
     projection of the data in a lower dimensional space is performed using

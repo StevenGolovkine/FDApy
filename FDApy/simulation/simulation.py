@@ -124,7 +124,7 @@ def _sparsify_univariate_data(
 #############################################################################
 # Class Simulation
 class Simulation(ABC):
-    """Class that defines functional data simulation.
+    """Define the structure of Simulation.
 
     Parameters
     ----------

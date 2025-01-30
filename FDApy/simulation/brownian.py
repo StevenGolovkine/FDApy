@@ -271,7 +271,7 @@ def _simulate_brownian(
 
 
 class Brownian(Simulation):
-    """Class that defines Brownian motions simulation.
+    """Simulate Brownian motions.
 
     Parameters
     ----------

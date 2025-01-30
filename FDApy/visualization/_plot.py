@@ -172,7 +172,7 @@ def plot(
     ax: Optional[Axes] = None,
     **plt_kwargs,
 ) -> Axes:
-    """Plot function for univariate functional data.
+    """Plot univariate functional data.
 
     Generic plot function for DenseFunctionalData and IrregularFunctionalData
     objects.
@@ -226,7 +226,7 @@ def plot_multivariate(
     ax: Optional[Axes] = None,
     **plt_kwargs,
 ) -> List[Axes]:
-    """Plot function for multivariate functional data.
+    """Plot multivariate functional data.
 
     Generic plot function for MultivariateFunctionalData objects.
 

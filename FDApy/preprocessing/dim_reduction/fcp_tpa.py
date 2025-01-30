@@ -444,7 +444,7 @@ def _update_components(
 
 
 class FCPTPA:
-    r"""Functional Canonical Polyadic - Tensor Power Algorithm (FCP-TPA).
+    r"""Functional canonical polyadic-tensor power algorithm.
 
     This module implements the Functional CP-TPA algorithm [1]_. This method
     computes an eigendecomposition of image observations, which can be

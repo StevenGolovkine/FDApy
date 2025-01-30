@@ -593,7 +593,7 @@ def _fit_n_dimensional(
 
 
 class PSplines:
-    r"""P-Splines Smoothing.
+    r"""P-Splines smoothing.
 
     The class fits a P-splines model to the given data using a B-splines basis and an
     optional weights matrix.

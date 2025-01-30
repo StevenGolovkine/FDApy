@@ -331,7 +331,7 @@ def _initialize_clusters_std(
 
 
 class KarhunenLoeve(Simulation):
-    r"""Class that defines simulation based on Karhunen-Loève decomposition.
+    r"""Simulate based on Karhunen-Loève decomposition.
 
     This class is used to simulate functional data
     :math:`X_1, \dots, X_N` based on a truncated Karhunen-Loève decomposition:

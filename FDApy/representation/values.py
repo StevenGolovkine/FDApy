@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 ###############################################################################
 # Class Values
 class Values(ABC):
-    """Metaclass for the definition of values of functional data."""
+    """Define the structure of Values."""
 
     @staticmethod
     @abstractmethod
@@ -64,7 +64,7 @@ class Values(ABC):
 ###############################################################################
 # Class DenseValues
 class DenseValues(Values, np.ndarray):
-    """Class representing an array of values for DenseFunctionalData.
+    """Represent the values of dense functional data.
 
     This class extends the `Values` class to represent values for
     DenseFunctionalData. It provides additional functionality for working with
@@ -143,7 +143,7 @@ class DenseValues(Values, np.ndarray):
 ###############################################################################
 # Class IrregularValues
 class IrregularValues(Values, UserDict):
-    """Class representing a dictionary of values for IrregularFunctionalData.
+    """Represent the values of irregular functional data.
 
     This class extends the `Values` class to represent values for
     IrregularFunctionalData. It provides additional functionality for working

@@ -53,7 +53,7 @@ def _zhang_chen(
 
 
 class Datasets(Simulation):
-    r"""Class that defines simulation based on published papers.
+    r"""Simulate published paper datasets.
 
     Parameters
     ----------

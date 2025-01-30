@@ -232,7 +232,7 @@ def _estimate_noise_variance_with_covariance(
 ###############################################################################
 # Class FunctionalData
 class FunctionalData(ABC):
-    """Metaclass for the definition of diverse functional data objects."""
+    """Define the structure of FunctionalData."""
 
     ###########################################################################
     # Checkers
@@ -472,7 +472,7 @@ class FunctionalData(ABC):
 ###############################################################################
 # Class GridFunctionalData
 class GridFunctionalData(FunctionalData):
-    """Metaclass for the definition of functional data objects defined on grids.
+    """Represent discretised functional data.
 
     Parameters
     ----------
@@ -756,7 +756,7 @@ class GridFunctionalData(FunctionalData):
 ###############################################################################
 # Class DenseFunctionalDataIterator
 class DenseFunctionalDataIterator(Iterator):
-    """Iterator for DenseFunctionalData object."""
+    """Iterator for dense functional data."""
 
     def __init__(self, fdata):
         """Initialize the Iterator object."""
@@ -776,7 +776,7 @@ class DenseFunctionalDataIterator(Iterator):
 ###############################################################################
 # Class DenseFunctionalData
 class DenseFunctionalData(GridFunctionalData):
-    r"""Class for defining Dense Functional Data.
+    r"""Represent densely sampled functional data.
 
     A class used to define dense functional data. We denote by :math:`n`, the
     number of observations and by :math:`p`, the number of input dimensions.
@@ -1762,7 +1762,7 @@ class DenseFunctionalData(GridFunctionalData):
 ###############################################################################
 # Class IrregularFunctionalDataIterator
 class IrregularFunctionalDataIterator(Iterator):
-    """Iterator for IrregularFunctionalData object."""
+    """Iterator for irregular functional data."""
 
     def __init__(self, fdata):
         """Initialize the Iterator object."""
@@ -1782,7 +1782,7 @@ class IrregularFunctionalDataIterator(Iterator):
 ###############################################################################
 # Class IrregularFunctionalData
 class IrregularFunctionalData(GridFunctionalData):
-    r"""A class for defining Irregular Functional Data.
+    r"""Represent irregularly sampled functional data.
 
     Parameters
     ----------
@@ -2905,7 +2905,7 @@ class IrregularFunctionalData(GridFunctionalData):
 ###############################################################################
 # Class BasisFunctionalDataIterator
 class BasisFunctionalDataIterator(Iterator):
-    """Iterator for BasisFunctionalData object."""
+    """Iterator for functional data represented as a basis."""
 
     def __init__(self, fdata):
         """Initialize the Iterator object."""
@@ -2925,7 +2925,7 @@ class BasisFunctionalDataIterator(Iterator):
 ###############################################################################
 # Class BasisFunctionalData
 class BasisFunctionalData(FunctionalData):
-    r"""Class for defining Basis Functional Data.
+    r"""Represent functional data with a basis.
 
     A class used to defined functional data with a basis expansion. We denote by
     :math:`n`, the number of observations and by :math:`p`, the number of input
@@ -3171,7 +3171,7 @@ class BasisFunctionalData(FunctionalData):
 ###############################################################################
 # Class MultivariateFunctionalData
 class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
-    r"""A class for defining Multivariate Functional Data.
+    r"""Represent multivariate functional data.
 
     An instance of MultivariateFunctionalData is a list containing objects of
     the class DenseFunctionalData or IrregularFunctionalData.

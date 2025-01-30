@@ -269,7 +269,7 @@ def _local_regression(
 
 
 class LocalPolynomial:
-    r"""Local Polynomial Regression.
+    r"""Local Polynomial regression.
 
     This module implements Local Polynomial Regression over different
     dimensional domain [2]_. The idea of local regression is to fit a
