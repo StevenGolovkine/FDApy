@@ -55,8 +55,8 @@ def _plot_1d(
         colormaps from the `matplotlib` library by default.
     ax
         Axes object onto which the objects are plotted.
-    **plt_kwargs
-        Keywords plotting arguments
+    plt_kwargs
+        Keywords plotting arguments.
 
     Returns
     -------
@@ -103,8 +103,8 @@ def _plot_2d(
         colormaps from the `matplotlib` library by default.
     ax
         Axes object onto which the objects are plotted.
-    **plt_kwargs
-        Keywords plotting arguments
+    plt_kwargs
+        Keywords plotting arguments.
 
     Returns
     -------
@@ -166,7 +166,7 @@ def _plot_2d(
 #############################################################################
 # Plotting functions
 def plot(
-    data: DenseFunctionalData | IrregularFunctionalData,
+    data: DenseFunctionalData | IrregularFunctionalData | BasisFunctionalData,
     labels: npt.NDArray[np.float64] | None = None,
     colors: npt.NDArray[np.float64] | None = None,
     ax: Axes | None = None,
@@ -174,8 +174,8 @@ def plot(
 ) -> Axes:
     """Plot univariate functional data.
 
-    Generic plot function for DenseFunctionalData and IrregularFunctionalData
-    objects.
+    Generic plot function for DenseFunctionalData, IrregularFunctionalData and
+    BasisFunctionalData objects.
 
     Parameters
     ----------
@@ -188,8 +188,8 @@ def plot(
         colormaps from the `matplotlib` library by default.
     ax
         Axes object onto which the objects are plotted.
-    **plt_kwargs
-        Keywords plotting arguments
+    plt_kwargs
+        Keywords plotting arguments.
 
     Returns
     -------
@@ -243,8 +243,8 @@ def plot_multivariate(
         colormaps from the `matplotlib` library by default.
     ax
         Axes object onto which the objects are plotted.
-    **plt_kwargs
-        Keywords plotting arguments
+    plt_kwargs
+        Keywords plotting arguments.
 
     Returns
     -------

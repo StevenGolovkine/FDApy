@@ -10,8 +10,6 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from typing import Union
-
 from ..representation.argvals import DenseArgvals, IrregularArgvals
 from ..representation.values import DenseValues, IrregularValues
 from ..representation.functional_data import (
@@ -24,27 +22,30 @@ from ..representation.functional_data import (
 # Loader for csv
 def read_csv(
     filepath: str, **kwargs
-) -> Union[DenseFunctionalData, IrregularFunctionalData]:
+) -> DenseFunctionalData | IrregularFunctionalData:
     """Load CSV file into functional data object.
 
-    Build a DenseFunctionalData or IrregularFunctionalData object upon a csv
-    file passed as parameter.
+    Build a DenseFunctionalData or IrregularFunctionalData object upon a CSV
+    file passed as parameter. If the CSV file does not contain any `NA` values, the 
+    data will be loaded as a DenseFunctionalData object. Otherwise, it will be loaded
+    as an IrregularFunctionalData object. See the `Canadian Weather example <../../auto_examples/data_analysis/plot_canadian_weather.html>`_ and `CD4 example <../../auto_examples/data_analysis/plot_cd4.html>`_ for the formating of the CSV file.
+
 
     Notes
     -----
-    We assumed that the data are unidimensional and is not checked.
+    We assumed that the data are unidimensional without check.
 
     Parameters
     ----------
     filepath
         Any valid string path is acceptable.
-    **kwargs
+    kwargs
         Keywords arguments to passed to the pd.read_csv function.
 
     Returns
     -------
-    Union[DenseFunctionalData, IrregularFunctionalData]
-        The loaded csv file.
+    DenseFunctionalData | IrregularFunctionalData
+        The loaded CSV file.
 
     """
     data = pd.read_csv(filepath, **kwargs)
@@ -67,9 +68,9 @@ def _read_csv_dense(
 
     Parameters
     ----------
-    data: pd.DataFrame
+    data
         Input dataframe.
-    argvals: npt.NDArray[np.float64]
+    argvals
         An array of argvals.
 
     Returns
@@ -90,9 +91,9 @@ def _read_csv_irregular(
 
     Parameters
     ----------
-    data: pd.DataFrame
+    data
         Input dataframe.
-    argvals: npt.NDArray[np.float64]
+    argvals
         An array of argvals.
 
     Returns
