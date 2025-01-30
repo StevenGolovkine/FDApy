@@ -46,14 +46,14 @@ def _plot_1d(
 
     Parameters
     ----------
-    data:
+    data
         The object to plot.
-    labels:
+    labels
         The labels of each curve.
-    colors:
+    colors
         Colors used for the plot. If `colors` is `None`, it uses the `jet`
         colormaps from the `matplotlib` library by default.
-    ax:
+    ax
         Axes object onto which the objects are plotted.
     **plt_kwargs
         Keywords plotting arguments
@@ -94,16 +94,16 @@ def _plot_2d(
 
     Parameters
     ----------
-    data:
+    data
         The object to plot.
-    labels:
+    labels
         The labels of each curve.
-    colors:
+    colors
         Colors used for the plot. If `colors` is `None`, it uses the `jet`
         colormaps from the `matplotlib` library by default.
-    ax:
+    ax
         Axes object onto which the objects are plotted.
-    **plt_kwargs:
+    **plt_kwargs
         Keywords plotting arguments
 
     Returns
