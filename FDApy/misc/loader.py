@@ -36,7 +36,7 @@ def read_csv(
 
     Parameters
     ----------
-    filepath: str
+    filepath
         Any valid string path is acceptable.
     **kwargs
         Keywords arguments to passed to the pd.read_csv function.
