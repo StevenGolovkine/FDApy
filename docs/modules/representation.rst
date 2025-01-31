@@ -99,11 +99,4 @@ The package provides two classes to represent basis of functions. The class :cla
 Iterators
 =========
 
-The package provides several iterators to handle functional data objects. These iterators allow for the iteration over the functional data objects (e.g. `for` loops, list comprehensions, etc.).
-
-.. autosummary::
-	:toctree: autosummary
-
-	FDApy.representation.DenseFunctionalDataIterator
-	FDApy.representation.IrregularFunctionalDataIterator
-	FDApy.representation.BasisFunctionalDataIterator
+The package provides several iterators to handle functional data objects. These iterators allow for the iteration over the functional data objects (e.g. `for` loops, list comprehensions, etc.). These are defined in the classes: :class:`DenseFunctionalDataIterator`, :class:`IrregularFunctionalDataIterator`, and :class:`BasisFunctionalDataIterator`.

@@ -59,9 +59,9 @@ def _tensor_product(
 
     Parameters
     ----------
-    data1: DenseFunctionalData
+    data1
         First functional data.
-    data2: DenseFunctionalData
+    data2
         Second functional data.
 
     Returns
@@ -85,31 +85,30 @@ def _smooth_covariance(
     points: DenseArgvals,
     method_smoothing: str = "LP",
     remove_diagonal: bool = True,
-    weights: Optional[npt.NDArray[np.float64]] = None,
+    weights: npt.NDArray[np.float64] | None = None,
     **kwargs,
 ):
     """Smooth the covariance.
 
     Parameters
     ----------
-    covariance_matrix: npt.NDArray[np.float64]
+    covariance_matrix
         The samnpled covariance.
-    argvals: DenseArgvals
+    argvals
         The sampling points at which the raw covariance is estimated.
-    points: DenseArgvals
+    points
         The sampling points at which the smoothed covariance will be estimated.
-    method_smoothing: str, default='LP'
+    method_smoothing
         The method to used for the smoothing of the mean. If 'PS', the method is
         P-splines [1]_. If 'LP', the method is local polynomials [2]_.
-    remove_diagonal: bool, default=True
+    remove_diagonal
         Should the diagonal of the covariance be removed due to measurement errors.
-    weights: Optional[npt.NDArray[np.float64]], default=None
+    weights
         Matrix of weights.
     kwargs
         Other keyword arguments are passed to one of the following functions:
-
-        - :meth:`preprocessing.smoothing.PSplines` (``method='PS'``),
-        - :meth:`preprocessing.smoothing.LocalPolynomial` (``method='LP'``).
+        :meth:`preprocessing.smoothing.PSplines` (``method='PS'``) and
+        :meth:`preprocessing.smoothing.LocalPolynomial` (``method='LP'``).
 
     Returns
     -------
@@ -188,18 +187,18 @@ def _estimate_noise_variance_with_covariance(
 
     Parameters
     ----------
-    raw_diagonal: npt.NDArray[np.float64]
+    raw_diagonal
         The raw covariance diagonal.
-    smooth_diagonal: npt.NDArray[np.float64]
+    smooth_diagonal
         The smooth covariance diagonal.
-    argvals: DenseArgvals
+    argvals
         The sampling points at which the raw covariance is estimated.
-    points: DenseArgvals
+    points
         The sampling points at which the smoothed covariance will be estimated.
 
     Returns
     -------
-    np.float64
+    float
         An estimation of the variance of the noise.
 
     References
@@ -232,7 +231,18 @@ def _estimate_noise_variance_with_covariance(
 ###############################################################################
 # Class FunctionalData
 class FunctionalData(ABC):
-    """Define the structure of FunctionalData."""
+    """Define the structure of FunctionalData.
+    
+    Attributes
+    ----------
+    n_obs: int
+        Number of observations of the functional data.
+    n_dimension: int
+        Number of input dimension of the functional data.
+    n_points: Tuple[int, ...] | Dict[int, Tuple[int, ...]]
+        Number of sampling points.
+
+    """
 
     ###########################################################################
     # Checkers
@@ -285,7 +295,7 @@ class FunctionalData(ABC):
 
         Parameters
         ----------
-        *fdata: FunctionalData
+        fdata
             Functional data to compare.
 
         Raises
@@ -326,7 +336,7 @@ class FunctionalData(ABC):
 
         Parameters
         ----------
-        *fdata: FunctionalData
+        fdata
             Functional data to concatenate.
 
         Raises
@@ -376,7 +386,7 @@ class FunctionalData(ABC):
 
     @property
     @abstractmethod
-    def n_points(self) -> Union[Tuple[int, ...], Dict[int, Tuple[int, ...]]]:
+    def n_points(self) -> Tuple[int, ...] | Dict[int, Tuple[int, ...]]:
         """Get the number of sampling points."""
 
     ###########################################################################
@@ -394,10 +404,10 @@ class FunctionalData(ABC):
     @abstractmethod
     def smooth(
         self,
-        points: Optional[DenseArgvals] = None,
+        points: DenseArgvals | None = None,
         method: str = "PS",
-        bandwidth: Optional[float] = None,
-        penalty: Optional[float] = None,
+        bandwidth: float | None = None,
+        penalty: float | None = None,
         **kwargs,
     ) -> Type[FunctionalData]:
         """Smooth the data."""
@@ -405,7 +415,7 @@ class FunctionalData(ABC):
     @abstractmethod
     def mean(
         self,
-        points: Optional[DenseArgvals] = None,
+        points: DenseArgvals | None = None,
         method_smoothing: str = None,
         **kwargs,
     ) -> FunctionalData:
@@ -414,8 +424,8 @@ class FunctionalData(ABC):
     @abstractmethod
     def center(
         self,
-        mean: Optional[DenseFunctionalData] = None,
-        method_smoothing: Optional[str] = None,
+        mean: DenseFunctionalData | None = None,
+        method_smoothing: str | None = None,
         **kwargs,
     ) -> FunctionalData:
         """Center the data."""
@@ -451,8 +461,8 @@ class FunctionalData(ABC):
     def inner_product(
         self,
         method_integration: str = "trapz",
-        method_smoothing: Optional[str] = None,
-        noise_variance: Optional[float] = None,
+        method_smoothing: str | None = None,
+        noise_variance: float | None = None,
         **kwargs,
     ) -> npt.NDArray[np.float64]:
         """Compute an estimate of the inner product matrix."""
@@ -460,8 +470,8 @@ class FunctionalData(ABC):
     @abstractmethod
     def covariance(
         self,
-        points: Optional[DenseArgvals] = None,
-        method_smoothing: Optional[str] = None,
+        points: DenseArgvals | None = None,
+        method_smoothing: str | None = None,
         **kwargs,
     ) -> Type[FunctionalData]:
         """Compute an estimate of the covariance."""

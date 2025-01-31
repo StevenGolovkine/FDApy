@@ -22,7 +22,18 @@ if TYPE_CHECKING:
 ###############################################################################
 # Class Argvals
 class Argvals(UserDict):
-    """Define the structure of Argvals."""
+    """Define the structure of Argvals.
+    
+    Attributes
+    ----------
+    n_points: Tuple[int, ...] | Dict[int, Tuple[int, ...]]
+        Number of sampling points of each dimension.
+    n_dimension: int
+        Number of dimension of the data.
+    min_max: Dict[str, Tuple[float, float]]
+        Minimum and maximum sampling points for each dimension.
+
+    """
 
     @staticmethod
     @abstractmethod
@@ -39,9 +50,9 @@ class Argvals(UserDict):
 
         Parameters
         ----------
-        key: Any
+        key
             The key to set or update.
-        value: Any
+        value
             The value to associate with the key.
 
         Returns
@@ -60,7 +71,7 @@ class Argvals(UserDict):
 
         Parameters
         ----------
-        other: Type[Argvals]
+        other
             The object to compare with the current Argvals object.
 
         Returns
@@ -100,7 +111,7 @@ class Argvals(UserDict):
 
         Parameters
         ----------
-        values: Type[Values]
+        values
             A Values object.
 
         Raises
@@ -124,8 +135,17 @@ class DenseArgvals(Argvals):
     """Represent the argvals of dense functional data.
 
     This class extends the `Argvals` class to represent a dictionary where the
-    keys are strings and the values are np.ndarray. It provides additional
+    keys are strings and the values are `np.ndarray`. It provides additional
     functionality for working with argument values in scientific computing.
+
+    Attributes
+    ----------
+    n_points: Tuple[int, ...]
+        Number of sampling points of each dimension.
+    n_dimension: int
+        Number of dimension of the data.
+    min_max: Dict[str, Tuple[float, float]]
+        Minimum and maximum sampling points for each dimension.
 
     """
 
@@ -139,7 +159,7 @@ class DenseArgvals(Argvals):
 
         Parameters
         ----------
-        *argvals:
+        argvals
             The DenseArgvals objects to concatenate.
 
         Returns
@@ -166,9 +186,9 @@ class DenseArgvals(Argvals):
 
         Parameters
         ----------
-        key: str
+        key
             The key to set or update.
-        value: npt.NDArray[np.float64]
+        value
             The value to associate with the key.
 
         Raises
@@ -198,7 +218,7 @@ class DenseArgvals(Argvals):
 
         Parameters
         ----------
-        other: DenseArgvals
+        other
             The object to compare with the current DenseArgvals object.
 
         Returns
@@ -254,7 +274,7 @@ class DenseArgvals(Argvals):
 
         Parameters
         ----------
-        percentage: float, default=1.0
+        percentage
             Specify a percentage of the range to retrieve.
 
         Returns
@@ -273,7 +293,8 @@ class DenseArgvals(Argvals):
         This function normalizes the Argvals by applying the following
         transformation to each dimension of the Argvals:
 
-        ..math:: X_{norm} = \frac{X - \min{X}}{\max{X} - \min{X}}.
+        .. math::
+            X_{norm} = \frac{X - \min{X}}{\max{X} - \min{X}}.
 
         Returns
         -------
@@ -298,19 +319,27 @@ class IrregularArgvals(Argvals):
     keys are strings and the values are DenseArgvals. It provides additional
     functionality for working with argument values in scientific computing.
 
+    Attributes
+    ----------
+    n_points: Dict[int, Tuple[int, ...]]
+        Number of sampling points of each dimension.
+    n_dimension: int
+        Number of dimension of the data.
+    min_max: Dict[str, Tuple[float, float]]
+        Minimum and maximum sampling points for each dimension.
+
     """
 
     @staticmethod
     def concatenate(*argvals) -> IrregularArgvals:
         """Concatenate IrregularArgvals objects.
 
-        It does not make sense to concatenate IrregularArgvals. This function
-        checks that all the IrregularArgvals objects pass as arguments are the
-        same and return the first one. It raises an error if one is different.
+        This function concatenates the IrregularArgvals objects by adding the one at
+        the end of the other. The keys are updated to avoid duplicates.
 
         Parameters
         ----------
-        *argvals:
+        argvals
             The IrregularArgvals objects to concatenate.
 
         Returns
@@ -336,9 +365,9 @@ class IrregularArgvals(Argvals):
 
         Parameters
         ----------
-        key: int
+        key
             The key to set or update.
-        value: DenseArgvals
+        value
             The value to associate with the key.
 
         Raises
@@ -363,7 +392,7 @@ class IrregularArgvals(Argvals):
 
         Parameters
         ----------
-        other: IrregularArgvals
+        other
             The object to compare with the current IrregularArgvals object.
 
         Returns
@@ -422,7 +451,9 @@ class IrregularArgvals(Argvals):
         This function normalizes the Argvals by applying the following
         transformation to each observation:
 
-        ..math:: X_{norm} = \frac{X - \min{X}}{\max{X} - \min{X}}.
+        .. math::
+        
+            X_{norm} = \frac{X - \min{X}}{\max{X} - \min{X}}.
 
         Returns
         -------

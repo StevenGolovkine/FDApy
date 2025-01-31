@@ -13,7 +13,7 @@ import numpy.typing as npt
 
 from abc import ABC, abstractmethod
 from collections import UserDict
-from typing import Type, TYPE_CHECKING
+from typing import Dict, Tuple, Type, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .argvals import Argvals
@@ -22,7 +22,16 @@ if TYPE_CHECKING:
 ###############################################################################
 # Class Values
 class Values(ABC):
-    """Define the structure of Values."""
+    """Define the structure of Values.
+    
+    Attributes
+    ----------
+    n_obs: int
+        Number of observations.
+    n_points: Tuple[int, ...] | Dict[int, Tuple[int, ...]]
+        Number of sampling points of each dimension.
+
+    """
 
     @staticmethod
     @abstractmethod
@@ -44,7 +53,7 @@ class Values(ABC):
 
         Parameters
         ----------
-        argvals: Type[Argvals]
+        argvals
             A Argvals object.
 
         Raises
@@ -70,6 +79,13 @@ class DenseValues(Values, np.ndarray):
     DenseFunctionalData. It provides additional functionality for working with
     argument values in scientific computing.
 
+    Attributes
+    ----------
+    n_obs: int
+        Number of observations.
+    n_points: Tuple[int, ...]
+        Number of sampling points of each dimension.
+
     """
 
     @staticmethod
@@ -78,7 +94,7 @@ class DenseValues(Values, np.ndarray):
 
         Parameters
         ----------
-        *values:
+        values
             The DenseValues objects to concatenate.
 
         Returns
@@ -98,7 +114,7 @@ class DenseValues(Values, np.ndarray):
 
         Parameters
         ----------
-        input_array: npt.NDArray[np.float64]
+        input_array
             The input array to be converted into a DenseValues object.
 
         Returns
@@ -130,7 +146,7 @@ class DenseValues(Values, np.ndarray):
         return self.shape[0]
 
     @property
-    def n_points(self):
+    def n_points(self) -> Tuple[int, ...]:
         """Return the number of sampling points for each dimension.
 
         The number of sampling points is the dimensions of the array,
@@ -149,6 +165,14 @@ class IrregularValues(Values, UserDict):
     IrregularFunctionalData. It provides additional functionality for working
     with argument values in scientific computing.
 
+    Attributes
+    ----------
+    n_obs: int
+        Number of observations.
+    n_points: Dict[int, Tuple[int, ...]]
+        Number of sampling points of each dimension.
+
+
     """
 
     @staticmethod
@@ -157,7 +181,7 @@ class IrregularValues(Values, UserDict):
 
         Parameters
         ----------
-        *values:
+        values
             The IrregularValues objects to concatenate.
 
         Returns
@@ -183,9 +207,9 @@ class IrregularValues(Values, UserDict):
 
         Parameters
         ----------
-        key: int
+        key
             The key to set or update.
-        value: npt.NDArray[np.float64]
+        value
             The value to associate with the key.
 
         Raises
@@ -225,7 +249,7 @@ class IrregularValues(Values, UserDict):
         return len(self)
 
     @property
-    def n_points(self):
+    def n_points(self) -> Dict[int, Tuple[int, ...]]:
         """Return the number of sampling points for each dimension.
 
         The number of sampling points is the dimension of the array for each
