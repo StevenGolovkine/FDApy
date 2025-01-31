@@ -9,7 +9,7 @@ Datasets
 import numpy as np
 import numpy.typing as npt
 
-from typing import Callable, Optional
+from typing import Callable
 
 from ..representation.argvals import DenseArgvals
 from ..representation.values import DenseValues
@@ -60,9 +60,18 @@ class Datasets(Simulation):
     basis_name: str
         Name of the datasets to simulate.
 
+    Attributes
+    ----------
+    data
+        An object that represents the simulated data.
+    noisy_data
+        An object that represents a noisy version of the simulated data.
+    sparse_data
+        An object that represents a sparse version of the simulated data.
+
     """
 
-    def __init__(self, basis_name: str, random_state: Optional[int] = None) -> None:
+    def __init__(self, basis_name: str, random_state: int | None = None) -> None:
         """Initialize Datasets object."""
         super().__init__(basis_name, random_state)
 
@@ -70,7 +79,7 @@ class Datasets(Simulation):
         self,
         n_obs: int,
         n_clusters: int = 1,
-        argvals: Optional[npt.NDArray[np.float64]] = None,
+        argvals: npt.NDArray[np.float64] | None = None,
         **kwargs,
     ) -> None:
         """Simulate realizations of the Datasets.
@@ -79,14 +88,19 @@ class Datasets(Simulation):
 
         Parameters
         ----------
-        n_obs: int
+        n_obs
             Number of observations to simulate.
-        n_clusters: None
+        n_clusters
             Not used in this context.
-        argvals: Optional[npt.NDArray[np.float64]], default=None
+        argvals
             Not used in this context. We will use the ``argvals`` from the
             :mod:`Basis` object as ``argvals`` of the simulation. Here to be
             compliant with the class :mod:`Simulation`.
+
+        Returns
+        -------
+        None
+            Create the class attributes `data`.
 
         """
         if self.basis_name == "zhang_chen":

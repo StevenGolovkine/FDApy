@@ -9,7 +9,7 @@ Brownian motions
 import numpy as np
 import numpy.typing as npt
 
-from typing import Callable, Optional, Tuple
+from typing import Callable, Tuple
 
 from ..representation.argvals import DenseArgvals
 from ..representation.values import DenseValues
@@ -31,7 +31,7 @@ def _init_brownian(
 
     Parameters
     ----------
-    argvals: npt.NDArray[np.float64], shape=(n,)
+    argvals
         Values at which Brownian motions are evaluated.
 
     Returns
@@ -54,11 +54,11 @@ def _standard_brownian(
 
     Parameters
     ----------
-    argvals: npt.NDArray[np.float64], shape=(n,)
+    argvals
         Values at which Brownian motions are evaluated.
-    init_point: float, default=0.0
+    init_point
         Start value of the Brownian motion.
-    rnorm: Callable, default=np.random.normal
+    rnorm
         Function to use for normal random variables generation (used for
         reproducibility purpose).
 
@@ -102,16 +102,16 @@ def _geometric_brownian(
 
     Parameters
     ----------
-    argvals: npt.NDArray[np.float64], shape=(n,)
+    argvals
         Values at which Brownian motions are evaluated.
-    init_point: float, default=1.0
+    init_point
         Start value of the Brownian motion. For geometric Brownian motion,
         ``init_point`` should be stricly positive.
-    mu: float, default=0
+    mu
         Interest rate (or percentage drift).
-    sigma: float, default=1
+    sigma
         Diffusion coefficient (or percentage volatility).
-    rnorm: Callable, default=np.random.normal
+    rnorm
         Function to use for normal random variables generation (used for
         reproducibility purpose).
 
@@ -154,12 +154,12 @@ def _fractional_brownian(
 
     Parameters
     ----------
-    argvals: npt.NDArray[np.float64], shape=(n,)
+    argvals
         Values at which Brownian motions are evaluated.
-    hurst: float, default=0.5
+    hurst
         Hurst parameter. If ``hurst = 0.5``. the fractional Brownian motion is
         equivalent to the standard Brownian motion.
-    rnorm: Callable, default=np.random.normal
+    rnorm
         Function to use for normal random variables generation (used for
         reproducibility purpose).
 
@@ -216,14 +216,14 @@ def _simulate_brownian(
 
     Parameters
     ----------
-    name: str, {'standard', 'geometric', 'fractional'}
+    name
         Name of the Brownian motion type to simulate.
-    argvals: npt.NDArray[np.float64], shape=(n,)
+    argvals
         Values at which Brownian motions are evaluated.
-    rnorm: Callable, default=np.random.normal
+    rnorm
         Function to use for normal random variables generation (used for
         reproducibility purpose).
-    **kwargs:
+    kwargs:
         init_point: float, default=0.0 or 1.0
             Start value of the Brownian motion. For geometric Brownian motion,
             ``init_point`` should be stricly positive.
@@ -275,9 +275,9 @@ class Brownian(Simulation):
 
     Parameters
     ----------
-    name: str, {'standard', 'geometric', 'fractional'}
+    name
         Name of the Brownian motion type to simulate.
-    random_state: int, default=None
+    random_state
         A seed to initialize the random number generator.
 
     Attributes
@@ -289,11 +289,13 @@ class Brownian(Simulation):
     sparse_data: IrregularFunctionalData
         An object that represents a sparse version of the simulated data.
 
+    Raises
+    ------
+    ValueError
+        The sampling points have to be regularly spaced. Otherwise, the covariance is not correct.
+
     Notes
     -----
-    The sampling points have to be regularly spaced. Otherwise, the covariance
-    of the generated data will not be the good one.
-
     The implementation is adapted from [1]_.
 
     References
@@ -305,7 +307,7 @@ class Brownian(Simulation):
     def __init__(
         self,
         name: str,
-        random_state: Optional[int] = None,
+        random_state: int | None = None,
     ) -> None:
         """Initialize Brownian object."""
         super().__init__(name, random_state)
@@ -314,7 +316,7 @@ class Brownian(Simulation):
         self,
         n_obs: int,
         n_clusters: int = 1,
-        argvals: Optional[npt.NDArray[np.float64]] = None,
+        argvals: npt.NDArray[np.float64] | None = None,
         **kwargs,
     ) -> None:
         """Simulate realizations of a Brownian motion.
@@ -324,27 +326,36 @@ class Brownian(Simulation):
 
         Parameters
         ----------
-        n_obs: int
+        n_obs
             Number of observations to simulate.
-        n_clusters: int
+        n_clusters
             Not used.
-        argvals: Optional[npt.NDArray[np.float64]], shape=(n,)
+        argvals
             Values at which Brownian motions are evaluated. If ``None``, the
             functions are evaluated on the interval :math:`[0, 1]` with
             :math:`21` regularly spaced sampled points.
-        **kwargs:
-            init_point: float
-                Start value of the Brownian motion. For geometric Brownian
-                motion, ``init_point`` should be stricly positive. Default
-                value is 0 for standard Brownian motion and 1 for geometric
-                Brownian motion.
-            mu: float, default=0
-                Interest rate (or percentage drift).
-            sigma: float, default=1
-                Diffusion coefficient (or percentage volatility).
-            hurst: float, default=0.5
-                Hurst parameter. If ``hurst = 0.5``. the fractional Brownian
-                motion is equivalent to the standard Brownian motion.
+        kwargs
+            See below
+
+        Keyword Arguments
+        -----------------
+        init_point: float
+            Start value of the Brownian motion. For geometric Brownian
+            motion, ``init_point`` should be stricly positive. Default
+            value is 0 for standard Brownian motion and 1 for geometric
+            Brownian motion.
+        mu: float, default=0
+            Interest rate (or percentage drift).
+        sigma: float, default=1
+            Diffusion coefficient (or percentage volatility).
+        hurst: float, default=0.5
+            Hurst parameter. If ``hurst = 0.5``. the fractional Brownian
+            motion is equivalent to the standard Brownian motion.
+
+        Returns
+        -------
+        None
+            Create the class attributes `data`.
 
         """
         if self.random_state is None:
@@ -354,6 +365,11 @@ class Brownian(Simulation):
 
         if argvals is None:
             argvals = np.arange(0, 1.05, 0.05)
+        else:
+            tmp = np.diff(argvals)
+            if not np.all(np.isclose(tmp, tmp[0])):
+                raise ValueError("The sampling points have to be regularly spaced.")
+            
 
         values = np.zeros(shape=(n_obs, len(argvals)))
         for idx in range(n_obs):

@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 
 from abc import ABC, abstractmethod
-from typing import Callable, Optional
+from typing import Callable
 
 from ..representation.argvals import DenseArgvals, IrregularArgvals
 from ..representation.values import DenseValues, IrregularValues
@@ -42,12 +42,12 @@ def _add_noise_univariate_data(
 
     Parameters
     ----------
-    data: DenseFunctionalData
+    data
         Functional data to add the noise.
-    noise_variance: float, default=1.0
+    noise_variance
         The variance :math:`\sigma^2` of the Gaussian noise that is added
         to the data.
-    rnorm: Callable, default=np.random.normal
+    rnorm
         Random data generator.
 
     Returns
@@ -86,16 +86,16 @@ def _sparsify_univariate_data(
 
     Parameters
     ----------
-    data: DenseFunctionalData
+    data
         Functional data to sparsify.
-    percentage: float, default=0.9
+    percentage
         The percentage of observations to be retained.
-    epsilon: float, default=0.05
+    epsilon
         The uncertainty around the percentage of observations to be
         retained.
-    runif: Callable, default=np.random.uniform
+    runif
         Random data generator.
-    rchoice: Callable, default=np.random.choice
+    rchoice
         Random data generator.
 
     Returns
@@ -128,18 +128,18 @@ class Simulation(ABC):
 
     Parameters
     ----------
-    basis_name: str
+    basis_name
         Name of the simulation
-    random_state: int, default=None
+    random_state
         A seed to initialize the random number generator.
 
     Attributes
     ----------
-    data: DenseFunctionalData or MultivariateFunctionalData
+    data: DenseFunctionalData | MultivariateFunctionalData
         An object that represents the simulated data.
-    noisy_data: DenseFunctionalData or MultivariateFunctionalData
+    noisy_data: DenseFunctionalData | MultivariateFunctionalData
         An object that represents a noisy version of the simulated data.
-    sparse_data: IrregularFunctionalData or MultivariateFunctionalData
+    sparse_data: IrregularFunctionalData | MultivariateFunctionalData
         An object that represents a sparse version of the simulated data.
 
     """
@@ -175,7 +175,7 @@ class Simulation(ABC):
 
     ###########################################################################
     # Magic methods
-    def __init__(self, basis_name: str, random_state: Optional[int] = None) -> None:
+    def __init__(self, basis_name: str, random_state: int | None = None) -> None:
         """Initialize Simulation object."""
         super().__init__()
         self.data = None
@@ -208,7 +208,7 @@ class Simulation(ABC):
         self,
         n_obs: int,
         n_clusters: int = 1,
-        argvals: Optional[npt.NDArray[np.float64]] = None,
+        argvals: npt.NDArray[np.float64] | None = None,
         **kwargs,
     ) -> None:
         """Simulate a new set of curves."""
@@ -232,9 +232,14 @@ class Simulation(ABC):
 
         Parameters
         ----------
-        noise_variance: float, default=1.0
+        noise_variance
             The variance :math:`\sigma^2` of the Gaussian noise that is added
             to the data.
+
+        Returns
+        -------
+        None
+            Create the class attribute `noisy_data`.
 
         """
         self._check_data()
@@ -270,11 +275,16 @@ class Simulation(ABC):
 
         Parameters
         ----------
-        percentage: float, default=0.9
+        percentage
             The percentage of observations to be retained.
-        epsilon: float, default=0.05
+        epsilon
             The uncertainty around the percentage of observations to be
             retained.
+
+        Returns
+        -------
+        None
+            Create the class attribute `sparse_data`.
 
         """
         self._check_data()
@@ -314,14 +324,19 @@ class Simulation(ABC):
 
         Parameters
         ----------
-        noise_variance: float, default=1.0
+        noise_variance
             The variance :math:`\sigma^2` of the Gaussian noise that is added
             to the data.
-        percentage: float, default=0.9
+        percentage
             The percentage of observations to be retained.
-        epsilon: float, default=0.05
+        epsilon
             The uncertainty around the percentage of observations to be
             retained.
+
+        Returns
+        -------
+        None
+            Create the class attributes `noisy_data` and `sparse_data`.
 
         """
         self.add_noise(noise_variance=noise_variance)

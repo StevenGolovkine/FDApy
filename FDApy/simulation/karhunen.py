@@ -29,7 +29,7 @@ def _eigenvalues_linear(n: int = 3) -> npt.NDArray[np.float64]:
 
     Parameters
     ----------
-    n: int, default=3
+    n
         Number of eigenvalues to generates.
 
     Returns
@@ -51,7 +51,7 @@ def _eigenvalues_exponential(n: int = 3) -> npt.NDArray[np.float64]:
 
     Parameters
     ----------
-    n: int, default=3
+    n
         Number of eigenvalues to generates.
 
     Returns
@@ -73,7 +73,7 @@ def _eigenvalues_quadratic(n: int = 3) -> npt.NDArray[np.float64]:
 
     Parameters
     ----------
-    n: int, default=3
+    n
         Number of eigenvalues to generates.
 
     Returns
@@ -95,7 +95,7 @@ def _eigenvalues_inverse(n: int = 3) -> npt.NDArray[np.float64]:
 
     Parameters
     ----------
-    n: int, default=3
+    n
         Number of eigenvalues to generates.
 
     Returns
@@ -117,7 +117,7 @@ def _eigenvalues_sqrt(n: int = 3) -> npt.NDArray[np.float64]:
 
     Parameters
     ----------
-    n: int, default=3
+    n
         Number of eigenvalues to generates.
 
     Returns
@@ -139,7 +139,7 @@ def _eigenvalues_wiener(n: int = 3) -> npt.NDArray[np.float64]:
 
     Parameters
     ----------
-    n: int, default=3
+    n
         Number of eigenvalues to generates.
 
     Returns
@@ -161,10 +161,10 @@ def _simulate_eigenvalues(name: str, n: int = 3) -> npt.NDArray[np.float64]:
 
     Parameters
     ----------
-    name: str,
+    name
         Name of the eigenvalues generation process to use. One of
         `{'linear', 'exponential', 'wiener', 'quadratic', 'inverse', 'sqrt'}`.
-    n: int, default=3
+    n
         Number of eigenvalues to generates. Should be strictly positive.
 
     Returns
@@ -209,18 +209,18 @@ def _make_coef(
 
     Parameters
     ----------
-    n_obs: int
+    n_obs
         Number of observations to simulate.
-    n_features: int
+    n_features
         Number of features to simulate.
-    centers: npt.NDArray[np.float64], shape=(n_features, n_clusters)
+    centers
         The centers of the clusters to generate. The ``n_features`` parameter
         corresponds to the number of functions within the basis.
-    clusters_std: npt.NDArray[np.float64], shape=(n_features, n_clusters)
+    clusters_std
         The standard deviation of the clusters to generate. The
         ``n_features`` parameter corresponds to the number of functions within
         the basis.
-    rnorm: Callable, default=np.random.multivariate_normal
+    rnorm
         Method used to generate Gaussian coefficients.
 
     Returns
@@ -268,17 +268,17 @@ def _make_coef(
 
 
 def _initialize_centers(
-    n_features: int, n_clusters: int, centers: Optional[npt.NDArray[np.float64]] = None
+    n_features: int, n_clusters: int, centers: npt.NDArray[np.float64] | None = None
 ) -> npt.NDArray[np.float64]:
     """Initialize the centers of the clusters.
 
     Parameters
     ----------
-    n_features: int
+    n_features
         Number of features to simulate.
-    n_clusters: int
+    n_clusters
         Number of clusters to simulate.
-    centers: Optional[npt.NDArray[np.float64]], shape=(n_features, n_clusters)
+    centers
         The centers of each cluster per feature.
 
     Returns
@@ -294,17 +294,17 @@ def _initialize_centers(
 def _initialize_clusters_std(
     n_features: int,
     n_clusters: int,
-    clusters_std: Optional[Union[str, npt.NDArray[np.float64]]] = None,
+    clusters_std: str | npt.NDArray[np.float64] | None = None,
 ) -> npt.NDArray[np.float64]:
     """Initialize the standard deviation of the clusters.
 
     Parameters
     ----------
-    n_features: int
+    n_features
         Number of features to simulate.
-    n_clusters: int
+    n_clusters
         Number of clusters to simulate.
-    clusters_std: Optional[Union[str, npt.NDArray[np.float64]]]
+    clusters_std
         The standard deviation of each cluster per feature. If the parameter
         is given as a string, it has to be one of {`linear`, `exponential`,
         `wiener`}. If `None`, the standard deviation of each cluster per
@@ -346,6 +346,39 @@ class KarhunenLoeve(Simulation):
     higher-dimensional domains, the eigenfunctions are constructed as tensors
     of marginal orthonormal function systems.
 
+    Parameters
+    ----------
+    n_functions
+        Number of functions to use to generate the basis. See `Basis` and
+        `MultivariateBasis` for more information.
+    basis_name
+        Name of the basis to use. See `Basis` and `MultivariateBasis` for more
+        information.
+    argvals
+        The sampling points of the functional data.
+    basis
+        Basis of functions as a Basis object. Used to have a user-defined basis
+        of function.
+    random_state
+        A seed to initialize the random number generator.
+    kwargs_basis:
+        Basis parameters.
+
+    Attributes
+    ----------
+    data: DenseFunctionalData | MultivariateFunctionalData
+        An object that represents the simulated data.
+    noisy_data: DenseFunctionalData | MultivariateFunctionalData
+        An object that represents a noisy version of the simulated data.
+    sparse_data: IrregularFunctionalData | MultivariateFunctionalData
+        An object that represents a sparse version of the simulated data.
+    labels: npt.NDArray[np.float64], shape=(n_obs,)
+        The integer labels for cluster membership of each sample.
+    basis: Basis | MultivariateBasis
+        The eigenfunctions used to simulate the data.
+    eigenvalues: npt.NDArray[np.float64], shape=(n_functions,)
+        The eigenvalues used to simulate the data.
+
     Notes
     -----
     In the case of multivariate functional data, :math:`X_i` and
@@ -355,37 +388,6 @@ class KarhunenLoeve(Simulation):
 
     If the basis is user-defined, the object has to be an element of the class
     Basis and not just DenseFunctionalData or MultivariateFunctionalData.
-
-    Parameters
-    ----------
-    n_functions: List[Union[Tuple[int], int]], default=5
-        Number of functions to use to generate the basis. See `Basis` and
-        `MultivariateBasis` for more information.
-    basis_name: Optional[List[Union[Tuple[str], str]]]
-        Name of the basis to use. See `Basis` and `MultivariateBasis` for more
-        information.
-    argvals: Optional[List[DenseArgvals]], default=None
-        The sampling points of the functional data.
-    basis: Optional[Union[Basis, MultivariateBasis]], default=None
-        Basis of functions as a Basis object. Used to have a user-defined basis
-        of function.
-    random_state: int, default=None
-        A seed to initialize the random number generator.
-
-    Attributes
-    ----------
-    data: Union[DenseFunctionalData, MultivariateFunctionalData]
-        An object that represents the simulated data.
-    noisy_data: Union[DenseFunctionalData, MultivariateFunctionalData]
-        An object that represents a noisy version of the simulated data.
-    sparse_data: Union[IrregularFunctionalData, MultivariateFunctionalData]
-        An object that represents a sparse version of the simulated data.
-    labels: npt.NDArray[np.float64], shape=(n_obs,)
-        The integer labels for cluster membership of each sample.
-    basis: Union[Basis, MultivariateBasis]
-        The eigenfunctions used to simulate the data.
-    eigenvalues: npt.NDArray[np.float64], shape=(n_functions,)
-        The eigenvalues used to simulate the data.
 
     References
     ----------
@@ -400,17 +402,17 @@ class KarhunenLoeve(Simulation):
     # Checkers
     @staticmethod
     def _check_basis_none(
-        basis_name: Optional[List[Union[Tuple[str], str]]],
-        basis: Optional[Union[Basis, MultivariateBasis]],
+        basis_name: List[Tuple[str] | str] | None,
+        basis: Basis | MultivariateBasis | None,
     ) -> None:
         """Check if `basis_name` of `basis` is `None`.
 
         Parameters
         ----------
-        basis_name: Optional[List[Union[Tuple[str], str]]]
+        basis_name
             A str or a sequence of str indicating the name or names of the
             basis.
-        basis: Optional[Union[Basis, MultivariateBasis]]
+        basis
             A Basis instance.
 
         Raises
@@ -429,12 +431,12 @@ class KarhunenLoeve(Simulation):
             )
 
     @staticmethod
-    def _check_basis_type(basis: Optional[Union[Basis, MultivariateBasis]]) -> None:
+    def _check_basis_type(basis: Basis | MultivariateBasis | None) -> None:
         """Check if `basis` has the right type.
 
         Parameters
         ----------
-        basis: Optional[Basis, MultivariateBasis]
+        basis
             A Basis instance or None.
 
         Raises
@@ -453,11 +455,11 @@ class KarhunenLoeve(Simulation):
     # Magic methods
     def __init__(
         self,
-        n_functions: List[Union[Tuple[int], int]] = 5,
-        basis_name: Optional[List[Union[Tuple[str], str]]] = "fourier",
-        argvals: Optional[List[DenseArgvals]] = None,
-        basis: Optional[Union[Basis, Sequence[Basis]]] = None,
-        random_state: Optional[int] = None,
+        n_functions: List[Tuple[int] | int] = 5,
+        basis_name: List[Tuple[str] | str] | None = "fourier",
+        argvals: List[DenseArgvals] | None = None,
+        basis: Basis | Sequence[Basis] | None = None,
+        random_state: int | None = None,
         **kwargs_basis: Any,
     ) -> None:
         """Initialize KarhunenLoeve object."""
@@ -489,7 +491,7 @@ class KarhunenLoeve(Simulation):
         self,
         n_obs: int,
         n_clusters: int = 1,
-        argvals: Optional[npt.NDArray[np.float64]] = None,
+        argvals: npt.NDArray[np.float64] | None = None,
         **kwargs,
     ) -> None:
         """Simulate realizations from Karhunen-Loève decomposition.
@@ -499,22 +501,31 @@ class KarhunenLoeve(Simulation):
 
         Parameters
         ----------
-        n_obs: int
+        n_obs
             Number of observations to simulate.
-        n_clusters: int, default=1
+        n_clusters
             Number of clusters to generate.
-        argvals: None
+        argvals
             Not used in this context. We will use the ``argvals`` from the
             :mod:`Basis` object as ``argvals`` of the simulation. Here to be
             compliant with the class :mod:`Simulation`.
-        **kwargs:
-            centers: npt.NDArray[np.float64], shape=(n_features, n_clusters)
-                The centers of the clusters to generate. The ``n_features``
-                correspond to the number of functions within the basis.
-            cluster_std: npt.NDArray[np.float64],shape=(n_features, n_clusters)
-                The standard deviation of the clusters to generate. The
-                ``n_features`` correspond to the number of functions within the
-                basis.
+        kwargs
+            See below
+
+        Keyword Arguments
+        -----------------
+        centers: npt.NDArray[np.float64], shape=(n_features, n_clusters)
+            The centers of the clusters to generate. The ``n_features``
+            correspond to the number of functions within the basis.
+        cluster_std: npt.NDArray[np.float64],shape=(n_features, n_clusters)
+            The standard deviation of the clusters to generate. The
+            ``n_features`` correspond to the number of functions within the
+            basis.
+
+        Returns
+        -------
+        None
+            Create the class attributes `data`.
 
         """
         if self.random_state is None:
