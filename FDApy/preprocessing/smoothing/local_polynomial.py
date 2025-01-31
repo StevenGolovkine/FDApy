@@ -11,7 +11,7 @@ from __future__ import annotations
 import numpy as np
 import numpy.typing as npt
 
-from typing import Callable, Optional, Union
+from typing import Callable
 
 from sklearn.preprocessing import PolynomialFeatures
 
@@ -30,7 +30,7 @@ def _gaussian(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64], shape = (n_samples,)
+    x
         Array at which computes the gaussian density.
 
     Returns
@@ -52,7 +52,7 @@ def _epanechnikov(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64], shape = (n_samples,)
+    x
         Array on which computes the Epanechnikov kernel.
 
     Returns
@@ -83,7 +83,7 @@ def _tri_cube(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64], shape = (n_samples,)
+    x
         Array on which computes the tri-cube kernel.
 
     Returns
@@ -114,7 +114,7 @@ def _bi_square(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64], shape = (n_samples,)
+    x
         Array on which computes the bi-square kernel.
 
     Returns
@@ -135,12 +135,12 @@ def _bi_square(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     return kernel
 
 
-def _kernel(name: np.str_) -> Callable:
+def _kernel(name: str) -> Callable:
     """Map between kernel names and functions.
 
     Parameters
     ----------
-    name: np.str_
+    name
         Name of the kernel.
 
     Returns
@@ -163,7 +163,7 @@ def _kernel(name: np.str_) -> Callable:
 
 def _compute_kernel(
     x: npt.NDArray[np.float64],
-    x0: Union[float, npt.NDArray[np.float64]],
+    x0: float | npt.NDArray[np.float64],
     bandwidth: float,
     kernel: Callable = _epanechnikov,
 ) -> npt.NDArray[np.float64]:
@@ -177,15 +177,15 @@ def _compute_kernel(
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64], shape = (n_samples, n_dim)
+    x
         Training data.
-    x0: Union[float, npt.NDArray[np.float64]], shape = (n_dim,)
+    x0
         Query point. For one-dimensional smoothing, `x0` must be passed as a
         `float`. For higher-dimensional smoothing, `x0` must be passed as
         a `npt.NDArray[np.float64]]`.
-    bandwidth: float
+    bandwidth
         Width of the neighborhood of `x0`.
-    kernel: Callable, default=_epanechnikov
+    kernel
         Kernel function to used.
 
     Returns
@@ -225,24 +225,24 @@ def _local_regression(
 
     Parameters
     ----------
-    y: npt.NDArray[np.float64], shape = (n_samples,)
+    y
         Target values.
-    x: npt.NDArray[np.float64], shape = (n_samples, n_dim)
+    x
         Training data.
-    x0: Union[float, npt.NDArray[np.float64]], shape = (n_dim,)
+    x0
         Query point. For one-dimensional smoothing, `x0` must be passed as a
         `float`. For higher-dimensional smoothing, `x0` must be passed as
         a `npt.NDArray[np.float64]]`.
-    dmat: npt.NDArray[np.float64], shape = (n_sample, n_features)
+    dmat
         Design matrix for the training data `x`. The dimension `n_features` is
         related to the degree of the fitted polynomials. It includes intercept
         and interaction in the case of multidimensional inputs.
-    dmat_x0: npt.NDArray[np.float64], shape = (n_dim, n_features)
+    dmat_x0
         Design matrix for the query points `x_0`. The dimension `n_features`
         must be the same as the design matrix of `x`.
-    bandwidth: float
+    bandwidth
         Width of the neighborhood of `x0`.
-    kernel: Callable, default=_epanechnikov
+    kernel
         Kernel function to used.
 
     Returns
@@ -295,17 +295,17 @@ class LocalPolynomial:
 
     Parameters
     ----------
-    kernel_name: str, default="epanechnikov"
+    kernel_name
         Kernel name used as weight (`gaussian`, `epanechnikov`, `tricube`,
         `bisquare`).
-    bandwidth: float, default=0.05
+    bandwidth
         Strictly positive. Control the size of the associated neighborhood.
-    degree: int, default=1
+    degree
         Degree of the local polynomial to fit. If ``degree = 0``, we fit the
         local constant estimator (equivalent to the Nadaraya-Watson estimator).
         If ``degree = 1``, we fit the local linear estimator. If
         ``degree = 2``, we fit the local quadratic estimator.
-    robust: bool, default=False
+    robust
         Whether to apply the robustification procedure from [1]_, page 831.
 
     Attributes
@@ -405,17 +405,17 @@ class LocalPolynomial:
         self,
         y: npt.NDArray[np.float64],
         x: npt.NDArray[np.float64],
-        x_new: Optional[npt.NDArray[np.float64]] = None,
+        x_new: npt.NDArray[np.float64] | None = None,
     ) -> npt.NDArray[np.float64]:
         """Predict using local polynomial regression.
 
         Parameters
         ----------
-        y: npt.NDArray[np.float64], shape = (n_samples,)
+        y
             Target values.
-        x: npt.NDArray[np.float64], shape = (n_samples, n_dim)
+        x
             Training data.
-        x_new: Optional[npt.NDArray[np.float64]], default=None
+        x_new
             Query points at which estimates the function. If ``None``, the
             (unique) training data are used as query points. The shape of the
             array must be (n_points, n_dim).

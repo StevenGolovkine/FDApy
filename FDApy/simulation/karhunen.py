@@ -9,7 +9,7 @@ Karhunen-Loève decomposition
 import numpy as np
 import numpy.typing as npt
 
-from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, List, Sequence, Tuple
 
 from ..representation.argvals import DenseArgvals
 from ..representation.functional_data import (

@@ -18,7 +18,7 @@ from ...misc.basis import _basis_bsplines
 ########################################################################################
 # Utils
 def _row_tensor(
-    x: npt.NDArray[np.float64], y: Optional[npt.NDArray[np.float64]] = None
+    x: npt.NDArray[np.float64], y: npt.NDArray[np.float64] | None = None
 ) -> npt.NDArray[np.float64]:
     """
     Compute the row-wise tensor product of two 2D arrays.
@@ -30,9 +30,9 @@ def _row_tensor(
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64]
+    x
         A 2D array of shape `(m, n)`.
-    y: Optional[npt.NDArray[np.float64]], optional
+    y
         A 2D array of shape `(m, q)`. If not provided, it defaults to `x`.
 
     Returns
@@ -87,9 +87,9 @@ def _h_transform(
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64]
+    x
         A 2D array of shape `(n, m)`.
-    y: npt.NDArray[np.float64]
+    y
         A nD array of shape `(m, n1, n2, ..., nk)`.
 
     Returns
@@ -135,7 +135,7 @@ def _rotate(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64]
+    x
         A multi-dimensional array of shape `(n1, n2, ..., nk)`.
 
     Returns
@@ -179,9 +179,9 @@ def _rotated_h_transform(
 
     Parameters
     ----------
-    x: npt.NDArray[np.float64]
+    x
         A 2D array of shape `(n, m)`.
-    y: npt.NDArray[np.float64]
+    y
         A nD array of shape `(m, n1, n2, ..., nk)`.
 
     Notes
@@ -223,9 +223,9 @@ def _create_permutation(p: int, k: int) -> npt.NDArray[np.float64]:
 
     Parameters
     ----------
-    p: int
+    p
         The number of factors.
-    k: int
+    k
         The number of levels.
 
     Returns
@@ -266,7 +266,7 @@ def _tensor_product_penalties(
 
     Parameters
     ----------
-    penalties: list[npt.NDArray[np.float64]]
+    penalties
         A list of penalty matrices.
 
     Returns
@@ -343,9 +343,9 @@ def _format_data(
 
     Parameters
     ----------
-    X: npt.NDArray[np.float_], shape=(n_obs, n_dimension)
+    X
         An array containing the predictor variable values.
-    y: npt.NDArray[np.float_], shape=(n_obs,)
+    y
         An array containing the response variable values.
 
     """
@@ -369,7 +369,7 @@ def _format_data(
 def _fit_one_dimensional(
     data: npt.NDArray[np.float64],
     basis: npt.NDArray[np.float64],
-    sample_weights: Optional[npt.NDArray[np.float64]] = None,
+    sample_weights: npt.NDArray[np.float64] | None = None,
     penalty: float = 1.0,
     order_penalty: int = 2,
 ) -> Dict[str, npt.NDArray[np.float64]]:
@@ -382,17 +382,17 @@ def _fit_one_dimensional(
 
     Parameters
     ----------
-    data: npt.NDArray[np.float64]
+    data
         A one-dimensional array of shape `(n_obs,)` containing the response variable
         values.
-    basis: npt.NDArray[np.float64]
+    basis
         A two-dimensional array of shape `(n_basis, n_obs)` containing the basis matrix.
-    sample_weights: Optional[npt.NDArray[np.float64]], default=None
+    sample_weights
         A one-dimensional array of shape `(n_obs,)` containing the weights for each
         observation. If not provided, all observations are assumed to have equal weight.
-    penalty: float, default=1.0
+    penalty
         The penalty parameter for the P-splines model.
-    order_penalty: int, default=2
+    order_penalty
         The order of the penalty difference matrix.
 
     Returns
@@ -458,8 +458,8 @@ def _fit_one_dimensional(
 def _fit_n_dimensional(
     data: npt.NDArray[np.float64],
     basis_list: List[npt.NDArray[np.float64]],
-    sample_weights: Optional[npt.NDArray[np.float64]] = None,
-    penalties: Optional[tuple[float, ...]] = None,
+    sample_weights: npt.NDArray[np.float64] | None = None,
+    penalties: tuple[float, ...] | None = None,
     order_penalty: int = 2,
 ) -> Dict[str, npt.NDArray[np.float64]]:
     """
@@ -471,19 +471,19 @@ def _fit_n_dimensional(
 
     Parameters
     ----------
-    data: npt.NDArray[np.float64]
+    data
         An nD array of shape `(n1, n2, ..., nk)` containing the response variable
         values.
-    basis_list: List[npt.NDArray[np.float64]]
+    basis_list
         A list of two-dimensional arrays of shape `(m1, n1), (m2, n2), ..., (mk, nk)`
         containing the basis matrices for each dimension.
-    sample_weights: Optional[npt.NDArray[np.float64]], default=None
+    sample_weights
         An nD array of shape `(n1, n2, ..., nk)` containing the weights for each
         observation. If not provided, all observations are assumed to have equal weight.
-    penalties: Optional[tuple[float, ...]], default=None
+    penalties
         A tuple of penalty parameters for each dimension. If not provided, the penalty
         is assumed to be the same for each dimension and equal to 1.
-    order_penalty: int, default=2
+    order_penalty
         The order of the penalty difference matrix.
 
     Returns
@@ -600,13 +600,13 @@ class PSplines:
 
     Parameters
     ----------
-    n_segments: Union[int, npt.NDArray[np.int64]], default=10
+    n_segments
         The number of evenly spaced segments.
-    degree: Union[int, npt.NDArray[np.int64]], default=3
+    degree
         The number of the degree of the basis.
-    order_penalty: int, default=2
+    order_penalty
         The number of the order of the difference penalty.
-    order_derivative: int, default=0
+    order_derivative
         The order of the derivative to compute.
 
     Attributes
@@ -633,12 +633,12 @@ class PSplines:
 
     def __init__(
         self,
-        n_segments: Union[int, npt.NDArray[np.int64]] = 10,
-        degree: Union[int, npt.NDArray[np.int64]] = 3,
+        n_segments: int | npt.NDArray[np.int64] = 10,
+        degree: int | npt.NDArray[np.int64] = 3,
         order_penalty: int = 2,
         order_derivative: int = 0,
     ) -> None:
-        """Initializa PSplines object."""
+        """Initialize PSplines object."""
         self._n_segments = n_segments
         self._degree = degree
         self._order_penalty = order_penalty
@@ -687,9 +687,9 @@ class PSplines:
     def fit(
         self,
         y: npt.NDArray[np.float64],
-        x: Union[List[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
-        sample_weights: npt.NDArray[np.float64] = None,
-        penalty: Optional[tuple[float, ...]] = None,
+        x: List[npt.NDArray[np.float64]] | npt.NDArray[np.float64],
+        sample_weights: npt.NDArray[np.float64] | None = None,
+        penalty: tuple[float, ...] | None = None,
         **kwargs,
     ) -> None:
         """Fit a P-splines model to the given data.
@@ -699,26 +699,22 @@ class PSplines:
 
         Parameters
         ----------
-        y: npt.NDArray[np.float64]
+        y
             An nD array of shape `(n1, n2, ..., nk)` containing the response variable
             values.
-        x: Union[List[npt.NDArray[np.float64]], npt.NDArray[np.float64]]
+        x
             A 1D or a list of 1D arrays of shape `(n1,), (n2,), ..., (nk,)` containing
             the predictor variable values.
-        sample_weights: npt.NDArray[np.float64], default=None
+        sample_weights
             An N-dimensional array of shape `(n1, n2, ..., nk)` containing the weights
             for each observation. If not provided, all observations are assumed to have
             equal weight.
-        penalty : Optional[tuple[float, ...]], optional
+        penalty
             A tuple of penalty parameters for each dimension.
 
         Returns
         -------
         self
-
-        Notes
-        -----
-        The implementation of adapted from [2]_. See [1]_ for more details.
 
         Examples
         --------
@@ -782,7 +778,7 @@ class PSplines:
         self.diagnostics = {"hat_matrix": res["hat_matrix"]}
         return self
 
-    def predict(self, x: Optional[npt.NDArray[np.float64]] = None, **kwargs) -> None:
+    def predict(self, x: npt.NDArray[np.float64] | None = None, **kwargs) -> None:
         """Predict the response variable values for the given predictor variable values.
 
         The method predicts the response variable values for the given predictor
@@ -791,7 +787,7 @@ class PSplines:
 
         Parameters
         ----------
-        x: Optional[npt.NDArray[np.float64]], default=None
+        x
             A 1D or a list of one-dimensional arrays of shape `(n1,), (n2,), ..., (nk,)`
             containing the predictor variable values. If not provided, the method
             returns the fitted values.
@@ -801,10 +797,6 @@ class PSplines:
         npt.NDArray[np.float64]
             An nD array of shape `(n1, n2, ..., nk)` containing the predicted response
             variable values.
-
-        Notes
-        -----
-        The implementation of adapted from [2]_. See [1]_ for more details.
 
         Examples
         --------
