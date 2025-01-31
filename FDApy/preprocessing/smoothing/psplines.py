@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 
 
-from typing import Dict, Optional, List, Union
+from typing import Dict, List, Union
 
 from ...misc.basis import _basis_bsplines
 

@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import warnings
 
-from typing import Dict, Optional, Union
+from typing import Dict
 
 from ...representation.argvals import DenseArgvals
 from ...representation.values import DenseValues
@@ -34,7 +34,7 @@ from ...misc.utils import (
 def _fit_covariance(
     data: FunctionalData,
     points: DenseArgvals,
-    n_components: Union[int, float] = 1,
+    n_components: int | float = 1,
     method_smoothing: str = "LP",
     **kwargs,
 ) -> Dict[str, object]:
@@ -45,19 +45,18 @@ def _fit_covariance(
 
     Parameters
     ----------
-    data: FunctionalData
+    data
         Training data.
-    points: DenseArgvals
+    points
         The sampling points at which the covariance and the eigenfunctions
         will be estimated.
-    n_components: Union[int, float], default=1
+    n_components
         Number of components to be estimated.
-    method_smoothing: str, default='LP'
+    method_smoothing
         Method to smooth the covariance function.
-    **kwargs
-        Other keyword arguments are passed to the following function:
-
-        - :meth:`FunctionalData.covariance`.
+    kwargs
+        Other keyword arguments are passed to the function
+        :meth:`FunctionalData.covariance`.
 
     Returns
     -------
@@ -98,9 +97,9 @@ def _fit_covariance(
 def _fit_inner_product(
     data: FunctionalData,
     points: DenseArgvals,
-    n_components: Union[int, float] = 1,
+    n_components: int | float = 1,
     method_smoothing: str = "LP",
-    noise_variance: Optional[float] = None,
+    noise_variance: float | None = None,
     **kwargs,
 ) -> Dict[str, object]:
     """Univariate Functional PCA using inner-product matrix decomposition.
@@ -110,22 +109,21 @@ def _fit_inner_product(
 
     Parameters
     ----------
-    data: FunctionalData
+    data
         Training data used to estimate the eigencomponents.
-    points: DenseArgvals
+    points
         The sampling points at which the covariance and the eigenfunctions
         will be estimated.
-    n_components: Union[int, float], default=1
+    n_components
         Number of components to be estimated.
-    method_smoothing: str, default='LP'
+    method_smoothing
         Method to smooth the covariance function.
-    noise_variance: Optional[float], default=None
+    noise_variance
         An estimation of the variance of the noise. If `None`, an estimation is computed
         using the method :meth:`FunctionalData.noise_variance`.
     **kwargs
-        Other keyword arguments are passed to the following function:
-
-        - :meth:`FunctionalData.inner_product`.
+        Other keyword arguments are passed to the function
+        :meth:`FunctionalData.inner_product`.
 
     Returns
     -------
@@ -171,11 +169,11 @@ def _transform_numerical_integration_dense(
 
     Parameters
     ----------
-    data: DenseFunctionalData
+    data
         Data.
-    eigenfunctions: DenseFunctionalData
+    eigenfunctions
         Estimate of the eigenfunctions.
-    method: str, {'trapz', 'simpson'}, default='trapz'
+    method
         Method used to perform numerical integration.
 
     Returns
@@ -204,11 +202,11 @@ def _transform_numerical_integration_irregular(
 
     Parameters
     ----------
-    data: IrregularFunctionalData
+    data
         Data.
-    eigenfunctions: DenseFunctionalData
+    eigenfunctions
         Estimate of the eigenfunctions.
-    method: str, {'trapz', 'simpson'}, default='trapz'
+    method
         Method used to perform numerical integration.
 
     Returns
@@ -247,15 +245,15 @@ def _transform_pace_dense(
 
     Parameters
     ----------
-    data: DenseFunctionalData
+    data
         Data.
-    eigenfunctions: DenseFunctionalData
+    eigenfunctions
         Estimate of the eigenfunctions.
-    eigenvalues: npt.NDArray[np.float64]
+    eigenvalues
         Estimate of the eigenvalues
-    covariance: DenseFunctionalData
+    covariance
         Estimate of the covariance
-    noise_variance: float
+    noise_variance
         Estimate of the noise_variance
 
     Returns
@@ -283,15 +281,15 @@ def _transform_pace_irregular(
 
     Parameters
     ----------
-    data: DenseFunctionalData
+    data
         Data.
-    eigenfunctions: DenseFunctionalData
+    eigenfunctions
         Estimate of the eigenfunctions.
-    eigenvalues: npt.NDArray[np.float64]
+    eigenvalues
         Estimate of the eigenvalues
-    covariance: DenseFunctionalData
+    covariance
         Estimate of the covariance
-    noise_variance: float
+    noise_variance
         Estimate of the noise_variance
 
     Returns
@@ -344,11 +342,11 @@ def _transform_innpro(
 
     Parameters
     ----------
-    data: DenseFunctionalData
+    data
         Data.
-    eigenvectors: npt.NDArray[np.float64]
+    eigenvectors
         Estimate of the eigenvectors of the inner-product matrix.
-    eigenvalues: npt.NDArray[np.float64]
+    eigenvalues
         Estimate of the eigenvalues.
 
     Returns
@@ -375,20 +373,20 @@ class UFPCA:
 
     Parameters
     ----------
-    method: str, {'covariance', 'inner-product'}, default='covariance'
+    method
         Method used to estimate the eigencomponents. If
         ``method == 'covariance'``, the estimation is based on an
         eigendecomposition of the covariance operator. If
         ``method == 'inner-product'``, the estimation is based on an
         eigendecomposition of the inner-product matrix.
-    n_components: Optional[Union[int, float]], default=None
+    n_components
         Number of components to keep. If `n_components` is `None`, all
         components are kept, ``n_components == min(n_samples, n_features)``.
         If `n_components` is an integer, `n_components` are kept. If
         `0 < n_components < 1`, select the number of components such that the
         amount of variance that needs to be explained is greater than the
         percentage specified by `n_components`.
-    normalize: bool, default=False
+    normalize
         Perform a normalization of the data.
 
     Attributes
@@ -418,7 +416,7 @@ class UFPCA:
     def __init__(
         self,
         method: str = "covariance",
-        n_components: Optional[Union[int, float]] = None,
+        n_components: int | float | None = None,
         normalize: bool = False,
     ) -> None:
         """Initaliaze UFPCA object."""
@@ -477,7 +475,7 @@ class UFPCA:
     def fit(
         self,
         data: FunctionalData,
-        points: Optional[DenseArgvals] = None,
+        points: DenseArgvals | None = None,
         method_smoothing: str = None,
         kwargs_mean: Dict[str, object] = {},
         kwargs_covariance: Dict[str, object] = {},
@@ -490,21 +488,21 @@ class UFPCA:
 
         Parameters
         ----------
-        data: FunctionalData
+        data
             Training data used to estimate the eigencomponents.
-        points: DenseArgvals
+        points
             The sampling points at which the covariance and the eigenfunctions
             will be estimated.
-        method_smoothing: str, default=None
+        method_smoothing
             Should the mean and covariance be smoothed?
-        kwargs_mean: Dict[str, object], default={}
+        kwargs_mean
             Keywords arguments to be passed to the function :meth:`FunctionalData.mean`.
-        kwargs_covariance: Dict[str, object], default={}
+        kwargs_covariance
             Keywords arguments to be passed to the function
-            :meth:`preprocessing.fpca._fit_covariance`.
-        kwargs_innpro: Dict[str, object], default={}
+            :meth:`preprocessing.ufpca._fit_covariance`.
+        kwargs_innpro
             Keywords arguments to be passed to the function
-            :meth:`preprocessing.fpca._fit_inner_product`.
+            :meth:`preprocessing.ufpca._fit_inner_product`.
 
         """
         if self.method == "covariance" and data.n_dimension > 1:
@@ -595,7 +593,7 @@ class UFPCA:
 
     def transform(
         self,
-        data: Optional[DenseFunctionalData] = None,
+        data: DenseFunctionalData | None = None,
         method: str = "NumInt",
         method_smoothing: str = "LP",
         **kwargs,
@@ -624,10 +622,10 @@ class UFPCA:
 
         Parameters
         ----------
-        data: Optional[DenseFunctionalData], default=None
+        data
             The data to be transformed. If `None`, the data are the same than
             for the `fit` method.
-        method: str, {'NumInt', 'PACE', 'InnPro'}, default='NumInt'
+        method
             Method used to estimate the scores. If ``method == 'NumInt'``,
             numerical integration method is performed. If
             ``method == 'PACE'``, the PACE algorithm [1]_ is used. If
@@ -635,15 +633,19 @@ class UFPCA:
             inner product matrix of the data (can only be used if the
             eigencomponents have been estimated using the inner-product
             matrix.)
-        method_smoothing: str = 'LP',
+        method_smoothing
             Should the mean and covariance be smoothed?
-        **kwargs:
-            tol: float, default=1e-4
-                Tolerance parameter to prevent overflow to inverse a matrix,
-                only used if ``method == 'PACE'``.
-            integration_method: str, {'trapz', 'simpson'}, default='trapz'
-                Method used to perform numerical integration, only used if
-                ``method == 'NumInt'``.
+        kwargs
+            See below
+
+        Keyword Arguments
+        -----------------
+        tol: float, default=1e-4
+            Tolerance parameter to prevent overflow to inverse a matrix,
+            only used if ``method == 'PACE'``.
+        integration_method: str, {'trapz', 'simpson'}, default='trapz'
+            Method used to perform numerical integration, only used if
+            ``method == 'NumInt'``.
 
         Returns
         -------
@@ -722,7 +724,7 @@ class UFPCA:
 
         Parameters
         ----------
-        scores: npt.NDArray[np.float64], shape=(n_obs, n_components)
+        scores
             New data, where `n_obs` is the number of observations and
             `n_components` is the number of components.
 

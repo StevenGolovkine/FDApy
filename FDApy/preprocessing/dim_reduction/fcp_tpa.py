@@ -32,7 +32,7 @@ def _initialize_vectors(
 
     Parameters
     ----------
-    shape: Tuple[int, int, int]
+    shape
         Shape of the dataset. It should be in the format :math:`(N, M_1, M_2)`.
 
     Returns
@@ -53,9 +53,9 @@ def _initalize_output(
 
     Parameters
     ----------
-    shape: Tuple[int, int, int]
+    shape
         Shape of the dataset. It should be in the format :math:`(N, M_1, M_2)`.
-    n_components: int
+    n_components
         Number of components to retain.
 
     Returns
@@ -77,7 +77,7 @@ def _eigendecomposition_penalty_matrices(
 
     Parameters
     ----------
-    penalty_matrices: Dict[str, npt.NDArray[np.float64]]
+    penalty_matrices
         A dictionary with entries :math:`v` and :math:`w`, containing a
         roughness penalty matrix for each direction of the image. The algorithm
         does not induce smoothness along observations.
@@ -109,22 +109,22 @@ def _gcv(
 
     Parameters
     ----------
-    alpha: float
+    alpha
         The current value of the smoothing parameter. It corresponds to
         :math:`\alpha_u` and :math:`\alpha_v` in Equations (19) and (20) in
         [3]_.
-    dimension_length: int
+    dimension_length
         The length of the dimension, for which the smoothing parameter is to
         be optimized. It corresponds to :math:`m` and :math:`n` in Equations
         (19) and (20) in [3]_.
-    vector: npt.NDArray[np.float64], shape=(dimension_length,)
+    vector
         Solutions to the least square problem. It corresponds to
         :math:`Xv / ||v||^2` and :math:`X^\top u / ||u||^2` in Equations (19)
         and (20) in [3]_.
-    smoother: float
+    smoother
         Nornalization parameter. It corresponds to :math:`S_u` and :math:`S_v`
         in Equations (19) and (20) in [3]_.
-    rayleigh: npt.NDArray[np.float64], shape=(dimension_length,)
+    rayleigh
         A vector containing the eigenvalues of the penalty matrix corresponding
         to the current image direction. It corresponds to the Rayleight
         quotients :math:`\mathcal{R}_u(u)` and :math:`\mathcal{R}_v(v)` in
@@ -175,35 +175,35 @@ def _find_optimal_alpha(
 
     Parameters
     ----------
-    alpha_range: Tuple[float, float]
+    alpha_range
         A tuple with two elements, containing the minimal and maximal
         values for the smoothing parameter that is to be optimized. It
         corresponds to minimal and maximal values of :math:`\alpha_u` and
         :math:`\alpha_v` in Equations (19) and (20) in [3]_.
-    data: npt.NDArray[np.float64], shape=(n_obs, m_1, m_2)
+    data
         The tensor containing the data of dimension
         :math:`n_{obs} \times m_1 \times m_2`. It corresponds to
         :math:`\hat{\mathcal{X}}` in Algorithm in [1]_.
-    u: npt.NDArray[np.float64], shape=(n_obs,)
+    u
         The current value of the eigenvectors :math:`u_k` (not
         normalized) of dimensions :math:`n_{obs}`. It corresponds to
         :math:`u_k` in Algorithm in [1]_.
-    v: npt.NDArray[np.float64]
+    v
         The current value of the eigenvectors :math:`v_k` (or :math:`w_k`) (not
         normalized) of dimensions :math:`m_1` (or :math:`m_2`). It corresponds
         to :math:`v_k` (or :math:`w_k`) in Algorithm in [1]_.
-    alpha: float
+    alpha
         The current value of the smoothing parameter for the other image
         direction (:math:`\alpha_w` if the optimization is performed with
         respect to the vector :math:`v_k` and :math:`\alpha_v` if the
         optimization is performed with respect to the vector :math:`w_k`),
         which is kept as fixed. It corresponds to :math:`\alpha_u` and
         :math:`\alpha_v` in Equations (19) and (20) in [3]_.
-    penalty_matrix: npt.NDArray[np.float64], shape=(m, m)
+    penalty_matrix
         A matrix of dimension :math:`m \times m`, the penalty matrix for the
         other image direction. It corresponds to :math:`\Omega_v` and
         :math:`\Omega_u` in Equations (17) and (18) in [3]_.
-    eigencomponents: Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]
+    eigencomponents
         A tuple containing the eigenvalues and eigenvectors of the penalty
         matrix for the image direction for which the optimal smoothing
         parameter is to be found. The shape of the eigenvalues array is
@@ -211,7 +211,7 @@ def _find_optimal_alpha(
         :math:`m \times m`. The eigenvalues corresponds to the Rayleight
         quotients :math:`\mathcal{R}_u(u)` and :math:`\mathcal{R}_v(v)` in
         Equations (19) and (20) in [3]_.
-    formula: str
+    formula
         The formula to be passed to the ``np.einsum`` function regarding the
         direction to optimize.
 
@@ -288,18 +288,18 @@ def _update_vector(
 
     Parameters
     ----------
-    data: npt.NDArray[np.float64], shape=(n_obs, m_1, m_2)
+    data
         Data as an array of shape :math:`(n_obs, m_1, m_2)`.
-    vectors: Tuple[npt.NDArray, npt.NDArray, npt.NDArray]
+    vectors
         Vectors. The first element of the tuple is the vector to update, the
         other two are the remaining dimensions of the tensor.
-    penalty_matrix: npt.NDArray[np.float64]
+    penalty_matrix
         A roughness penalty matrix for the direction of the image to update.
-    alpha: float
+    alpha
         The smoothing parameter for the dimension to be updated.
-    denominator: float
+    denominator
         The denominator of equations (17) and (18) in [2]_.
-    formula: str
+    formula
         The formula to be passed to the ``np.einsum`` function regarding the
         direction to optimize.
 
@@ -341,22 +341,22 @@ def _update_components(
 
     Parameters
     ----------
-    data: npt.NDArray[np.float64], shape=(n_obs, m_1, m_2)
+    data
         Data as an array of shape :math:`(n_obs, m_1, m_2)`.
-    vectors: Tuple[npt.NDArray, npt.NDArray, npt.NDArray]
+    vectors
         Vectors
-    penalty_matrices: Dict[str, npt.NDArray[np.float64]]
+    penalty_matrices
         A dictionary with entries :math:`v` and :math:`w`, containing a
         roughness penalty matrix for each direction of the image. The
         algorithm does not induce smoothness along observations.
-    alphas: Dict[str, Tuple[float, float]]
+    alphas
         A dictionary with entries :math:`v` and :math:`w`, containing the
         smoothing parameters for both dimension of the images.
-    alpha_range: Dict[str, Tuple[float, float]]
+    alpha_range
         A dictionary with entries :math:`v` and :math:`w`, containing the
         range of smoothness parameters :math:`\alpha_{v_k}, \alpha_{w_k}`
         as a tuple.
-    eigens: Dict[str, Tuple[npt.NDArray, npt.NDArray]]
+    eigens
         Eigendecomposition of the penalty matrices.
 
     Returns
@@ -484,9 +484,9 @@ class FCPTPA:
 
     Parameters
     ----------
-    n_components: int, default=5
+    n_components
         Number of components to be calculated.
-    normalize: bool, default=False
+    normalize
         Should the results be normalied?
 
     Attributes
@@ -563,29 +563,29 @@ class FCPTPA:
 
         Parameters
         ----------
-        data: DenseFunctionalData
-            Training data used to estimate the eigencoponents. The dimension of
+        data
+            Training data used to estimate the eigencomponents. The dimension of
             its value parameter is :math:`N \times M_1 \times M_2`.
-        penalty_matrices: Dict[str, npt.NDArray[np.float64]]
+        penalty_matrices
             A dictionary with entries :math:`v` and :math:`w`, containing a
             roughness penalty matrix for each direction of the image. The
             algorithm does not induce smoothness along observations.
-        alpha_range: Dict[str, Tuple[float, float]]
+        alpha_range
             A dictionary with entries :math:`v` and :math:`w`, containing the
             range of smoothness parameters :math:`\alpha_{v_k}, \alpha_{w_k}`
             as a tuple.
-        tolerance: float, default=1e-4
+        tolerance
             A numeric value, giving the tolerance for relative error values
             in the algorithm. It is automatically multiplyed by 10 after
             ``max_iter`` steps, if ``adapt_tol = True``.
-        max_iteration: int, default=15
+        max_iteration
             An integer, the maximal iteration steps. Can be doubled, if
             ``adapt_tol = True``.
-        adapt_tolerance: bool, default=True
+        adapt_tolerance
             If True, the tolerance is adapted (multiply by 10), if the
             algorithm has not converged after ``max_iter`` steps and another
             ``max_iter`` steps are allowed with the increased tolerance.
-        verbose: bool, default=False
+        verbose
             If True, computational details are given on the standard output
             during the computation. Here for debug purpose.
 
@@ -735,10 +735,10 @@ class FCPTPA:
 
         Parameters
         ----------
-        data: DenseFunctionalData
+        data
             Functional data object to be transformed. It has to be
             2-dimensional data.
-        method: str, {'NumInt', 'FCPTPA'}
+        method
             Not used. To be compliant with other methods.
 
         Returns
@@ -775,7 +775,7 @@ class FCPTPA:
 
         Parameters
         ----------
-        scores: npt.NDArray[np.float64], shape=(n_obs, n_components)
+        scores
             A set of coefficients to generate new data, where ``n_obs`` is the
             number of observations and ``n_components`` is the number of
             components.
