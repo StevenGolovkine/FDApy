@@ -245,7 +245,7 @@ class FunctionalData(ABC):
     ###########################################################################
     # Checkers
     @staticmethod
-    def _check_same_type(*fdata: Type[FunctionalData]) -> None:
+    def _check_same_type(*fdata: FunctionalData) -> None:
         """Raise an error if elements in `fdata` have different type.
 
         Raises
