@@ -369,7 +369,6 @@ class Brownian(Simulation):
             tmp = np.diff(argvals)
             if not np.all(np.isclose(tmp, tmp[0])):
                 raise ValueError("The sampling points have to be regularly spaced.")
-            
 
         values = np.zeros(shape=(n_obs, len(argvals)))
         for idx in range(n_obs):

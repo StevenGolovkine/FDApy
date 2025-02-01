@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 # Class Argvals
 class Argvals(UserDict):
     """Define the structure of Argvals.
-    
+
     Attributes
     ----------
     n_points: Tuple[int, ...] | Dict[int, Tuple[int, ...]]
@@ -452,7 +452,7 @@ class IrregularArgvals(Argvals):
         transformation to each observation:
 
         .. math::
-        
+
             X_{norm} = \frac{X - \min{X}}{\max{X} - \min{X}}.
 
         Returns

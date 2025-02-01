@@ -20,13 +20,11 @@ from ..representation.functional_data import (
 
 ###############################################################################
 # Loader for csv
-def read_csv(
-    filepath: str, **kwargs
-) -> DenseFunctionalData | IrregularFunctionalData:
+def read_csv(filepath: str, **kwargs) -> DenseFunctionalData | IrregularFunctionalData:
     """Load CSV file into functional data object.
 
     Build a DenseFunctionalData or IrregularFunctionalData object upon a CSV
-    file passed as parameter. If the CSV file does not contain any `NA` values, the 
+    file passed as parameter. If the CSV file does not contain any `NA` values, the
     data will be loaded as a DenseFunctionalData object. Otherwise, it will be loaded
     as an IrregularFunctionalData object. See the `Canadian Weather example <../../auto_examples/data_analysis/plot_canadian_weather.html>`_ and `CD4 example <../../auto_examples/data_analysis/plot_cd4.html>`_ for the formating of the CSV file.
 

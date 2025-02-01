@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 # Class Values
 class Values(ABC):
     """Define the structure of Values.
-    
+
     Attributes
     ----------
     n_obs: int

@@ -230,7 +230,7 @@ def _estimate_noise_variance_with_covariance(
 # Class FunctionalData
 class FunctionalData(ABC):
     """Define the structure of FunctionalData.
-    
+
     Attributes
     ----------
     n_obs: int
@@ -543,9 +543,7 @@ class GridFunctionalData(FunctionalData):
             raise TypeError("Object does not have the right type.")
         return (self.argvals == obj.argvals) & np.allclose(self.values, obj.values)
 
-    def __add__(
-        self, obj: Type[FunctionalData] | float | int
-    ) -> Type[FunctionalData]:
+    def __add__(self, obj: Type[FunctionalData] | float | int) -> Type[FunctionalData]:
         """Override add function."""
         if isinstance(obj, FunctionalData):
             return self._perform_computation(self, obj, np.add)
@@ -554,9 +552,7 @@ class GridFunctionalData(FunctionalData):
         else:
             raise TypeError("Operations not available for this type.")
 
-    def __sub__(
-        self, obj: Type[FunctionalData] | float | int
-    ) -> Type[FunctionalData]:
+    def __sub__(self, obj: Type[FunctionalData] | float | int) -> Type[FunctionalData]:
         """Override sub function."""
         if isinstance(obj, FunctionalData):
             return self._perform_computation(self, obj, np.subtract)
@@ -565,9 +561,7 @@ class GridFunctionalData(FunctionalData):
         else:
             raise TypeError("Operations not available for this type.")
 
-    def __mul__(
-        self, obj: Type[FunctionalData] | float | int
-    ) -> Type[FunctionalData]:
+    def __mul__(self, obj: Type[FunctionalData] | float | int) -> Type[FunctionalData]:
         """Override mul function."""
         if isinstance(obj, FunctionalData):
             return self._perform_computation(self, obj, np.multiply)
@@ -576,9 +570,7 @@ class GridFunctionalData(FunctionalData):
         else:
             raise TypeError("Operations not available for this type.")
 
-    def __rmul__(
-        self, obj: Type[FunctionalData] | float | int
-    ) -> Type[FunctionalData]:
+    def __rmul__(self, obj: Type[FunctionalData] | float | int) -> Type[FunctionalData]:
         """Override rmul function."""
         return self * obj
 
@@ -955,7 +947,7 @@ class DenseFunctionalData(GridFunctionalData):
         ----------
         fdata
             Functional data to concatenate.
-        
+
         Returns
         -------
         DenseFunctionalData
@@ -1295,7 +1287,7 @@ class DenseFunctionalData(GridFunctionalData):
             performed. If 'PS', the method is P-splines [4]_. If 'LP', the
             method is local polynomials [8]_.
         kwargs
-            Other keyword arguments are passed to the following function 
+            Other keyword arguments are passed to the following function
             :meth:`DenseFunctionalData.smooth`.
 
         Returns
@@ -3103,7 +3095,7 @@ class BasisFunctionalData(FunctionalData):
     # Methods
     def to_grid(self) -> DenseFunctionalData:
         """Convert the data to grid format.
-        
+
         Returns
         -------
         DenseFunctionalData
@@ -3116,7 +3108,7 @@ class BasisFunctionalData(FunctionalData):
 
     def to_long(self, reindex: bool = False) -> pd.DataFrame:
         """Convert the data to long format.
-        
+
         Parameters
         ----------
         reindex
@@ -3211,7 +3203,7 @@ class BasisFunctionalData(FunctionalData):
         **kwargs,
     ) -> FunctionalData:
         """Compute an estimate of the mean.
-        
+
         Parameters
         ----------
         points
@@ -3222,14 +3214,14 @@ class BasisFunctionalData(FunctionalData):
             performed. If 'PS', the method is P-splines. If 'LP', the
             method is local polynomials.
         kwargs
-            Other keyword arguments are passed to the following function 
+            Other keyword arguments are passed to the following function
             :meth:`FunctionalData.smooth`.
 
         Returns
         -------
         DenseFunctionalData
             An estimate of the mean as a DenseFunctionalData object.
-            
+
         """
         mean = np.mean(self.coefficients, axis=0)[np.newaxis]
         return BasisFunctionalData(self.basis, mean)
@@ -3241,7 +3233,7 @@ class BasisFunctionalData(FunctionalData):
         **kwargs,
     ) -> BasisFunctionalData:
         """Center the data.
-        
+
         Parameters
         ----------
         mean
@@ -3267,7 +3259,7 @@ class BasisFunctionalData(FunctionalData):
         use_argvals_stand: bool = False,
     ) -> npt.NDArray[np.float64]:
         """Norm of each observation of the data.
-        
+
         Parameters
         ----------
         squared
@@ -3282,7 +3274,7 @@ class BasisFunctionalData(FunctionalData):
         -------
         npt.NDArray[np.float64], shape=(n_obs,)
             The norm of each observations.
-            
+
         """
         inner_product = self.inner_product(method_integration=method_integration)
         norm_obs = np.diag(inner_product)
@@ -3293,7 +3285,7 @@ class BasisFunctionalData(FunctionalData):
 
     def normalize(self, **kwargs) -> BasisFunctionalData:
         """Normalize the data.
-        
+
         Parameters
         ----------
         kwargs
@@ -3304,14 +3296,14 @@ class BasisFunctionalData(FunctionalData):
         -------
         BasisFunctionalData
             The normalized data.
-            
+
         """
         norm = np.moveaxis(self.coefficients, 0, -1) / self.norm(**kwargs)
         return BasisFunctionalData(self.basis, np.moveaxis(norm, -1, 0))
 
     def standardize(self, center: bool = True, **kwargs) -> BasisFunctionalData:
         """Standardize the data.
-        
+
         Parameters
         ----------
         center
@@ -3343,7 +3335,7 @@ class BasisFunctionalData(FunctionalData):
         **kwargs,
     ) -> Tuple[BasisFunctionalData, float]:
         """Rescale the data.
-        
+
         Parameters
         ----------
         weights
@@ -3358,7 +3350,7 @@ class BasisFunctionalData(FunctionalData):
         -------
         Tuple[BasisFunctionalData, float]
             The rescaled data and the weight.
-    
+
         """
         if weights == 0.0:
             if use_argvals_stand:
@@ -3378,7 +3370,7 @@ class BasisFunctionalData(FunctionalData):
         **kwargs,
     ) -> npt.NDArray[np.float64]:
         """Compute an estimate of the inner product matrix.
-        
+
         Parameters
         ----------
         method_integration
@@ -3398,7 +3390,7 @@ class BasisFunctionalData(FunctionalData):
         -------
         npt.NDArray[np.float64], shape=(n_obs, n_obs)
             Inner product matrix of the data.
-    
+
         """
         inner_product = self.basis.inner_product(method_integration=method_integration)
         return self.coefficients @ inner_product @ self.coefficients.T
@@ -3410,7 +3402,7 @@ class BasisFunctionalData(FunctionalData):
         **kwargs,
     ) -> Type[FunctionalData]:
         """Compute an estimate of the covariance.
-        
+
         Parameters
         ----------
         points
@@ -3729,12 +3721,12 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     def to_grid(self) -> MultivariateFunctionalData:
         """Convert the data to grid.
-        
+
         Returns
         -------
         MultivariateFunctionalData
             The data in grid format.
-    
+
         """
         data_list = []
         for data in self.data:
@@ -4187,7 +4179,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         center
             Should the data be centered?
         kwargs
-            Other keyword arguments are passed to the following function :meth:`MultivariateFunctionalData.center`, 
+            Other keyword arguments are passed to the following function :meth:`MultivariateFunctionalData.center`,
             :meth:`DenseFunctionalData.standardize` and
             :meth:`IrregularFunctionalData.stansardize`.
 
@@ -4314,7 +4306,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             estimation is computed using the methodology in [4]_.
         kwargs
             Other keyword arguments are passed to the following function
-            :meth:`DenseFunctionalData.inner_product()` and 
+            :meth:`DenseFunctionalData.inner_product()` and
             :meth:`IrregularFunctionalData.inner_product()`.
 
         Returns
@@ -4376,7 +4368,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             Should the mean be smoothed?
         kwargs
             Other keyword arguments are passed to the following function
-            :meth:`DenseFunctionalData.covariance()` and 
+            :meth:`DenseFunctionalData.covariance()` and
             :meth:`IrregularFunctionalData.covariance()`.
 
         Returns

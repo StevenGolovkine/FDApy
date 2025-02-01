@@ -493,7 +493,7 @@ class MFPCA:
         method_smoothing
             Should the mean and covariance be smoothed?
         kwargs
-            Other keyword arguments are passed to the functions: 
+            Other keyword arguments are passed to the functions:
             :meth:`FunctionalData.mean`, :meth:`FunctionalData.center` and
             :meth:`preprocessing.dim_reduction.mfpca._fit_inner_product_multivariate`.
 

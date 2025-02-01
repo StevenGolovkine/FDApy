@@ -15,7 +15,7 @@ import numpy.typing as npt
 from functools import reduce
 from scipy.integrate import simpson
 
-from typing import Optional, List, Tuple, Union
+from typing import List, Tuple
 
 from .functional_data import DenseFunctionalData, MultivariateFunctionalData
 
@@ -40,20 +40,19 @@ def _simulate_basis(
 
     Parameters
     ----------
-    name: str, {'legendre', 'wiener', 'fourier', 'bsplines'}
+    name
         Name of the basis to use.
-    argvals: npt.NDArray[np.float64]
+    argvals
         The values on which the basis functions are evaluated.
-    n_functions: int, default=5
+    n_functions
         Number of functions to compute.
-    is_normalized: bool
+    is_normalized
         Should we normalize the functions?
-    add_intercept: bool, default=True
+    add_intercept
         Should the constant functions be into the basis?
     kwargs
-        Other keyword arguments are passed to the function:
-
-        - :meth:`misc.basis._basis_bsplines`.
+        Other keyword arguments are passed to the function
+        :meth:`misc.basis._basis_bsplines`.
 
     Returns
     -------
@@ -107,25 +106,35 @@ class Basis(DenseFunctionalData):
 
     Parameters
     ----------
-    name: Union[Tuple[str], str], {'given', 'legendre', 'wiener', 'fourier', 'bsplines'}
+    name
         Denotes the basis of functions to use. The default is `bsplines`. If
         `name=given`, it uses a user defined basis (defined with the `argvals` and
         `values` parameters). For higher dimensional data, `name` is a tuple for the
         marginal basis.
-    n_functions: Union[Tuple[int], int], default=5
+    n_functions
         Number of functions in the basis.
-    argvals: Optional[DenseArgvals]
+    argvals
         The sampling points of the functional data.
-    values: Optional[DenseValues]
+    values
         The values of the functional data. Only used if `name='given'`.
-    is_normalized: bool, default=False
+    is_normalized
         Should we normalize the basis function?
-    add_intercept: bool, default=True
+    add_intercept
         Should the constant functions be into the basis?
     kwargs
-        Other keyword arguments are passed to the function:
+        Other keyword arguments are passed to the function
+        :meth:`representation.basis._simulate_basis`.
 
-        - :meth:`representation.basis._simulate_basis`.
+    Attributes
+    ----------
+    argvals_stand: DenseArgvals
+        Standardized sampling points of the functional data.
+    n_obs: int
+        Number of observations of the functional data.
+    n_dimension: int
+        Number of input dimension of the functional data.
+    n_points: Tuple[int, ...]
+        Number of sampling points.
 
     References
     ----------
@@ -156,10 +165,10 @@ class Basis(DenseFunctionalData):
     # Magic methods
     def __init__(
         self,
-        name: Union[Tuple[str], str] = "bsplines",
-        n_functions: Union[Tuple[int], int] = 5,
-        argvals: Optional[DenseArgvals] = None,
-        values: Optional[DenseValues] = None,
+        name: Tuple[str] | str = "bsplines",
+        n_functions: Tuple[int] | int = 5,
+        argvals: DenseArgvals | None = None,
+        values: DenseValues | None = None,
         is_normalized: bool = False,
         add_intercept: bool = True,
         **kwargs,
@@ -207,7 +216,7 @@ class Basis(DenseFunctionalData):
         return self._name
 
     @name.setter
-    def name(self, new_name: Union[Tuple[str], str]) -> None:
+    def name(self, new_name: Tuple[str] | str) -> None:
         if isinstance(new_name, str):
             new_name = (new_name,)
         self._name = new_name
@@ -218,7 +227,7 @@ class Basis(DenseFunctionalData):
         return self._n_functions
 
     @n_functions.setter
-    def n_functions(self, new_n_functions: Union[Tuple[int], int]) -> None:
+    def n_functions(self, new_n_functions: Tuple[int] | int) -> None:
         if isinstance(new_n_functions, int):
             new_n_functions = (new_n_functions,)
         self._n_functions = new_n_functions
@@ -246,8 +255,8 @@ class Basis(DenseFunctionalData):
     def inner_product(
         self,
         method_integration: str = "trapz",
-        method_smoothing: Optional[str] = None,
-        noise_variance: Optional[float] = None,
+        method_smoothing: str | None = None,
+        noise_variance: float | None = None,
         **kwargs,
     ) -> npt.NDArray[np.float64]:
         # Get parameters
@@ -288,21 +297,31 @@ class MultivariateBasis(MultivariateFunctionalData):
 
     Parameters
     ----------
-    name: List[Union[Tuple[str], str]]
+    name
         Name of the basis to use. One of
         `{'legendre', 'wiener', 'fourier', 'bsplines'}`.
-    n_functions: List[Union[Tuple[int], int]]
+    n_functions
         Number of functions in the basis.
-    argvals: Optional[List[DenseArgvals]]
+    argvals
         The sampling points of the functional data.
-    values: Optional[List[DenseValues]]
+    values
         The values of the functional data. Only used if `name='given'`.
-    is_normalized: bool, default=False
+    is_normalized
         Should we normalize the basis function?
     kwargs
-        Other keywords arguments are passed to the function:
+        Other keywords arguments are passed to the function
+        :meth:`representation.basis.Basis`.
 
-        - :meth:`representation.basis.Basis`.
+    Attributes
+    ----------
+    n_obs: int
+        Number of observations of the functional data.
+    n_functional: int
+        Number of components of the multivariate functional data.
+    n_dimension: List[int]
+        Number of input dimension of the functional data.
+    n_points: List[Dict[str, int]]
+        Number of sampling points.
 
     References
     ----------
@@ -331,15 +350,15 @@ class MultivariateBasis(MultivariateFunctionalData):
     # Magic methods
     def __init__(
         self,
-        name: List[Union[Tuple[str], str]] = ["fourier", "legendre"],
-        n_functions: List[Union[Tuple[int], int]] = [5, 5],
-        argvals: Optional[List[DenseArgvals]] = None,
-        values: Optional[List[DenseValues]] = None,
+        name: List[Tuple[str] | str] = ["fourier", "legendre"],
+        n_functions: List[Tuple[int] | int] = [5, 5],
+        argvals: List[DenseArgvals] | None = None,
+        values: List[DenseValues] | None = None,
         is_normalized: bool = False,
         add_intercept: bool = True,
         **kwargs,
     ) -> None:
-        """Initialize Basis object."""
+        """Initialize MultivariateBasis object."""
         self.name = name
         self.n_functions = n_functions
         self.is_normalized = is_normalized
@@ -380,21 +399,21 @@ class MultivariateBasis(MultivariateFunctionalData):
     ###########################################################################
     # Properties
     @property
-    def name(self) -> Union[str, List[str]]:
+    def name(self) -> str | List[str]:
         """Getter for name."""
         return self._name
 
     @name.setter
-    def name(self, new_name: Union[str, List[str]]) -> None:
+    def name(self, new_name: str | List[str]) -> None:
         self._name = new_name
 
     @property
-    def n_functions(self) -> List[Union[Tuple[int]]]:
+    def n_functions(self) -> List[Tuple[int]]:
         """Getter for n_functions."""
         return self._n_functions
 
     @n_functions.setter
-    def n_functions(self, new_n_functions: List[Union[Tuple[int], int]]) -> None:
+    def n_functions(self, new_n_functions: List[Tuple[int] | int]) -> None:
         temp = []
         for n_function in new_n_functions:
             if isinstance(n_function, int):
