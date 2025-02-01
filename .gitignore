@@ -44,6 +44,7 @@ docs/_build/*
 docs/_static/*
 docs/auto_examples/*
 docs/backreferences/*
+docs/modules/autosummary/*
 
 # Test files
 .junit/*
