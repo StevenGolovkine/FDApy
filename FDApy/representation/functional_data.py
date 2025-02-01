@@ -23,11 +23,9 @@ from typing import (
     Callable,
     Dict,
     Iterable,
-    Optional,
     List,
     Tuple,
     Type,
-    Union,
     TYPE_CHECKING,
 )
 
@@ -491,6 +489,17 @@ class GridFunctionalData(FunctionalData):
     values: Type[Values]
         Values of the functional data.
 
+    Attributes
+    ----------
+    argvals_stand: Type[Argvals]
+        Standardized sampling points of the functional data.
+    n_obs: int
+        Number of observations of the functional data.
+    n_dimension: int
+        Number of input dimension of the functional data.
+    n_points: Tuple[int, ...] | Dict[int, Tuple[int, ...]]
+        Number of sampling points.
+
     """
 
     ###########################################################################
@@ -501,7 +510,7 @@ class GridFunctionalData(FunctionalData):
 
         Parameters
         ----------
-        *fdata: FunctionalData
+        fdata
             Functional data to compare.
 
         Raises
@@ -535,7 +544,7 @@ class GridFunctionalData(FunctionalData):
         return (self.argvals == obj.argvals) & np.allclose(self.values, obj.values)
 
     def __add__(
-        self, obj: Union[Type[FunctionalData], float, int]
+        self, obj: Type[FunctionalData] | float | int
     ) -> Type[FunctionalData]:
         """Override add function."""
         if isinstance(obj, FunctionalData):
@@ -546,7 +555,7 @@ class GridFunctionalData(FunctionalData):
             raise TypeError("Operations not available for this type.")
 
     def __sub__(
-        self, obj: Union[Type[FunctionalData], float, int]
+        self, obj: Type[FunctionalData] | float | int
     ) -> Type[FunctionalData]:
         """Override sub function."""
         if isinstance(obj, FunctionalData):
@@ -557,7 +566,7 @@ class GridFunctionalData(FunctionalData):
             raise TypeError("Operations not available for this type.")
 
     def __mul__(
-        self, obj: Union[Type[FunctionalData], float, int]
+        self, obj: Type[FunctionalData] | float | int
     ) -> Type[FunctionalData]:
         """Override mul function."""
         if isinstance(obj, FunctionalData):
@@ -568,13 +577,13 @@ class GridFunctionalData(FunctionalData):
             raise TypeError("Operations not available for this type.")
 
     def __rmul__(
-        self, obj: Union[Type[FunctionalData], float, int]
+        self, obj: Type[FunctionalData] | float | int
     ) -> Type[FunctionalData]:
         """Override rmul function."""
         return self * obj
 
     def __truediv__(
-        self, obj: Union[Type[FunctionalData], float, int]
+        self, obj: Type[FunctionalData] | float | int
     ) -> Type[FunctionalData]:
         """Override truediv function."""
         if isinstance(obj, FunctionalData):
@@ -585,7 +594,7 @@ class GridFunctionalData(FunctionalData):
             raise TypeError("Operations not available for this type.")
 
     def __floordiv__(
-        self, obj: Union[Type[FunctionalData], float, int]
+        self, obj: Type[FunctionalData] | float | int
     ) -> Type[FunctionalData]:
         """Override floordiv function."""
         if isinstance(obj, FunctionalData):
@@ -656,12 +665,12 @@ class GridFunctionalData(FunctionalData):
         return self.argvals.n_dimension
 
     @property
-    def n_points(self) -> Union[Tuple[int, ...], Dict[int, Tuple[int, ...]]]:
+    def n_points(self) -> Tuple[int, ...] | Dict[int, Tuple[int, ...]]:
         """Get the number of sampling points.
 
         Returns
         -------
-        Union[Tuple[int, ...], Dict[int, Tuple[int, ...]]]
+        Tuple[int, ...] | Dict[int, Tuple[int, ...]]
             Number of sampling points.
 
         """
@@ -673,7 +682,7 @@ class GridFunctionalData(FunctionalData):
     # Abstract methods
     @abstractmethod
     def to_basis(
-        self, points: Optional[DenseArgvals] = None, method: str = "PS", **kwargs
+        self, points: DenseArgvals | None = None, method: str = "PS", **kwargs
     ) -> BasisFunctionalData:
         """Convert the data to basis format."""
 
@@ -688,10 +697,10 @@ class GridFunctionalData(FunctionalData):
     @abstractmethod
     def smooth(
         self,
-        points: Optional[DenseArgvals] = None,
+        points: DenseArgvals | None = None,
         method: str = "PS",
-        bandwidth: Optional[float] = None,
-        penalty: Optional[float] = None,
+        bandwidth: float | None = None,
+        penalty: float | None = None,
         **kwargs,
     ) -> Type[FunctionalData]:
         """Smooth the data."""
@@ -699,7 +708,7 @@ class GridFunctionalData(FunctionalData):
     @abstractmethod
     def mean(
         self,
-        points: Optional[DenseArgvals] = None,
+        points: DenseArgvals | None = None,
         method_smoothing: str = None,
         **kwargs,
     ) -> FunctionalData:
@@ -708,8 +717,8 @@ class GridFunctionalData(FunctionalData):
     @abstractmethod
     def center(
         self,
-        mean: Optional[DenseFunctionalData] = None,
-        method_smoothing: Optional[str] = None,
+        mean: DenseFunctionalData | None = None,
+        method_smoothing: str | None = None,
         **kwargs,
     ) -> FunctionalData:
         """Center the data."""
@@ -745,8 +754,8 @@ class GridFunctionalData(FunctionalData):
     def inner_product(
         self,
         method_integration: str = "trapz",
-        method_smoothing: Optional[str] = None,
-        noise_variance: Optional[float] = None,
+        method_smoothing: str | None = None,
+        noise_variance: float | None = None,
         **kwargs,
     ) -> npt.NDArray[np.float64]:
         """Compute an estimate of the inner product matrix."""
@@ -754,8 +763,8 @@ class GridFunctionalData(FunctionalData):
     @abstractmethod
     def covariance(
         self,
-        points: Optional[DenseArgvals] = None,
-        method_smoothing: Optional[str] = None,
+        points: DenseArgvals | None = None,
+        method_smoothing: str | None = None,
         **kwargs,
     ) -> Type[FunctionalData]:
         """Compute an estimate of the covariance."""
@@ -820,6 +829,17 @@ class DenseFunctionalData(GridFunctionalData):
     values: DenseValues
         The values of the functional data. The shape of the array is
         :math:`(n, m_1, \dots, m_p)`.
+
+    Attributes
+    ----------
+    argvals_stand: DenseArgvals
+        Standardized sampling points of the functional data.
+    n_obs: int
+        Number of observations of the functional data.
+    n_dimension: int
+        Number of input dimension of the functional data.
+    n_points: Tuple[int, ...]
+        Number of sampling points.
 
     Examples
     --------
@@ -886,11 +906,11 @@ class DenseFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        fdata1: DenseFunctionalData
+        fdata1
             First functional data to consider.
-        fdata2: DenseFunctionalData
+        fdata2
             Second functional data to consider.
-        func: Callable
+        func
             The function to apply to combine `fdata1` and `fdata2`.
 
         Returns
@@ -905,22 +925,22 @@ class DenseFunctionalData(GridFunctionalData):
 
     @staticmethod
     def _perform_computation_number(
-        fdata: Type[FunctionalData], number: Union[int, float], func: Callable
-    ) -> Type[FunctionalData]:
+        fdata: DenseFunctionalData, number: int | float, func: Callable
+    ) -> DenseFunctionalData:
         """Perform computation with numbers.
 
         Parameters
         ----------
-        fdata: IrregularFunctionalData
+        fdata
             Functional data to consider.
-        number: Union[int, float]
+        number
             number to consider.
-        func: Callable
+        func
             The function to apply to combine `fdata` and `number`.
 
         Returns
         -------
-        IrregularFunctionalData
+        DenseFunctionalData
             The resulting functional data.
 
         """
@@ -931,6 +951,11 @@ class DenseFunctionalData(GridFunctionalData):
     def concatenate(*fdata: DenseFunctionalData) -> DenseFunctionalData:
         """Concatenate DenseFunctional objects.
 
+        Parameters
+        ----------
+        fdata
+            Functional data to concatenate.
+        
         Returns
         -------
         DenseFunctionalData
@@ -959,7 +984,7 @@ class DenseFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        index: int
+        index
             The observation(s) of the object to retrive.
 
         Returns
@@ -1004,9 +1029,9 @@ class DenseFunctionalData(GridFunctionalData):
     # Methods
     def to_basis(
         self,
-        points: Optional[DenseArgvals] = None,
+        points: DenseArgvals | None = None,
         method: str = "PS",
-        penalty: Optional[float] = None,
+        penalty: float | None = None,
         **kwargs,
     ) -> BasisFunctionalData:
         """Convert the data to basis format.
@@ -1016,17 +1041,16 @@ class DenseFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        points: Optional[DenseArgvals], default=None
+        points
             The argvals of the basis.
-        method: str, default='PS'
+        method
             The method to get the coefficients.
-        penalty: Optional[float], default=None
+        penalty
             Strictly positive. Penalty used in the P-splined fitting of the
             data.
-        kwargs:
+        kwargs
             Other keyword arguments are passed to the function:
-
-            - :meth:`preprocessing.smoothing.PSplines`
+            :meth:`preprocessing.smoothing.PSplines`
 
         Returns
         -------
@@ -1067,7 +1091,7 @@ class DenseFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        reindex: bool, default=False
+        reindex
             Not used here.
 
         Returns
@@ -1122,7 +1146,7 @@ class DenseFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        order: int, default=2
+        order
             Order of the difference sequence. The order has to be between
             1 and 10. See [5]_ for more information.
 
@@ -1159,10 +1183,10 @@ class DenseFunctionalData(GridFunctionalData):
 
     def smooth(
         self,
-        points: Optional[DenseArgvals] = None,
+        points: DenseArgvals | None = None,
         method: str = "PS",
-        bandwidth: Optional[float] = None,
-        penalty: Optional[float] = None,
+        bandwidth: float | None = None,
+        penalty: float | None = None,
         **kwargs,
     ) -> DenseFunctionalData:
         """Smooth the data.
@@ -1173,29 +1197,27 @@ class DenseFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        points: Optional[DenseArgvals], default=None
+        points
             Points at which the curves are estimated. The default is None,
             meaning we use the argvals as estimation points.
-        method: str, default='PS'
+        method
             The method to used for the smoothing. If 'PS', the method is
             P-splines [4]_. If 'LP', the method is local polynomials [2]_.
             Otherwise, it raises an error.
-        bandwidth: Optional[float], default=None
+        bandwidth
             Strictly positive. Control the size of the associated neighborhood.
             If ``bandwidth=None``, it is assumed that the curves are twice
             differentiable and the bandwidth is set to :math:`n^{-1/5}` [8]_
             where :math:`n` is the number of sampling points per curve. Be
             careful that it will not work if the curves are not sampled on
             :math:`[0, 1]`.
-        penalty: Optional[float], default=None
+        penalty
             Strictly positive. Penalty used in the P-splined fitting of the
             data.
         kwargs
             Other keyword arguments are passed to one of the following
-            functions:
-
-            - :meth:`preprocessing.smoothing.PSplines` (``method='PS'``),
-            - :meth:`preprocessing.smoothing.LocalPolynomial` (``method='LP'``).
+            functions :meth:`preprocessing.smoothing.PSplines` (``method='PS'``) and
+            :meth:`preprocessing.smoothing.LocalPolynomial` (``method='LP'``).
 
         Returns
         -------
@@ -1251,8 +1273,8 @@ class DenseFunctionalData(GridFunctionalData):
 
     def mean(
         self,
-        points: Optional[DenseArgvals] = None,
-        method_smoothing: Optional[str] = None,
+        points: DenseArgvals | None = None,
+        method_smoothing: str | None = None,
         **kwargs,
     ) -> DenseFunctionalData:
         """Compute an estimate of the mean.
@@ -1265,17 +1287,16 @@ class DenseFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        points: Optional[DenseArgvals], default=None
+        points
             The sampling points at which the mean is estimated. If `None`, the
             DenseArgvals of the DenseFunctionalData is used.
-        method_smoothing: Optional[str], default=None
+        method_smoothing
             The method to used for the smoothing. If 'None', no smoothing is
             performed. If 'PS', the method is P-splines [4]_. If 'LP', the
             method is local polynomials [8]_.
         kwargs
-            Other keyword arguments are passed to the following function:
-
-            - :meth:`DenseFunctionalData.smooth`.
+            Other keyword arguments are passed to the following function 
+            :meth:`DenseFunctionalData.smooth`.
 
         Returns
         -------
@@ -1310,8 +1331,8 @@ class DenseFunctionalData(GridFunctionalData):
 
     def center(
         self,
-        mean: Optional[DenseFunctionalData] = None,
-        method_smoothing: Optional[str] = None,
+        mean: DenseFunctionalData | None = None,
+        method_smoothing: str | None = None,
         **kwargs,
     ) -> DenseFunctionalData:
         r"""Center the data.
@@ -1324,18 +1345,16 @@ class DenseFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        mean: Optional[DenseFunctionalData], default=None
+        mean
             A precomputed mean as a DenseFunctionalData object.
-        method_smoothing: Optional[str], default=None
+        method_smoothing
             The method to used for the smoothing of the mean. If 'None', no
             smoothing is performed. If 'PS', the method is P-splines [4]_. If
             'LP', the method is local polynomials [2]_.
-        **kwargs
+        kwargs
             Other keyword arguments are passed to one of the following
-            functions:
-
-            - :meth:`DenseFunctionalData.mean` (``mean=None``),
-            - :meth:`DenseFunctionalData.smooth`.
+            functions: :meth:`DenseFunctionalData.mean` (``mean=None``) and
+            :meth:`DenseFunctionalData.smooth`.
 
         Returns
         -------
@@ -1380,12 +1399,12 @@ class DenseFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        squared: bool, default=`False`
+        squared
             If ``True``, the function calculates the squared norm, otherwise it
             returns the norm.
-        method_integration: str, {'simpson', 'trapz'}, default='trapz'
+        method_integration
             The method used to estimate the integral.
-        use_argvals_stand: bool, default=False
+        use_argvals_stand
             Use standardized argvals to compute the normalization of the data.
 
         Returns
@@ -1440,10 +1459,9 @@ class DenseFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        **kwargs
+        kwargs
             Other keyword arguments are passed to the following function:
-
-            - :meth:`DenseFunctionalData.norm`.
+            :meth:`DenseFunctionalData.norm`.
 
         Returns
         -------
@@ -1478,12 +1496,11 @@ class DenseFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        center: bool, default=True
+        center
             Should the data be centered?
-        **kwargs
+        kwargs
             Other keyword arguments are passed to the following function:
-
-            - :meth:`DenseFunctionalData.center`.
+            :meth:`DenseFunctionalData.center`.
 
         Returns
         -------
@@ -1529,12 +1546,12 @@ class DenseFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        weights: float, default=0.0
+        weights
             The weights used to normalize the data. If `weights = 0.0`, the
             weights are estimated by integrating the variance function [3]_.
-        method_integration: str, {'simpson', 'trapz'}, default='trapz'
+        method_integration
             The method used to estimate the integral.
-        use_argvals_stand: bool, default=False
+        use_argvals_stand
             Use standardized argvals to compute the normalization of the data.
 
         Returns
@@ -1567,8 +1584,8 @@ class DenseFunctionalData(GridFunctionalData):
     def inner_product(
         self,
         method_integration: str = "trapz",
-        method_smoothing: Optional[str] = None,
-        noise_variance: Optional[float] = None,
+        method_smoothing: str | None = None,
+        noise_variance: float | None = None,
         **kwargs,
     ) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
@@ -1584,19 +1601,18 @@ class DenseFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        method_integration: str, {'simpson', 'trapz'}, default='trapz'
+        method_integration
             The method used to integrated.
-        method_smoothing: Optional[str], default=None
+        method_smoothing
             The method to used for the smoothing of the mean. If 'None', no
             smoothing is performed. If 'PS', the method is P-splines [4]_. If
             'LP', the method is local polynomials [2]_.
-        noise_variance: Optional[float], default=None
+        noise_variance
             An estimation of the variance of the noise. If `None`, an
             estimation is computed using the methodology in [5]_.
         kwargs
             Other keyword arguments are passed to the following function:
-
-            - :meth:`DenseFunctionalData.center`.
+            :meth:`DenseFunctionalData.center`.
 
         Returns
         -------
@@ -1664,8 +1680,8 @@ class DenseFunctionalData(GridFunctionalData):
 
     def covariance(
         self,
-        points: Optional[DenseArgvals] = None,
-        method_smoothing: Optional[str] = None,
+        points: DenseArgvals | None = None,
+        method_smoothing: str | None = None,
         center: bool = True,
         kwargs_center: Dict[str, object] = {},
         **kwargs,
@@ -1678,24 +1694,23 @@ class DenseFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        points: Optional[DenseArgvals], default=None
+        points
             The sampling points at which the covariance is estimated. If
             `None`, the DenseArgvals of the DenseFunctionalData is used. If
             `smooth` is False, the DenseArgvals of the DenseFunctionalData is
             used.
-        method_smoothing: Optional[str], default=None
+        method_smoothing
             The method to used for the smoothing of the mean. If 'None', no
             smoothing is performed. If 'PS', the method is P-splines [4]_. If
             'LP', the method is local polynomials [2]_.
-        center: bool, default=True
+        center
             Should the data be centered before computing the covariance.
-        kwargs_center: Dict[str, object], default={}
+        kwargs_center
             Keyword arguments to be passed to the function
             :meth:`FunctionalData.center`.
         kwargs
             Other keyword arguments are passed to the following function:
-
-            - :meth:`functional_data._smooth_covariance`.
+            :meth:`functional_data._smooth_covariance`.
 
         Returns
         -------
@@ -1809,6 +1824,17 @@ class IrregularFunctionalData(GridFunctionalData):
         `np.ndarray` of shape :math:`(n, m_1, \dots, m_p)`. It should not
         contain any missing values.
 
+    Attributes
+    ----------
+    argvals_stand: IrregularArgvals
+        Standardized sampling points of the functional data.
+    n_obs: int
+        Number of observations of the functional data.
+    n_dimension: int
+        Number of input dimension of the functional data.
+    n_points: Dict[int, Tuple[int, ...]]
+        Number of sampling points.
+
     Examples
     --------
     For 1-dimensional irregular data:
@@ -1890,11 +1916,11 @@ class IrregularFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        fdata1: IrregularFunctionalData
+        fdata1
             First functional data to consider.
-        fdata2: IrregularFunctionalData
+        fdata2
             Second functional data to consider.
-        func: Callable
+        func
             The function to apply to combine `fdata1` and `fdata2`.
 
         Returns
@@ -1915,17 +1941,17 @@ class IrregularFunctionalData(GridFunctionalData):
 
     @staticmethod
     def _perform_computation_number(
-        fdata: Type[FunctionalData], number: Union[int, float], func: Callable
+        fdata: Type[FunctionalData], number: int | float, func: Callable
     ) -> Type[FunctionalData]:
         """Perform computation with numbers.
 
         Parameters
         ----------
-        fdata: IrregularFunctionalData
+        fdata
             Functional data to consider.
-        number: Union[int, float]
+        number
             number to consider.
-        func: Callable
+        func
             The function to apply to combine `fdata` and `number`.
 
         Returns
@@ -1940,6 +1966,11 @@ class IrregularFunctionalData(GridFunctionalData):
     @staticmethod
     def concatenate(*fdata: IrregularFunctionalData) -> IrregularFunctionalData:
         """Concatenate IrregularFunctionalData objects.
+
+        Parameters
+        ----------
+        fdata
+            Functional data to concatenate.
 
         Returns
         -------
@@ -1969,7 +2000,7 @@ class IrregularFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        index: int
+        index
             The observation(s) of the object to retrive.
 
         Returns
@@ -2021,9 +2052,9 @@ class IrregularFunctionalData(GridFunctionalData):
     # Methods
     def to_basis(
         self,
-        points: Optional[DenseArgvals] = None,
+        points: DenseArgvals | None = None,
         method: str = "PS",
-        penalty: Optional[float] = None,
+        penalty: float | None = None,
         **kwargs,
     ) -> BasisFunctionalData:
         """Convert the data to basis format.
@@ -2033,17 +2064,16 @@ class IrregularFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        points: Optional[DenseArgvals], default=None
+        points
             The argvals of the basis.
-        method: str, default='PS'
+        method
             The method to get the coefficients.
-        penalty: Optional[float], default=None
+        penalty
             Strictly positive. Penalty used in the P-splined fitting of the
             data.
-        kwargs:
+        kwargs
             Other keyword arguments are passed to the function:
-
-            - :meth:`preprocessing.smoothing.PSplines`
+            :meth:`preprocessing.smoothing.PSplines`
 
         Returns
         -------
@@ -2100,6 +2130,11 @@ class IrregularFunctionalData(GridFunctionalData):
         IrregularFunctionalData object as a dataframe. This is a helper
         function as it might be easier for some computation, e.g., smoothing of
         the mean and covariance functions to have a long format.
+
+        Parameters
+        ----------
+        reindex
+            Should the observations be reindexed?
 
         Returns
         -------
@@ -2160,7 +2195,7 @@ class IrregularFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        order: int, default=2
+        order
             Order of the difference sequence. The order has to be between
             1 and 10. See [3]_ for more information.
 
@@ -2200,10 +2235,10 @@ class IrregularFunctionalData(GridFunctionalData):
 
     def smooth(
         self,
-        points: Optional[DenseArgvals] = None,
+        points: DenseArgvals | None = None,
         method: str = "PS",
-        bandwidth: Optional[float] = None,
-        penalty: Optional[float] = None,
+        bandwidth: float | None = None,
+        penalty: float | None = None,
         **kwargs,
     ) -> DenseFunctionalData:
         """Smooth the data.
@@ -2214,29 +2249,27 @@ class IrregularFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        points: Optional[DenseArgvals], default=None
+        points
             Points at which the curves are estimated. The default is None,
             meaning we use the argvals as estimation points.
-        method: str, default='PS'
+        method
             The method to used for the smoothing. If 'PS', the method is
             P-splines [4]_. If 'LP', the method is local polynomials [2]_.
             Otherwise, it raises an error.
-        bandwidth: Optional[float], default=None
+        bandwidth
             Strictly positive. Control the size of the associated neighborhood.
             If ``bandwidth=None``, it is assumed that the curves are twice
             differentiable and the bandwidth is set to :math:`n^{-1/5}` [7]_
             where :math:`n` is the number of sampling points per curve. Be
             careful that it will not work if the curves are not sampled on
             :math:`[0, 1]`.
-        penalty: Optional[float], default=None
+        penalty
             Strictly positive. Penalty used in the P-splined fitting of the
             data.
         kwargs
             Other keyword arguments are passed to one of the following
-            functions:
-
-            - :meth:`preprocessing.smoothing.PSplines` (``method='PS'``),
-            - :meth:`preprocessing.smoothing.LocalPolynomial` (``method='LP'``).
+            functions: :meth:`preprocessing.smoothing.PSplines` (``method='PS'``) and
+            :meth:`preprocessing.smoothing.LocalPolynomial` (``method='LP'``).
 
         Returns
         -------
@@ -2328,7 +2361,7 @@ class IrregularFunctionalData(GridFunctionalData):
 
     def mean(
         self,
-        points: Optional[DenseArgvals] = None,
+        points: DenseArgvals | None = None,
         method_smoothing: str = "LP",
         approx: bool = True,
         **kwargs,
@@ -2341,18 +2374,17 @@ class IrregularFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        points: Optional[DenseArgvals], default=None
+        points
             The sampling points at which the mean is estimated. If `None`, the
             concatenation of the argvals of the IrregularFunctionalData is used.
-        method_smoothing: str, default='LP'
+        method_smoothing
             The method to used for the smoothing. If 'PS', the method is
             P-splines [4]_. If 'LP', the method is local polynomials [2]_.
-        approx: bool, default=True
+        approx
             Approximation of the estimation.
         kwargs
             Other keyword arguments are passed to the following function:
-
-            - :meth:`IrregularFunctionalData.smooth`.
+            :meth:`IrregularFunctionalData.smooth`.
 
         Returns
         -------
@@ -2427,7 +2459,7 @@ class IrregularFunctionalData(GridFunctionalData):
 
     def center(
         self,
-        mean: Optional[DenseFunctionalData] = None,
+        mean: DenseFunctionalData | None = None,
         method_smoothing: str = "LP",
         **kwargs,
     ) -> IrregularFunctionalData:
@@ -2435,18 +2467,16 @@ class IrregularFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        mean: Optional[DenseFunctionalData], default=None
+        mean
             A precomputed mean as a DenseFunctionalData object.
-        method_smoothing: str, default='LP'
+        method_smoothing
             The method to used for the smoothing of the mean. If 'PS', the
             method is P-splines [4]_. If 'LP', the method is local polynomials
             [2]_.
         kwargs
             Other keyword arguments are passed to one of the following
-            functions:
-
-            - :meth:`IrregularFunctionalData.mean` (``mean=None``),
-            - :meth:`IrregularFunctionalData.smooth`.
+            functions: :meth:`IrregularFunctionalData.mean` (``mean=None``) and
+            :meth:`IrregularFunctionalData.smooth`.
 
         Returns
         -------
@@ -2499,12 +2529,12 @@ class IrregularFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        squared: bool, default=False
+        squared
             If `True`, the function calculates the squared norm, otherwise the
             result is not squared.
-        method_integration: str, {'simpson', 'trapz'}, default = 'trapz'
+        method_integration
             The method used to integrated.
-        use_argvals_stand: bool, default=False
+        use_argvals_stand
             Use standardized argvals to compute the normalization of the data.
 
         Returns
@@ -2561,10 +2591,9 @@ class IrregularFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        **kwargs
+        kwargs
             Other keyword arguments are passed to the following function:
-
-            - :meth:`IrregularFunctionalData.norm`.
+            :meth:`IrregularFunctionalData.norm`.
 
         Returns
         -------
@@ -2668,17 +2697,16 @@ class IrregularFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        weights: float, default=0.0
+        weights
             The weights used to normalize the data. If `weights = 0.0`, the
             weights are estimated by integrating the variance function [3]_.
-        method_integration: str, {'simpson', 'trapz'}, default = 'trapz'
+        method_integration
             The method used to integrated.
-        use_argvals_stand: bool, default=False
+        use_argvals_stand
             Use standardized argvals to compute the normalization of the data.
-        **kwargs
+        kwargs
             Other keyword arguments are passed to the following function:
-
-            - :meth:`IrregularFunctionalData.smooth`.
+            :meth:`IrregularFunctionalData.smooth`.
 
         Returns
         -------
@@ -2714,7 +2742,7 @@ class IrregularFunctionalData(GridFunctionalData):
         self,
         method_integration: str = "trapz",
         method_smoothing: str = "LP",
-        noise_variance: Optional[float] = None,
+        noise_variance: float | None = None,
         **kwargs,
     ) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
@@ -2730,17 +2758,16 @@ class IrregularFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        method_integration: str, {'simpson', 'trapz'}, default = 'trapz'
+        method_integration
             The method used to integrated.
-        method_smoothing: bool, default=True
+        method_smoothing
             Should the mean be smoothed?
-        noise_variance: Optional[float], default=None
+        noise_variance
             An estimation of the variance of the noise. If `None`, an
             estimation is computed using the methodology in [5]_.
         kwargs
             Other keyword arguments are passed to the following function:
-
-            - :meth:`IrregularFunctionalData.center`.
+            :meth:`IrregularFunctionalData.center`.
 
         Returns
         -------
@@ -2787,13 +2814,13 @@ class IrregularFunctionalData(GridFunctionalData):
 
     def covariance(
         self,
-        points: Optional[DenseArgvals] = None,
+        points: DenseArgvals | None = None,
         method_smoothing: str = "LP",
         center: bool = True,
         smooth: bool = True,
         kwargs_center: Dict[str, object] = {},
         **kwargs,
-    ) -> IrregularFunctionalData:
+    ) -> DenseFunctionalData:
         """Compute an estimate of the covariance function.
 
         This function computes an estimate of the covariance surface of a
@@ -2802,18 +2829,24 @@ class IrregularFunctionalData(GridFunctionalData):
 
         Parameters
         ----------
-        points: Optional[DenseArgvals], default=None
+        points
             The sampling points at which the covariance is estimated. If
             `None`, the concatenation of the IrregularArgvals of the
             IrregularFunctionalData is used.
-        method_smoothing: Optional[str], default=None
+        method_smoothing
             The method to used for the smoothing of the mean. If 'PS', the
             method is P-splines [4]_. If 'LP', the method is local polynomials
             [2]_.
+        center
+            Should the data be centered before computing the covariance.
+        smooth
+            Should the covariance be smoothed.
+        kwargs_center
+            Keyword arguments to be passed to the function
+            :meth:`FunctionalData.center`.
         kwargs
             Other keyword arguments are passed to the following function:
-
-            - :meth:`DenseFunctionalData.center`.
+            :meth:`FunctionalData._smooth_covariance`.
 
         Returns
         -------
@@ -2957,6 +2990,15 @@ class BasisFunctionalData(FunctionalData):
     coefficients: npt.NDArray[np.float64]
         The set of coefficients.
 
+    Attributes
+    ----------
+    n_obs: int
+        Number of observations of the functional data.
+    n_dimension: int
+        Number of input dimension of the functional data.
+    n_points: Tuple[int, ...]
+        Number of sampling points.
+
     """
 
     ###########################################################################
@@ -2967,7 +3009,7 @@ class BasisFunctionalData(FunctionalData):
 
         Parameters
         ----------
-        *fdata: FunctionalData
+        fdata
             Functional data to compare.
 
         """
@@ -2990,15 +3032,26 @@ class BasisFunctionalData(FunctionalData):
         """Perform computation with numbers."""
 
     @staticmethod
-    def concatenate(*fdata: Type[FunctionalData]) -> Type[FunctionalData]:
+    def concatenate(*fdata: BasisFunctionalData) -> BasisFunctionalData:
         """Concatenate FunctionalData objects.
 
         Parameters
         ----------
-        *fdata: FunctionalData
+        fdata
             Functional data to concatenate.
 
+        Returns
+        -------
+        BasisFunctionalData
+            Concatenated data.
+
+        Raises
+        ------
+        NotImplementedError
+            Not implemented for BasisFunctionalData.
+
         """
+        raise NotImplementedError()
 
     ###########################################################################
 
@@ -3040,7 +3093,7 @@ class BasisFunctionalData(FunctionalData):
         return self.basis.n_dimension
 
     @property
-    def n_points(self) -> Union[Tuple[int, ...], Dict[int, Tuple[int, ...]]]:
+    def n_points(self) -> Tuple[int, ...]:
         """Get the number of sampling points."""
         return self.basis.n_points
 
@@ -3049,44 +3102,161 @@ class BasisFunctionalData(FunctionalData):
     ###########################################################################
     # Methods
     def to_grid(self) -> DenseFunctionalData:
-        """Convert the data to grid format."""
+        """Convert the data to grid format.
+        
+        Returns
+        -------
+        DenseFunctionalData
+            The data in grid format.
+
+        """
         new_argvals = self.basis.argvals
         new_values = np.einsum("ij,j... -> i...", self.coefficients, self.basis.values)
         return DenseFunctionalData(new_argvals, DenseValues(new_values))
 
     def to_long(self, reindex: bool = False) -> pd.DataFrame:
-        """Convert the data to long format."""
+        """Convert the data to long format.
+        
+        Parameters
+        ----------
+        reindex
+            Not used here.
+
+        Returns
+        -------
+        pd.DataFrame
+            The data in a long format.
+
+        Raises
+        ------
+        NotImplementedError
+            Not implemented for BasisFunctionalData.
+
+        """
+        raise NotImplementedError()
 
     def noise_variance(self, order: int = 2) -> float:
-        """Estimate the variance of the noise."""
+        """Estimate the variance of the noise.
+
+        Parameters
+        ----------
+        order
+            Order of the difference sequence. The order has to be between
+            1 and 10.
+
+        Returns
+        -------
+        float
+            The estimation of the variance of the noise.
+
+        Raises
+        ------
+        NotImplementedError
+            Not implemented for BasisFunctionalData.
+
+        """
+        raise NotImplementedError()
 
     def smooth(
         self,
-        points: Optional[DenseArgvals] = None,
+        points: DenseArgvals | None = None,
         method: str = "PS",
-        bandwidth: Optional[float] = None,
-        penalty: Optional[float] = None,
+        bandwidth: float | None = None,
+        penalty: float | None = None,
         **kwargs,
-    ) -> Type[FunctionalData]:
-        """Smooth the data."""
+    ) -> BasisFunctionalData:
+        """Smooth the data.
+
+        Parameters
+        ----------
+        points
+            Points at which the curves are estimated. The default is None,
+            meaning we use the argvals as estimation points.
+        method
+            The method to used for the smoothing. If 'PS', the method is
+            P-splines. If 'LP', the method is local polynomials.
+            Otherwise, it raises an error.
+        bandwidth
+            Strictly positive. Control the size of the associated neighborhood.
+            If ``bandwidth=None``, it is assumed that the curves are twice
+            differentiable and the bandwidth is set to :math:`n^{-1/5}`
+            where :math:`n` is the number of sampling points per curve. Be
+            careful that it will not work if the curves are not sampled on
+            :math:`[0, 1]`.
+        penalty
+            Strictly positive. Penalty used in the P-splined fitting of the
+            data.
+        kwargs
+            Other keyword arguments are passed to one of the following
+            functions :meth:`preprocessing.smoothing.PSplines` (``method='PS'``) and
+            :meth:`preprocessing.smoothing.LocalPolynomial` (``method='LP'``).
+
+        Returns
+        -------
+        BasisFunctionalData
+            Smoothed data.
+
+        Raises
+        ------
+        NotImplementedError
+            Not implemented for BasisFunctionalData.
+
+        """
+        raise NotImplementedError()
 
     def mean(
         self,
-        points: Optional[DenseArgvals] = None,
+        points: DenseArgvals | None = None,
         method_smoothing: str = None,
         **kwargs,
     ) -> FunctionalData:
-        """Compute an estimate of the mean."""
+        """Compute an estimate of the mean.
+        
+        Parameters
+        ----------
+        points
+            The sampling points at which the mean is estimated. If `None`, the
+            DenseArgvals of the DenseFunctionalData is used.
+        method_smoothing
+            The method to used for the smoothing. If 'None', no smoothing is
+            performed. If 'PS', the method is P-splines. If 'LP', the
+            method is local polynomials.
+        kwargs
+            Other keyword arguments are passed to the following function 
+            :meth:`FunctionalData.smooth`.
+
+        Returns
+        -------
+        DenseFunctionalData
+            An estimate of the mean as a DenseFunctionalData object.
+            
+        """
         mean = np.mean(self.coefficients, axis=0)[np.newaxis]
         return BasisFunctionalData(self.basis, mean)
 
     def center(
         self,
-        mean: Optional[DenseFunctionalData] = None,
-        method_smoothing: Optional[str] = None,
+        mean: None = None,
+        method_smoothing: None = None,
         **kwargs,
-    ) -> FunctionalData:
-        """Center the data."""
+    ) -> BasisFunctionalData:
+        """Center the data.
+        
+        Parameters
+        ----------
+        mean
+            Not used here.
+        method_smoothing
+            Not used here.
+        kwargs
+            Not used here.
+
+        Returns
+        -------
+        BasisFunctionalData
+            The centered version of the data.
+
+        """
         new_coefs = self.coefficients - np.mean(self.coefficients, axis=0)
         return BasisFunctionalData(self.basis, new_coefs)
 
@@ -3096,7 +3266,24 @@ class BasisFunctionalData(FunctionalData):
         method_integration: str = "trapz",
         use_argvals_stand: bool = False,
     ) -> npt.NDArray[np.float64]:
-        """Norm of each observation of the data."""
+        """Norm of each observation of the data.
+        
+        Parameters
+        ----------
+        squared
+            If ``True``, the function calculates the squared norm, otherwise it
+            returns the norm.
+        method_integration
+            The method used to estimate the integral.
+        use_argvals_stand
+            Not used here.
+
+        Returns
+        -------
+        npt.NDArray[np.float64], shape=(n_obs,)
+            The norm of each observations.
+            
+        """
         inner_product = self.inner_product(method_integration=method_integration)
         norm_obs = np.diag(inner_product)
         if squared:
@@ -3104,13 +3291,41 @@ class BasisFunctionalData(FunctionalData):
         else:
             return np.power(norm_obs, 0.5)
 
-    def normalize(self, **kwargs) -> FunctionalData:
-        """Normalize the data."""
+    def normalize(self, **kwargs) -> BasisFunctionalData:
+        """Normalize the data.
+        
+        Parameters
+        ----------
+        kwargs
+            Other keyword arguments are passed to the following function:
+            :meth:`BasisFunctionalData.norm`.
+
+        Returns
+        -------
+        BasisFunctionalData
+            The normalized data.
+            
+        """
         norm = np.moveaxis(self.coefficients, 0, -1) / self.norm(**kwargs)
         return BasisFunctionalData(self.basis, np.moveaxis(norm, -1, 0))
 
-    def standardize(self, center: bool = True, **kwargs) -> FunctionalData:
-        """Standardize the data."""
+    def standardize(self, center: bool = True, **kwargs) -> BasisFunctionalData:
+        """Standardize the data.
+        
+        Parameters
+        ----------
+        center
+            Should the data be centered?
+        kwargs
+            Other keyword arguments are passed to the following function:
+            :meth:`BasisFunctionalData.center`.
+
+        Returns
+        -------
+        DenseFunctionalData
+            The standardized data.
+
+        """
         if center:
             fdata = self.center(**kwargs)
         else:
@@ -3126,8 +3341,25 @@ class BasisFunctionalData(FunctionalData):
         method_integration: str = "trapz",
         use_argvals_stand: bool = False,
         **kwargs,
-    ) -> Tuple[FunctionalData, float]:
-        """Rescale the data."""
+    ) -> Tuple[BasisFunctionalData, float]:
+        """Rescale the data.
+        
+        Parameters
+        ----------
+        weights
+            The weights used to normalize the data. If `weights = 0.0`, the
+            weights are estimated by integrating the variance function.
+        method_integration
+            The method used to estimate the integral.
+        use_argvals_stand
+            Use standardized argvals to compute the normalization of the data.
+
+        Returns
+        -------
+        Tuple[BasisFunctionalData, float]
+            The rescaled data and the weight.
+    
+        """
         if weights == 0.0:
             if use_argvals_stand:
                 axis = [argvals for argvals in self.basis.argvals_stand.values()]
@@ -3141,21 +3373,60 @@ class BasisFunctionalData(FunctionalData):
     def inner_product(
         self,
         method_integration: str = "trapz",
-        method_smoothing: Optional[str] = None,
-        noise_variance: Optional[float] = None,
+        method_smoothing: str | None = None,
+        noise_variance: float | None = None,
         **kwargs,
     ) -> npt.NDArray[np.float64]:
-        """Compute an estimate of the inner product matrix."""
+        """Compute an estimate of the inner product matrix.
+        
+        Parameters
+        ----------
+        method_integration
+            The method used to integrated.
+        method_smoothing
+            The method to used for the smoothing of the mean. If 'None', no
+            smoothing is performed. If 'PS', the method is P-splines. If
+            'LP', the method is local polynomials.
+        noise_variance
+            An estimation of the variance of the noise. If `None`, an
+            estimation is computed using the methodology.
+        kwargs
+            Other keyword arguments are passed to the following function:
+            :meth:`BasisFunctionalData.center`.
+
+        Returns
+        -------
+        npt.NDArray[np.float64], shape=(n_obs, n_obs)
+            Inner product matrix of the data.
+    
+        """
         inner_product = self.basis.inner_product(method_integration=method_integration)
         return self.coefficients @ inner_product @ self.coefficients.T
 
     def covariance(
         self,
-        points: Optional[DenseArgvals] = None,
-        method_smoothing: Optional[str] = None,
+        points: None = None,
+        method_smoothing: None = None,
         **kwargs,
     ) -> Type[FunctionalData]:
-        """Compute an estimate of the covariance."""
+        """Compute an estimate of the covariance.
+        
+        Parameters
+        ----------
+        points
+            Not used here.
+        method_smoothing
+            Not used here.
+        kwargs
+            Not used here.
+
+        Returns
+        -------
+        BasisFunctionalData
+            An estimate of the covariance as a two-dimensional
+            BasisFunctionalData object.
+
+        """
         # Center the data
         data = self.center()
 
@@ -3186,18 +3457,21 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     An instance of MultivariateFunctionalData is a list containing objects of
     the class DenseFunctionalData or IrregularFunctionalData.
 
-    Notes
-    -----
-    Be careful that we will not check if all the elements have the same type.
-    It is possible to create MultivariateFunctionalData containing both
-    Dense and Iregular functional data. However, only this two types are
-    allowed to be in the list. The number of observations has to be the same
-    for each element of the list.
-
     Parameters
     ----------
     initlist: List[Type[FunctionalData]]
         The list containing the elements of the MultivariateFunctionalData.
+
+    Attributes
+    ----------
+    n_obs: int
+        Number of observations of the functional data.
+    n_functional: int
+        Number of components of the multivariate functional data.
+    n_dimension: List[int]
+        Number of input dimension of the functional data.
+    n_points: List[Dict[str, int]]
+        Number of sampling points.
 
     Examples
     --------
@@ -3222,6 +3496,13 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     >>> fdata_irregular = IrregularFunctionalData(argvals, values)
 
     >>> MultivariateFunctionalData([fdata_dense, fdata_irregular])
+
+    Notes
+    -----
+    Be careful that we will not check if all the elements have the same type.
+    It is possible to create MultivariateFunctionalData containing both
+    Dense, Iregular and Basis functional data. The number of observations has to be the
+    same for each element of the list.
 
     References
     ----------
@@ -3254,7 +3535,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Parameters
         ----------
-        data: MultivariateFunctionalData
+        data
             The data to concatenate with self.
 
         Returns
@@ -3306,7 +3587,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Parameters
         ----------
-        index: int
+        index
             The observation(s) of the object to retrive.
 
         Returns
@@ -3426,11 +3707,10 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Parameters
         ----------
-        kwargs:
-            Other keyword arguments are passed to the functions:
-
-            - :meth:`representation.functional_data.DenseFunctionalData`,
-            - :meth:`representation.functional_data.IrregularFunctionalData`.
+        kwargs
+            Other keyword arguments are passed to the functions
+            :meth:`representation.functional_data.DenseFunctionalData` and
+            :meth:`representation.functional_data.IrregularFunctionalData`.
 
         Returns
         -------
@@ -3448,7 +3728,14 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         return MultivariateFunctionalData(data_list)
 
     def to_grid(self) -> MultivariateFunctionalData:
-        """Convert the data to grid."""
+        """Convert the data to grid.
+        
+        Returns
+        -------
+        MultivariateFunctionalData
+            The data in grid format.
+    
+        """
         data_list = []
         for data in self.data:
             if isinstance(data, GridFunctionalData):
@@ -3465,6 +3752,11 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         of pandas DataFrame. It uses the long format to represent each element
         of the MultivariateFunctionalData object as a dataframe. This is a
         helper function as it might be easier for some computation.
+
+        Parameters
+        ----------
+        reindex
+            Should the observations be reindexed.
 
         Returns
         -------
@@ -3537,7 +3829,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Parameters
         ----------
-        order: int, default=2
+        order
             Order of the difference sequence. The order has to be between
             1 and 10. See [4]_ for more information.
 
@@ -3565,10 +3857,10 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     def smooth(
         self,
-        points: Optional[DenseArgvals] = None,
+        points: DenseArgvals | None = None,
         method: str = "PS",
-        bandwidth: Optional[float] = None,
-        penalty: Optional[float] = None,
+        bandwidth: float | None = None,
+        penalty: float | None = None,
         **kwargs,
     ):
         """Smooth the data.
@@ -3580,29 +3872,27 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Parameters
         ----------
-        points: Optional[List[DenseArgvals]], default=None
+        points
             Points at which the curves are estimated. The default is None,
             meaning we use the argvals as estimation points.
-        method: str, default='PS'
+        method
             The method to used for the smoothing. If 'PS', the method is
             P-splines [3]_. If 'LP', the method is local polynomials [7]_.
             Otherwise, it raises an error.
-        bandwidth: Optional[List[float]], default=None
+        bandwidth
             Strictly positive. Control the size of the associated neighborhood.
             If ``bandwidth == None``, it is assumed that the curves are twice
             differentiable and the bandwidth is set to :math:`n^{-1/5}` [6]_
             where :math:`n` is the number of sampling points per curve. Be
             careful that it will not work if the curves are not sampled on
             :math:`[0, 1]`.
-        penalty: Optional[float], default=None
+        penalty
             Strictly positive. Penalty used in the P-splined fitting of the
             data.
         kwargs
             Other keyword arguments are passed to one of the following
-            functions:
-
-            - :meth:`DenseFunctionalData.smooth`,
-            - :meth:`IrregularFunctionalData.smooth`.
+            functions :meth:`DenseFunctionalData.smooth` an
+            :meth:`IrregularFunctionalData.smooth`.
 
 
         Returns
@@ -3669,8 +3959,8 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     def mean(
         self,
-        points: Optional[List[DenseArgvals]] = None,
-        method_smoothing: Optional[str] = None,
+        points: List[DenseArgvals] | None = None,
+        method_smoothing: str | None = None,
         **kwargs,
     ) -> MultivariateFunctionalData:
         """Compute an estimate of the mean.
@@ -3680,17 +3970,16 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Parameters
         ----------
-        points: Optional[List[DenseArgvals]], default=None
+        points
             Points at which the mean is estimated. The default is None,
             meaning we use the argvals as estimation points.
-        method_smoothing: Optional[str], default=None
+        method_smoothing
             The method to used for the smoothing. If 'None', no smoothing is
             performed. If 'PS', the method is P-splines [3]_. If 'LP', the
             method is local polynomials [7]_.
         kwargs
             Other keyword arguments are passed to the following function:
-
-            - :meth:`MultivariateFunctionalData.smooth`.
+            :meth:`MultivariateFunctionalData.smooth`.
 
         Returns
         -------
@@ -3732,26 +4021,24 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     def center(
         self,
-        mean: Optional[MultivariateFunctionalData] = None,
-        method_smoothing: Optional[str] = None,
+        mean: MultivariateFunctionalData | None = None,
+        method_smoothing: str | None = None,
         **kwargs,
     ) -> MultivariateFunctionalData:
         """Center the data.
 
         Parameters
         ----------
-        mean: Optional[MultivariateFunctionalData], default=None
+        mean
             A precomputed mean as a MultivariateFunctionalData object.
-        method_smoothing: Optional[str], default=None
+        method_smoothing
             The method to used for the smoothing of the mean. If 'None', no
             smoothing is performed. If 'PS', the method is P-splines [3]_. If
             'LP', the method is local polynomials [7]_.
         kwargs
             Other keyword arguments are passed to one of the following
-            functions:
-
-            - :meth:`DenseFunctionalData.mean` (``mean=None``),
-            - :meth:`DenseFunctionalData.smooth`.
+            functions :meth:`DenseFunctionalData.mean` (``mean=None``) and
+            :meth:`DenseFunctionalData.smooth`.
 
         Returns
         -------
@@ -3804,12 +4091,12 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Parameters
         ----------
-        squared: bool, default=False
+        squared
             If `True`, the function calculates the squared norm, otherwise it
             returns the norm.
-        method_integration: str, {'simpson', 'trapz'}, default = 'trapz'
+        method_integration
             The method used to integrated.
-        use_argvals_stand: bool, default=False
+        use_argvals_stand
             Use standardized argvals to compute the normalization of the data.
 
         Returns
@@ -3851,10 +4138,9 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Parameters
         ----------
-        **kwargs
-            Other keyword arguments are passed to the following function:
-
-            - :meth:`MultivariateFunctionalData.norm`.
+        kwargs
+            Other keyword arguments are passed to the following function
+            :meth:`MultivariateFunctionalData.norm`.
 
         Returns
         -------
@@ -3898,14 +4184,12 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Parameters
         ----------
-        center: bool, default=True
+        center
             Should the data be centered?
-        **kwargs
-            Other keyword arguments are passed to the following function:
-
-            - :meth:`MultivariateFunctionalData.center`,
-            - :meth:`DenseFunctionalData.standardize`,
-            - :meth:`IrregularFunctionalData.stansardize`.
+        kwargs
+            Other keyword arguments are passed to the following function :meth:`MultivariateFunctionalData.center`, 
+            :meth:`DenseFunctionalData.standardize` and
+            :meth:`IrregularFunctionalData.stansardize`.
 
         Returns
         -------
@@ -3939,7 +4223,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     def rescale(
         self,
-        weights: Optional[npt.NDArray[np.float64]] = None,
+        weights: npt.NDArray[np.float64] | None = None,
         method_integration: str = "trapz",
         method_smoothing: str = "LP",
         use_argvals_stand: bool = False,
@@ -3952,14 +4236,14 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Parameters
         ----------
-        weights: Optional[npt.NDArray[np.float64]], default=None
+        weights
             The weights used to normalize the data. If `weights = None`, the
             weights are estimated by integrating the variance function [5]_.
-        method_integration: str, {'simpson', 'trapz'}, default = 'trapz'
+        method_integration
             The method used to integrated.
-        use_argvals_stand: bool, default=False
+        use_argvals_stand
             Use standardized argvals to compute the normalization of the data.
-        **kwargs:
+        kwargs
             Keyword parameters for the smoothing of the observations.
 
         Returns
@@ -4003,8 +4287,8 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
     def inner_product(
         self,
         method_integration: str = "trapz",
-        method_smoothing: Optional[str] = None,
-        noise_variance: Optional[npt.NDArray[np.float64]] = None,
+        method_smoothing: str | None = None,
+        noise_variance: npt.NDArray[np.float64] | None = None,
         **kwargs,
     ) -> npt.NDArray[np.float64]:
         r"""Compute the inner product matrix of the data.
@@ -4021,18 +4305,17 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Parameters
         ----------
-        method_integration: str, {'simpson', 'trapz'}, default='trapz'
+        method_integration
             The method used to integrated.
-        method_smoothing: Optional[str], default=None
+        method_smoothing
             Should the mean be smoothed?
-        noise_variance: Optional[npt.NDArray[np.float64]], default=None
+        noise_variance
             An estimation of the variance of the noise. If `None`, an
             estimation is computed using the methodology in [4]_.
         kwargs
-            Other keyword arguments are passed to the following function:
-
-            - :meth:`DenseFunctionalData.inner_product()`.
-            - :meth:`IrregularFunctionalData.inner_product()`.
+            Other keyword arguments are passed to the following function
+            :meth:`DenseFunctionalData.inner_product()` and 
+            :meth:`IrregularFunctionalData.inner_product()`.
 
         Returns
         -------
@@ -4075,8 +4358,8 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
     def covariance(
         self,
-        points: Optional[List[DenseArgvals]] = None,
-        method_smoothing: Optional[str] = None,
+        points: List[DenseArgvals] | None = None,
+        method_smoothing: str | None = None,
         **kwargs,
     ) -> MultivariateFunctionalData:
         """Compute an estimate of the covariance.
@@ -4086,16 +4369,15 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
 
         Parameters
         ----------
-        points: Optional[List[DenseArgvals]], default=None
+        points
             Points at which the mean is estimated. The default is None,
             meaning we use the argvals as estimation points.
-        method_smoothing: Optional[str], default=None
+        method_smoothing
             Should the mean be smoothed?
         kwargs
-            Other keyword arguments are passed to the following function:
-
-            - :meth:`DenseFunctionalData.covariance()`.
-            - :meth:`IrregularFunctionalData.covariance()`.
+            Other keyword arguments are passed to the following function
+            :meth:`DenseFunctionalData.covariance()` and 
+            :meth:`IrregularFunctionalData.covariance()`.
 
         Returns
         -------
