@@ -29,7 +29,7 @@ class Argvals(UserDict):
     n_points: Tuple[int, ...] | Dict[int, Tuple[int, ...]]
         Number of sampling points of each dimension.
     n_dimension: int
-        Number of dimension of the data.
+        Number of input dimension of the data.
     min_max: Dict[str, Tuple[float, float]]
         Minimum and maximum sampling points for each dimension.
 
@@ -143,7 +143,7 @@ class DenseArgvals(Argvals):
     n_points: Tuple[int, ...]
         Number of sampling points of each dimension.
     n_dimension: int
-        Number of dimension of the data.
+        Number of input dimension of the data.
     min_max: Dict[str, Tuple[float, float]]
         Minimum and maximum sampling points for each dimension.
 
@@ -324,7 +324,7 @@ class IrregularArgvals(Argvals):
     n_points: Dict[int, Tuple[int, ...]]
         Number of sampling points of each dimension.
     n_dimension: int
-        Number of dimension of the data.
+        Number of input dimension of the data.
     min_max: Dict[str, Tuple[float, float]]
         Minimum and maximum sampling points for each dimension.
 

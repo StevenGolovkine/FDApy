@@ -154,7 +154,7 @@ class Basis(DenseFunctionalData):
     .. [6] Happ, C., Greven, S. (2018). Multivariate Functional Principal
         Component Analysis for Data Observed on Different (Dimensional)
         Domains. Journal of the American Statistical Association 113, 649--659.
-    .. [7] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+    .. [7] Ramsay, J. O. and Silverman, B. W. (2005), Functional Data
         Analysis, Springer Science, Chapter 8.
     .. [8] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
         Springer Series in Statistics.

@@ -292,7 +292,8 @@ class Brownian(Simulation):
     Raises
     ------
     ValueError
-        The sampling points have to be regularly spaced. Otherwise, the covariance is not correct.
+        The sampling points have to be regularly spaced. Otherwise, the covariance is
+        not correct.
 
     Notes
     -----

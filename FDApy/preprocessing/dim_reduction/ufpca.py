@@ -73,7 +73,7 @@ def _fit_covariance(
         points=points, method_smoothing=method_smoothing, center=False, **kwargs
     )
 
-    # Choose the W_j's and the S_j's (Ramsey and Silverman, 2005)
+    # Choose the W_j's and the S_j's (Ramsay and Silverman, 2005)
     argvals = points["input_dim_0"]
     weight = _integration_weights(argvals, method="trapz")
 
@@ -404,7 +404,7 @@ class UFPCA:
 
     References
     ----------
-    .. [1] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+    .. [1] Ramsay, J. O. and Silverman, B. W. (2005), Functional Data
         Analysis, Springer Science, Chapter 8.
     .. [2] Yao, Müller and Wang (2005), Functional Data Analysis for Sparse
         Longitudinal Data. Journal of the American Statistical Association,

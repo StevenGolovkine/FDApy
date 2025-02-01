@@ -876,7 +876,7 @@ class DenseFunctionalData(GridFunctionalData):
     .. [6] Happ, C., Greven, S. (2018). Multivariate Functional Principal
         Component Analysis for Data Observed on Different (Dimensional)
         Domains. Journal of the American Statistical Association 113, 649--659.
-    .. [7] Ramsey, J. O. and Silverman, B. W. (2005), Functional Data
+    .. [7] Ramsay, J. O. and Silverman, B. W. (2005), Functional Data
         Analysis, Springer Science, Chapter 8.
     .. [8] Tsybakov, A.B. (2008), Introduction to Nonparametric Estimation.
         Springer Series in Statistics.
@@ -1029,7 +1029,7 @@ class DenseFunctionalData(GridFunctionalData):
         """Convert the data to basis format.
 
         This function transform a DenseFunctionalData object into a
-        BasisFunctonalData object using `method`.
+        BasisFunctionalData object using `method`.
 
         Parameters
         ----------
@@ -1201,7 +1201,7 @@ class DenseFunctionalData(GridFunctionalData):
             If ``bandwidth=None``, it is assumed that the curves are twice
             differentiable and the bandwidth is set to :math:`n^{-1/5}` [8]_
             where :math:`n` is the number of sampling points per curve. Be
-            careful that it will not work if the curves are not sampled on
+            careful with the results if the curves are not sampled on
             :math:`[0, 1]`.
         penalty
             Strictly positive. Penalty used in the P-splined fitting of the
@@ -2052,7 +2052,7 @@ class IrregularFunctionalData(GridFunctionalData):
         """Convert the data to basis format.
 
         This function transforms a IrregularFunctionalData object into a
-        BasisFunctonalData object using `method`.
+        BasisFunctionalData object using `method`.
 
         Parameters
         ----------
@@ -2253,7 +2253,7 @@ class IrregularFunctionalData(GridFunctionalData):
             If ``bandwidth=None``, it is assumed that the curves are twice
             differentiable and the bandwidth is set to :math:`n^{-1/5}` [7]_
             where :math:`n` is the number of sampling points per curve. Be
-            careful that it will not work if the curves are not sampled on
+            careful with the results if the curves are not sampled on
             :math:`[0, 1]`.
         penalty
             Strictly positive. Penalty used in the P-splined fitting of the
@@ -3173,7 +3173,7 @@ class BasisFunctionalData(FunctionalData):
             If ``bandwidth=None``, it is assumed that the curves are twice
             differentiable and the bandwidth is set to :math:`n^{-1/5}`
             where :math:`n` is the number of sampling points per curve. Be
-            careful that it will not work if the curves are not sampled on
+            careful with the results if the curves are not sampled on
             :math:`[0, 1]`.
         penalty
             Strictly positive. Penalty used in the P-splined fitting of the
@@ -3876,7 +3876,7 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
             If ``bandwidth == None``, it is assumed that the curves are twice
             differentiable and the bandwidth is set to :math:`n^{-1/5}` [6]_
             where :math:`n` is the number of sampling points per curve. Be
-            careful that it will not work if the curves are not sampled on
+            careful with the results if the curves are not sampled on
             :math:`[0, 1]`.
         penalty
             Strictly positive. Penalty used in the P-splined fitting of the
@@ -4179,7 +4179,8 @@ class MultivariateFunctionalData(UserList[Type[FunctionalData]]):
         center
             Should the data be centered?
         kwargs
-            Other keyword arguments are passed to the following function :meth:`MultivariateFunctionalData.center`,
+            Other keyword arguments are passed to the following function
+            :meth:`MultivariateFunctionalData.center`,
             :meth:`DenseFunctionalData.standardize` and
             :meth:`IrregularFunctionalData.stansardize`.
 
