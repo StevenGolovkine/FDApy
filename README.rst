@@ -84,10 +84,10 @@ Requirements
 
 * `lazy_loader <https://github.com/scientific-python/lazy-loader>`_ - A loader for Python submodules
 * `matplotlib <https://github.com/matplotlib/matplotlib>`_ - Plotting with Python
-* `numpy <https://github.com/numpy/numpy>`_ - The fundamental package for scientific computing with Python
-* `pandas <https://github.com/pandas-dev/pandas>`_ - Powerful Python data analysis toolkit
-* `scikit-learn <https://github.com/scikit-learn/scikit-learn>`_ - Machine learning in Python
-* `scipy <https://github.com/scipy/scipy>`_ - Scientific computation in Python
+* `numpy <https://github.com/numpy/numpy>`_ (< 2.0.0) - The fundamental package for scientific computing with Python
+* `pandas <https://github.com/pandas-dev/pandas>`_ (>= 2.0.0)- Powerful Python data analysis toolkit
+* `scikit-learn <https://github.com/scikit-learn/scikit-learn>`_ (>= 1.2.0)- Machine learning in Python
+* `scipy <https://github.com/scipy/scipy>`_ (>= 1.10.0) - Scientific computation in Python
 
 
 Citing FDApy
