@@ -6,8 +6,6 @@ Local Polynomials
 -----------------
 
 """
-from __future__ import annotations
-
 import numpy as np
 import numpy.typing as npt
 
@@ -16,11 +14,13 @@ from typing import Callable
 from sklearn.preprocessing import PolynomialFeatures
 
 
+NDArrayFloat = npt.NDArray[np.float64]
+
 ##############################################################################
 # Inner functions for the LocalPolynomial class.
 
 
-def _gaussian(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+def _gaussian(x: NDArrayFloat) -> NDArrayFloat:
     r"""Compute the Gaussian density with mean 0 and standard deviation 1.
 
     The Gaussian density is given by
@@ -35,14 +35,14 @@ def _gaussian(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
 
     Returns
     -------
-    npt.NDArray[np.float64], shape = (n_samples,)
+    NDArrayFloat, shape = (n_samples,)
         Values of the kernel.
 
     """
-    return np.exp(-np.square(x) / 2) / np.sqrt(2 * np.pi)
+    return np.exp(-np.square(x) / 2) / np.sqrt(2 * np.pi)  # type: ignore
 
 
-def _epanechnikov(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+def _epanechnikov(x: NDArrayFloat) -> NDArrayFloat:
     r"""Compute the Epanechnikov kernel.
 
     The Epanechnikov kernel is given, in [1]_ equation 6.4, by
@@ -57,7 +57,7 @@ def _epanechnikov(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
 
     Returns
     -------
-    npt.NDArray[np.float64], shape = (n_samples,)
+    NDArrayFloat, shape = (n_samples,)
         Values of the kernel.
 
     References
@@ -73,7 +73,7 @@ def _epanechnikov(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     return kernel
 
 
-def _tri_cube(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+def _tri_cube(x: NDArrayFloat) -> NDArrayFloat:
     r"""Compute the tri-cube kernel.
 
     The tri-cube kernel is given, in [1]_ equation 6.6, by
@@ -88,7 +88,7 @@ def _tri_cube(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
 
     Returns
     -------
-    npt.NDArray[np.float64], shape = (n_samples,)
+    NDArrayFloat, shape = (n_samples,)
         Values of the kernel.
 
     References
@@ -104,7 +104,7 @@ def _tri_cube(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     return kernel
 
 
-def _bi_square(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+def _bi_square(x: NDArrayFloat) -> NDArrayFloat:
     r"""Compute the bi-square kernel.
 
     The bi-square kernel is given, in [1]_, by
@@ -119,7 +119,7 @@ def _bi_square(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
 
     Returns
     -------
-    npt.NDArray[np.float64], shape = (n_samples,)
+    NDArrayFloat, shape = (n_samples,)
         Values of the kernel.
 
     References
@@ -135,7 +135,7 @@ def _bi_square(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     return kernel
 
 
-def _kernel(name: str) -> Callable:
+def _kernel(name: str) -> Callable[[NDArrayFloat], NDArrayFloat]:
     """Map between kernel names and functions.
 
     Parameters
@@ -145,7 +145,7 @@ def _kernel(name: str) -> Callable:
 
     Returns
     -------
-    Callable
+    Callable[[NDArrayFloat], NDArrayFloat]
         The kernel function.
 
     """
@@ -162,11 +162,11 @@ def _kernel(name: str) -> Callable:
 
 
 def _compute_kernel(
-    x: npt.NDArray[np.float64],
-    x0: float | npt.NDArray[np.float64],
+    x: NDArrayFloat,
+    x0: float | NDArrayFloat,
     bandwidth: float,
-    kernel: Callable = _epanechnikov,
-) -> npt.NDArray[np.float64]:
+    kernel: Callable[[NDArrayFloat], NDArrayFloat] = _epanechnikov,
+) -> NDArrayFloat:
     r"""Compute the weights at a particular query point.
 
     The weights are defined using a kernel function and are computed at points
@@ -182,7 +182,7 @@ def _compute_kernel(
     x0
         Query point. For one-dimensional smoothing, `x0` must be passed as a
         `float`. For higher-dimensional smoothing, `x0` must be passed as
-        a `npt.NDArray[np.float64]]`.
+        a `NDArrayFloat]`.
     bandwidth
         Width of the neighborhood of `x0`.
     kernel
@@ -190,7 +190,7 @@ def _compute_kernel(
 
     Returns
     -------
-    npt.NDArray[np.float64] , shape=(n_samples,)
+    NDArrayFloat , shape=(n_samples,)
         Values of the kernel.
 
     References
@@ -208,13 +208,13 @@ def _compute_kernel(
 
 
 def _local_regression(
-    y: npt.NDArray[np.float64],
-    x: npt.NDArray[np.float64],
-    x0: npt.NDArray[np.float64],
-    dmat: npt.NDArray[np.float64],
-    dmat_x0: npt.NDArray[np.float64],
+    y: NDArrayFloat,
+    x: NDArrayFloat,
+    x0: NDArrayFloat,
+    dmat: NDArrayFloat,
+    dmat_x0: NDArrayFloat,
     bandwidth: float = 0.05,
-    kernel: Callable = _epanechnikov,
+    kernel: Callable[[NDArrayFloat], NDArrayFloat] = _epanechnikov,
 ) -> float:
     r"""Local polynomial regression for one point.
 
@@ -232,7 +232,7 @@ def _local_regression(
     x0
         Query point. For one-dimensional smoothing, `x0` must be passed as a
         `float`. For higher-dimensional smoothing, `x0` must be passed as
-        a `npt.NDArray[np.float64]]`.
+        a `NDArrayFloat]`.
     dmat
         Design matrix for the training data `x`. The dimension `n_features` is
         related to the degree of the fitted polynomials. It includes intercept
@@ -261,7 +261,7 @@ def _local_regression(
     temp = dmat.T * kernel_values
     beta = np.linalg.lstsq(np.dot(temp, dmat), np.dot(temp, y), rcond=1e-10)[0]
 
-    return np.dot(dmat_x0, beta)
+    return np.dot(dmat_x0, beta)  # type: ignore
 
 
 #############################################################################
@@ -310,7 +310,7 @@ class LocalPolynomial:
 
     Attributes
     ----------
-    kernel: Callable
+    kernel: Callable[[NDArrayFloat], NDArrayFloat]
         Function associated to the kernel name.
     poly_features: PolynomialFeatures
         An instance of ``sklearn.preprocessing.PolynomialFeatures`` used to
@@ -340,8 +340,7 @@ class LocalPolynomial:
         kernel_name: str = "epanechnikov",
         bandwidth: float = 0.05,
         degree: int = 1,
-        robust: bool = False,
-        **kwargs,
+        robust: bool = False
     ) -> None:
         """Initialize LocalPolynomial object."""
         self.kernel_name = kernel_name
@@ -392,7 +391,7 @@ class LocalPolynomial:
         self._robust = new_robust
 
     @property
-    def kernel(self) -> Callable:
+    def kernel(self) -> Callable[[NDArrayFloat], NDArrayFloat]:
         """Getter for `kernel`."""
         return self._kernel
 
@@ -403,10 +402,10 @@ class LocalPolynomial:
 
     def predict(
         self,
-        y: npt.NDArray[np.float64],
-        x: npt.NDArray[np.float64],
-        x_new: npt.NDArray[np.float64] | None = None,
-    ) -> npt.NDArray[np.float64]:
+        y: NDArrayFloat,
+        x: NDArrayFloat,
+        x_new: NDArrayFloat | None = None,
+    ) -> NDArrayFloat:
         """Predict using local polynomial regression.
 
         Parameters
@@ -422,7 +421,7 @@ class LocalPolynomial:
 
         Returns
         -------
-        npt.NDArray[np.float64], shape = (n_samples,)
+        NDArrayFloat, shape = (n_samples,)
             Return predicted values.
 
         Notes
