@@ -133,7 +133,8 @@ def _basis_fourier(
     >>> _basis_fourier(argvals=np.arange(0, 2*np.pi, 0.1), n_functions=3)
 
     """
-    values = np.ones((n_functions, len(argvals))) / np.sqrt(np.ptp(argvals))
+    values = np.ones((n_functions, len(argvals)))
+    values = values / np.sqrt(np.ptp(argvals))
 
     norm = np.sqrt(2 / np.ptp(argvals))
     xx = (2 * np.pi * (argvals - np.min(argvals)) / np.ptp(argvals)) - np.pi
@@ -196,7 +197,11 @@ def _basis_bsplines(
 
     """
 
-    def _tpower(x, knots, p):
+    def _tpower(
+        x: npt.NDArray[np.float64],
+        knots: npt.NDArray[np.float64],
+        p: int
+    ) -> npt.NDArray[np.float64]:
         res = np.zeros((len(x), len(knots)))
         for idx, knot in enumerate(knots):
             res[:, idx] = np.power(x - knot, p) * (x >= knot)
@@ -217,10 +222,9 @@ def _basis_bsplines(
         endpoint=True,
     )
     p_mat = _tpower(argvals, knots, degree)
-    d_mat = np.diff(np.eye(p_mat.shape[1]), n=degree + 1, axis=0) / (
-        gamma(degree + 1) * np.power(dx, degree)
-    )
-    basis_mat = np.power(-1, degree + 1) * p_mat @ d_mat.T
+    d_mat = np.diff(np.eye(p_mat.shape[1]), n=degree + 1, axis=0)
+    d_mat = d_mat / (gamma(degree + 1) * np.power(dx, degree))
+    basis_mat: npt.NDArray[np.float64] = np.power(-1, degree + 1) * p_mat @ d_mat.T
 
     # Make B-splines exactly zero beyond their end knots
     sk = knots[np.arange(basis_mat.shape[1]) + degree + 1]
