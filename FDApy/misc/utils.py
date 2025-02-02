@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import scipy
 
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, Dict, List, Literal, Tuple
 
 #############################################################################
 # Constants
@@ -95,9 +95,10 @@ def _normalization(
     array([0., 0.5, 1.])
 
     """
-    if (max_x is None) and (min_x is None):
-        max_x = np.amax(x)
-        min_x = np.amin(x)
+    if max_x is None:
+        max_x = max(x)
+    if min_x is None:
+        min_x = min(x)
     if max_x == min_x:
         return np.zeros_like(x)
     else:
@@ -133,7 +134,8 @@ def _standardization(
     if np.std(x) == 0:
         return np.zeros_like(x)
     else:
-        return (x - np.mean(x)) / np.std(x)
+        result: npt.NDArray[np.float64] = (x - np.mean(x)) / np.std(x)
+        return result
 
 
 def _row_mean(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
@@ -166,7 +168,8 @@ def _row_mean(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     array([1., 2., 3.])
 
     """
-    return np.mean(x, axis=0)
+    result: npt.NDArray[np.float64] = np.mean(x, axis=0)
+    return result
 
 
 def _row_var(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
@@ -199,7 +202,8 @@ def _row_var(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     array([0., 0., 0.])
 
     """
-    return x.var(axis=0)
+    result: npt.NDArray[np.float64] = np.var(x, axis=0)
+    return result
 
 
 def _col_mean(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
@@ -232,7 +236,8 @@ def _col_mean(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     array([2., 2., 2., 2.])
 
     """
-    return x.mean(axis=1)
+    result: npt.NDArray[np.float64] = np.mean(x, axis=1)
+    return result
 
 
 def _col_var(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
@@ -265,7 +270,8 @@ def _col_var(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     array([0.66666667, 0.66666667, 0.66666667, 0.66666667])
 
     """
-    return x.var(axis=1)
+    result: npt.NDArray[np.float64] = np.var(x, axis=1)
+    return result
 
 
 ############################################################################
@@ -459,7 +465,7 @@ def _cartesian_product(
     return stacked
 
 
-def _block_diag(*arrs: npt.NDArray[np.float_]):
+def _block_diag(*arrs: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     """Create a block diagonal matrix from provided arrays.
 
     Given the inputs `A`, `B` and `C`, the output will have these
@@ -532,7 +538,8 @@ def _block_diag(*arrs: npt.NDArray[np.float_]):
 
 
 def _integration_weights(
-    x: npt.NDArray[np.float64], method: str | Callable = "trapz"
+    x: npt.NDArray[np.float64],
+    method: str | Callable[[npt.ArrayLike], npt.ArrayLike] = "trapz"
 ) -> npt.NDArray[np.float64]:
     """Compute integration weights.
 
@@ -640,7 +647,7 @@ def _integrate(
     else:
         raise ValueError(f"{method} not implemented!")
 
-    temp = integrate(x=args[0], y=y, axis=0)
+    temp: float = integrate(x=args[0], y=y, axis=0)
     for dimension in args[1:]:
         temp = integrate(x=dimension, y=temp, axis=0)
     return temp
@@ -649,7 +656,7 @@ def _integrate(
 def _inner_product(
     x: npt.NDArray[np.float64],
     y: npt.NDArray[np.float64],
-    *axis: npt.NDArray[np.float64] | None,
+    *axis: npt.NDArray[np.float64],
     method: str = "trapz",
 ) -> float:
     r"""Compute the inner product between two curves.
@@ -688,7 +695,7 @@ def _inner_product(
     if x.shape != y.shape:
         raise ValueError("Arguments x and y do not have the same shape.")
     if len(axis) == 0:
-        axis = [np.linspace(0, 1, i) for i in x.shape[::-1]]
+        axis = tuple(np.linspace(0, 1, i) for i in x.shape[::-1])
     return _integrate(x * y, *axis, method=method)
 
 
@@ -723,7 +730,8 @@ def _outer(
 
 
 def _select_number_eigencomponents(
-    eigenvalues: npt.NDArray[np.float64], percentage: float | int | None = None
+    eigenvalues: npt.NDArray[np.float64],
+    percentage: np.float64 | np.int64 | None = None
 ) -> int:
     """Select the number of eigencomponents.
 
@@ -757,7 +765,7 @@ def _select_number_eigencomponents(
 
 
 def _eigh(
-    matrix: npt.NDArray[np.float64], UPLO: str = "L"  # noqa
+    matrix: npt.NDArray[np.float64], UPLO: Literal['L', 'U', 'l', 'u'] = "L"  # noqa
 ) -> Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
     """Return the eigenvalues and eigenvectors of a real symmetrix matrix.
 
@@ -858,10 +866,14 @@ def _compute_covariance(
 
     """
     temp = np.dot(np.transpose(eigenfunctions), np.diag(eigenvalues))
-    return np.dot(temp, eigenfunctions)
+    result: npt.NDArray[np.float64] = np.dot(temp, eigenfunctions)
+    return result
 
 
-def _estimate_noise_variance(x: npt.NDArray[np.float64], order: int = 2) -> float:
+def _estimate_noise_variance(
+    x: npt.NDArray[np.float64],
+    order: int = 2
+) -> float | np.float64:
     """Estimate the variance of the noise.
 
     This function estimates the variance of the noise non-parametrically using
@@ -891,10 +903,9 @@ def _estimate_noise_variance(x: npt.NDArray[np.float64], order: int = 2) -> floa
         raise ValueError("The order has to be between 1 and 10.")
     if len(x) < order + 1:
         return 0
-    weights = DIFF_SEQUENCES.get(order)
-    return np.nanmean(
-        [
-            np.matmul(weights, x[idx : (idx + order + 1)]) ** 2
-            for idx in range(len(x) - order)
-        ]
-    )
+    weights = DIFF_SEQUENCES.get(order, 2)
+
+    result = np.zeros(len(x) - order)
+    for idx in range(len(x) - order):
+        result[idx] = np.power(np.matmul(weights, x[idx : (idx + order + 1)]), 2)
+    return np.nanmean(result)
