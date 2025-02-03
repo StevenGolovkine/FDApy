@@ -9,7 +9,7 @@ Brownian motions
 import numpy as np
 import numpy.typing as npt
 
-from typing import Callable, Tuple
+from typing import Any, Callable, Tuple
 
 from ..representation.argvals import DenseArgvals
 from ..representation.values import DenseValues

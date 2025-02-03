@@ -9,7 +9,7 @@ Datasets
 import numpy as np
 import numpy.typing as npt
 
-from typing import Callable
+from typing import Any, Callable
 
 from ..representation.argvals import DenseArgvals
 from ..representation.values import DenseValues

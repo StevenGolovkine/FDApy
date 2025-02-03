@@ -10,6 +10,8 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
+from typing import Any
+
 from ..representation.argvals import DenseArgvals, IrregularArgvals
 from ..representation.values import DenseValues, IrregularValues
 from ..representation.functional_data import (
@@ -20,7 +22,10 @@ from ..representation.functional_data import (
 
 ###############################################################################
 # Loader for csv
-def read_csv(filepath: str, **kwargs) -> DenseFunctionalData | IrregularFunctionalData:
+def read_csv(
+    filepath: str,
+    **kwargs: Any
+) -> DenseFunctionalData | IrregularFunctionalData:
     """Load CSV file into functional data object.
 
     Build a DenseFunctionalData or IrregularFunctionalData object upon a CSV
