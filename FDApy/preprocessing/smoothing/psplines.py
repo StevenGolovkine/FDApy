@@ -8,18 +8,23 @@ P-splines
 """
 import numpy as np
 import numpy.typing as npt
+import sys
 
-
-from typing import Dict, List, Union
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 from ...misc.basis import _basis_bsplines
 
 
+NDArrayFloat = npt.NDArray[np.float64]
+
 ########################################################################################
 # Utils
 def _row_tensor(
-    x: npt.NDArray[np.float64], y: npt.NDArray[np.float64] | None = None
-) -> npt.NDArray[np.float64]:
+    x: NDArrayFloat, y: NDArrayFloat | None = None
+) -> NDArrayFloat:
     """
     Compute the row-wise tensor product of two 2D arrays.
 
@@ -37,7 +42,7 @@ def _row_tensor(
 
     Returns
     -------
-    npt.NDArray[np.float64]
+    NDArrayFloat
         A 2D array of shape `(m, n*q)` or `(m, n*n)` if `y` is not provided.
 
     Examples
@@ -76,8 +81,8 @@ def _row_tensor(
 
 
 def _h_transform(
-    x: npt.NDArray[np.float64], y: npt.NDArray[np.float64]
-) -> npt.NDArray[np.float64]:
+    x: NDArrayFloat, y: NDArrayFloat
+) -> NDArrayFloat:
     """
     Compute the H-transform of a nD array `y` with respect to a 2D array `x`.
 
@@ -94,7 +99,7 @@ def _h_transform(
 
     Returns
     -------
-    npt.NDArray[np.float64]
+    NDArrayFloat
         A nD array of shape `(n, n1, n2, ..., nk)`.
 
     Notes
@@ -125,7 +130,7 @@ def _h_transform(
     return xy_product.reshape((xy_product.shape[0], *y_dim[1:]))
 
 
-def _rotate(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+def _rotate(x: NDArrayFloat) -> NDArrayFloat:
     """
     Rotate the axes of a multi-dimensional array to the right.
 
@@ -140,7 +145,7 @@ def _rotate(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
 
     Returns
     -------
-    npt.NDArray[np.float64]
+    NDArrayFloat
         A multi-dimensional array of shape `(n2, ..., nk, n1)`.
 
     Notes
@@ -168,8 +173,8 @@ def _rotate(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
 
 
 def _rotated_h_transform(
-    x: npt.NDArray[np.float64], y: npt.NDArray[np.float64]
-) -> npt.NDArray[np.float64]:
+    x: NDArrayFloat, y: NDArrayFloat
+) -> NDArrayFloat:
     """
     Compute the rotated H-transform of a nD array `y` with respect to a 2D array `x`.
 
@@ -190,7 +195,7 @@ def _rotated_h_transform(
 
     Returns
     -------
-    npt.NDArray[np.float64]
+    NDArrayFloat
         A nD array of shape `(n1, n2, ..., nk, m)`.
 
     Examples
@@ -213,7 +218,7 @@ def _rotated_h_transform(
     return _rotate(_h_transform(x, y))
 
 
-def _create_permutation(p: int, k: int) -> npt.NDArray[np.float64]:
+def _create_permutation(p: int, k: int) -> NDArrayFloat:
     """
     Create a permutation array for a given number of factors and levels.
 
@@ -230,7 +235,7 @@ def _create_permutation(p: int, k: int) -> npt.NDArray[np.float64]:
 
     Returns
     -------
-    npt.NDArray[np.float64]
+    NDArrayFloat
         A 1D array of shape `(k*p,)` that contains the indices of all possible
         combinations of `p` factors with `k` levels each.
 
@@ -253,8 +258,8 @@ def _create_permutation(p: int, k: int) -> npt.NDArray[np.float64]:
 
 
 def _tensor_product_penalties(
-    penalties: list[npt.NDArray[np.float64]],
-) -> list[npt.NDArray[np.float64]]:
+    penalties: list[NDArrayFloat],
+) -> list[NDArrayFloat]:
     """
     Compute the tensor product of a list of penalty matrices.
 
@@ -271,7 +276,7 @@ def _tensor_product_penalties(
 
     Returns
     -------
-    list[npt.NDArray[np.float64]]
+    list[NDArrayFloat]
         A list of tensor product matrices.
 
     Notes
@@ -321,7 +326,7 @@ def _tensor_product_penalties(
     eyes = [np.eye(penalty.shape[1]) for penalty in penalties]
 
     if n_penalties == 1:
-        return penalties[0]
+        return [penalties[0]]
     else:
         tensors_list = []
         for idx in range(n_penalties):
@@ -337,8 +342,8 @@ def _tensor_product_penalties(
 
 
 def _format_data(
-    X: npt.NDArray[np.float_], y: npt.NDArray[np.float_]
-) -> tuple[list[npt.NDArray[np.float_]], npt.NDArray[np.float_]]:
+    X: NDArrayFloat, y: NDArrayFloat
+) -> tuple[list[NDArrayFloat], NDArrayFloat, NDArrayFloat]:
     """Format input data for multidimensional P-splines smoothing.
 
     Parameters
@@ -367,12 +372,12 @@ def _format_data(
 ########################################################################################
 # Inner functions for the PSplines class.
 def _fit_one_dimensional(
-    data: npt.NDArray[np.float64],
-    basis: npt.NDArray[np.float64],
-    sample_weights: npt.NDArray[np.float64] | None = None,
+    data: NDArrayFloat,
+    basis: NDArrayFloat,
+    sample_weights: NDArrayFloat | None = None,
     penalty: float = 1.0,
     order_penalty: int = 2,
-) -> Dict[str, npt.NDArray[np.float64]]:
+) -> dict[str, NDArrayFloat]:
     """
     Fit a one-dimensional P-splines model to the given data.
 
@@ -397,7 +402,7 @@ def _fit_one_dimensional(
 
     Returns
     -------
-    Dict[str, npt.NDArray[np.float64]]
+    dict[str, NDArrayFloat]
         A dictionary containing the following keys:
         - `y_hat`: A one-dimensional array of shape `(n_obs,)` containing the fitted
         values.
@@ -456,12 +461,12 @@ def _fit_one_dimensional(
 
 
 def _fit_n_dimensional(
-    data: npt.NDArray[np.float64],
-    basis_list: List[npt.NDArray[np.float64]],
-    sample_weights: npt.NDArray[np.float64] | None = None,
-    penalties: tuple[float, ...] | None = None,
+    data: NDArrayFloat,
+    basis_list: list[NDArrayFloat],
+    sample_weights: NDArrayFloat | None = None,
+    penalties: NDArrayFloat | None = None,
     order_penalty: int = 2,
-) -> Dict[str, npt.NDArray[np.float64]]:
+) -> dict[str, NDArrayFloat]:
     """
     Fit an nD P-splines model to the given data.
 
@@ -488,7 +493,7 @@ def _fit_n_dimensional(
 
     Returns
     -------
-    Dict[str, npt.NDArray[np.float64]]
+    dict[str, NDArrayFloat]
         A dictionary containing the following keys:
         - `y_hat`: An nD array of shape `(n1, n2, ..., nk)` containing the fitted
         values.
@@ -611,9 +616,9 @@ class PSplines:
 
     Attributes
     ----------
-    y_hat: npt.NDArray[np.float64]
+    y_hat: NDArrayFloat
         The fitted response variable values.
-    beta_hat: npt.NDArray[np.float64]
+    beta_hat: NDArrayFloat
         The estimated coefficients for the basis functions.
     diagnostics: dict
         A dictionary containing diagnostic information about the fit.
@@ -645,21 +650,21 @@ class PSplines:
         self._order_derivative = order_derivative
 
     @property
-    def n_segments(self) -> Union[int, npt.NDArray[np.int64]]:
+    def n_segments(self) -> int | npt.NDArray[np.int64]:
         """Getter for `n_segments`."""
         return self._n_segments
 
     @n_segments.setter
-    def n_segments(self, new_n_segments: Union[int, npt.NDArray[np.int64]]) -> None:
+    def n_segments(self, new_n_segments: int | npt.NDArray[np.int64]) -> None:
         self._n_segments = new_n_segments
 
     @property
-    def degree(self) -> Union[int, npt.NDArray[np.int64]]:
+    def degree(self) -> int | npt.NDArray[np.int64]:
         """Getter for `degree`."""
         return self._degree
 
     @degree.setter
-    def degree(self, new_degree: Union[int, npt.NDArray[np.int64]]) -> None:
+    def degree(self, new_degree: int | npt.NDArray[np.int64]) -> None:
         self._degree = new_degree
 
     @property
@@ -686,12 +691,12 @@ class PSplines:
 
     def fit(
         self,
-        y: npt.NDArray[np.float64],
-        x: List[npt.NDArray[np.float64]] | npt.NDArray[np.float64],
-        sample_weights: npt.NDArray[np.float64] | None = None,
-        penalty: tuple[float, ...] | None = None,
-        **kwargs,
-    ) -> None:
+        y: NDArrayFloat,
+        x: list[NDArrayFloat] | NDArrayFloat,
+        sample_weights: NDArrayFloat | None = None,
+        penalty: float | NDArrayFloat | None = None,
+        **kwargs: list[float | None],
+    ) -> Self:
         """Fit a P-splines model to the given data.
 
         The method fits a P-splines model to the given data using a B-splines basis and
@@ -711,6 +716,15 @@ class PSplines:
             equal weight.
         penalty
             A tuple of penalty parameters for each dimension.
+        kwargs
+            See below.
+
+        Keyword Arguments
+        -----------------
+        domain_min
+            A list of minimum values for each dimension.
+        domain_max
+            A list of maximum values for each dimension.
 
         Returns
         -------
@@ -733,7 +747,10 @@ class PSplines:
         if isinstance(self.degree, int):
             self.degree = np.repeat(self.degree, self.dimension)
         if penalty is None:
-            penalty = tuple(self.dimension * [1])
+            if self.dimension == 1:
+                penalty = 1.0
+            else:
+                penalty = np.ones(self.dimension)
 
         domain_min = kwargs.get("domain_min", self.dimension * [None])
         domain_max = kwargs.get("domain_max", self.dimension * [None])
@@ -778,7 +795,11 @@ class PSplines:
         self.diagnostics = {"hat_matrix": res["hat_matrix"]}
         return self
 
-    def predict(self, x: npt.NDArray[np.float64] | None = None, **kwargs) -> None:
+    def predict(
+        self,
+        x: NDArrayFloat | None = None,
+        **kwargs: list[float | None]
+    ) -> NDArrayFloat:
         """Predict the response variable values for the given predictor variable values.
 
         The method predicts the response variable values for the given predictor
@@ -791,10 +812,19 @@ class PSplines:
             A 1D or a list of one-dimensional arrays of shape `(n1,), (n2,), ..., (nk,)`
             containing the predictor variable values. If not provided, the method
             returns the fitted values.
+        kwargs
+            See below.
+
+        Keyword Arguments
+        -----------------
+        domain_min
+            A list of minimum values for each dimension.
+        domain_max
+            A list of maximum values for each dimension.
 
         Returns
         -------
-        npt.NDArray[np.float64]
+        NDArrayFloat
             An nD array of shape `(n1, n2, ..., nk)` containing the predicted response
             variable values.
 

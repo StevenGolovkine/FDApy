@@ -95,7 +95,7 @@ class TestTensorProductPenalties(unittest.TestCase):
         penalties = [np.array([[1.0, -1.0], [-1.0, 2.0]])]
         result = _tensor_product_penalties(penalties)
         expected_result = np.array([[1.0, -1.0], [-1.0, 2.0]])
-        np.testing.assert_array_almost_equal(result, expected_result)
+        np.testing.assert_array_almost_equal(result, [expected_result])
 
     def test_tensor_product_penalties(self):
         penalties = [

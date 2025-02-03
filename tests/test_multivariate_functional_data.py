@@ -348,7 +348,7 @@ class TestStandardizeMultivariateFunctionalData(unittest.TestCase):
         )
 
     def test_standardize(self):
-        res = self.fdata_multi.standardize(method_smoothing="LP", remove_diagonal=False)
+        res = self.fdata_multi.standardize(method_smoothing="LP")
 
         np.testing.assert_equal(res.n_functional, 3)
 

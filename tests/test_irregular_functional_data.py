@@ -1553,7 +1553,7 @@ class TestStandardizeIrregular(unittest.TestCase):
         )
 
     def test_standardize_1d(self):
-        results = self.fdata_sparse.standardize(remove_diagonal=False)
+        results = self.fdata_sparse.standardize()
 
         expected_results = IrregularValues(
             {0: np.array([0, 0, 1]), 1: np.array([0, 0, -1])}
