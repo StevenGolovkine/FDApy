@@ -21,13 +21,15 @@ from ...representation.functional_data import DenseFunctionalData
 from ...misc.utils import _eigh
 
 
+NDArrayFloat = npt.NDArray[np.float64]
+
 ##############################################################################
 # Utility functions
 
 
 def _initialize_vectors(
     shape: Tuple[int, int, int]
-) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
+) -> Tuple[NDArrayFloat, NDArrayFloat, NDArrayFloat]:
     r"""Init u, v and w in the FCP-TPA algorithm.
 
     Parameters
@@ -37,7 +39,7 @@ def _initialize_vectors(
 
     Returns
     -------
-    Tuple[npt.NDArray, npt.NDArray, npt.NDArray]
+    Tuple[NDArrayFloat, NDArrayFloat, NDArrayFloat]
         A tuple containing normed vectors for the initialization of the FCP-TPA
         algorithm.
 
@@ -48,7 +50,7 @@ def _initialize_vectors(
 
 def _initalize_output(
     shape: Tuple[int, int, int], n_components: int
-) -> Tuple[npt.NDArray, List[npt.NDArray]]:
+) -> Tuple[NDArrayFloat, List[NDArrayFloat]]:
     """Init coefficients and u, v and w eigenvectors matrices.
 
     Parameters
@@ -60,7 +62,7 @@ def _initalize_output(
 
     Returns
     -------
-    Tuple[npt.NDArray, List[npt.NDArray]]
+    Tuple[NDArrayFloat, List[NDArrayFloat]]
         A tuple containing initialized matrices for the results of the FCP-TPA
         algorithm.
 
@@ -71,8 +73,8 @@ def _initalize_output(
 
 
 def _eigendecomposition_penalty_matrices(
-    penalty_matrices: Dict[str, npt.NDArray[np.float64]]
-) -> Dict[str, Tuple[npt.NDArray, npt.NDArray]]:
+    penalty_matrices: Dict[str, NDArrayFloat]
+) -> Dict[str, Tuple[NDArrayFloat, NDArrayFloat]]:
     """Compute eigendecomposition of penalty matrices in the FCP-TPA algorithm.
 
     Parameters
@@ -84,7 +86,7 @@ def _eigendecomposition_penalty_matrices(
 
     Returns
     -------
-    Dict[str, Tuple[npt.NDArray, npt.NDArray]]
+    Dict[str, Tuple[NDArrayFloat, NDArrayFloat]]
         A dictionary where each entry contains the eigenvalues and eigenvectors
         of the penalty matrix for each dimension of the image. The eigenvalues
         are sorted in descending order.
@@ -96,9 +98,9 @@ def _eigendecomposition_penalty_matrices(
 def _gcv(
     alpha: float,
     dimension_length: int,
-    vector: npt.NDArray[np.float64],
+    vector: NDArrayFloat,
     smoother: float,
-    rayleigh: npt.NDArray[np.float64],
+    rayleigh: NDArrayFloat,
 ) -> float:
     r"""Generalized cross-validation for the FCP-TPA algortihm.
 
@@ -155,12 +157,12 @@ def _gcv(
 
 def _find_optimal_alpha(
     alpha_range: Tuple[float, float],
-    data: npt.NDArray[np.float64],
-    u: npt.NDArray[np.float64],
-    v: npt.NDArray[np.float64],
+    data: NDArrayFloat,
+    u: NDArrayFloat,
+    v: NDArrayFloat,
     alpha: float,
-    penalty_matrix: npt.NDArray[np.float64],
-    eigencomponents: Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]],
+    penalty_matrix: NDArrayFloat,
+    eigencomponents: Tuple[NDArrayFloat, NDArrayFloat],
     formula: str,
 ) -> float:
     r"""Find the optimal smoothing parameters in FCP-TPA using GCV.
@@ -251,7 +253,7 @@ def _find_optimal_alpha(
 
 
 def _compute_denominator(
-    a: npt.NDArray, alpha: float, penalty_matrix: npt.NDArray
+    a: NDArrayFloat, alpha: float, penalty_matrix: NDArrayFloat
 ) -> float:
     r"""Compute denominator of equations (17) and (18) in [1]_.
 
@@ -273,13 +275,13 @@ def _compute_denominator(
 
 
 def _update_vector(
-    data: npt.NDArray[np.float64],
-    vectors: Tuple[npt.NDArray, npt.NDArray, npt.NDArray],
-    penalty_matrix: npt.NDArray,
+    data: NDArrayFloat,
+    vectors: Tuple[NDArrayFloat, NDArrayFloat, NDArrayFloat],
+    penalty_matrix: NDArrayFloat,
     alpha: float,
     denominator: float,
     formula: str,
-) -> npt.NDArray:
+) -> NDArrayFloat:
     r"""Update individual vector in FCP-TPA.
 
     This function is used to compute the step (2.a.i), (2.a.ii) and (2.a.iii)
@@ -305,7 +307,7 @@ def _update_vector(
 
     Returns
     -------
-    npt.NDArray
+    NDArrayFloat
         The updated vector.
 
     References
@@ -324,13 +326,13 @@ def _update_vector(
 
 
 def _update_components(
-    data: npt.NDArray[np.float64],
-    vectors: Tuple[npt.NDArray, npt.NDArray, npt.NDArray],
-    penalty_matrices: Dict[str, npt.NDArray[np.float64]],
+    data: NDArrayFloat,
+    vectors: Tuple[NDArrayFloat, NDArrayFloat, NDArrayFloat],
+    penalty_matrices: Dict[str, NDArrayFloat],
     alphas: Dict[str, Tuple[float, float]],
     alpha_range: Dict[str, Tuple[float, float]],
-    eigens: Dict[str, Tuple[npt.NDArray, npt.NDArray]],
-) -> Tuple[Tuple[npt.NDArray], Dict[str, float]]:
+    eigens: Dict[str, Tuple[NDArrayFloat, NDArrayFloat]],
+) -> Tuple[Tuple[NDArrayFloat], Dict[str, float]]:
     r"""Update the components in FCP-TPA.
 
     This function corresponds to one pass of the step (2.a) in the FCP-TPA
@@ -361,7 +363,7 @@ def _update_components(
 
     Returns
     -------
-    Tuple[Tuple[npt.NDArray], Dict[str, float]]
+    Tuple[Tuple[NDArrayFloat], Dict[str, float]]
         The updated parameters.
 
     References
@@ -491,7 +493,7 @@ class FCPTPA:
 
     Attributes
     ----------
-    eigenvalues: npt.NDArray[np.float64], shape=(n_components,)
+    eigenvalues: NDArrayFloat, shape=(n_components,)
         The singular values corresponding to each of selected components.
     eigenfunctions: DenseFunctionalData
         Principal axes in feature space, representing the directions of
@@ -538,7 +540,7 @@ class FCPTPA:
         self._normalize = new_normalize
 
     @property
-    def eigenvalues(self) -> npt.NDArray[np.float64]:
+    def eigenvalues(self) -> NDArrayFloat:
         """Getter for `eigenvalues`."""
         return self._eigenvalues
 
@@ -550,7 +552,7 @@ class FCPTPA:
     def fit(
         self,
         data: DenseFunctionalData,
-        penalty_matrices: Dict[str, npt.NDArray[np.float64]],
+        penalty_matrices: Dict[str, NDArrayFloat],
         alpha_range: Dict[str, Tuple[float, float]],
         tolerance: float = 1e-4,
         max_iteration: int = 15,
@@ -730,7 +732,7 @@ class FCPTPA:
 
     def transform(
         self, data: DenseFunctionalData, method: str = "NumInt"
-    ) -> npt.NDArray[np.float64]:
+    ) -> NDArrayFloat:
         """Apply dimension reduction to the data.
 
         Parameters
@@ -743,7 +745,7 @@ class FCPTPA:
 
         Returns
         -------
-        npt.NDArray[np.float64], shape=(n_obs, n_components)
+        NDArrayFloat, shape=(n_obs, n_components)
             An array representing the projection of the data onto the basis of
             functions defined by the eigenimages.
 
@@ -768,7 +770,7 @@ class FCPTPA:
         else:
             raise ValueError(f"Method {method} not implemented.")
 
-    def inverse_transform(self, scores: npt.NDArray[np.float64]) -> DenseFunctionalData:
+    def inverse_transform(self, scores: NDArrayFloat) -> DenseFunctionalData:
         """Transform the data back to its original space.
 
         Return a DenseFunctionalData whose transform would be ``scores``.

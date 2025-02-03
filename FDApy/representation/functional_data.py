@@ -2814,6 +2814,27 @@ class BasisFunctionalData(FunctionalData):
 
     ###########################################################################
     # Static methods
+    @staticmethod
+    def concatenate(*fdata: BasisFunctionalData) -> BasisFunctionalData:
+        """Concatenate FunctionalData objects.
+
+        Parameters
+        ----------
+        fdata
+            Functional data to concatenate.
+
+        Returns
+        -------
+        BasisFunctionalData
+            Concatenated data.
+
+        Raises
+        ------
+        NotImplementedError
+            Not implemented for BasisFunctionalData.
+
+        """
+        raise NotImplementedError()
 
     ###########################################################################
 
