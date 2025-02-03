@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 
 from abc import ABC, abstractmethod
-from typing import Callable
+from typing import Any, Callable
 
 from ..representation.argvals import DenseArgvals, IrregularArgvals
 from ..representation.values import DenseValues, IrregularValues
@@ -209,7 +209,7 @@ class Simulation(ABC):
         n_obs: int,
         n_clusters: int = 1,
         argvals: npt.NDArray[np.float64] | None = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         """Simulate a new set of curves."""
 

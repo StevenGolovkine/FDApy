@@ -80,7 +80,7 @@ class Datasets(Simulation):
         n_obs: int,
         n_clusters: int = 1,
         argvals: npt.NDArray[np.float64] | None = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         """Simulate realizations of the Datasets.
 

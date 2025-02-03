@@ -184,7 +184,7 @@ def _fractional_brownian(
 
     """
 
-    def p(idx, hurst):
+    def p(idx: float, hurst: float) -> float:
         return np.power(idx, 2 * hurst)
 
     if hurst <= 0:
@@ -210,7 +210,7 @@ def _simulate_brownian(
     name: str,
     argvals: npt.NDArray[np.float64],
     rnorm: Callable = np.random.normal,
-    **kwargs,
+    **kwargs: Any,
 ) -> npt.NDArray[np.float64]:
     """Simulate Brownian motion.
 
@@ -318,7 +318,7 @@ class Brownian(Simulation):
         n_obs: int,
         n_clusters: int = 1,
         argvals: npt.NDArray[np.float64] | None = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         """Simulate realizations of a Brownian motion.
 

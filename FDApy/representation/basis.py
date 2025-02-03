@@ -15,7 +15,7 @@ import numpy.typing as npt
 from functools import reduce
 from scipy.integrate import simpson
 
-from typing import List, Tuple
+from typing import Any, List, Tuple
 
 from .functional_data import DenseFunctionalData, MultivariateFunctionalData
 
@@ -34,7 +34,7 @@ def _simulate_basis(
     n_functions: int = 5,
     is_normalized: bool = False,
     add_intercept: bool = True,
-    **kwargs,
+    **kwargs: Any,
 ) -> npt.NDArray[np.float64]:
     """Redirect to the right simulation basis function.
 
@@ -171,7 +171,7 @@ class Basis(DenseFunctionalData):
         values: DenseValues | None = None,
         is_normalized: bool = False,
         add_intercept: bool = True,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         """Initialize Basis object."""
         if name == "given":
@@ -257,7 +257,7 @@ class Basis(DenseFunctionalData):
         method_integration: str = "trapz",
         method_smoothing: str | None = None,
         noise_variance: float | None = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> npt.NDArray[np.float64]:
         # Get parameters
         n_obs = self.n_obs
@@ -356,7 +356,7 @@ class MultivariateBasis(MultivariateFunctionalData):
         values: List[DenseValues] | None = None,
         is_normalized: bool = False,
         add_intercept: bool = True,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         """Initialize MultivariateBasis object."""
         self.name = name
