@@ -13,32 +13,30 @@ import numpy.typing as npt
 
 from abc import abstractmethod
 from collections import UserDict
-from typing import Any, Dict, Tuple, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .values import Values
 
 
+NDArrayFloat = npt.NDArray[np.float64]
+
+
 ###############################################################################
 # Class Argvals
-class Argvals(UserDict):
+class Argvals(UserDict[Any, Any]):
     """Define the structure of Argvals.
 
     Attributes
     ----------
-    n_points: Tuple[int, ...] | Dict[int, Tuple[int, ...]]
+    n_points: tuple[int, ...] | dict[int, tuple[int, ...]]
         Number of sampling points of each dimension.
     n_dimension: int
         Number of input dimension of the data.
-    min_max: Dict[str, Tuple[float, float]]
+    min_max: dict[str, tuple[float, float]]
         Minimum and maximum sampling points for each dimension.
 
     """
-
-    @staticmethod
-    @abstractmethod
-    def concatenate(*argvals: Argvals) -> Argvals:
-        """Concatenate Argvals objects."""
 
     @abstractmethod
     def __setitem__(self, key: Any, value: Any) -> None:
@@ -63,7 +61,7 @@ class Argvals(UserDict):
         super().__setitem__(key, value)
 
     @abstractmethod
-    def __eq__(self, other: Argvals) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """Check if two Argvals are equals.
 
         This method if two Argvals objects have the same type and if their
@@ -89,21 +87,21 @@ class Argvals(UserDict):
 
     @property
     @abstractmethod
-    def n_points(self):
+    def n_points(self) -> tuple[int, ...] | dict[int, tuple[int, ...]]:
         """Get the number of sampling points of each dimension."""
 
     @property
     @abstractmethod
-    def n_dimension(self):
+    def n_dimension(self) -> int:
         """Get the number of dimension of the data."""
 
     @property
     @abstractmethod
-    def min_max(self):
+    def min_max(self) -> dict[str, tuple[float, float]]:
         """Get the minimum and maximum sampling points for each dimension."""
 
     @abstractmethod
-    def normalization(self):
+    def normalization(self) -> Argvals:
         """Normalize the Argvals."""
 
     def compatible_with(self, values: Values) -> None:
@@ -140,17 +138,17 @@ class DenseArgvals(Argvals):
 
     Attributes
     ----------
-    n_points: Tuple[int, ...]
+    n_points: tuple[int, ...]
         Number of sampling points of each dimension.
     n_dimension: int
         Number of input dimension of the data.
-    min_max: Dict[str, Tuple[float, float]]
+    min_max: dict[str, tuple[float, float]]
         Minimum and maximum sampling points for each dimension.
 
     """
 
     @staticmethod
-    def concatenate(*argvals) -> DenseArgvals:
+    def concatenate(*argvals: DenseArgvals) -> DenseArgvals:
         """Concatenate DenseArgvals objects.
 
         It does not make sense to concatenate DenseArgvals. This function
@@ -208,7 +206,7 @@ class DenseArgvals(Argvals):
             raise TypeError("Value must be an np.ndarray")
         super().__setitem__(key, value)
 
-    def __eq__(self, other: DenseArgvals) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """Check if two DenseArgvals objects are equal.
 
         This method compares the DenseArgvals object with another object to
@@ -255,7 +253,7 @@ class DenseArgvals(Argvals):
         return True
 
     @property
-    def n_points(self) -> Tuple[int, ...]:
+    def n_points(self) -> tuple[int, ...]:
         """Get the number of sampling points of each dimension."""
         return tuple(dim.shape[0] for dim in self.values())
 
@@ -265,11 +263,11 @@ class DenseArgvals(Argvals):
         return len(self)
 
     @property
-    def min_max(self) -> Dict[str, Tuple[float, float]]:
+    def min_max(self) -> dict[str, tuple[float, float]]:
         """Get the minimum and maximum sampling points for each dimension."""
         return {idx: (min(argval), max(argval)) for idx, argval in self.items()}
 
-    def range(self, percentage: float = 1.0) -> Dict[str, float]:
+    def range(self, percentage: float = 1.0) -> dict[str, float]:
         """Get the range of sampling points for each dimension.
 
         Parameters
@@ -279,7 +277,7 @@ class DenseArgvals(Argvals):
 
         Returns
         -------
-        Dict[str, float]
+        dict[str, float]
             A percentage of the range of the sampling points in each dimension.
 
         """
@@ -321,17 +319,17 @@ class IrregularArgvals(Argvals):
 
     Attributes
     ----------
-    n_points: Dict[int, Tuple[int, ...]]
+    n_points: dict[int, tuple[int, ...]]
         Number of sampling points of each dimension.
     n_dimension: int
         Number of input dimension of the data.
-    min_max: Dict[str, Tuple[float, float]]
+    min_max: dict[str, tuple[float, float]]
         Minimum and maximum sampling points for each dimension.
 
     """
 
     @staticmethod
-    def concatenate(*argvals) -> IrregularArgvals:
+    def concatenate(*argvals: IrregularArgvals) -> IrregularArgvals:
         """Concatenate IrregularArgvals objects.
 
         This function concatenates the IrregularArgvals objects by adding the one at
@@ -348,7 +346,7 @@ class IrregularArgvals(Argvals):
             The concatenated IrregularArgvals.
 
         """
-        new_argvals = {}
+        new_argvals: dict[int, DenseArgvals] = {}
         for el in argvals:
             temp = len(new_argvals)
             for key, values in el.items():
@@ -387,7 +385,7 @@ class IrregularArgvals(Argvals):
             raise TypeError("Value must be a DenseArgvals")
         super().__setitem__(key, value)
 
-    def __eq__(self, other: IrregularArgvals) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """Check for equality between two IrregularArgvals objects.
 
         Parameters
@@ -431,7 +429,7 @@ class IrregularArgvals(Argvals):
         return True
 
     @property
-    def n_points(self) -> Dict[int, Tuple[int, ...]]:
+    def n_points(self) -> dict[int, tuple[int, ...]]:
         """Get the number of sampling points of each dimension."""
         return {obs: argvals.n_points for obs, argvals in self.items()}
 
@@ -441,7 +439,7 @@ class IrregularArgvals(Argvals):
         return len(next(iter(self.values())))
 
     @property
-    def min_max(self) -> Dict[str, Tuple[float, float]]:
+    def min_max(self) -> dict[str, tuple[float, float]]:
         """Get the minimum and maximum sampling points for each dimension."""
         return self.to_dense().min_max
 
@@ -475,7 +473,7 @@ class IrregularArgvals(Argvals):
                     stand_dict[out_key][in_key] = (value - min_x) / (max_x - min_x)
         return IrregularArgvals(stand_dict)
 
-    def switch(self) -> Dict[str, Dict[int, npt.NDArray[np.float64]]]:
+    def switch(self) -> dict[str, dict[int, npt.NDArray[np.float64]]]:
         """Switch the dictionary.
 
         This function switches nested dictionaries. It convert an
@@ -511,7 +509,7 @@ class IrregularArgvals(Argvals):
         }
 
         """
-        switched_dict = {}
+        switched_dict: dict[str, dict[int, NDArrayFloat]] = {}
         for outer_key, inner_dict in self.items():
             for inner_key, value in inner_dict.items():
                 if inner_key not in switched_dict:
