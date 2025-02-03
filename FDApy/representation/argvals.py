@@ -13,7 +13,7 @@ import numpy.typing as npt
 
 from abc import abstractmethod
 from collections import UserDict
-from typing import Any, Dict, Tuple, Type, TYPE_CHECKING
+from typing import Any, Dict, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .values import Values
@@ -37,7 +37,7 @@ class Argvals(UserDict):
 
     @staticmethod
     @abstractmethod
-    def concatenate(*argvals) -> Type[Argvals]:
+    def concatenate(*argvals: Argvals) -> Argvals:
         """Concatenate Argvals objects."""
 
     @abstractmethod
@@ -63,7 +63,7 @@ class Argvals(UserDict):
         super().__setitem__(key, value)
 
     @abstractmethod
-    def __eq__(self, other: Type[Argvals]) -> bool:
+    def __eq__(self, other: Argvals) -> bool:
         """Check if two Argvals are equals.
 
         This method if two Argvals objects have the same type and if their
@@ -106,7 +106,7 @@ class Argvals(UserDict):
     def normalization(self):
         """Normalize the Argvals."""
 
-    def compatible_with(self, values: Type[Values]) -> None:
+    def compatible_with(self, values: Values) -> None:
         """Raise an error if Argvals is not compatible with Values.
 
         Parameters

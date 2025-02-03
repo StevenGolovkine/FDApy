@@ -10,14 +10,22 @@ from __future__ import annotations
 
 import numpy as np
 import numpy.typing as npt
+import sys
 
 from abc import ABC, abstractmethod
 from collections import UserDict
-from typing import Dict, Tuple, Type, TYPE_CHECKING
+from typing import TYPE_CHECKING
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 if TYPE_CHECKING:
     from .argvals import Argvals
 
+
+NDArrayFloat = npt.NDArray[np.float64]
 
 ###############################################################################
 # Class Values
@@ -28,27 +36,17 @@ class Values(ABC):
     ----------
     n_obs: int
         Number of observations.
-    n_points: Tuple[int, ...] | Dict[int, Tuple[int, ...]]
+    n_points: tuple[int, ...] | dict[int, tuple[int, ...]]
         Number of sampling points of each dimension.
 
     """
 
-    @staticmethod
-    @abstractmethod
-    def concatenate(*values) -> Type[Values]:
-        """Concatenate Values objects."""
-
     @property
     @abstractmethod
-    def n_obs(self) -> int:
-        """Return the number of observations."""
-
-    @property
-    @abstractmethod
-    def n_points(self):
+    def n_points(self) -> tuple[int, ...] | dict[int, tuple[int, ...]]:
         """Return the number of sampling points for each dimension."""
 
-    def compatible_with(self, argvals: Type[Argvals]) -> None:
+    def compatible_with(self, argvals: Argvals) -> None:
         """Raise an error if Values is not compatible with Argvals.
 
         Parameters
@@ -72,7 +70,7 @@ class Values(ABC):
 
 ###############################################################################
 # Class DenseValues
-class DenseValues(Values, np.ndarray):
+class DenseValues(Values, NDArrayFloat):
     """Represent the values of dense functional data.
 
     This class extends the `Values` class to represent values for
@@ -83,13 +81,13 @@ class DenseValues(Values, np.ndarray):
     ----------
     n_obs: int
         Number of observations.
-    n_points: Tuple[int, ...]
+    n_points: tuple[int, ...]
         Number of sampling points of each dimension.
 
     """
 
     @staticmethod
-    def concatenate(*values) -> DenseValues:
+    def concatenate(*values: DenseValues) -> DenseValues:
         """Concatenate DenseValues objects.
 
         Parameters
@@ -105,7 +103,7 @@ class DenseValues(Values, np.ndarray):
         """
         return DenseValues(np.vstack([el for el in values]))
 
-    def __new__(cls, input_array: npt.NDArray[np.float64]) -> None:
+    def __new__(cls, input_array: NDArrayFloat) -> Self:
         """Create a new instance of DenseValues.
 
         This method is responsible for creating and initializing the object.
@@ -146,7 +144,7 @@ class DenseValues(Values, np.ndarray):
         return self.shape[0]
 
     @property
-    def n_points(self) -> Tuple[int, ...]:
+    def n_points(self) -> tuple[int, ...]:
         """Return the number of sampling points for each dimension.
 
         The number of sampling points is the dimensions of the array,
@@ -158,7 +156,7 @@ class DenseValues(Values, np.ndarray):
 
 ###############################################################################
 # Class IrregularValues
-class IrregularValues(Values, UserDict):
+class IrregularValues(Values, UserDict[int, NDArrayFloat]):
     """Represent the values of irregular functional data.
 
     This class extends the `Values` class to represent values for
@@ -169,14 +167,14 @@ class IrregularValues(Values, UserDict):
     ----------
     n_obs: int
         Number of observations.
-    n_points: Dict[int, Tuple[int, ...]]
+    n_points: dict[int, tuple[int, ...]]
         Number of sampling points of each dimension.
 
 
     """
 
     @staticmethod
-    def concatenate(*values) -> IrregularValues:
+    def concatenate(*values: IrregularValues) -> IrregularValues:
         """Concatenate IrregularValues objects.
 
         Parameters
@@ -190,14 +188,14 @@ class IrregularValues(Values, UserDict):
             The concatenated IrregularValues.
 
         """
-        new_values = {}
+        new_values: dict[int, NDArrayFloat] = {}
         for el in values:
             temp = len(new_values)
-            for key, values in el.items():
-                new_values[temp + key] = values
+            for key, val in el.items():
+                new_values[temp + key] = val
         return IrregularValues(new_values)
 
-    def __setitem__(self, key: int, value: npt.NDArray[np.float64]) -> None:
+    def __setitem__(self, key: int, value: NDArrayFloat) -> None:
         """Set the value for a given key.
 
         This method sets the value for the specified key in the
@@ -249,7 +247,7 @@ class IrregularValues(Values, UserDict):
         return len(self)
 
     @property
-    def n_points(self) -> Dict[int, Tuple[int, ...]]:
+    def n_points(self) -> dict[int, tuple[int, ...]]:
         """Return the number of sampling points for each dimension.
 
         The number of sampling points is the dimension of the array for each
