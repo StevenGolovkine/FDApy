@@ -136,6 +136,7 @@ examples_order = [
     '../examples/fpca',
     '../examples/data_analysis',
     '../examples/simulation',
+    '../examples/misc',
     UNSORTED,
 ]
 
@@ -172,8 +173,6 @@ list_all = [
     # Basis
     "plot_basis_1d", "plot_basis_2d", "plot_basis_multivariate_1d",
     # Smoothing
-    "plot_local_polynomials_1d", "plot_local_polynomials_2d",
-    "plot_psplines_1d", "plot_psplines_2d",
     "plot_smooth_data_1d", "plot_smooth_data_2d",
     # FPCA
     "plot_fpca_1d", "plot_fpca_1d_sparse", "plot_fpca_2d",
@@ -183,6 +182,9 @@ list_all = [
     # Simulation
     "plot_karhunen", "plot_karhunen_multivariate", "plot_brownian",
     "plot_simulation", "plot_cluster", "plot_cluster_multivariate",
+    # Misc
+    "plot_local_polynomials_1d", "plot_local_polynomials_2d",
+    "plot_psplines_1d", "plot_psplines_2d",
 ]
 explicit_subsection_order = [item + ".py" for item in list_all]
 

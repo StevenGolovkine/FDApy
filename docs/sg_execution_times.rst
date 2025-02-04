@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:00.182** total execution time for 27 files **from all galleries**:
+**00:02.486** total execution time for 27 files **from all galleries**:
 
 .. container::
 
@@ -32,13 +32,25 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_basis_plot_basis_multivariate_1d.py` (``../examples/basis/plot_basis_multivariate_1d.py``)
-     - 00:00.182
+   * - :ref:`sphx_glr_auto_examples_misc_plot_psplines_2d.py` (``../examples/misc/plot_psplines_2d.py``)
+     - 00:01.871
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_misc_plot_local_polynomials_2d.py` (``../examples/misc/plot_local_polynomials_2d.py``)
+     - 00:00.337
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_misc_plot_psplines_1d.py` (``../examples/misc/plot_psplines_1d.py``)
+     - 00:00.168
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_misc_plot_local_polynomials_1d.py` (``../examples/misc/plot_local_polynomials_1d.py``)
+     - 00:00.109
      - 0.0
    * - :ref:`sphx_glr_auto_examples_basis_plot_basis_1d.py` (``../examples/basis/plot_basis_1d.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_basis_plot_basis_2d.py` (``../examples/basis/plot_basis_2d.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_basis_plot_basis_multivariate_1d.py` (``../examples/basis/plot_basis_multivariate_1d.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_data_analysis_plot_canadian_weather.py` (``../examples/data_analysis/plot_canadian_weather.py``)
@@ -93,18 +105,6 @@ Computation times
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_simulation_plot_simulation.py` (``../examples/simulation/plot_simulation.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_smoothing_plot_local_polynomials_1d.py` (``../examples/smoothing/plot_local_polynomials_1d.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_smoothing_plot_local_polynomials_2d.py` (``../examples/smoothing/plot_local_polynomials_2d.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_smoothing_plot_psplines_1d.py` (``../examples/smoothing/plot_psplines_1d.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_smoothing_plot_psplines_2d.py` (``../examples/smoothing/plot_psplines_2d.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_smoothing_plot_smooth_data_1d.py` (``../examples/smoothing/plot_smooth_data_1d.py``)
