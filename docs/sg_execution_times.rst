@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:24.863** total execution time for 29 files **from all galleries**:
+**00:00.292** total execution time for 29 files **from all galleries**:
 
 .. container::
 
@@ -32,90 +32,90 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_fpca_plot_mfpca_2d.py` (``../examples/fpca/plot_mfpca_2d.py``)
-     - 00:05.033
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_fpca_plot_mfpca_1d_2d.py` (``../examples/fpca/plot_mfpca_1d_2d.py``)
-     - 00:03.264
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_fpca_plot_mfpca_1d.py` (``../examples/fpca/plot_mfpca_1d.py``)
-     - 00:02.936
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_fpca_plot_mfpca_1d_sparse.py` (``../examples/fpca/plot_mfpca_1d_sparse.py``)
-     - 00:02.912
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_fpca_plot_fpca_1d_sparse.py` (``../examples/fpca/plot_fpca_1d_sparse.py``)
-     - 00:02.419
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_smoothing_plot_psplines_2d.py` (``../examples/smoothing/plot_psplines_2d.py``)
-     - 00:01.740
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_basis_plot_basis_2d.py` (``../examples/basis/plot_basis_2d.py``)
-     - 00:01.446
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_fpca_plot_fpca_2d.py` (``../examples/fpca/plot_fpca_2d.py``)
-     - 00:01.362
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_data_analysis_plot_canadian_weather.py` (``../examples/data_analysis/plot_canadian_weather.py``)
-     - 00:00.709
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_fpca_plot_fpca_1d.py` (``../examples/fpca/plot_fpca_1d.py``)
-     - 00:00.417
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_smoothing_plot_local_polynomials_2d.py` (``../examples/smoothing/plot_local_polynomials_2d.py``)
-     - 00:00.348
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulation_plot_karhunen_multivariate.py` (``../examples/simulation/plot_karhunen_multivariate.py``)
-     - 00:00.334
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulation_plot_karhunen.py` (``../examples/simulation/plot_karhunen.py``)
-     - 00:00.314
-     - 0.0
    * - :ref:`sphx_glr_auto_examples_representation_plot_multivariate_functional.py` (``../examples/representation/plot_multivariate_functional.py``)
-     - 00:00.307
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_representation_plot_dense_functional.py` (``../examples/representation/plot_dense_functional.py``)
-     - 00:00.279
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulation_plot_simulation.py` (``../examples/simulation/plot_simulation.py``)
-     - 00:00.153
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_smoothing_plot_psplines_1d.py` (``../examples/smoothing/plot_psplines_1d.py``)
-     - 00:00.126
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_representation_plot_irregular_functional.py` (``../examples/representation/plot_irregular_functional.py``)
-     - 00:00.119
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_basis_plot_basis_multivariate_2d.py` (``../examples/basis/plot_basis_multivariate_2d.py``)
-     - 00:00.086
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_smoothing_plot_smooth_data_1d.py` (``../examples/smoothing/plot_smooth_data_1d.py``)
-     - 00:00.081
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_smoothing_plot_local_polynomials_1d.py` (``../examples/smoothing/plot_local_polynomials_1d.py``)
-     - 00:00.079
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_smoothing_plot_smooth_data_2d.py` (``../examples/smoothing/plot_smooth_data_2d.py``)
-     - 00:00.075
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulation_plot_cluster_multivariate.py` (``../examples/simulation/plot_cluster_multivariate.py``)
-     - 00:00.073
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulation_plot_brownian.py` (``../examples/simulation/plot_brownian.py``)
-     - 00:00.066
+     - 00:00.292
      - 0.0
    * - :ref:`sphx_glr_auto_examples_basis_plot_basis_1d.py` (``../examples/basis/plot_basis_1d.py``)
-     - 00:00.064
+     - 00:00.000
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_basis_plot_basis_multivariate_1d_2d.py` (``../examples/basis/plot_basis_multivariate_1d_2d.py``)
-     - 00:00.061
+   * - :ref:`sphx_glr_auto_examples_basis_plot_basis_2d.py` (``../examples/basis/plot_basis_2d.py``)
+     - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_basis_plot_basis_multivariate_1d.py` (``../examples/basis/plot_basis_multivariate_1d.py``)
-     - 00:00.030
+     - 00:00.000
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulation_plot_cluster.py` (``../examples/simulation/plot_cluster.py``)
-     - 00:00.028
+   * - :ref:`sphx_glr_auto_examples_basis_plot_basis_multivariate_1d_2d.py` (``../examples/basis/plot_basis_multivariate_1d_2d.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_basis_plot_basis_multivariate_2d.py` (``../examples/basis/plot_basis_multivariate_2d.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_data_analysis_plot_canadian_weather.py` (``../examples/data_analysis/plot_canadian_weather.py``)
+     - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_data_analysis_plot_cd4.py` (``../examples/data_analysis/plot_cd4.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_fpca_plot_fpca_1d.py` (``../examples/fpca/plot_fpca_1d.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_fpca_plot_fpca_1d_sparse.py` (``../examples/fpca/plot_fpca_1d_sparse.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_fpca_plot_fpca_2d.py` (``../examples/fpca/plot_fpca_2d.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_fpca_plot_mfpca_1d.py` (``../examples/fpca/plot_mfpca_1d.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_fpca_plot_mfpca_1d_2d.py` (``../examples/fpca/plot_mfpca_1d_2d.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_fpca_plot_mfpca_1d_sparse.py` (``../examples/fpca/plot_mfpca_1d_sparse.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_fpca_plot_mfpca_2d.py` (``../examples/fpca/plot_mfpca_2d.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_representation_plot_dense_functional.py` (``../examples/representation/plot_dense_functional.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_representation_plot_irregular_functional.py` (``../examples/representation/plot_irregular_functional.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulation_plot_brownian.py` (``../examples/simulation/plot_brownian.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulation_plot_cluster.py` (``../examples/simulation/plot_cluster.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulation_plot_cluster_multivariate.py` (``../examples/simulation/plot_cluster_multivariate.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulation_plot_karhunen.py` (``../examples/simulation/plot_karhunen.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulation_plot_karhunen_multivariate.py` (``../examples/simulation/plot_karhunen_multivariate.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulation_plot_simulation.py` (``../examples/simulation/plot_simulation.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_smoothing_plot_local_polynomials_1d.py` (``../examples/smoothing/plot_local_polynomials_1d.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_smoothing_plot_local_polynomials_2d.py` (``../examples/smoothing/plot_local_polynomials_2d.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_smoothing_plot_psplines_1d.py` (``../examples/smoothing/plot_psplines_1d.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_smoothing_plot_psplines_2d.py` (``../examples/smoothing/plot_psplines_2d.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_smoothing_plot_smooth_data_1d.py` (``../examples/smoothing/plot_smooth_data_1d.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_smoothing_plot_smooth_data_2d.py` (``../examples/smoothing/plot_smooth_data_2d.py``)
      - 00:00.000
      - 0.0

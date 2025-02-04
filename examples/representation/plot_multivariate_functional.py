@@ -2,7 +2,6 @@
 Representation of multivariate functional data
 ==============================================
 
-Examples of representation of multivariate functional data.
 """
 
 # Author: Steven Golovkine <steven_golovkine@icloud.com>
@@ -22,20 +21,13 @@ from FDApy.visualization import plot_multivariate
 
 
 ###############################################################################
-# The representation of multivariate functional data
-# --------------------------------------------------
-# Multivariate functional data are defined as a list of univariate functional
-# data. The univariate functional data can be of whatever dimension (curves,
-# surfaces, ...) and dense or irregular. There is no restriction on the number
-# of elements in the list but each univariate element must have the same number
-# of observations.
+# Multivariate functional data are defined as a list of univariate functional data and are represented with a :class:`~FDApy.representation.MultivariateFunctionalData` object. The univariate functional data can be of whatever dimension (curves, surfaces, ...) and dense or irregular. There is no restriction on the number of elements in the list but each univariate element must have the same number of observations. It is possible to mix unidimensional and multidimensional functional data in the same list.
 
 ###############################################################################
 # First example
 # -------------
-# First, we will define two univariate unidimensional dense functional data.
-# By putting them as a list, we can define a ``MultivariateFunctionalData``
-# object.
+# First, we will define two univariate unidimensional dense functional data. Creating a list of these two objects, we can define a :class:`~FDApy.representation.MultivariateFunctionalData` object. We consider two observations of the multivariate functional data. The first feature is sampled on a hundred points between :math:`0` and :math:`\pi` and the second feature is sampled on fifty points between :math:`0` and :math:`1`.
+
 argvals = np.linspace(0, np.pi, num=100)
 X = np.array([np.sin(2 * np.pi * argvals), np.cos(2 * np.pi * argvals)])
 fdata_first = DenseFunctionalData(
@@ -56,9 +48,8 @@ _ = plot_multivariate(fdata)
 ###############################################################################
 # Second exmaple
 # --------------
-# Second, we will define a univariate unidimensional irregular functional data
-# and a univariate two-dimensional dense functional data. By putting them as a
-# list, we can define a ``MultivariateFunctionalData`` object.
+# Second, we will define a multivariate functional data with one univariate dense functional data and one univariate irregular functional data. Both univariate functional data are two-dimensional. We consider two observations of the multivariate functional data. For the first feature, the first observation is sampled on a grid of :math:`20 \times 20` sampling points and the second observation is sampled on a grid of :math:`15 \times 15` sampling points. For the second feature, the observations are sampled on a hundred points between :math:`0` and :math:`\pi` for each dimension.
+
 argvals = IrregularArgvals(
     {
         0: DenseArgvals(
