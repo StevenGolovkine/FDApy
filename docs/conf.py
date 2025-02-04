@@ -111,7 +111,6 @@ autosummary_generate = True
 
 
 # -- Options for "sphinx.ext.intersphinx" --
-
 intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable", None),
     "numpy": ("https://numpy.org/doc/stable", None),
@@ -123,6 +122,90 @@ intersphinx_mapping = {
 
 
 # -- Options for "sphinx_gallery.gen_gallery" --
+from sphinx_gallery.sorting import ExplicitOrder
+
+# Gallery sections shall be displayed in the following order.
+# Non-matching sections are inserted at the unsorted position
+
+UNSORTED = "unsorted"
+
+examples_order = [
+    '../examples/representation',
+    '../examples/basis',
+    '../examples/smoothing',
+    '../examples/fpca',
+    '../examples/data_analysis',
+    '../examples/simulation',
+    UNSORTED,
+]
+
+folder_lists = [examples_order]
+
+explicit_order_folders = [
+    fd for folders in folder_lists for fd in folders[:folders.index(UNSORTED)]
+]
+explicit_order_folders.append(UNSORTED)
+explicit_order_folders.extend([
+    fd for folders in folder_lists for fd in folders[folders.index(UNSORTED):]
+])
+
+
+class FDApyExplicitOrder(ExplicitOrder):
+    """For use within the 'subsection_order' key."""
+    def __call__(self, item):
+        """Return a string determining the sort order."""
+        if item in self.ordered_list:
+            return f"{self.ordered_list.index(item):04d}"
+        else:
+            return f"{self.ordered_list.index(UNSORTED):04d}{item}"
+
+# Subsection order:
+# Subsections are ordered by filename, unless they appear in the following
+# lists in which case the list order determines the order within the section.
+# Examples/tutorials that do not appear in a list will be appended.
+
+list_all = [
+    # **Examples
+    # Representation
+    "plot_dense_functional", "plot_irregular_functional",
+    "plot_multivariate_functional",
+    # Basis
+    "plot_basis_1d", "plot_basis_2d", "plot_basis_multivariate_1d",
+    "plot_basis_multivariate_2d", "plot_basis_multivariate_1d_2d",
+    # Smoothing
+    "plot_local_polynomials_1d", "plot_local_polynomials_2d",
+    "plot_psplines_1d", "plot_psplines_2d",
+    "plot_smooth_data_1d", "plot_smooth_data_2d",
+    # FPCA
+    "plot_fpca_1d", "plot_fpca_1d_sparse", "plot_fpca_2d",
+    "plot_mfpca_1d", "plot_mfpca_2d", "plot_mfpca_1d_2d", "plot_mfpca_1d_sparse",
+    # Data analysis
+    "plot_canadian_weather", "plot_cd4",
+    # Simulation
+    "plot_karhunen", "plot_karhunen_multivariate", "plot_brownian",
+    "plot_simulation", "plot_cluster", "plot_cluster_multivariate",
+]
+explicit_subsection_order = [item + ".py" for item in list_all]
+
+
+class FDApyExplicitSubOrder(ExplicitOrder):
+    """For use within the 'within_subsection_order' key."""
+    def __init__(self, src_dir):
+        self.src_dir = src_dir  # src_dir is unused here
+        self.ordered_list = explicit_subsection_order
+
+    def __call__(self, item):
+        """Return a string determining the sort order."""
+        if item in self.ordered_list:
+            return f"{self.ordered_list.index(item):04d}"
+        else:
+            # ensure not explicitly listed items come last.
+            return "zzz" + item
+
+
+# Provide the above classes for use in conf.py
+sectionorder = FDApyExplicitOrder(explicit_order_folders)
+subsectionorder = FDApyExplicitSubOrder
 
 
 sphinx_gallery_conf = {
@@ -130,6 +213,8 @@ sphinx_gallery_conf = {
     "examples_dirs": "../examples",
     # path where to save gallery generated examples
     "gallery_dirs": "auto_examples",
+    "subsection_order": sectionorder,
+    'within_subsection_order': subsectionorder,
     "reference_url": {
         # The module you locally document uses None
         "FDApy": None,
