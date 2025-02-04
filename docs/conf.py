@@ -171,7 +171,6 @@ list_all = [
     "plot_multivariate_functional",
     # Basis
     "plot_basis_1d", "plot_basis_2d", "plot_basis_multivariate_1d",
-    "plot_basis_multivariate_2d", "plot_basis_multivariate_1d_2d",
     # Smoothing
     "plot_local_polynomials_1d", "plot_local_polynomials_2d",
     "plot_psplines_1d", "plot_psplines_2d",
