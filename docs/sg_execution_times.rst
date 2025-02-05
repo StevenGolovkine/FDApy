@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:00.099** total execution time for 27 files **from all galleries**:
+**00:00.183** total execution time for 27 files **from all galleries**:
 
 .. container::
 
@@ -32,16 +32,13 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_misc_plot_local_polynomials_1d.py` (``../examples/misc/plot_local_polynomials_1d.py``)
-     - 00:00.099
+   * - :ref:`sphx_glr_auto_examples_basis_plot_basis_multivariate_1d.py` (``../examples/basis/plot_basis_multivariate_1d.py``)
+     - 00:00.183
      - 0.0
    * - :ref:`sphx_glr_auto_examples_basis_plot_basis_1d.py` (``../examples/basis/plot_basis_1d.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_basis_plot_basis_2d.py` (``../examples/basis/plot_basis_2d.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_basis_plot_basis_multivariate_1d.py` (``../examples/basis/plot_basis_multivariate_1d.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_data_analysis_plot_canadian_weather.py` (``../examples/data_analysis/plot_canadian_weather.py``)
@@ -69,6 +66,9 @@ Computation times
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_fpca_plot_mfpca_2d.py` (``../examples/fpca/plot_mfpca_2d.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_misc_plot_local_polynomials_1d.py` (``../examples/misc/plot_local_polynomials_1d.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_misc_plot_local_polynomials_2d.py` (``../examples/misc/plot_local_polynomials_2d.py``)

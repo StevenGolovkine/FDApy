@@ -19,7 +19,7 @@ from FDApy.visualization import plot
 
 
 ###############################################################################
-# We will show the basis functions for the Fourier, B-splines and Wiener basis. The number of functions in the basis is set to 5 and the sampling points are defined as a :class:`~FDApy.representation.DenseArgvals` object with a hundred points between :math:`0` and :math:`1`.
+# We will show the basis functions for the Fourier, B-splines and Wiener basis. The number of functions in the basis is set to :math:`5` and the sampling points are defined as a :class:`~FDApy.representation.DenseArgvals` object with a hundred points between :math:`0` and :math:`1`.
 
 # Parameters
 n_functions = 5
@@ -38,7 +38,7 @@ _ = plot(basis)
 ###############################################################################
 # B-splines basis
 # ---------------
-# Second, we will show the basis functions for the B-splines basis. The basis functions are piecewise polynomials that are smooth at the knots. The number of knots is equal to the number of functions in the basis minus 2. This basis may be used to represent smooth functions.
+# Second, we will show the basis functions for the B-splines basis. The basis functions are piecewise polynomials that are smooth at the knots. The number of knots is equal to the number of functions in the basis minus :math:`2`. This basis may be used to represent smooth functions.
 
 basis = Basis(name="bsplines", n_functions=n_functions, argvals=argvals)
 

@@ -20,7 +20,7 @@ from FDApy.visualization import plot_multivariate
 ##############################################################################
 # First example
 # -------------
-# First, we will define a multivariate basis where the first component is the Fourier basis and the second component is the Legendre basis. The number of functions in the basis is set to 3 and the sampling points are defined as a :class:`~FDApy.representation.DenseArgvals` object with eleven points between :math:`0` and :math:`1` for the first component and with eleven points between :math:`0` and :math:`0.5` for the second component.
+# First, we will define a multivariate basis where the first component is the Fourier basis and the second component is the Legendre basis. The number of functions in the basis is set to :math:`3` and the sampling points are defined as a :class:`~FDApy.representation.DenseArgvals` object with eleven points between :math:`0` and :math:`1` for the first component and with eleven points between :math:`0` and :math:`0.5` for the second component.
 
 basis_name = ["fourier", "legendre"]
 argvals = [
@@ -37,7 +37,7 @@ _ = plot_multivariate(basis)
 ###############################################################################
 # Second example
 # --------------
-# The second example is a multivariate basis where the first component is a multidimensional basis built from the tensor product of the Fourier basis and the second component is a multidimensional basis built from the tensor product of the Legendre basis. The number of functions in the multivariate basis is set to 3.
+# The second example is a multivariate basis where the first component is a multidimensional basis built from the tensor product of the Fourier basis and the second component is a multidimensional basis built from the tensor product of the Legendre basis. The number of functions in the multivariate basis is set to :math:`3`.
 
 # Parameters
 basis_name = [("fourier", "fourier"), ("legendre", "legendre")]
@@ -58,7 +58,7 @@ _ = plot_multivariate(basis)
 ###############################################################################
 # Third example
 # -------------
-# The third example is a multivariate basis where the first component is a Fourier basis (unidimensional) and the second component is a tensor product of Legendre basis (multidimensional). The number of functions in the multivariate basis is set to 9. To be coherent with the number of functions in the Fourier basis, the number of functions in the Legendre basis is set to 3 for each dimension (it results in :math:`3 \times 3 = 9` multidimensional functions).
+# The third example is a multivariate basis where the first component is a Fourier basis (unidimensional) and the second component is a tensor product of Legendre basis (multidimensional). The number of functions in the multivariate basis is set to :math:`9`. To be coherent with the number of functions in the Fourier basis, the number of functions in the Legendre basis is set to :math:`3` for each dimension (it results in :math:`3 \times 3 = 9` multidimensional functions).
 
 # Parameters
 basis_name = ["fourier", ("legendre", "legendre")]
