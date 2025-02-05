@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:02.486** total execution time for 27 files **from all galleries**:
+**00:00.099** total execution time for 27 files **from all galleries**:
 
 .. container::
 
@@ -32,17 +32,8 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_misc_plot_psplines_2d.py` (``../examples/misc/plot_psplines_2d.py``)
-     - 00:01.871
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_misc_plot_local_polynomials_2d.py` (``../examples/misc/plot_local_polynomials_2d.py``)
-     - 00:00.337
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_misc_plot_psplines_1d.py` (``../examples/misc/plot_psplines_1d.py``)
-     - 00:00.168
-     - 0.0
    * - :ref:`sphx_glr_auto_examples_misc_plot_local_polynomials_1d.py` (``../examples/misc/plot_local_polynomials_1d.py``)
-     - 00:00.109
+     - 00:00.099
      - 0.0
    * - :ref:`sphx_glr_auto_examples_basis_plot_basis_1d.py` (``../examples/basis/plot_basis_1d.py``)
      - 00:00.000
@@ -78,6 +69,15 @@ Computation times
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_fpca_plot_mfpca_2d.py` (``../examples/fpca/plot_mfpca_2d.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_misc_plot_local_polynomials_2d.py` (``../examples/misc/plot_local_polynomials_2d.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_misc_plot_psplines_1d.py` (``../examples/misc/plot_psplines_1d.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_misc_plot_psplines_2d.py` (``../examples/misc/plot_psplines_2d.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_representation_plot_dense_functional.py` (``../examples/representation/plot_dense_functional.py``)
