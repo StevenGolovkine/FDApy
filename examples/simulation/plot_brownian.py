@@ -2,12 +2,7 @@
 Simulation of Brownian motion
 =============================
 
-Examples of simulation of Brownian motion.
 """
-
-###############################################################################
-# A Brownian motion is a real valued continuous-time random process.
-#
 
 # Author: Steven Golovkine <steven_golovkine@icloud.com>
 # License: MIT
@@ -17,6 +12,10 @@ import numpy as np
 
 from FDApy.simulation import Brownian
 from FDApy.visualization import plot
+
+###############################################################################
+# The package provides a class to simulate different types of Brownian motion using the following classe: :class:`~FDApy.simulation.Brownian`. The type of Brownian motion can be standard, geometric or fractional.
+
 
 # Set general parameters
 rng = 42
@@ -42,6 +41,7 @@ hurst = 0.8
 #
 # * The function :math:`t \rightarrow X_t` is continuous with probablity :math:`1`.
 #
+# To simulate a standard Brownian motion, you can use the following code:
 br = Brownian(name="standard", random_state=rng)
 br.new(n_obs=n_obs, argvals=argvals, init_point=init_point)
 
@@ -65,6 +65,7 @@ _ = plot(br.data)
 # where :math:`\{W_t\}_{t \geq 0}` is a Brownian motion, :math:`\mu` is the
 # percentage drift and :math:`\sigma` is the percentage volatility.
 #
+# To simulate a geometric Brownian motion, you can use the following code:
 br = Brownian(name="geometric", random_state=rng)
 br.new(n_obs=n_obs, argvals=argvals, init_point=init_point, mu=mu, sigma=sigma)
 
@@ -90,6 +91,8 @@ _ = plot(br.data)
 # _{t \geq 0}` is a Brownian motion. If :math:`H > 1/2`, the increments of
 # :math:`\{X_t\}_{t \geq 0}` are positively correlated. If :math:`H < 1/2`, the
 # increments of :math:`\{X_t\}_{t \geq 0}` are negatively correlated.
+#
+# To simulate a fractional Brownian motion, you can use the following code:
 br = Brownian(name="fractional", random_state=rng)
 br.new(n_obs=n_obs, argvals=argvals, hurst=hurst)
 
