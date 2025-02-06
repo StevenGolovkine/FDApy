@@ -3,4 +3,4 @@
 Basis
 -----
 
-Examples concerning the :mod:`FDApy.basis` module.
+These examples illustrate the use of the :mod:`FDApy.basis` module. It contains examples of the different basis functions available in the package.

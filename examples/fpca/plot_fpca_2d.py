@@ -1,12 +1,8 @@
 """
 FPCA of 2-dimensional data
---------------------------
+===========================
 
-Example of functional principal components analysis of 2-dimensional data.
 """
-
-###############################################################################
-#
 
 # Author: Steven Golovkine <steven_golovkine@icloud.com>
 # License: MIT
@@ -20,6 +16,10 @@ from FDApy.simulation import KarhunenLoeve
 from FDApy.preprocessing import UFPCA, FCPTPA
 from FDApy.visualization import plot
 
+###############################################################################
+# In this section, we are showing how to perform a functional principal component on two-dimensional data using the :class:`~FDApy.preprocessing.UFPCA` and :class:`~FDApy.preprocessing.FCPTPA` classes. We will compare two methods to perform the dimension reduction: the FCP-TPA and the decomposition of the inner-product matrix. We will use the first :math:`K = 5` principal components to reconstruct the curves.
+
+
 # Set general parameters
 rng = 42
 n_obs = 50
@@ -27,17 +27,15 @@ n_obs = 50
 # Parameters of the basis
 name = ("fourier", "fourier")
 n_functions = (5, 5)
-argvals = DenseArgvals(
-    {"input_dim_0": np.linspace(0, 1, 21), "input_dim_1": np.linspace(-0.5, 0.5, 21)}
-)
+argvals = DenseArgvals({
+    "input_dim_0": np.linspace(0, 1, 21),
+    "input_dim_1": np.linspace(-0.5, 0.5, 21)
+})
 
 
 ###############################################################################
-# We simulate :math:`N = 50` images on the two-dimensional observation grid
-# :math:`\{0, 0.05, 0.1, \cdots, 1\} \times \{0, 0.05, 0.1, \cdots, 1\}`,
-# based on the tensor product of the first :math:`K = 5` Fourier
-# basis functions on :math:`[0, 1] \times [0, 1]` and the variance of
-# the scores random variables decreases exponentially.
+# We simulate :math:`N = 50` images on the two-dimensional observation grid :math:`\{0, 0.05, 0.1, \cdots, 1\} \times \{0, 0.05, 0.1, \cdots, 1\}`, based on the tensor product of the first :math:`K = 5` Fourier basis functions on :math:`[0, 1] \times [0, 1]` and the variance of the scores random variables decreases exponentially.
+
 kl = KarhunenLoeve(
     basis_name=name,
     n_functions=n_functions,
@@ -50,10 +48,15 @@ data = kl.data
 
 _ = plot(data)
 
-###############################################################################
-# FCP-TPA decomposition
-# ---------------------
 
+###############################################################################
+# Estimation of the eigencomponents
+# ---------------------------------
+# 
+# The class :class:`~FDApy.preprocessing.FCPTPA` requires two parameters: the number of components to estimate and if normalization is needed. The method also requires hyperparameters for the FCP-TPA algorithm. The hyperparameters are the penalty matrices for the first and second dimensions, the range of the alpha parameter for the first and second dimensions, the tolerance for the convergence of the algorithm, the maximum number of iterations, and if the tolerance should be adapted during the iterations. The class :class:`~FDApy.preprocessing.UFPCA` requires two parameters: the number of components to estimate and the method to use. For two-dimensional data, the method parameter can only be `inner-product`. It will estimate the eigenfunctions by decomposing the inner-product matrix.
+
+
+# First, we perform a univariate FPCA using the FPCTPA.
 # Hyperparameters for FCP-TPA
 n_points = data.n_points
 mat_v = np.diff(np.identity(n_points[0]))
@@ -73,41 +76,38 @@ ufpca_fcptpa.fit(
 )
 
 ###############################################################################
-# We estimate the scores.
-scores_fcptpa = ufpca_fcptpa.transform(data)
-
-# Plot of the scores
-_ = plt.scatter(scores_fcptpa[:, 0], scores_fcptpa[:, 1])
-
-# Reconstruct the curves using the scores.
-data_recons_fcptpa = ufpca_fcptpa.inverse_transform(scores_fcptpa)
-
-###############################################################################
-# Inner-product matrix decomposition
-# ----------------------------------
 #
-# Perform univariate FPCA using a decomposition of the inner-product
-# matrix.
+
+# Second, we perform a univariate FPCA using a decomposition of the inner-product matrix.
 ufpca_innpro = UFPCA(n_components=5, method="inner-product")
 ufpca_innpro.fit(data)
 
 
 ###############################################################################
-# Estimate the scores -- projection of the curves onto the eigenfunctions --
-# using the eigenvectors from the decomposition of the inner-product matrix.
-# numerical integration.
+# Estimation of the scores
+# ------------------------
+#
+# Once the eigenfunctions are estimated, we can estimate the scores -- projection of the curves onto the eigenfunctions -- using the eigenvectors from the decomposition of the covariance operator or the inner-product matrix. We can then reconstruct the curves using the scores. The :func:`~FDApy.preprocessing.UFPCA.transform` method requires the data as argument and the method to use. The method parameter can be either `NumInt`, `PACE` or `InnPro`. Note that, when using the eigenvectors from the decomposition of the inner-product matrix, new data can not be passed as argument of the `transform` method because the estimation is performed using the eigenvectors of the inner-product matrix.
+
+scores_fcptpa = ufpca_fcptpa.transform(data)
 scores_innpro = ufpca_innpro.transform(method="InnPro")
 
 # Plot of the scores
-_ = plt.scatter(scores_innpro[:, 0], scores_innpro[:, 1])
+plt.scatter(scores_fcptpa[:, 0], scores_fcptpa[:, 1], label="FCPTPA")
+plt.scatter(scores_innpro[:, 0], scores_innpro[:, 1], label="InnPro")
+plt.legend()
+plt.show()
 
 
 ###############################################################################
-# Reconstruct the curves using the scores.
+# Comparison of the methods
+# -------------------------
+#
+# Finally, we compare the methods by reconstructing the curves using the first :math:`K = 5` principal components. We plot a sample of curves and their reconstruction.
+
+data_recons_fcptpa = ufpca_fcptpa.inverse_transform(scores_fcptpa)
 data_recons_innpro = ufpca_innpro.inverse_transform(scores_innpro)
 
-###############################################################################
-# Plot an example of the curve reconstruction
 fig, axes = plt.subplots(nrows=5, ncols=3, figsize=(16, 16))
 for idx_plot, idx in enumerate(np.random.choice(n_obs, 5)):
     axes[idx_plot, 0] = plot(data[idx], ax=axes[idx_plot, 0])

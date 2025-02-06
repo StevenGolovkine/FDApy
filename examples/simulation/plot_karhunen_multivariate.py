@@ -2,8 +2,17 @@
 Simulation using multivariate Karhunen-Loève decomposition
 ==========================================================
 
-Examples of simulation using the multivariate Karhunen-Loève decomposition.
 """
+
+# Author: Steven Golovkine <steven_golovkine@icloud.com>
+# License: MIT
+
+# Load packages
+import numpy as np
+
+from FDApy.representation import DenseArgvals
+from FDApy.simulation import KarhunenLoeve
+from FDApy.visualization import plot_multivariate
 
 ###############################################################################
 # Multivariate functional data consist of independent trajectories of a
@@ -23,21 +32,12 @@ Examples of simulation using the multivariate Karhunen-Loève decomposition.
 # with a common mean function :math:`\mu(t)` and eigenfunctions
 # :math:`\phi_k, k = 1, \cdots, K`. The scores :math:`c_{i, k}`
 # are the projection of the curves :math:`X_i` onto the eigenfunctions
-# :math:`\phi_k`. These scores are random variables with mean :math:`0``
+# :math:`\phi_k`. These scores are random variables with mean :math:`0`
 # and variance :math:`\lambda_k`, which are the eigenvalues associated to each
 # eigenfunctions and that decreases toward :math:`0` when :math:`k` goes to
 # infinity. This representation is valid for domains of arbitrary dimension,
 # such as images (:math:`\mathcal{T} = \mathbb{R}^2`).
 
-# Author: Steven Golovkine <steven_golovkine@icloud.com>
-# License: MIT
-
-# Load packages
-import numpy as np
-
-from FDApy.representation import DenseArgvals
-from FDApy.simulation import KarhunenLoeve
-from FDApy.visualization import plot_multivariate
 
 # Set general parameters
 rng = 42
@@ -58,15 +58,7 @@ argvals = [
 #
 # **First example**
 # ---
-# We simulate :math:`N = 10` curves of a 2-dimensional process. The first
-# component of the process is defined on the one-dimensional observation grid
-# :math:`\{0, 0.01, 0.02, \cdots, 10\}`, based on the first :math:`K = 5`
-# Fourier basis functions on :math:`[0, 10]` and the variance of
-# the scores random variables equal to :math:`1` (default). The second
-# component of the process is defined on the one-dimensional observation grid
-# :math:`\{0, 0.01, 0.02, \cdots, 10\}`, based on the first :math:`K = 5`
-# B-splines basis functions on :math:`[0, 10]` and the variance of
-# the scores random variables equal to :math:`1` (default).
+# We simulate :math:`N = 10` curves of a 2-dimensional process. The first component of the process is defined on the one-dimensional observation grid :math:`\{0, 0.01, 0.02, \cdots, 10\}`, based on the first :math:`K = 5` Fourier basis functions on :math:`[0, 10]` and the variance of the scores random variables equal to :math:`1` (default). The second component of the process is defined on the one-dimensional observation grid :math:`\{-0.5, -0.49, -0.48, \cdots, 0.5\}`, based on the first :math:`K = 5` B-splines basis functions on :math:`[0, 10]` and the variance of the scores random variables equal to :math:`1` (default).
 kl = KarhunenLoeve(
     basis_name=name, n_functions=n_functions, argvals=argvals, random_state=rng
 )
@@ -76,16 +68,8 @@ _ = plot_multivariate(kl.data)
 
 ###############################################################################
 # **Second example**
-# ---
-# We simulate :math:`N = 10` curves of a 2-dimensional process. The first
-# component of the process is defined on the one-dimensional observation grid
-# :math:`\{0, 0.01, 0.02, \cdots, 1\}` (default), based on the first
-# :math:`K = 5` Fourier basis functions on :math:`[0, 1]` and the decreasing
-# of the variance of the scores is exponential. The second component of the
-# process is defined on the one-dimensional observation grid
-# :math:`\{0, 0.01, 0.02, \cdots, 1\}` (default), based on the first
-# :math:`K = 5` B-splines basis functions on :math:`[0, 1]` and the decreasing
-# of the variance of the scores is exponential.
+# --- 
+# We simulate :math:`N = 10` curves of a 2-dimensional process. The first component of the process is defined on the one-dimensional observation grid :math:`\{0, 0.01, 0.02, \cdots, 10\}`, based on the first :math:`K = 5` Fourier basis functions on :math:`[0, 1]` and the decreasing of the variance of the scores is exponential. The second component of the process is defined on the one-dimensional observation grid :math:`\{-0.5, -0.49, -0.48, \cdots, 0.5\}`, based on the first :math:`K = 5` B-splines basis functions on :math:`[0, 1]` and the decreasing of the variance of the scores is exponential.
 kl = KarhunenLoeve(
     basis_name=name, n_functions=n_functions, argvals=argvals, random_state=rng
 )
@@ -97,10 +81,7 @@ _ = plot_multivariate(kl.data)
 # Simulation for two-dimensional curve (image)
 # --------------------------------------------
 #
-# We simulation a 2-dimensional process where the first component is a surface
-# and the second component is a curve. For the simulation on a two-dimensional
-# domain, we construct an two-dimensional eigenbasis based on tensor products
-# of univariate eigenbasis.
+# We simulation a 2-dimensional process where the first component is a surface and the second component is a curve. For the simulation on a two-dimensional domain, we construct an two-dimensional eigenbasis based on tensor products of univariate eigenbasis.
 
 # Parameters of the basis
 name = [("fourier", "fourier"), "bsplines"]
@@ -114,18 +95,11 @@ argvals = [
     ),
     DenseArgvals({"input_dim_0": np.arange(-0.5, 0.51, 0.01)}),
 ]
+
+###############################################################################
 # **First example**
 # ---
-# We simulate :math:`N = 1` curves of a 2-dimensional process. The first
-# component of the process is defined on the two-dimensional observation grid
-# :math:`\{0, 0.01, 0.02, \cdots, 1\} \times \{0, 0.01, 0.02, \cdots, 1\}`,
-# based on the tensor product of the first :math:`K = 25` Fourier basis
-# functions on :math:`[0, 1]` and the variance of the scores random variables
-# equal to :math:`1` (default). The second component of the process is defined
-# on the one-dimensional observation grid :math:`\{0, 0.01, 0.02, \cdots, 1\}`
-# (default), based on the first :math:`K = 25` B-splines basis functions on
-# :math:`[0, 1]` and the variance of the scores random variables equal to
-# :math:`1` (default).
+# We simulate :math:`N = 1` curves of a 2-dimensional process. The first component of the process is defined on the two-dimensional observation grid :math:`\{0, 0.01, 0.02, \cdots, 10\} \times \{0, 0.01, 0.02, \cdots, 10\}`, based on the tensor product of the first :math:`K = 25` Fourier basis functions on :math:`[0, 1]` and the variance of the scores random variables equal to :math:`1` (default). The second component of the process is defined on the one-dimensional observation grid :math:`\{-0.5, -0.49, -0.48, \cdots, 0.5\}`, based on the first :math:`K = 25` B-splines basis functions on :math:`[0, 1]` and the variance of the scores random variables equal to :math:`1` (default).
 kl = KarhunenLoeve(
     basis_name=name, n_functions=n_functions, argvals=argvals, random_state=rng
 )
@@ -136,15 +110,7 @@ _ = plot_multivariate(kl.data)
 ###############################################################################
 # **Second example**
 # ---
-# We simulate :math:`N = 1` curves of a 2-dimensional process. The first
-# component of the process is defined on the two-dimensional observation grid
-# :math:`\{0, 0.01, 0.02, \cdots, 1\} \times \{0, 0.01, 0.02, \cdots, 1\}`,
-# based on the tensor product of the first :math:`K = 25` Fourier basis
-# functions on :math:`[0, 1]` and the decreasing of the variance of the scores
-# is linear. The second component of the process is defined on the
-# one-dimensional observation grid :math:`\{0, 0.01, 0.02, \cdots, 1\}`
-# (default), based on the first :math:`K = 25` B-splines basis functions on
-# :math:`[0, 1]` and the decreasing of the variance of the scores is linear.
+# We simulate :math:`N = 1` curves of a 2-dimensional process. The first component of the process is defined on the two-dimensional observation grid :math:`\{0, 0.01, 0.02, \cdots, 10\} \times \{0, 0.01, 0.02, \cdots, 10\}`, based on the tensor product of the first :math:`K = 25` Fourier basis functions on :math:`[0, 1]` and the decreasing of the variance of the scores is linear. The second component of the process is defined on the one-dimensional observation grid :math:`\{-0.5, -0.49, -0.48, \cdots, 0.5\}` , based on the first :math:`K = 25` B-splines basis functions on :math:`[0, 1]` and the decreasing of the variance of the scores is linear.
 kl = KarhunenLoeve(
     basis_name=name, n_functions=n_functions, argvals=argvals, random_state=rng
 )
