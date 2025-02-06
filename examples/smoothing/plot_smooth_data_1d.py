@@ -42,7 +42,7 @@ kl.add_noise(0.05)
 
 
 ##############################################################################
-# We will smooth the noisy data using the :func:`FDApy.representation.DenseFunctionalData.smooth` function. This function allows to smooth the data using different methods such as local polynomials and P-splines. In this example, we will use the local polynomials smoothing method with an Epanechnikov kernel and a bandwidth of :math:`0.1`. In the plot, the red line represents the true data, the grey line represents the noisy data and the blue line represents the smoothed data.
+# We will smooth the noisy data using the :func:`~FDApy.representation.DenseFunctionalData.smooth` function. This function allows to smooth the data using different methods such as local polynomials and P-splines. In this example, we will use the local polynomials smoothing method with an Epanechnikov kernel and a bandwidth of :math:`0.1`. In the plot, the red line represents the true data, the grey line represents the noisy data and the blue line represents the smoothed data.
 
 # Smooth the data
 kernel_name = "epanechnikov"

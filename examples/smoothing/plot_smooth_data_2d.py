@@ -41,7 +41,7 @@ data = kl.data
 kl.add_noise(0.05)
 
 ###############################################################################
-# Smoothing two-dimensional functional data is similar to smoothing one-dimensional functional data. The main difference is that the smoothing is done in two dimensions. In this example, we will smooth the noisy data using the :func:`FDApy.representation.DenseFunctionalData.smooth` function. This function allows to smooth the data using different methods such as local polynomials and P-splines. In this example, we will use the local polynomials smoothing method with an Epanechnikov kernel and a bandwidth of :math:`0.5`. We plot the smoothed data.
+# Smoothing two-dimensional functional data is similar to smoothing one-dimensional functional data. The main difference is that the smoothing is done in two dimensions. In this example, we will smooth the noisy data using the :func:`~FDApy.representation.DenseFunctionalData.smooth` function. This function allows to smooth the data using different methods such as local polynomials and P-splines. In this example, we will use the local polynomials smoothing method with an Epanechnikov kernel and a bandwidth of :math:`0.5`. We plot the smoothed data.
 
 # Smooth the data
 points = DenseArgvals({

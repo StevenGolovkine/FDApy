@@ -15,7 +15,7 @@ from FDApy.simulation import KarhunenLoeve
 from FDApy.visualization import plot_multivariate
 
 ###############################################################################
-# Similarly to the univariate case, the package provides a class to simulate clusters of multivariate functional data based on the Karhunen-Loève decomposition. The class :class:`FDApy.simulation.KarhunenLoeve` allows to simulate functional data based on the truncated Karhunen-Loève representation of a functional process.
+# Similarly to the univariate case, the package provides a class to simulate clusters of multivariate functional data based on the Karhunen-Loève decomposition. The class :class:`~FDApy.simulation.KarhunenLoeve` allows to simulate functional data based on the truncated Karhunen-Loève representation of a functional process.
 
 # Set general parameters
 rng = 42

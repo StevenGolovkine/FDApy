@@ -15,7 +15,7 @@ from FDApy.simulation import KarhunenLoeve
 from FDApy.visualization import plot
 
 ###############################################################################
-# The package provides a class to simulate clusters of univariate functional data based on the Karhunen-Loève decomposition. The class :class:`FDApy.simulation.KarhunenLoeve` allows to simulate functional data based on the truncated Karhunen-Loève representation of a functional process.
+# The package provides a class to simulate clusters of univariate functional data based on the Karhunen-Loève decomposition. The class :class:`~FDApy.simulation.KarhunenLoeve` allows to simulate functional data based on the truncated Karhunen-Loève representation of a functional process.
 
 ###############################################################################
 # We simulate :math:`N = 20` curves on the one-dimensional observation grid :math:`\{0, 0.01, 0.02, \cdots, 1\}`, based on the first :math:`K = 25` Fourier basis functions on :math:`[0, 1]`. The clusters are defined through the coefficients in the Karhunen-Loève decomposition and parametrize using the `centers` parameter. The centers of the clusters are generated as Gaussian random variables with parameters defined by a `mean` and a `covariance`. We also consider an exponential decreasing of the eigenvalues.
