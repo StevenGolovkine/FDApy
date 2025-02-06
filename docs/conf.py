@@ -168,7 +168,7 @@ class FDApyExplicitOrder(ExplicitOrder):
 list_all = [
     # **Examples
     # Representation
-    "plot_dense_functional", "plot_irregular_functional",
+    "plot_dense_functional", "plot_irregular_functional", "plot_basis_functional"
     "plot_multivariate_functional",
     # Basis
     "plot_basis_1d", "plot_basis_2d", "plot_basis_multivariate_1d",

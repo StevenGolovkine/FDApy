@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:01.186** total execution time for 27 files **from all galleries**:
+**00:00.135** total execution time for 28 files **from all galleries**:
 
 .. container::
 
@@ -32,11 +32,8 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_data_analysis_plot_canadian_weather.py` (``../examples/data_analysis/plot_canadian_weather.py``)
-     - 00:00.645
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_data_analysis_plot_cd4.py` (``../examples/data_analysis/plot_cd4.py``)
-     - 00:00.540
+   * - :ref:`sphx_glr_auto_examples_representation_plot_basis_functional.py` (``../examples/representation/plot_basis_functional.py``)
+     - 00:00.135
      - 0.0
    * - :ref:`sphx_glr_auto_examples_basis_plot_basis_1d.py` (``../examples/basis/plot_basis_1d.py``)
      - 00:00.000
@@ -45,6 +42,12 @@ Computation times
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_basis_plot_basis_multivariate_1d.py` (``../examples/basis/plot_basis_multivariate_1d.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_data_analysis_plot_canadian_weather.py` (``../examples/data_analysis/plot_canadian_weather.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_data_analysis_plot_cd4.py` (``../examples/data_analysis/plot_cd4.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_fpca_plot_fpca_1d.py` (``../examples/fpca/plot_fpca_1d.py``)

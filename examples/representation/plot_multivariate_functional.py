@@ -21,7 +21,7 @@ from FDApy.visualization import plot_multivariate
 
 
 ###############################################################################
-# Multivariate functional data are defined as a list of univariate functional data and are represented with a :class:`~FDApy.representation.MultivariateFunctionalData` object. The univariate functional data can be of whatever dimension (curves, surfaces, ...) and dense or irregular. There is no restriction on the number of elements in the list but each univariate element must have the same number of observations. It is possible to mix unidimensional and multidimensional functional data in the same list.
+# Multivariate functional data are defined as a list of univariate functional data and are represented with a :class:`~FDApy.representation.MultivariateFunctionalData` object. The univariate functional data can be of whatever dimension (curves, surfaces, ...) and dense, irregular or defined using a basis of function. There is no restriction on the number of elements in the list but each univariate element must have the same number of observations. It is possible to mix unidimensional and multidimensional functional data in the same list.
 
 ###############################################################################
 # First example
