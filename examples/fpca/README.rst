@@ -3,4 +3,4 @@
 Dimension Reduction
 -------------------
 
-Examples concerning the :mod:`FDApy.preprocessing.dim_reduction` module.
+These examples illustrate the use of the :mod:`FDApy.preprocessing.dim_reduction` module. It contains various functionalities to reduce the dimension of functional data.

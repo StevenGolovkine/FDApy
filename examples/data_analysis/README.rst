@@ -3,4 +3,4 @@
 Real data analysis
 ------------------
 
-Examples of analysis of real datasets.
+These examples illustrate the use of the package using real datasets.
