@@ -435,7 +435,15 @@ class FunctionalData(ABC):
         method_integration: str = "trapz",
         use_argvals_stand: bool = False,
     ) -> npt.NDArray[np.float64]:
-        """Norm of each observation of the data."""
+        r"""Norm of each observation of the data.
+        
+        For each observation in the data, it computes its norm defined
+        as
+
+        .. math::
+            \| X \| = \left\{\int_{\mathcal{T}} X(t)^2dt\right\}^{\frac12}.
+
+        """
 
     @abstractmethod
     def normalize(self, **kwargs) -> FunctionalData:
@@ -722,7 +730,15 @@ class GridFunctionalData(FunctionalData):
         method_integration: str = "trapz",
         use_argvals_stand: bool = False,
     ) -> npt.NDArray[np.float64]:
-        """Norm of each observation of the data."""
+        r"""Norm of each observation of the data.
+        
+        For each observation in the data, it computes its norm defined
+        as
+
+        .. math::
+            \| X \| = \left\{\int_{\mathcal{T}} X(t)^2dt\right\}^{\frac12}.
+
+        """
 
     @abstractmethod
     def normalize(self, **kwargs) -> FunctionalData:
