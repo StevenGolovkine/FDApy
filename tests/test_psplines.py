@@ -176,7 +176,7 @@ class TestPSplines(unittest.TestCase):
 
     def test_getter(self):
         ps = PSplines(order_penalty=2, order_derivative=2)
-        
+
         ps.order_penalty = 3
         np.testing.assert_equal(ps.order_penalty, 3)
 
@@ -226,7 +226,7 @@ class TestPSplines(unittest.TestCase):
         ps = PSplines(n_segments=3, degree=2)
         ps.fit(self.y, self.x, penalty=(0.5,))
         y_pred = ps.predict(self.x)
-        
+
         np.testing.assert_allclose(y_pred, self.y)
 
     def test_fit_with_multiple_dimensions(self):

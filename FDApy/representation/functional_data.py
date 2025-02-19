@@ -436,7 +436,7 @@ class FunctionalData(ABC):
         use_argvals_stand: bool = False,
     ) -> npt.NDArray[np.float64]:
         r"""Norm of each observation of the data.
-        
+
         For each observation in the data, it computes its norm defined
         as
 
@@ -731,7 +731,7 @@ class GridFunctionalData(FunctionalData):
         use_argvals_stand: bool = False,
     ) -> npt.NDArray[np.float64]:
         r"""Norm of each observation of the data.
-        
+
         For each observation in the data, it computes its norm defined
         as
 
