@@ -90,7 +90,7 @@ def _simulate_basis(
         raise NotImplementedError(f"Basis {name!r} not implemented!")
 
     if is_normalized:
-        norm2 = np.sqrt(simpson(values * values, argvals))
+        norm2 = np.sqrt(simpson(values * values, x=argvals))
         values = np.divide(values, norm2[:, np.newaxis])
 
     if add_intercept:
