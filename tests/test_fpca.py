@@ -7,6 +7,7 @@ Written with the help of ChatGPT.
 """
 import numpy as np
 import pickle
+import pytest
 import unittest
 import warnings
 
@@ -2696,6 +2697,7 @@ class TestFitInnerProductMultivariate(unittest.TestCase):
             np.abs(results["_eigenvectors"]), np.abs(expected_eigenvectors), decimal=2
         )
 
+    @pytest.mark.filterwarnings("ignore::UserWarning")
     def test_fit_inner_product_with_2d(self):
         points = [
             DenseArgvals({"input_dim_0": np.linspace(0, 1, 21)}),

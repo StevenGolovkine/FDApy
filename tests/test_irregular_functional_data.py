@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import pickle
 import unittest
+import pytest
 
 from pathlib import Path
 
@@ -1028,6 +1029,7 @@ class TestInnerProductIrregular(unittest.TestCase):
         )
         np.testing.assert_array_almost_equal(res, expected_res)
 
+    @pytest.mark.filterwarnings("ignore::UserWarning")
     def test_inner_product_2d(self):
         argvals = IrregularArgvals(
             {
