@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import warnings
 
-from typing import Dict
+from typing import Any, Dict
 
 from ...representation.argvals import DenseArgvals
 from ...representation.values import DenseValues
@@ -36,7 +36,7 @@ def _fit_covariance(
     points: DenseArgvals,
     n_components: int | float = 1,
     method_smoothing: str = "LP",
-    **kwargs,
+    **kwargs: Any,
 ) -> Dict[str, object]:
     """Univariate Functional PCA using the covariance operator.
 
@@ -97,10 +97,10 @@ def _fit_covariance(
 def _fit_inner_product(
     data: FunctionalData,
     points: DenseArgvals,
-    n_components: int | float = 1,
+    n_components: np.int64 | np.float64 = 1,
     method_smoothing: str = "LP",
     noise_variance: float | None = None,
-    **kwargs,
+    **kwargs: Any,
 ) -> Dict[str, object]:
     """Univariate Functional PCA using inner-product matrix decomposition.
 
@@ -216,22 +216,8 @@ def _transform_numerical_integration_irregular(
         functions defined by the eigenfunctions.
 
     """
-    data = data.smooth(method="interpolation")
-    # scores = np.zeros((data.n_obs, eigenfunctions.n_obs))
-    # for idx, obs in enumerate(data):
-    #     nan_mask = np.isnan(obs.values[idx])
-    #     new_argvals = obs.argvals[idx]["input_dim_0"][~nan_mask]
-    #     new_values = obs.values[idx][~nan_mask]
-
-    #     eigen_sampled = eigenfunctions.smooth(
-    #         points=DenseArgvals({"input_dim_0": new_argvals}),
-    #         method="PS",
-    #         penalty=(1,),
-    #     )
-    #     temp = eigen_sampled.values * new_values
-    #     for idx_eigen, curve in enumerate(temp):
-    #         scores[idx, idx_eigen] = _integrate(curve, new_argvals, method=method)
-    return _transform_numerical_integration_dense(data, eigenfunctions, method)
+    data_s = data.smooth(method="interpolation")
+    return _transform_numerical_integration_dense(data_s, eigenfunctions, method)
 
 
 def _transform_pace_dense(
@@ -596,7 +582,7 @@ class UFPCA:
         data: DenseFunctionalData | None = None,
         method: str = "NumInt",
         method_smoothing: str = "LP",
-        **kwargs,
+        **kwargs: Any,
     ) -> npt.NDArray[np.float64]:
         r"""Apply dimensionality reduction to the data.
 

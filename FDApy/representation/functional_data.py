@@ -364,6 +364,96 @@ class FunctionalData(ABC):
 
     ###########################################################################
     # Abstract methods
+    @abstractmethod
+    def to_long(self, reindex: bool = False) -> pd.DataFrame:
+        """Convert the data to long format."""
+
+    @abstractmethod
+    def noise_variance(self, order: int = 2) -> float:
+        """Estimate the variance of the noise."""
+
+    @abstractmethod
+    def smooth(
+        self,
+        points: DenseArgvals | None = None,
+        method: str = "PS",
+        bandwidth: float | None = None,
+        penalty: float | None = None,
+        **kwargs,
+    ) -> Type[FunctionalData]:
+        """Smooth the data."""
+
+    @abstractmethod
+    def mean(
+        self,
+        points: DenseArgvals | None = None,
+        method_smoothing: str = None,
+        **kwargs,
+    ) -> FunctionalData:
+        """Compute an estimate of the mean."""
+
+    @abstractmethod
+    def center(
+        self,
+        mean: DenseFunctionalData | None = None,
+        method_smoothing: str | None = None,
+        **kwargs,
+    ) -> FunctionalData:
+        """Center the data."""
+
+    @abstractmethod
+    def norm(
+        self,
+        squared: bool = False,
+        method_integration: str = "trapz",
+        use_argvals_stand: bool = False,
+    ) -> npt.NDArray[np.float64]:
+        r"""Norm of each observation of the data.
+
+        For each observation in the data, it computes its norm defined
+        as
+
+        .. math::
+            \| X \| = \left\{\int_{\mathcal{T}} X(t)^2dt\right\}^{\frac12}.
+
+        """
+
+    @abstractmethod
+    def normalize(self, **kwargs) -> FunctionalData:
+        """Normalize the data."""
+
+    @abstractmethod
+    def standardize(self, center: bool = True, **kwargs) -> FunctionalData:
+        """Standardize the data."""
+
+    @abstractmethod
+    def rescale(
+        self,
+        weights: float = 0.0,
+        method_integration: str = "trapz",
+        use_argvals_stand: bool = False,
+        **kwargs,
+    ) -> Tuple[FunctionalData, float]:
+        """Rescale the data."""
+
+    @abstractmethod
+    def inner_product(
+        self,
+        method_integration: str = "trapz",
+        method_smoothing: str | None = None,
+        noise_variance: float | None = None,
+        **kwargs,
+    ) -> npt.NDArray[np.float64]:
+        """Compute an estimate of the inner product matrix."""
+
+    @abstractmethod
+    def covariance(
+        self,
+        points: DenseArgvals | None = None,
+        method_smoothing: str | None = None,
+        **kwargs,
+    ) -> Type[FunctionalData]:
+        """Compute an estimate of the covariance."""
 
     ###########################################################################
 
@@ -563,6 +653,102 @@ class GridFunctionalData(FunctionalData):
 
     ###########################################################################
     # Abstract methods
+    @abstractmethod
+    def to_basis(
+        self, points: DenseArgvals | None = None, method: str = "PS", **kwargs
+    ) -> BasisFunctionalData:
+        """Convert the data to basis format."""
+
+    @abstractmethod
+    def to_long(self, reindex: bool = False) -> pd.DataFrame:
+        """Convert the data to long format."""
+
+    @abstractmethod
+    def noise_variance(self, order: int = 2) -> float:
+        """Estimate the variance of the noise."""
+
+    @abstractmethod
+    def smooth(
+        self,
+        points: DenseArgvals | None = None,
+        method: str = "PS",
+        bandwidth: float | None = None,
+        penalty: float | None = None,
+        **kwargs,
+    ) -> Type[FunctionalData]:
+        """Smooth the data."""
+
+    @abstractmethod
+    def mean(
+        self,
+        points: DenseArgvals | None = None,
+        method_smoothing: str = None,
+        **kwargs,
+    ) -> FunctionalData:
+        """Compute an estimate of the mean."""
+
+    @abstractmethod
+    def center(
+        self,
+        mean: DenseFunctionalData | None = None,
+        method_smoothing: str | None = None,
+        **kwargs,
+    ) -> FunctionalData:
+        """Center the data."""
+
+    @abstractmethod
+    def norm(
+        self,
+        squared: bool = False,
+        method_integration: str = "trapz",
+        use_argvals_stand: bool = False,
+    ) -> npt.NDArray[np.float64]:
+        r"""Norm of each observation of the data.
+
+        For each observation in the data, it computes its norm defined
+        as
+
+        .. math::
+            \| X \| = \left\{\int_{\mathcal{T}} X(t)^2dt\right\}^{\frac12}.
+
+        """
+
+    @abstractmethod
+    def normalize(self, **kwargs) -> FunctionalData:
+        """Normalize the data."""
+
+    @abstractmethod
+    def standardize(self, center: bool = True, **kwargs) -> FunctionalData:
+        """Standardize the data."""
+
+    @abstractmethod
+    def rescale(
+        self,
+        weights: float = 0.0,
+        method_integration: str = "trapz",
+        use_argvals_stand: bool = False,
+        **kwargs,
+    ) -> Tuple[FunctionalData, float]:
+        """Rescale the data."""
+
+    @abstractmethod
+    def inner_product(
+        self,
+        method_integration: str = "trapz",
+        method_smoothing: str | None = None,
+        noise_variance: float | None = None,
+        **kwargs,
+    ) -> npt.NDArray[np.float64]:
+        """Compute an estimate of the inner product matrix."""
+
+    @abstractmethod
+    def covariance(
+        self,
+        points: DenseArgvals | None = None,
+        method_smoothing: str | None = None,
+        **kwargs,
+    ) -> Type[FunctionalData]:
+        """Compute an estimate of the covariance."""
 
     ###########################################################################
 
@@ -3048,8 +3234,14 @@ class BasisFunctionalData(FunctionalData):
         squared: bool = False,
         method_integration: str = "trapz",
         use_argvals_stand: bool = False,
-    ) -> NDArrayFloat:
-        """Norm of each observation of the data.
+    ) -> npt.NDArray[np.float64]:
+        r"""Norm of each observation of the data.
+
+        For each observation in the data, it computes its norm defined
+        as
+
+        .. math::
+            \| X \| = \left\{\int_{\mathcal{T}} X(t)^2dt\right\}^{\frac12}.
 
         Parameters
         ----------

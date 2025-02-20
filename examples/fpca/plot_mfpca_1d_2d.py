@@ -2,12 +2,8 @@
 MFPCA of 1- and 2-dimensional data
 ==================================
 
-Example of multivariate functional principal components analysis of a
-combinaison of 1- and 2-dimensional data.
 """
 
-###############################################################################
-#
 
 # Author: Steven Golovkine <steven_golovkine@icloud.com>
 # License: MIT
@@ -21,11 +17,13 @@ from FDApy.simulation import KarhunenLoeve
 from FDApy.preprocessing import MFPCA
 from FDApy.visualization import plot, plot_multivariate
 
+###############################################################################
+# In this section, we are showing how to perform a multivariate functional principal component analysis on one-dimensional and two-dimensional data using the :class:`~FDApy.preprocessing.MFPCA` class. We will compare two methods to perform the dimension reduction: the decomposition of the covariance operator and the decomposition of the inner-product matrix. We will use :math:`0.9\%` of the variance explained in the data to reconstruct the curves.
+
 # Set general parameters
 rng = 42
 n_obs = 50
 idx = 5
-
 
 # Parameters of the basis
 name = ["bsplines", ("fourier", "fourier")]
@@ -56,16 +54,14 @@ data = kl.data
 
 _ = plot_multivariate(data)
 
+
 ###############################################################################
-# Covariance decomposition
-# ------------------------
+# Estimation of the eigencomponents
+# ---------------------------------
 #
-# Perform multivariate FPCA with an estimation of the variance explained for
-# the first component and a prespecified number of components for the second
-# component using the decomposition of the covariance operator. The
-# decomposition of the covariance operator is based on the FCP-TPA algorithm
-# for 2-dimensional data, which is an iterative algorithm. The number of
-# components has thus to be prespecified.
+# The :class:`~FDApy.preprocessing.MFPCA` class requires two parameters: the number of components to estimate and the method to use. The method parameter can be either `covariance` or `inner-product`. The first method estimates the eigenfunctions by decomposing the covariance operator, while the second method estimates the eigenfunctions by decomposing the inner-product matrix. In the case of a decomposition of the covariance operator, the method also requires the univariate expansions to estimate the eigenfunctions of each component. Here, we use the univariate functional principal component analysis with penalized splines to estimate the eigenfunctions of the first component and the FCP-TPA to estimate the eigenfunctions of the second component.
+
+# First, we perform a multivariate FPCA using a decomposition of the covariance operator.
 univariate_expansions = [
     {"method": "UFPCA", "n_components": 15, "method_smoothing": "PS"},
     {"method": "FCPTPA", "n_components": 20},
@@ -75,48 +71,41 @@ mfpca_cov = MFPCA(
 )
 mfpca_cov.fit(data)
 
-
 ###############################################################################
-# Estimate the scores -- projection of the curves onto the eigenfunctions -- by
-# numerical integration.
-scores_cov = mfpca_cov.transform(data, method="NumInt")
-
-# Plot of the scores
-_ = plt.scatter(scores_cov[:, 0], scores_cov[:, 1])
-
-
-###############################################################################
-# Reconstruct the curves using the scores.
-data_recons_cov = mfpca_cov.inverse_transform(scores_cov)
-
-
-###############################################################################
-# Inner-product matrix decomposition
-# ----------------------------------
 #
-# Perform multivariate FPCA with an estimation of the number of components by
-# the percentage of variance explained using a decomposition of the
-# inner-product matrix.
+
+# Second, we perform a multivariate FPCA using a decomposition of the inner-product matrix.
 mfpca_innpro = MFPCA(n_components=0.95, method="inner-product")
 mfpca_innpro.fit(data)
 
 
 ###############################################################################
-# Estimate the scores -- projection of the curves onto the eigenfunctions --
-# using the eigenvectors from the decomposition of the inner-product matrix.
+# Estimation of the scores
+# ------------------------
+#
+# Once the eigenfunctions are estimated, we can compute the scores using numerical integration or the eigenvectors from the decomposition of the inner-product matrix. Note that, when using the eigenvectors from the decomposition of the inner-product matrix, new data can not be passed as argument of the :func:`~FDApy.preprocessing.MFPCA.transform` method because the estimation is performed using the eigenvectors of the inner-product matrix.
+
+scores_cov = mfpca_cov.transform(data, method="NumInt")
 scores_innpro = mfpca_innpro.transform(method="InnPro")
 
-
 # Plot of the scores
-_ = plt.scatter(scores_innpro[:, 0], scores_innpro[:, 1])
+_ = plt.scatter(scores_cov[:, 0], scores_cov[:, 1], label="NumInt")
+_ = plt.scatter(scores_innpro[:, 0], scores_innpro[:, 1], label="InnPro")
+plt.legend()
+plt.show()
 
 
 ###############################################################################
-# Reconstruct the surfaces using the scores.
+# Comparison of the methods
+# -------------------------
+#
+# Finally, we compare the methods by reconstructing the curves using :math:`0.9\%` of the variance explained.
+data_recons_cov = mfpca_cov.inverse_transform(scores_cov)
 data_recons_innpro = mfpca_innpro.inverse_transform(scores_innpro)
 
+
 ###############################################################################
-## Plot an example of the curve reconstruction
+#
 indexes = np.random.choice(n_obs, 5)
 
 colors_numint = np.array([[0.9, 0, 0, 1]])
