@@ -20,6 +20,7 @@ from ...misc.basis import _basis_bsplines
 
 NDArrayFloat = npt.NDArray[np.float64]
 
+
 ########################################################################################
 # Utils
 def _row_tensor(

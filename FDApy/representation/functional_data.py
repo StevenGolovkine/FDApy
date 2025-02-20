@@ -19,7 +19,7 @@ from functools import reduce
 from abc import ABC, abstractmethod
 from collections import UserList
 from collections.abc import Iterator
-from typing import Any, Callable, Iterable, Type, TYPE_CHECKING
+from typing import Any, Callable, Iterable, Tuple, Type, TYPE_CHECKING
 
 from .argvals import Argvals, DenseArgvals, IrregularArgvals
 from .values import Values, DenseValues, IrregularValues

@@ -27,6 +27,7 @@ if TYPE_CHECKING:
 
 NDArrayFloat = npt.NDArray[np.float64]
 
+
 ###############################################################################
 # Class Values
 class Values(ABC):
