@@ -777,7 +777,7 @@ class PSplines:
                 data=y,
                 basis=basis_list[0],
                 sample_weights=sample_weights,
-                penalty=penalty,
+                penalty=penalty,  # type: ignore
                 order_penalty=self.order_penalty,
             )
         else:
@@ -785,7 +785,7 @@ class PSplines:
                 data=y,
                 basis_list=basis_list,
                 sample_weights=sample_weights,
-                penalties=penalty,
+                penalties=penalty,  # type: ignore
                 order_penalty=self.order_penalty,
             )
 
@@ -798,7 +798,7 @@ class PSplines:
 
     def predict(
         self,
-        x: NDArrayFloat | None = None,
+        x: list[NDArrayFloat] | NDArrayFloat | None = None,
         **kwargs: list[float | None]
     ) -> NDArrayFloat:
         """Predict the response variable values for the given predictor variable values.

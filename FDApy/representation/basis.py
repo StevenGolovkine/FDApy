@@ -26,16 +26,19 @@ from ..misc.basis import _basis_wiener, _basis_legendre, _basis_fourier, _basis_
 from ..misc.utils import _inner_product
 
 
+NDArrayFloat = npt.NDArray[np.float64]
+
+
 #######################################################################
 # Definition of the basis (eigenfunctions)
 def _simulate_basis(
     name: str,
-    argvals: npt.NDArray[np.float64],
+    argvals: NDArrayFloat,
     n_functions: int = 5,
     is_normalized: bool = False,
     add_intercept: bool = True,
     **kwargs: Any,
-) -> npt.NDArray[np.float64]:
+) -> NDArrayFloat:
     """Redirect to the right simulation basis function.
 
     Parameters
@@ -56,7 +59,7 @@ def _simulate_basis(
 
     Returns
     -------
-    values: npt.NDArray[np.float64], shape=(n_functions, len(argvals))
+    values: NDArrayFloat, shape=(n_functions, len(argvals))
         An array containing the evaluation of `n_functions` functions.
 
     Example
@@ -175,6 +178,8 @@ class Basis(DenseFunctionalData):
     ) -> None:
         """Initialize Basis object."""
         if name == "given":
+            if values is None:
+                raise ValueError("The values must be provided if name='given'.")
             n_functions = values.n_obs
         self.name = name
         self.n_functions = n_functions
@@ -258,7 +263,7 @@ class Basis(DenseFunctionalData):
         method_smoothing: str | None = None,
         noise_variance: float | None = None,
         **kwargs: Any,
-    ) -> npt.NDArray[np.float64]:
+    ) -> NDArrayFloat:
         # Get parameters
         n_obs = self.n_obs
         axis = [argvals for argvals in self.argvals.values()]

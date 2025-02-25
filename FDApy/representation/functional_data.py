@@ -318,6 +318,11 @@ class FunctionalData(ABC):
         fdata
             Functional data to concatenate.
 
+        Returns
+        -------
+        FunctionalData
+            The concatenated object.
+
         Raises
         ------
         ValueError
