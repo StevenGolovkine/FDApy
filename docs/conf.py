@@ -28,7 +28,7 @@ project = "FDApy"
 author = "Steven Golovkine"
 
 # The full version, including alpha/beta/rc tags
-release = "1.0.2"
+release = "1.0.3"
 github_url = "https://github.com/StevenGolovkine/FDApy"
 
 rtd_branch = os.environ.get(" READTHEDOCS_GIT_IDENTIFIER", "master")

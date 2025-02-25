@@ -23,4 +23,4 @@ __getattr__, __dir__, __all__ = lazy.attach(
     },
 )
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"
