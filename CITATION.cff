@@ -7,6 +7,7 @@ authors:
     affiliation: "University of Limerick"
     email: steven_golovkine@icloud.com
 title: "StevenGolovkine/FDApy: a Python package for functional data"
+doi: 10.5281/zenodo.3891521
 date-released: 2025-02-28
 url: "https://github.com/StevenGolovkine/FDApy"
 license: MIT
