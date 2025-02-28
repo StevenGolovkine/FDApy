@@ -99,7 +99,7 @@ If you use FDApy in a scientific publication, we would appreciate citations to t
 
   @misc{golovkine_2024_fdapy,
     author = {Golovkine, Steven},
-    doi = {10.5281/zenodo.13625609},
+    doi = {10.5281/zenodo.3891521},
     title = {FDApy: A Python Package to analyze functional data},
     url = {https://github.com/StevenGolovkine/FDApy},
     year = {2024}
