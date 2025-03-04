@@ -31,6 +31,10 @@ FDApy: a Python package to analyze functional data
 		:target: https://fdapy.readthedocs.io/en/latest/?badge=latest
 		:alt: Documentation Status
 
+.. image:: https://joss.theoj.org/papers/10.21105/joss.07526/status.svg
+		:target: https://doi.org/10.21105/joss.07526
+		:alt: JOSS
+
 .. image:: https://zenodo.org/badge/155183454.svg
    		:target: https://zenodo.org/badge/latestdoi/155183454
    		:alt: DOI
@@ -104,6 +108,24 @@ If you use FDApy in a scientific publication, we would appreciate citations to t
     url = {https://github.com/StevenGolovkine/FDApy},
     year = {2024}
   }
+
+You may also cite the paper:
+
+.. code-block::
+	
+	@article{golovkineFDApyPythonPackage2025,
+  		title = {{{FDApy}}: A {{Python}} Package for Functional Data},
+  		author = {Golovkine, Steven},
+  		date = {2025-03-04},
+  		journaltitle = {Journal of Open Source Software},
+  		volume = {10},
+  		number = {107},
+  		pages = {7526},
+  		issn = {2475-9066},
+  		doi = {10.21105/joss.07526},
+  		url = {https://joss.theoj.org/papers/10.21105/joss.07526}
+	}
+}
 
 
 Contributing
