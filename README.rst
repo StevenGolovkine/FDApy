@@ -112,20 +112,19 @@ If you use FDApy in a scientific publication, we would appreciate citations to t
 You may also cite the paper:
 
 .. code-block::
-	
-	@article{golovkineFDApyPythonPackage2025,
-  		title = {{{FDApy}}: A {{Python}} Package for Functional Data},
-  		author = {Golovkine, Steven},
-  		date = {2025-03-04},
-  		journaltitle = {Journal of Open Source Software},
-  		volume = {10},
-  		number = {107},
-  		pages = {7526},
-  		issn = {2475-9066},
-  		doi = {10.21105/joss.07526},
-  		url = {https://joss.theoj.org/papers/10.21105/joss.07526}
-	}
-}
+
+  @article{golovkine_2024_fdapy_paper,
+  	title = {{{FDApy}}: A {{Python}} Package for Functional Data},
+	author = {Golovkine, Steven},
+  	date = {2025-03-04},
+  	journaltitle = {Journal of Open Source Software},
+  	volume = {10},
+  	number = {107},
+  	pages = {7526},
+  	issn = {2475-9066},
+  	doi = {10.21105/joss.07526},
+  	url = {https://joss.theoj.org/papers/10.21105/joss.07526}
+  }
 
 
 Contributing
