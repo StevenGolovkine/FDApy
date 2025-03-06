@@ -27,6 +27,15 @@
       ]
     },
     {
+      "login": "mstimberg",
+      "name": "Marcel Stimberg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1381982?v=4",
+      "profile": "https://marcel.stimberg.info",
+      "contributions": [
+        "review"
+      ]
+    },
+    {
       "login": "vnmabus",
       "name": "Carlos Ramos Carreño",
       "avatar_url": "https://avatars.githubusercontent.com/u/2364173?v=4",
@@ -34,7 +43,7 @@
       "contributions": [
         "review"
       ]
-     }
+     },
      {
       "login": "quantgirluk",
       "name": "Quant Girl",
