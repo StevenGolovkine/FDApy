@@ -25,6 +25,15 @@
       "contributions": [
         "research"
       ]
+    },
+    {
+      "login": "mstimberg",
+      "name": "Marcel Stimberg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1381982?v=4",
+      "profile": "https://marcel.stimberg.info",
+      "contributions": [
+        "review"
+      ]
     }
   ]
 }
